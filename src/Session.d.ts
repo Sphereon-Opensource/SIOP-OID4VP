@@ -1,7 +1,8 @@
 
-import {DidAuthValidationResponse, Resolvable} from "./DIDAuth";
+import {DidAuthValidationResponse} from "./DIDAuth";
 import {AgentResponse} from "./Agent";
 import {JWTPayload} from "./JWT";
+import {Resolvable} from "did-resolver";
 
 export declare class Session {
     #private;
@@ -17,7 +18,7 @@ export declare class Session {
         privateKey?: string;
         kid?: string;
         did?: string;
-        didRegistry?: string;
+        resolver?: Resolvable;
         expiration?: {
             requestToken: number;
             accessToken: number;

@@ -1,6 +1,7 @@
 import type {DIDResolutionResult, VerificationMethod} from 'did-resolver'
 import type {JWK} from "jose/types";
 import {ProofPurposeTypes} from "did-jwt/lib/JWT";
+import {Resolvable} from "did-resolver";
 
 export type Signer = (data: string | Uint8Array) => Promise<string>
 export type SignerAlgorithm = (payload: string, signer: Signer) => Promise<string>
@@ -14,6 +15,7 @@ export interface JWTOptions {
 }
 
 export interface VerifyOptions {
+    resolver: Resolvable
     audience?: string
     callbackUrl?: string
     skewTime?: number

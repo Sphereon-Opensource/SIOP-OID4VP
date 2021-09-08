@@ -2,11 +2,6 @@
 import { DIDDocument, VerificationMethod } from "did-resolver";
 import {JWKECKey, JWTPayload} from "./JWT";
 
-
-export interface Resolvable {
-    resolve: (did: string) => Promise<DIDDocument | null>;
-}
-
 export declare const expirationTime: number;
 export interface DidAuthRequest extends JWTPayload {
     iss: string;

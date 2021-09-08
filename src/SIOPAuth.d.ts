@@ -1,11 +1,12 @@
-import {DidAuthRequest, DidAuthResponse, DidAuthValidationResponse, Resolvable, UriResponse} from "./DIDAuth";
+import {DidAuthRequest, DidAuthResponse, DidAuthValidationResponse, UriResponse} from "./DIDAuth";
+import {Resolvable} from "did-resolver";
 
 export declare class SIOPAuth {
     /**
      * Sets the resolver to use for SIOP Auth
      * @param resolver
      */
-    static setResolver(resolver: Resolvable);
+    setResolver(resolver: Resolvable);
 
     /**
      *
@@ -42,7 +43,7 @@ export declare class SIOPAuth {
      * @param resolver DID Registry
      * @param audience expected audience
      */
-    static verifyAuthenticationResponse(idToken: string, audience: string): Promise<DidAuthValidationResponse>;
+    verifyAuthResponse(idToken: string, audience: string): Promise<DidAuthValidationResponse>;
 
 
 }

@@ -5,6 +5,8 @@
   "license": "Apache 2",
   "dependencies": {
     "jose": "^3.16.1",
-    "did-jwt" : "^5.7.0"
+    "did-jwt" : "^5.7.0",
+    "querystring": "^0.2.1",
+    "uuid": "^8.3.2"
   }
 }

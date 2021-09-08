@@ -1,4 +1,4 @@
-import {Resolvable} from "./DidAuth";
+import {Resolvable} from "did-resolver";
 
 
 export interface AgentResponse {
