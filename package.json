@@ -1,8 +1,8 @@
 {
-  "name": "@sphereon/did-auth-siop",
+  "name": "@gimly/did-auth-siop",
   "version": "0.0.1",
   "main": "index.js",
-  "license": "Apache 2",
+  "license": "Apache-2.0",
   "dependencies": {
     "jose": "^3.16.1",
     "did-jwt" : "^5.7.0",
