@@ -1,7 +1,7 @@
 import {Resolvable} from "did-resolver";
 import {AkeDecrypted, AkeResponse} from "./AuthKeyExchange";
 
-export declare class OPAgent {
+export class ClientAgent {
     #private;
     resolver: Resolvable;
 
@@ -26,4 +26,3 @@ export declare class OPAgent {
      */
     verifyAuthResponse(response: AkeResponse, nonce: string): Promise<AkeDecrypted>;
 }
-export default OPAgent;

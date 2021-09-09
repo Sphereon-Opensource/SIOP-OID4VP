@@ -1,5 +1,5 @@
 
-import {DidAuthValidationResponse} from "./DIDAuth";
+import {DidAuthValidationResponse} from "./did/DidAuth";
 import {JWTPayload} from "./JWT";
 import {Resolvable} from "did-resolver";
 import {AkeResponse} from "./AuthKeyExchange";
@@ -11,6 +11,7 @@ export declare class RPSession {
         requestToken: number;
         accessToken: number;
     };
+    audience: string;
     did: string;
     kid: string;
 
@@ -18,6 +19,7 @@ export declare class RPSession {
         privateKey?: string;
         kid?: string;
         did?: string;
+        audience?: string;
         resolver?: Resolvable;
         expiration?: {
             requestToken: number;
@@ -26,7 +28,7 @@ export declare class RPSession {
     });
 
     /**
-     * Creates an access token as a JWS wrapped as an AKE response
+     * Creates an access token as a JWS placed in an AKE response
      *
      * @param validation
      * @param opts
@@ -37,9 +39,8 @@ export declare class RPSession {
      * Verifies the bearer access token on the RP side as received from the OP/client
      *
      * @param accessToken
-     * @param issuer
      */
-    verifyAccessToken(accessToken: string, issuer: string): Promise<JWTPayload>;
+    verifyAccessToken(accessToken: string, opts?: { [key: string]: string | number; }): Promise<JWTPayload>;
 }
 
 export default RPSession;

@@ -1,6 +1,6 @@
 
 import { DIDDocument, VerificationMethod } from "did-resolver";
-import {JWKECKey, JWTPayload} from "./JWT";
+import {JWKECKey, JWTPayload} from "../JWT";
 
 export declare const expirationTime: number;
 export interface DidAuthRequest extends JWTPayload {
@@ -94,4 +94,3 @@ export declare enum ResponseType {
 export declare enum ResponseIss {
     SELF_ISSUE = "https://self-issued.me"
 }
-//# sourceMappingURL=DIDAuth.d.ts.map

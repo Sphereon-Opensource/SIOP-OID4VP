@@ -1,16 +1,62 @@
-import DidAuth, {KeyAlgo, ResponseIss, ResponseType, Scope} from "./DidAuth";
+import DidAuth, {KeyAlgo, ResponseIss, ResponseType, Scope} from "./did/DidAuth";
 import {Resolvable} from "did-resolver";
 import querystring from "querystring";
 import uuid from "uuid";
-import {createDidJWT, verifyDidJWT} from "./DidJWT";
+import {createDidJWT, verifyDidJWT} from "./did/DidJWT";
 import {decodeJWT, ES256KSigner} from "did-jwt";
 
-class SIOPAuth {
+export class RPAuthService {
     private resolver: Resolvable;
+
+    constructor(opts) {
+        this.setResolver(opts.resolver);
+    }
 
     setResolver(resolver) {
         this.resolver = resolver;
     }
+
+    /**
+     * Verifies a DidAuth ID Response Token
+     *
+     * @param idToken ID token to be validated
+     * @param audience expected audience
+     */
+    async verifyAuthResponse(idToken, audience) {
+
+        const {payload} = decodeJWT(idToken);
+        if (payload.iss !== ResponseIss.SELF_ISSUE) {
+            throw new Error("NO_SELFISSUED_ISS");
+        }
+
+        const verifiedJWT = await verifyDidJWT(idToken, this.resolver, {
+            audience,
+        });
+
+        if (!verifiedJWT || !verifiedJWT.payload) {
+            throw Error("ERROR_VERIFYING_SIGNATURE");
+        }
+        if (!verifiedJWT.payload.nonce) {
+            throw Error("NO_NONCE");
+        }
+
+        return {
+            signatureValidation: true,
+            signer: verifiedJWT.signer,
+            payload: {
+                did: verifiedJWT.didResolutionResult.didDocument,
+                ...verifiedJWT.payload,
+            },
+        };
+    }
+
+
+
+
+
+
+
+
 
     async createAuthRequest(didAuthRequest) {
         if (!didAuthRequest ||
@@ -34,8 +80,8 @@ class SIOPAuth {
             throw new Error("BAD_PARAMS");
         }
 
-        const payload = SIOPAuth.createDidAuthRequestPayload(didAuthRequest, uuid.v4());
-        return SIOPAuth.signDidAuthImpl(didAuthRequest.kid, payload, didAuthRequest.hexPrivateKey).then(jwt => {
+        const payload = RPAuthService.createDidAuthRequestPayload(didAuthRequest, uuid.v4());
+        return RPAuthService.signDidAuthImpl(didAuthRequest.kid, payload, didAuthRequest.hexPrivateKey).then(jwt => {
             return {jwt, nonce: payload.nonce}
         });
     }
@@ -44,7 +90,7 @@ class SIOPAuth {
     async verifyAuthRequest(didAuthJwt) {
         // as audience is set in payload as a DID, it is required to be set as options
         const options = {
-            audience: SIOPAuth.getAudience(didAuthJwt),
+            audience: RPAuthService.getAudience(didAuthJwt),
         };
         const verifiedJWT = await verifyDidJWT(didAuthJwt, this.resolver, options);
         if (!verifiedJWT || !verifiedJWT.payload) {

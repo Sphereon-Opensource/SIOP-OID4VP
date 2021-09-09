@@ -4,9 +4,12 @@
   "main": "index.js",
   "license": "Apache-2.0",
   "dependencies": {
+    "did-jwt": "^5.7.0",
     "jose": "^3.16.1",
-    "did-jwt" : "^5.7.0",
     "querystring": "^0.2.1",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.2"
   }
 }

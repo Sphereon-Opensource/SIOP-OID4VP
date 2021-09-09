@@ -1,5 +1,5 @@
 import {verifyJWT, createJWT, JWTPayload, JWTOptions, JWTHeader, JWTVerifyOptions} from "did-jwt/lib/JWT";
-import {VerifiedJWT} from "./JWT";
+import {VerifiedJWT} from "../JWT";
 import {Resolvable} from "did-resolver";
 
 
@@ -35,7 +35,6 @@ export async function verifyDidJWT(
         proofPurpose: undefined,
     }
 ): Promise<VerifiedJWT> {
-    //todo add resolver
     return verifyJWT(jwt, options);
 }
 
