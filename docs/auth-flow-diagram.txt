@@ -7,7 +7,7 @@ end title
 autonumber
 
 participant "Client\n(OP)" as OP order 0
-participant "Auth API\nOPAuth" as auth1 order 1 #White
+participant "Auth API\nClientAuth" as auth1 order 1 #White
 participant "Auth API\nRPAuth" as auth2 order 1 #White
 participant "Web component\n(RP)" as RP order 2
 

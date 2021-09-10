@@ -5,7 +5,7 @@
   <br>
 </h1>
 
-An authentication library for having clients/people as Self Issued OpenID Provider as specified in the OpenID Connect working group [spec](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html)
+An authentication library for having clients/people as Self Issued OpenID Provider as specified in the OpenID Connect working group.
 
 ## Introduction
 DID SIOP is an extension of OpenID Connect to allow End-users to use OpenID Providers (OPs) that they control. Using Self-Issued OPs, End-users can authenticate themselves and present claims directly to the Relying Parties (RPs), typically a webapp,  without relying on a third-party Identity Provider. This makes the solution fully self sovereign, as it does not rely on any third parties and strictly happens peer 2 peer, but still uses the OpenID Connect protocol.
@@ -91,7 +91,6 @@ Verify options:
 export interface JWTVerifyOptions {
   audience?: string                            // DID of the recipient of the JWT
   callbackUrl?: string                         // callback url in JWT
-  resolver?: Resolvable                        // DID resolver as mentiond above
   skewTime?: number                            // Allow to skey time in the expiration check with this amount
   proofPurpose?: ProofPurposeTypes             // Restrict to this proof purpose type in the DID resolution
 }
@@ -129,3 +128,234 @@ verifyDidJWT(jwt, resolver, {audience: '6B2bRWU3F7j3REx3vkJ..', callbackUrl: 'ht
        ...
    });
 ```
+
+
+## Client Auth Service
+
+### createAuthRequest
+Create a signed URL encoded URI with a signed DidAuth request token
+
+#### Data Interface
+```typescript
+export interface DidAuthRequestCall {
+    redirectUri: string;                // The redirect URI
+    hexPrivateKey: string;              // The private key used to sign
+    kid: string;                        // The DID Key id
+    issuer: string;                     // The issuer DID
+    responseMode?: string;              // How the response should be handled (fragment, form_post, query)
+    claims?: RequestClaims;             // The UserInfo and ID Token
+}
+
+export interface RequestClaims {
+    userinfo?: UserInfo;                // Standard OpenID Connect UserInfo.
+    id_token?: IdToken;                 // Standard OpenID Connect ID Token
+}
+
+createAuthRequest(didAuthRequestCall: DidAuthRequestCall): Promise<{
+    uri: string;
+}>;
+```
+
+#### Usage
+```typescript
+createAuthRequest({
+    redirectUri: 'https://example.com/',
+    hexPrivateKey: 'a3...',
+    kid: 'did:eosio:example#key-0',
+    issuer: 'did:esoio:example',
+    responseMode: 'query'
+})
+    .then(uri => console.log(uri));
+
+// Output: openid://?response_type=id_token&client_id=https%3A%2F%2Fexample.com%2F&scope=openid%20did_authn&request=<JWT>
+
+```
+
+
+### verifyAuthRequest
+Verifies a DidAuth ID Request Token
+
+#### Data Interface
+```typescript
+export interface DidAuthRequest extends JWTPayload {
+    iss: string;                            // literal "https://self-issued.me"
+    scope: Scope;                           // literal "openid did_authn"
+    response_type: ResponseType;            // literal "id_token"
+    client_id: string;                      // The OpenID client id
+    nonce: string;                          // The nonce, a random generated string (v4 uuid)
+    did_doc?: DIDDocument;                  // optional: The (resolved) DID Document conforming to the DID spec
+    claims?: RequestClaims;                 // optional: The UserInfo and ID Token
+}
+
+export interface RequestClaims {
+    userinfo?: UserInfo;                    // optional: Standard OpenID Connect UserInfo.
+    id_token?: IdToken;                     // optional: Standard OpenID Connect ID Token
+}
+
+export interface DIDDocument {              // Standard DID Document, see DID spec for explanation
+    '@context'?: 'https://www.w3.org/ns/did/v1' | string | string[]
+    id: string
+    alsoKnownAs?: string[]
+    controller?: string | string[]
+    verificationMethod?: VerificationMethod[]
+    authentication?: (string | VerificationMethod)[]
+    assertionMethod?: (string | VerificationMethod)[]
+    keyAgreement?: (string | VerificationMethod)[]
+    capabilityInvocation?: (string | VerificationMethod)[]
+    capabilityDelegation?: (string | VerificationMethod)[]
+    service?: ServiceEndpoint[]
+}
+
+verifyAuthRequest(didAuthJwt: string): Promise<DidAuthRequest>;
+```
+#### Usage
+
+````typescript
+const jwt = await createAuthRequest({
+    redirectUri: 'https://example.com/',
+    hexPrivateKey: 'a3...',
+    kid: 'did:eosio:example#key-0',
+    issuer: 'did:esoio:example',
+    responseMode: 'query'
+});
+
+verifyAuthRequest(jwt).then(req => {
+    console.log(`nonce: ${req.nonce}`)
+    // output: nonce: 5c1d29c1-cf7d-4e14-9305-9db46d8c1916
+})
+
+````
+
+
+### createAuthResponse
+Creates a DidAuth Response Object
+
+#### Usage
+````typescript
+export interface DidAuthResponseCall {
+    hexPrivateKey: string;                  // The private key in hex
+    did: string;                            // The DID
+    redirectUri: string;                    // The redirect URI
+    nonce?: string;                         // The nonce (random v4 UUID)
+    responseMode?: DidAuthResponseMode;     // Response mode
+    claims?: ResponseClaims;
+}
+
+createAuthResponse(didAuthResponse: DidAuthResponseCall): Promise<UriResponse>;
+````
+
+
+## Relying Party Auth Service
+
+### verifyAuthResponse
+Verifies a DidAuth ID Response Token and the audience. Return a DID Auth Validation Response, which contains the JWT payload as well as the verification method that signed the JWT.
+
+#### Data interface
+````typescript
+
+export interface DidAuthValidationResponse {
+    signatureValidation: boolean;               // Whether the signature needs to be validated (defaults tot true)
+    signer: VerificationMethod;                 // DID VerificationMethod  (described already before)
+    payload: JWTPayload;                        // The JWT Payload (described already before)
+}
+
+
+verifyAuthResponse(idToken: string, audience: string): Promise<DidAuthValidationResponse>;
+````
+
+#### Usage
+````typescript
+verifyAuthResponse('ey....', 'my-audience').then(resp => {
+    console.log(JSON.stringify(resp.signer));
+    // output: 
+    //{
+    //    id: 'did:eosio:example#key-0',
+    //    type: 'authentication',
+    //    controller: 'did:eosio:example',
+    //    publicKeyHex: '1a3b....'
+    //}
+    
+    console.log(resp.payload.nonce);
+    // output: 5c1d29c1-cf7d-4e14-9305-9db46d8c1916
+});
+````
+
+## Relying Party Session
+
+### createAccessToken
+Creates an access token as a JWS placed in an Authenticated Key Exchange response. Uses the response from the above verifyAuthResponse call as input.
+
+#### Data Interface
+````typescript
+export interface DidAuthValidationResponse {
+    signatureValidation: boolean;               // Whether the signature needs to be validated (defaults tot true)
+    signer: VerificationMethod;                 // DID VerificationMethod  (described already before)
+    payload: JWTPayload;                        // The JWT Payload (described already before)
+}
+
+export interface AkeResponse {
+    version: 1;                                 // Version 1 of the Authenticated Key Exchange Response
+    signed_payload: AkeSigned;                  // The signed (encrypted) payload
+    jws: string;                                // The JWS
+    did?: string;                               // The DID associated with the response
+}
+
+export interface AkeSigned {
+    //JWT Header: typ:JWT
+
+    version: 1;                                 // Version 1 of the Authenticated Key Exchange Response
+
+    // Encrypted access token
+    encrypted_access_token: string;             // The encrypted access token
+
+    // ID Token nonce
+    nonce: string;                              // The nonce (random v4 uuid)
+    kid?: string;                               // The DID key id
+    iat: number;                                // Issued at (time)
+    iss: string;                                // Identity of the issuer (DID)
+}
+
+createAccessToken(validation: DidAuthValidationResponse, opts?: { [key: string]: string | number; }): Promise<AkeResponse>;
+````
+
+#### Usage
+````typescript
+const didAuthValResponse = await verifyAuthResponse('ey....', 'my-audience');
+
+createAccessToken(didAuthValResponse).then(akeResp => {
+    console.log(`did: ${akeResp.did}`);
+    // output: did: did:eosio:example
+    console.log(akeResp.signed_payload.nonce);
+    // output: 5c1d29c1-cf7d-4e14-9305-9db46d8c1916
+})
+````
+
+### verifyAccessToken
+Verifies the bearer access token on the RP side as received from the OP/client. Throws an error if the token is invalid, otherwise returns the JWT
+
+#### Data Interface
+````typescript
+export interface JWTPayload { // A default JWT Payload
+    iss?: string
+    sub?: string
+    aud?: string | string[]
+    iat?: number
+    nbf?: number
+    exp?: number
+    rexp?: number
+    [x: string]: any
+}
+verifyAccessToken(accessToken: string, opts?: { [key: string]: string | number; }): Promise<JWTPayload>;
+````
+
+#### Usage
+````typescript
+verifyAccessToken('ey......').then(jwt => {
+    console.log(`iss: ${jwt.iss}`);
+    // output: iss: did:eosio:example
+})
+````
+## Flow diagram of the interactions
+![flow diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/Sphereon-Opensource/did-auth-siop/master/docs/auth-flow-diagram.txt)
+
+

@@ -35,7 +35,7 @@ export default class ClientAuthService {
         return {uri: responseUri};
     }
 
-    async createDidAuthRequest(didAuthRequest) {
+    private async createDidAuthRequest(didAuthRequest) {
         if (!didAuthRequest || !didAuthRequest.redirectUri) {
             throw new Error("BAD_PARAMS");
         }

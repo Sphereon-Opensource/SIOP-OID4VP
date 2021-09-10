@@ -19,26 +19,27 @@ export declare class ClientAuthService {
 
 
     /**
+     * Create a signed URL encoded URI with a signed DidAuth request token
      *
-     * @param didAuthRequestCall
+     * @param didAuthRequestCall  Request input data to build a signed DidAuth Request Token
      */
     createAuthRequest(didAuthRequestCall: DidAuthRequestCall): Promise<{
         uri: string;
     }>;
 
-    /**
+   /* /!**
      * Creates a DidAuth Request Object
      * @param didAuthRequestCall Request input data to build a signed DidAuth Request Token
-     */
+     *!/
     createDidAuthRequest(didAuthRequestCall: DidAuthRequestCall): Promise<{
         jwt: string;
         nonce: string;
-    }>;
+    }>;*/
 
     /**
      * Verifies a DidAuth ID Request Token
+     *
      * @param didAuthJwt signed DidAuth Request Token
-     * @param didRegistry url of the did-api, or object resolver for DIDs
      */
     verifyAuthRequest(didAuthJwt: string): Promise<DidAuthRequest>;
 
