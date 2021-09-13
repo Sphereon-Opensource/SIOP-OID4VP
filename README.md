@@ -21,7 +21,97 @@ The DID Auth SIOP library consists of a group of services and classes to:
 - RP Auth Service to verify an Authenticaiton response on the RP side
 - RP Session, to create and verify bearer access tokens
 
+## Steps involved
 
+Flow diagram:
+
+![flow diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/Sphereon-Opensource/did-auth-siop/master/docs/auth-flow-diagram.txt)
+
+
+1. Client initiates an Auth request by POST-ing to /did-siop/v1/authentications
+2. RP receives the request and creates the authentication request as JWT, signs it and returns the response as an OpenID Connect URI 
+   1. JWT example:
+    ```json
+    // JWT Header
+    {
+      "alg": "ES256K",
+      "typ": "JWT",
+      "jwk": "{Auth JWK here}",
+    }
+     
+    // JWT Payload
+    {
+      "scope": "openid did_authn",
+      "iss": "did:eosio:example-rp",
+      "response_type": "id_token",
+      "client_id": "<redirect-uri>",
+      "nonce": "<random-nonce>",
+      "registration": {
+          "redirect_uris": ["https://acme.com/example-redirect"],
+          "response_types": "id_token",
+          "id_token_signed_response_alg": ["RS256", "ES256", "ES256K", "EdDSA"],
+          "request_object_signing_alg": ["RS256", "ES256", "ES256K", "EdDSA"],
+          "access_token_signing_alg": ["RS256", "ES256", "ES256K", "EdDSA"],
+          "access_token_encryption_alg_values_supported": ["ECDH-ES"],
+          "access_token_encryption_enc_values_supported": ["A128GCM", "A256GCM"],
+          "jwks_uri": "https://uniresolver.test.sphereon.com/did/1.0/identifiers/did:eosio:example-rp"
+      },
+      "claims": {
+        /* TODO */
+      
+      }
+    }
+    ```
+   
+   2. JWS scheme (JWS Compact Serialization, https://datatracker.ietf.org/doc/html/rfc7515#section-7.1): 
+   
+   `BASE64URL(UTF8(JWS Protected Header)) || '.' ||
+   BASE64URL(JWS Payload) || '.' ||
+   BASE64URL(JWS Signature)`
+
+   3. URI: 
+   ```
+   openid://?response_type=id_token
+      &client_id=https%3A%2F%2Fapp.acme.com%2Fexample
+      &scope=openid%20did_authn
+      &request=<auth-request-JWS>
+   ```
+3. Client receives the Auth Request URI in the response body
+4. Client verifies it and
+5. Client creates the authentication response as follows:
+   1. Create an ID token as shown below:
+
+    ````json
+    // JWT encoded ID Token
+    // JWT Header
+    {
+      "alg": "ES256K",
+      "typ": "JWT",
+      "kid": "did:eosio:example-client#auth-key-1",
+    }
+    // JWT Payload
+    {
+      "iss": "did:eosio:example-client",
+      "sub": "{thumbprint of the sub_jwk}",
+      "aud": "did:eosio:example-rp",
+      "iat": 1620252000,
+      "exp": 1620252600,
+      "nonce": "<random-nonce>"
+     }
+    }
+    ````
+
+    2. Sign the ID token using the DID key (kid) using JWS scheme (JWS Compact Serialization, https://datatracker.ietf.org/doc/html/rfc7515#section-7.1) and send it to the RP:
+
+   `BASE64URL(UTF8(JWS Protected Header)) || '.' ||
+   BASE64URL(JWS Payload) || '.' ||
+   BASE64URL(JWS Signature)`
+
+6. Client posts to /did-siop/v1/sessions
+7. RP receives the ID token (auth response), verifies it (signature & client DID) and
+8. Issues an access token. Create an Authenticated Key Exchange response and return that to the client
+9. Client receives the access token and
+10. verifies the Authenticated Key Exchange response and the access token in it
 ## DID resolution
 
 ### Description
@@ -365,10 +455,5 @@ DID JWTs:
 Services and objects:
 
 ![img.png](img.png)
-
-
-Flow diagram:
-
-![flow diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/Sphereon-Opensource/did-auth-siop/master/docs/auth-flow-diagram.txt)
 
 
