@@ -18,7 +18,7 @@ const defaultExpiration = {
 };
 
 export class RPSession {
-    private readonly resolver: Resolvable;
+    private resolver: Resolvable;
 
     private readonly kid: string;
     private readonly did: string;
@@ -30,18 +30,18 @@ export class RPSession {
     private readonly privateKey: WeakMap<String, string>;
 
     constructor(opts?: {
+        resolver: Resolvable;
         privateKey?: string;
         kid?: string;
         did?: string;
         audience?: string;
-        resolver?: Resolvable;
         expiration?: {
             requestToken: number;
             accessToken: number;
         };
     }) {
 
-        this.resolver = opts.resolver;
+        this.setResolver(opts.resolver);
         this.expiration = opts.expiration !== null ? opts.expiration : defaultExpiration;
 
         this.audience = opts.audience;
@@ -49,6 +49,15 @@ export class RPSession {
         this.did = opts.did;
         this.privateKey.set(this.did, opts.privateKey);
     }
+
+    /**
+     * Sets the resolver to use for Relying Party Auth
+     * @param resolver
+     */
+    setResolver(resolver: Resolvable) {
+        this.resolver = resolver;
+    }
+
 
     /**
      * Verifies the bearer access token on the RP side as received from the OP/client

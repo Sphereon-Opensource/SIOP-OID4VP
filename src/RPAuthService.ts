@@ -7,8 +7,8 @@ import {DidAuthValidationResponse} from "./types/DidAuth-types";
 export class RPAuthService {
     private resolver: Resolvable;
 
-    constructor(opts: {
-        resolver?: Resolvable;
+    constructor(opts?: {
+        resolver: Resolvable;
     }) {
         this.setResolver(opts.resolver);
     }

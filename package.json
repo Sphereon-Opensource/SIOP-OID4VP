@@ -1,16 +1,58 @@
 {
   "name": "@gimly/did-auth-siop",
   "version": "0.0.1",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "license": "Apache-2.0",
+
+  "scripts": {
+    "build": "run-p build:*",
+    "build:main": "tsc -p tsconfig.json",
+    "fix": "run-s fix:*",
+    "fix:prettier": "prettier \"{src, test}/**/*.ts\" --write",
+    "fix:lint": "eslint . --ext .ts --fix",
+    "test": "run-s build test:*",
+    "test:lint": "eslint . --ext .ts",
+    "test:prettier": "prettier \"{src, test}/**/*.ts\" --list-different",
+    "test:unit": "jest",
+    "test:cov": "jest --ci --coverage && codecov"
+  },
+  "engines": {
+    "node": ">=10"
+  },
   "dependencies": {
     "did-jwt": "^5.7.0",
     "did-resolver": "^3.1.0",
     "jose": "^3.16.1",
     "querystring": "^0.2.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "js-base64": "^3.7.1",
+    "bs58": "^4.0.1",
+    "eth-crypto": "^2.0.0"
   },
   "devDependencies": {
-    "typescript": "^4.4.2"
+    "@types/jest": "^27.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.31.1",
+    "@typescript-eslint/parser": "^4.31.1",
+    "codecov": "^3.8.3",
+    "cspell": "^5.9.1",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import": "^2.24.2",
+    "jest": "^27.2.0",
+    "npm-run-all": "^4.1.5",
+    "open-cli": "^7.0.1",
+    "prettier": "^2.4.0",
+    "ts-jest": "^27.0.5",
+    "ts-node": "^10.2.1",
+    "typescript": "^4.4.3"
+  },
+  "files" : [
+    "dist/main"
+  ],
+  "prettier": {
+    "singleQuote": true,
+    "printWidth": 120
   }
 }

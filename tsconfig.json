@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "incremental": true,
-    "target": "ES2017",
-    "outDir": "dist",
+    "target": "ES6",
+    "outDir": "dist/main",
     "moduleResolution": "node",
     "module": "commonjs",
     "declaration": true,
@@ -38,8 +38,7 @@
   "include": [
     "index.ts",
     "src/**/*",
-    "test/**/*.ts",
-    "typings/**/*"
+    "test/**/*.ts"
   ],
   "exclude": [
     "node_modules/**"

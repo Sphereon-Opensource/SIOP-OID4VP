@@ -12,7 +12,9 @@ export default class AuthRequestService {
     private resolver: Resolvable;
 
 
-    constructor(opts) {
+    constructor(opts?: {
+        resolver: Resolvable;
+    }) {
         this.setResolver(opts.resolver);
     }
 

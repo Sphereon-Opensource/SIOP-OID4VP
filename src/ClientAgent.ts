@@ -6,7 +6,7 @@ import {Resolvable} from "did-resolver";
 export default class ClientAgent {
     private readonly privateKeys: WeakMap<String, string>;
     private readonly did: string;
-    private readonly resolver: Resolvable;
+    private resolver: Resolvable;
     private readonly audience: string;
 
     /**
@@ -16,12 +16,26 @@ export default class ClientAgent {
      * @param   {Resolvable}    resolver      The DID resolver to use
      * @param   {}              options       Optional options
      */
-    constructor(privateKey : string, resolver: Resolvable, opts?) {
+    constructor(opts?: {
+        resolver: Resolvable;
+        privateKey: string;
+        did: string;
+        audience?: string;
+    }) {
         this.did = opts?.did;
         this.audience = opts?.audience;
-        this.resolver = resolver;
-        this.privateKeys.set(this.did, privateKey);
+        this.setResolver(opts.resolver);
+        this.privateKeys.set(this.did, opts.privateKey);
     }
+
+    /**
+     * Sets the resolver to use for Relying Party Auth
+     * @param resolver
+     */
+    setResolver(resolver: Resolvable) {
+        this.resolver = resolver;
+    }
+
 
     /**
      * Verifies the Authenticated Key Exchange Response which contains the Access Token, Returns the decrypted access token
