@@ -1,5 +1,5 @@
 import {verifyJWT, createJWT, JWTPayload, JWTOptions, JWTHeader, JWTVerifyOptions} from "did-jwt/lib/JWT";
-import {VerifiedJWT} from "../JWT";
+import {VerifiedJWT} from "../types/JWT-types";
 import {Resolvable} from "did-resolver";
 
 

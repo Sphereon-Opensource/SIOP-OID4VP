@@ -1,33 +1,44 @@
-import DidAuth, {KeyAlgo, KeyCurve, KeyType, ResponseIss, ResponseType, Scope} from "./did/DidAuth";
 import {Resolvable} from "did-resolver";
 import querystring from "querystring";
 import uuid from "uuid";
-import {createDidJWT, verifyDidJWT} from "./did/DidJWT";
+import {didJwt} from "./did";
 import {decodeJWT, ES256KSigner} from "did-jwt";
 import {getECKeyfromHexPrivateKey} from "./util/KeyUtils"
 import calculateThumbprint from "jose/jwk/thumbprint";
+import {didAuth, jwt} from "./types";
 
-export default class ClientAuthService {
+
+export default class AuthRequestService {
     private resolver: Resolvable;
+
 
     constructor(opts) {
         this.setResolver(opts.resolver);
     }
 
-    setResolver(resolver) {
+    /**
+     * Sets the resolver to use for SIOP Auth
+     * @param resolver
+     */
+    setResolver(resolver: Resolvable) {
         this.resolver = resolver;
     }
 
-    async createAuthRequest(didAuthRequest) {
+    /**
+     * Create a signed URL encoded URI with a signed DidAuth request token
+     *
+     * @param didAuthRequestCall  Request input data to build a signed DidAuth Request Token
+     */
+    async createAuthRequest(didAuthRequest: didAuth.DidAuthRequestCall): Promise<{ uri: string }> {
         if (!didAuthRequest ||
             !didAuthRequest.redirectUri ||
             !didAuthRequest.hexPrivateKey)
             throw new Error("BAD_PARAMS");
         const {jwt, nonce} = await this.createDidAuthRequest(didAuthRequest);
         const responseUri = `openid://?${querystring.encode({
-            response_type: ResponseType.ID_TOKEN,
+            response_type: didAuth.ResponseType.ID_TOKEN,
             client_id: didAuthRequest.redirectUri,
-            scope: Scope.OPENID_DIDAUTHN,
+            scope: didAuth.Scope.OPENID_DIDAUTHN,
             nonce,
             request: jwt,
         })}`;
@@ -35,28 +46,33 @@ export default class ClientAuthService {
         return {uri: responseUri};
     }
 
-    private async createDidAuthRequest(didAuthRequest) {
+    private async createDidAuthRequest(didAuthRequest: didAuth.DidAuthRequestCall): Promise<{ jwt: string; nonce: string; }> {
         if (!didAuthRequest || !didAuthRequest.redirectUri) {
             throw new Error("BAD_PARAMS");
         }
 
-        const payload = ClientAuthService.createDidAuthRequestPayload(didAuthRequest, uuid.v4());
-        return ClientAuthService.signDidAuthImpl(didAuthRequest.kid, payload, didAuthRequest.hexPrivateKey).then(jwt => {
+        const payload = AuthRequestService.createDidAuthRequestPayload(didAuthRequest, uuid.v4());
+        return AuthRequestService.signDidAuthImpl(didAuthRequest.kid, payload, didAuthRequest.hexPrivateKey).then(jwt => {
             return {jwt, nonce: payload.nonce}
         });
     }
 
 
-    async verifyAuthRequest(didAuthJwt) {
+    /**
+     * Verifies a DidAuth ID Request Token
+     *
+     * @param didAuthJwt signed DidAuth Request Token
+     */
+    async verifyAuthRequest(didAuthJwt: string): Promise<jwt.VerifiedJWT> {
         // as audience is set in payload as a DID, it is required to be set as options
         const options = {
-            audience: ClientAuthService.getAudience(didAuthJwt),
+            audience: AuthRequestService.getAudience(didAuthJwt),
         };
-        const verifiedJWT = await verifyDidJWT(didAuthJwt, this.resolver, options);
+        const verifiedJWT = await didJwt.verifyDidJWT(didAuthJwt, this.resolver, options);
         if (!verifiedJWT || !verifiedJWT.payload) {
             throw Error("ERROR_VERIFYING_SIGNATURE");
         }
-        return verifiedJWT.payload;
+        return verifiedJWT;
     }
 
 
@@ -65,7 +81,7 @@ export default class ClientAuthService {
      *
      * @param didAuthResponse
      */
-    async createAuthenticationResponse(didAuthResponseCall) {
+    async createAuthResponse(didAuthResponseCall: didAuth.DidAuthResponseCall): Promise<didAuth.UriResponse> {
         if (!didAuthResponseCall ||
             !didAuthResponseCall.hexPrivateKey ||
             !didAuthResponseCall.did ||
@@ -73,41 +89,37 @@ export default class ClientAuthService {
             throw new Error("BAD_PARAMS");
         }
 
-        const payload = await ClientAuthService.createAuthenticationResponsePayload(didAuthResponseCall);
+        const payload = await AuthRequestService.createAuthenticationResponsePayload(didAuthResponseCall);
         // signs payload using internal libraries
-        const jwt = await ClientAuthService.signDidAuthImpl(didAuthResponseCall.did, payload, didAuthResponseCall.hexPrivateKey);
+        const jwt = await AuthRequestService.signDidAuthImpl(didAuthResponseCall.did, payload, didAuthResponseCall.hexPrivateKey);
         const params = `id_token=${jwt}`;
         const uriResponse = {
             urlEncoded: "",
             bodyEncoded: "",
-            encoding: DidAuth.UrlEncodingFormat.FORM_URL_ENCODED,
+            encoding: didAuth.UrlEncodingFormat.FORM_URL_ENCODED,
             responseMode: didAuthResponseCall.responseMode
                 ? didAuthResponseCall.responseMode
-                : DidAuth.DidAuthResponseMode.FRAGMENT, // FRAGMENT is the default
+                : didAuth.DidAuthResponseMode.FRAGMENT, // FRAGMENT is the default
         };
 
-        if (didAuthResponseCall.responseMode === DidAuth.DidAuthResponseMode.FORM_POST) {
+        if (didAuthResponseCall.responseMode === didAuth.DidAuthResponseMode.FORM_POST) {
             uriResponse.urlEncoded = encodeURI(didAuthResponseCall.redirectUri);
             uriResponse.bodyEncoded = encodeURI(params);
-        } else if (didAuthResponseCall.responseMode === DidAuth.DidAuthResponseMode.QUERY) {
+        } else if (didAuthResponseCall.responseMode === didAuth.DidAuthResponseMode.QUERY) {
             uriResponse.urlEncoded = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
         } else {
-            uriResponse.responseMode = DidAuth.DidAuthResponseMode.FRAGMENT;
+            uriResponse.responseMode = didAuth.DidAuthResponseMode.FRAGMENT;
             uriResponse.urlEncoded = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
         }
         return uriResponse;
     }
 
 
-
-
-
-
     private static createDidAuthRequestPayload(input, nonce) {
         const requestPayload = {
             iss: input.issuer,
-            scope: Scope.OPENID_DIDAUTHN,
-            response_type: ResponseType.ID_TOKEN,
+            scope: didAuth.Scope.OPENID_DIDAUTHN,
+            response_type: didAuth.ResponseType.ID_TOKEN,
             client_id: input.redirectUri,
             nonce: nonce,
             claims: input.claims,
@@ -118,13 +130,13 @@ export default class ClientAuthService {
     private static async signDidAuthImpl(id, payload, hexPrivateKey) {
         const request = !!payload.client_id;
         const header = {
-            alg: KeyAlgo.ES256K,
+            alg: didAuth.KeyAlgo.ES256K,
             kid: request ? id : `${id}#key-1`, // TODO check user kid
         };
-        const response = await createDidJWT({...payload}, {
-            issuer: request ? payload.iss : ResponseIss.SELF_ISSUE,
+        const response = await didJwt.createDidJWT({...payload}, {
+            issuer: request ? payload.iss : didAuth.ResponseIss.SELF_ISSUE,
             signer: ES256KSigner(hexPrivateKey.replace("0x", "")),
-            expiresIn: DidAuth.expirationTime,
+            expiresIn: didAuth.expirationTime,
         }, header);
         return response;
     }
@@ -141,10 +153,9 @@ export default class ClientAuthService {
     }
 
 
-
     private static async createAuthenticationResponsePayload(input) {
         const responsePayload = {
-            iss: ResponseIss.SELF_ISSUE,
+            iss: didAuth.ResponseIss.SELF_ISSUE,
             sub: await this.getThumbprint(input.hexPrivateKey),
             aud: input.redirectUri,
             nonce: input.nonce,
@@ -155,7 +166,7 @@ export default class ClientAuthService {
     }
 
     private static async getThumbprint(hexPrivateKey) {
-        const jwk = ClientAuthService.getJWK(hexPrivateKey);
+        const jwk = AuthRequestService.getJWK(hexPrivateKey);
         const thumbprint = await calculateThumbprint(jwk, "sha256");
         return thumbprint;
     }
@@ -164,10 +175,11 @@ export default class ClientAuthService {
         const {x, y} = getECKeyfromHexPrivateKey(hexPrivateKey);
         return {
             kid,
-            kty: KeyType.EC,
-            crv: KeyCurve.SECP256k1,
+            kty: didAuth.KeyType.EC,
+            crv: didAuth.KeyCurve.SECP256k1,
             x,
             y,
         };
     }
 }
+

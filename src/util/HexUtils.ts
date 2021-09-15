@@ -1,9 +1,9 @@
-export function bytesToHexString(bytes) {
+export function bytesToHexString(bytes: Uint8Array): string {
     return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, "0"), "");
 }
 
 
-export function bytesFromHexString(hexString) {
+export function bytesFromHexString(hexString: string): Uint8Array {
     const match = hexString.match(/.{1,2}/g);
     if (!match) {
         throw new Error("String does not seem to be in HEX");
@@ -11,7 +11,7 @@ export function bytesFromHexString(hexString) {
     return new Uint8Array(match.map((byte) => parseInt(byte, 16)));
 }
 
-export function isHexString(value, length) {
+export function isHexString(value: string, length?: number): boolean {
     if (typeof value !== "string" || !value.match(/^0x[0-9A-Fa-f]*$/g)) {
         return false;
     } else if (length && value.length !== 2 + 2 * length) {

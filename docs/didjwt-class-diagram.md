@@ -5,13 +5,14 @@ class DidResolutionOptions {
     accept?: string
 }
 class Resolvable {
-    <<interface>>
+    <<service>>
     resolve(didUrl: string, options: DidResolutionOptions) Promise(DidResolutionResult)
 }
-DidResolutionOptions <-- Resolvable
+DidResolutionOptions --> Resolvable
 DIDResolutionResult <-- Resolvable
 
 class  DIDResolutionResult {
+  <<interface>>
   didResolutionMetadata: DIDResolutionMetadata
   didDocument: DIDDocument | null
   didDocumentMetadata: DIDDocumentMetadata
@@ -20,6 +21,7 @@ DIDDocumentMetadata <-- DIDResolutionResult
 DIDDocument <-- DIDResolutionResult
 
 class DIDDocumentMetadata {
+  <<interface>>
   created?: string
   updated?: string
   deactivated?: boolean
@@ -69,24 +71,15 @@ class JWTPayload {
     rexp?: number
 }
 class JWTHeader { // This is a standard JWT header
+    <<interface>>
     typ: 'JWT'
     alg: string   // The JWT signing algorithm to use. Supports: [ES256K, ES256K-R, Ed25519, EdDSA], Defaults to: ES256K
     [x: string]: any
 }
 
-class VerificationMethod {
-  id: string
-  type: string
-  controller: string
-  publicKeyBase58?: string
-  publicKeyJwk?: JsonWebKey
-  publicKeyHex?: string
-  blockchainAccountId?: string
-  ethereumAddress?: string
-}
-
 JsonWebKey <|-- VerificationMethod
 class JsonWebKey {
+  <<interface>>
   alg?: string
   crv?: string
   e?: string
@@ -106,10 +99,9 @@ class DidJWT {
     createDidJWT(payload: JWTPayload, options: JWTOptions, header: JWTJHeader) Promise(string)
     verifyDidJWT(jwt: string, resolver: Resolvable) Promise(boolean)
 }
-JWTPayload <-- DidJWT
-JWTOptions <-- DidJWT
-JWTHeader <-- DidJWT
+JWTPayload --> DidJWT
+JWTOptions --> DidJWT
+JWTHeader --> DidJWT
 Resolvable <-- DidJWT
-
 
 ```

@@ -46,7 +46,7 @@ Flow diagram:
       "response_type": "id_token",
       "client_id": "<redirect-uri>",
       "nonce": "<random-nonce>",
-      "registration": {
+      "registration": { /* chapter 9 siop spec */
           "redirect_uris": ["https://acme.com/example-redirect"],
           "response_types": "id_token",
           "id_token_signed_response_alg": ["RS256", "ES256", "ES256K", "EdDSA"],
@@ -220,7 +220,7 @@ verifyDidJWT(jwt, resolver, {audience: '6B2bRWU3F7j3REx3vkJ..', callbackUrl: 'ht
 ```
 
 
-## Client Auth Service
+## Auth Request Service
 
 ### createAuthRequest
 Create a signed URL encoded URI with a signed DidAuth request token

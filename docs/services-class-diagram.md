@@ -27,15 +27,15 @@ RPSession <-- DidAuthValidationResponse
 RPSession --> AkeResponse
 RPSession --> JWTPayload
 
-class ClientAuthService {
+class AuthRequestService {
     <<service>>
     createAuthRequest(didAuthRequestCall: DidAuthRequestCall) Promise(uri: string)
     verifyAuthRequest(didAuthJwt: string): Promise(DidAuthRequest)
     createAuthResponse(didAuthResponse: DidAuthResponseCall): Promise(UriResponse);
 }
-ClientAuthService <-- DidAuthRequestCall
-ClientAuthService <-- DidAuthResponseCall
-ClientAuthService --> UriResponse
+AuthRequestService <-- DidAuthRequestCall
+AuthRequestService <-- DidAuthResponseCall
+AuthRequestService --> UriResponse
 
 class DidAuthResponseCall {
     <<interface>>

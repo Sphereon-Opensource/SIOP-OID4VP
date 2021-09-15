@@ -8,6 +8,9 @@ import {secp256k1} from "elliptic";
 import {ES256KSigner} from "did-jwt";
 import {bytesToHexString} from "./util/HexUtils";
 import {encrypt} from "./util/KeyUtils";
+import {JWTPayload} from "./types/JWT-types";
+import {DidAuthValidationResponse} from "./types/DidAuth-types";
+import {AkeResponse} from "./types/AuthKeyExchange-types";
 
 const defaultExpiration = {
     requestToken: 20,
@@ -26,7 +29,17 @@ export class RPSession {
     };
     private readonly privateKey: WeakMap<String, string>;
 
-    constructor(opts) {
+    constructor(opts?: {
+        privateKey?: string;
+        kid?: string;
+        did?: string;
+        audience?: string;
+        resolver?: Resolvable;
+        expiration?: {
+            requestToken: number;
+            accessToken: number;
+        };
+    }) {
 
         this.resolver = opts.resolver;
         this.expiration = opts.expiration !== null ? opts.expiration : defaultExpiration;
@@ -37,7 +50,12 @@ export class RPSession {
         this.privateKey.set(this.did, opts.privateKey);
     }
 
-    async verifyAccessToken(token) {
+    /**
+     * Verifies the bearer access token on the RP side as received from the OP/client
+     *
+     * @param accessToken
+     */
+    async verifyAccessToken(token: string): Promise<JWTPayload> {
         const verifiedJWT = await verifyDidJWT(token, this.resolver,
             {audience: this.audience,});
 
@@ -49,7 +67,13 @@ export class RPSession {
     }
 
 
-    async createAccessToken(validation, opts) {
+    /**
+     * Creates an access token as a JWS placed in an AKE response
+     *
+     * @param validation
+     * @param opts
+     */
+    async createAccessToken(validation: DidAuthValidationResponse, opts?: { [key: string]: string | number; }): Promise<AkeResponse> {
         const {payload} = validation;
         const headerOpts = {
             alg: "ES256K",
@@ -107,6 +131,7 @@ export class RPSession {
         const signedPayload = JSON.parse(js_base64.Base64.decode(signedPayloadBase64url));
         const jwsDetached = akeSignedJwt.replace(signedPayloadBase64url, "");
         return {
+            version: 1,
             encrypted_access_token: encryptedAccessToken,
             signed_payload: signedPayload,
             jws: jwsDetached,

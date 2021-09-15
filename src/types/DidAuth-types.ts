@@ -1,6 +1,6 @@
 
 import { DIDDocument, VerificationMethod } from "did-resolver";
-import {JWKECKey, JWTPayload} from "../JWT";
+import {JWKECKey, JWTPayload} from "./JWT-types";
 
 export declare const expirationTime: number;
 export interface DidAuthRequest extends JWTPayload {
@@ -92,5 +92,5 @@ export declare enum ResponseType {
     ID_TOKEN = "id_token"
 }
 export declare enum ResponseIss {
-    SELF_ISSUE = "https://self-issued.me"
+    SELF_ISSUE = "https://self-issued.me/v2"
 }
