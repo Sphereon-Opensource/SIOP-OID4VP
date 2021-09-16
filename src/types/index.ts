@@ -1,5 +1,6 @@
-import * as ake from "./AuthKeyExchange-types";
+import * as AKE from "./AuthKeyExchange-types";
+import * as DidAuth from "./DidAuth-types";
 import * as jwt from "./JWT-types";
-import * as didAuth from "./DidAuth-types";
+import * as SSI from "./SSI-types";
 
-export {ake, jwt, didAuth};
+export {AKE, jwt, DidAuth, SSI};

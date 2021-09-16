@@ -1,6 +1,25 @@
-import {verifyJWT, createJWT, JWTPayload, JWTOptions, JWTHeader, JWTVerifyOptions} from "did-jwt/lib/JWT";
-import {VerifiedJWT} from "../types/JWT-types";
+import {EdDSASigner, ES256KSigner} from "did-jwt";
+import {createJWT, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT} from "did-jwt/lib/JWT";
 import {Resolvable} from "did-resolver";
+
+import {DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA} from "../config";
+import {DidAuth} from "../types";
+import {
+    DidAuthRequest,
+    DidAuthResponse,
+    expirationTime, isRequestOpts,
+    KeyAlgo,
+    RequestOpts,
+    ResponseIss,
+    ResponseOpts, SignatureResponse
+} from "../types/DidAuth-types";
+import {VerifiedJWT} from "../types/JWT-types";
+import {KeyUtils} from "../util";
+import {base58ToBase64String} from "../util/Encodings";
+import {postWithBearerToken} from "../util/HttpUtils";
+import {isEd25519DidKeyMethod, isEd25519JWK, isExternalSignature, isInternalSignature} from "../util/KeyUtils";
+
+import {didJwt} from "./index";
 
 
 /**
@@ -39,7 +58,6 @@ export async function verifyDidJWT(
 }
 
 
-
 /**
  *  Creates a signed JWT given an address which becomes the issuer, a signer function, and a payload for which the signature is over.
  *
@@ -59,9 +77,57 @@ export async function verifyDidJWT(
  */
 export async function createDidJWT(
     payload: Partial<JWTPayload>,
-    { issuer, signer, expiresIn, canonicalize }: JWTOptions,
+    {issuer, signer, expiresIn, canonicalize}: JWTOptions,
     header: Partial<JWTHeader> = {}
 ): Promise<string> {
     return createJWT(payload, {issuer, signer, alg: header.alg, expiresIn, canonicalize}, header);
 }
+
+export async function signDidJwtPayload(payload: DidAuthRequest | DidAuthResponse, opts: RequestOpts | ResponseOpts) {
+    if (isInternalSignature(opts.signatureType)) {
+        return didJwt.signDidJwtInternal(payload, isRequestOpts(opts) ? opts.signatureType.did : ResponseIss.SELF_ISSUE, opts.signatureType.hexPrivateKey, opts.signatureType.kid);
+    } else if (isExternalSignature(opts.signatureType)) {
+        return didJwt.signDidJwtExternal(payload, opts.signatureType.signatureUri, opts.signatureType.authZToken, opts.signatureType.kid);
+    } else {
+        throw new Error("BAD_PARAMS");
+    }
+}
+
+export async function signDidJwtInternal(payload: DidAuthRequest | DidAuthResponse, issuer: string, hexPrivateKey: string, kid?: string) {
+    const algo = isEd25519DidKeyMethod(issuer) || isEd25519JWK(payload.sub_jwk) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
+    // const request = !!payload.client_id;
+    const signer = algo == KeyAlgo.EDDSA ?
+        EdDSASigner(base58ToBase64String(KeyUtils.getBase58PrivateKeyFromHexPrivateKey(hexPrivateKey))) :
+        ES256KSigner(hexPrivateKey.replace("0x", ""));
+
+    const header = {
+        alg: algo,
+        kid: kid || (issuer === ResponseIss.SELF_ISSUE ? `${payload.did}#keys-1` : issuer)
+    };
+    const options = {
+        issuer,
+        signer,
+        expiresIn: DidAuth.expirationTime,
+    };
+
+    return await createDidJWT({...payload}, options, header);
+}
+
+export async function signDidJwtExternal(payload: DidAuthRequest | DidAuthResponse, signatureUri: string, authZToken: string, kid?: string): Promise<string> {
+    const alg = isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) ? DidAuth.KeyAlgo.EDDSA : DidAuth.KeyAlgo.ES256K;
+
+    const body = {
+        issuer: payload.iss && payload.iss.includes("did:") ? payload.iss : payload.did,
+        payload,
+        type: alg === DidAuth.KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
+        expiresIn: expirationTime,
+        alg,
+        selfIssued: payload.iss.includes(DidAuth.ResponseIss.SELF_ISSUE) ? payload.iss : undefined,
+        kid,
+    };
+
+    const response = await postWithBearerToken(signatureUri, body, authZToken);
+    return (await response.json() as SignatureResponse).jws;
+}
+
 

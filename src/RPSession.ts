@@ -1,16 +1,17 @@
-import {createDidJWT, verifyDidJWT} from "./did/DidJWT";
+
+import base58 from "bs58";
+import {ES256KSigner} from "did-jwt";
 import {Resolvable} from "did-resolver";
+import {secp256k1} from "elliptic";
+import js_base64 from "js-base64";
 import uuid from "uuid";
 
-import js_base64 from "js-base64";
-import base58 from "bs58";
-import {secp256k1} from "elliptic";
-import {ES256KSigner} from "did-jwt";
-import {bytesToHexString} from "./util/HexUtils";
-import {encrypt} from "./util/KeyUtils";
-import {JWTPayload} from "./types/JWT-types";
-import {DidAuthValidationResponse} from "./types/DidAuth-types";
+import {createDidJWT, verifyDidJWT} from "./did/DidJWT";
 import {AkeResponse} from "./types/AuthKeyExchange-types";
+import {DidAuthValidationResponse} from "./types/DidAuth-types";
+import {JWTPayload} from "./types/JWT-types";
+import {bytesToHexString} from "./util/Encodings";
+import {encrypt} from "./util/KeyUtils";
 
 const defaultExpiration = {
     requestToken: 20,
@@ -27,7 +28,7 @@ export class RPSession {
         requestToken: number;
         accessToken: number;
     };
-    private readonly privateKey: WeakMap<String, string>;
+    private readonly privateKey: string;
 
     constructor(opts?: {
         resolver: Resolvable;
@@ -47,7 +48,7 @@ export class RPSession {
         this.audience = opts.audience;
         this.kid = opts.kid;
         this.did = opts.did;
-        this.privateKey.set(this.did, opts.privateKey);
+        this.privateKey = opts.privateKey;
     }
 
     /**
@@ -90,7 +91,7 @@ export class RPSession {
         };
         const jwtOpts = {
             issuer: this.did,
-            signer: ES256KSigner(this.privateKey.get(this.did)),
+            signer: ES256KSigner(this.privateKey),
             expiresIn: this.expiration.accessToken,
         };
         const accessToken = await createDidJWT({

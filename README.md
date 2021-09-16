@@ -327,7 +327,7 @@ export interface DidAuthResponseCall {
     did: string;                            // The DID
     redirectUri: string;                    // The redirect URI
     nonce?: string;                         // The nonce (random v4 UUID)
-    responseMode?: DidAuthResponseMode;     // Response mode
+    responseMode?: ResponseMode;     // Response mode
     claims?: ResponseClaims;
 }
 

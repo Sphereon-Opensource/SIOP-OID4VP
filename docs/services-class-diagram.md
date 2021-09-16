@@ -43,10 +43,10 @@ class DidAuthResponseCall {
     did: string;
     redirectUri: string;
     nonce?: string;
-    responseMode?: DidAuthResponseMode;
+    responseMode?: ResponseMode;
     claims?: ResponseClaims;
 }
-DidAuthResponseCall --> DidAuthResponseMode
+DidAuthResponseCall --> ResponseMode
 DidAuthResponseCall --> ResponseClaims
 
 class ResponseClaims {
@@ -55,16 +55,16 @@ class ResponseClaims {
     encryption_key?: JsonWebKey;
 }
 
-class DidAuthResponseMode {
+class ResponseMode {
     <<enum>>
 }
 
  class UriResponse {
     <<interface>>
-    responseMode?: DidAuthResponseMode;
+    responseMode?: ResponseMode;
     bodyEncoded?: string;
 }
-UriResponse --> DidAuthResponseMode
+UriResponse --> ResponseMode
 UriDidAuth <|-- UriResponse
 
 class UriDidAuth {

@@ -1,4 +1,5 @@
-import * as hexUtils from "./HexUtils";
-import * as keyUtils from "./KeyUtils";
+import * as Encodings from "./Encodings";
+import * as KeyUtils from "./KeyUtils";
+import * as StateUtils from "./StateUtils";
 
-export {hexUtils, keyUtils};
+export {Encodings, KeyUtils, StateUtils};

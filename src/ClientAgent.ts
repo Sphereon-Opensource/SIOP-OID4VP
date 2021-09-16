@@ -1,10 +1,12 @@
-import {keyUtils} from "./util";
-import {didJwt} from "./did";
 import {Resolvable} from "did-resolver";
+
+import {didJwt} from "./did";
+import {AkeResponse} from "./types/AuthKeyExchange-types";
+import {KeyUtils} from "./util";
 
 
 export default class ClientAgent {
-    private readonly privateKeys: WeakMap<String, string>;
+    private readonly privateKey: string;
     private readonly did: string;
     private resolver: Resolvable;
     private readonly audience: string;
@@ -12,9 +14,9 @@ export default class ClientAgent {
     /**
      * Creates the client application agent (the OP)
      *
-     * @param   {String}        privateKey    The private key associated with a DID
-     * @param   {Resolvable}    resolver      The DID resolver to use
-     * @param   {}              options       Optional options
+     * @param   {String}        opts.privateKey    The private key associated with a DID
+     * @param   {Resolvable}    opts.resolver      The DID resolver to use
+     * @param   {}              opts                Optional options
      */
     constructor(opts?: {
         resolver: Resolvable;
@@ -25,7 +27,7 @@ export default class ClientAgent {
         this.did = opts?.did;
         this.audience = opts?.audience;
         this.setResolver(opts.resolver);
-        this.privateKeys.set(this.did, opts.privateKey);
+        this.privateKey = opts.privateKey;
     }
 
     /**
@@ -43,9 +45,8 @@ export default class ClientAgent {
      * @param {AkeResponse}     response  The AKE response, containing the encrypted access token
      * @param {String}          nonce     The nonce used
      */
-    async verifyAuthResponse(response, nonce) {
-        const {AKeSigned: signed_payload} = response;
-        const decryptedPayload = JSON.parse(await keyUtils.decrypt(this.privateKeys.get(this.did), signed_payload));
+    async verifyAuthResponse(response: AkeResponse, nonce: string): Promise<string> {
+        const decryptedPayload = JSON.parse(await KeyUtils.decrypt(this.privateKey, response.signed_payload.encrypted_access_token));
 
         if (typeof decryptedPayload.did !== "string" ||
             typeof decryptedPayload.access_token !== "string") {

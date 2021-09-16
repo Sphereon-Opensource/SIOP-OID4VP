@@ -1,8 +1,9 @@
-import * as DidAuthTypes from "./types/DidAuth-types";
-import {hexUtils as DidAuthHexUtils, keyUtils as DidAuthKeyUtils} from "./util";
-import * as RPAuthService from "./RPAuthService";
 import * as AuthRequestService from "./AuthRequestService";
+import * as ClientAgent from './ClientAgent';
+import * as RPAuthService from "./RPAuthService";
 import * as RPSession from './RPSession';
+import * as DidAuthTypes from "./types/DidAuth-types";
+import {Encodings as DidAuthHexUtils, KeyUtils as DidAuthKeyUtils} from "./util";
 
 export {JWTHeader, JWTPayload, JWTOptions, JWTVerifyOptions} from "did-jwt/lib/JWT";
 export {
@@ -11,5 +12,6 @@ export {
     RPSession,
     DidAuthTypes,
     DidAuthHexUtils,
-    DidAuthKeyUtils
+    DidAuthKeyUtils,
+    ClientAgent,
 };

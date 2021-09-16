@@ -1,7 +1,9 @@
-import {Resolvable} from "did-resolver";
-import {verifyDidJWT} from "./did/DidJWT";
 import {decodeJWT} from "did-jwt";
-import {didAuth} from "./types";
+import {Resolvable} from "did-resolver";
+
+import {RPSession} from "./RPSession";
+import {verifyDidJWT} from "./did/DidJWT";
+import {DidAuth} from "./types";
 import {DidAuthValidationResponse} from "./types/DidAuth-types";
 
 export class RPAuthService {
@@ -30,7 +32,7 @@ export class RPAuthService {
     async verifyAuthResponse(idToken: string, audience: string): Promise<DidAuthValidationResponse> {
 
         const {payload} = decodeJWT(idToken);
-        if (payload.iss !== didAuth.ResponseIss.SELF_ISSUE) {
+        if (payload.iss !== DidAuth.ResponseIss.SELF_ISSUE) {
             throw new Error("NO_SELFISSUED_ISS");
         }
 
@@ -53,6 +55,25 @@ export class RPAuthService {
                 ...verifiedJWT.payload,
             },
         };
+    }
+
+
+    createSession(opts?: {
+        privateKey?: string;
+        kid?: string;
+        did?: string;
+        audience?: string;
+        expiration?: {
+            requestToken: number;
+            accessToken: number;
+        };
+    }): RPSession {
+        const sessionOpts = {
+            resolver: this.resolver,
+            ...opts
+        }
+        return new RPSession(sessionOpts);
+
     }
 
 }

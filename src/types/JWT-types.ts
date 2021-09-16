@@ -1,5 +1,5 @@
 import type {DIDResolutionResult, VerificationMethod} from 'did-resolver'
-import type {JWK} from "jose/types";
+// import type {JWK} from "jose/types";
 
 export type Signer = (data: string | Uint8Array) => Promise<string>
 
@@ -10,6 +10,7 @@ export interface JWTPayload {
     aud?: string | string[]
     iat?: number
     nbf?: number
+    type?: string
     exp?: number
     rexp?: number
     jti?: string
@@ -26,7 +27,7 @@ export interface VerifiedJWT {
     jwt: string
 }
 
-
+/*
 
 export interface JWKECKey extends JWK {
     kty: "EC";
@@ -34,7 +35,7 @@ export interface JWKECKey extends JWK {
     x: string;
     y: string;
     d?: string;
-}
+}*/
 
 export declare type ECCurve = "P-256" | "secp256k1" | "P-384" | "P-521";
 
