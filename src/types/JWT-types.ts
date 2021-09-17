@@ -1,30 +1,29 @@
-import type {DIDResolutionResult, VerificationMethod} from 'did-resolver'
+import type { DIDResolutionResult, VerificationMethod } from 'did-resolver';
 // import type {JWK} from "jose/types";
 
-export type Signer = (data: string | Uint8Array) => Promise<string>
-
+export type Signer = (data: string | Uint8Array) => Promise<string>;
 
 export interface JWTPayload {
-    iss?: string
-    sub?: string
-    aud?: string | string[]
-    iat?: number
-    nbf?: number
-    type?: string
-    exp?: number
-    rexp?: number
-    jti?: string
+  iss?: string;
+  sub?: string;
+  aud?: string | string[];
+  iat?: number;
+  nbf?: number;
+  type?: string;
+  exp?: number;
+  rexp?: number;
+  jti?: string;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [x: string]: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
 }
 
 export interface VerifiedJWT {
-    payload: Partial<JWTPayload>
-    didResolutionResult: DIDResolutionResult
-    issuer?: string
-    signer?: VerificationMethod
-    jwt: string
+  payload: Partial<JWTPayload>;
+  didResolutionResult: DIDResolutionResult;
+  issuer?: string;
+  signer?: VerificationMethod;
+  jwt: string;
 }
 
 /*
@@ -37,6 +36,4 @@ export interface JWKECKey extends JWK {
     d?: string;
 }*/
 
-export declare type ECCurve = "P-256" | "secp256k1" | "P-384" | "P-521";
-
-
+export declare type ECCurve = 'P-256' | 'secp256k1' | 'P-384' | 'P-521';

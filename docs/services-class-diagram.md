@@ -27,15 +27,15 @@ RPSession <-- DidAuthValidationResponse
 RPSession --> AkeResponse
 RPSession --> JWTPayload
 
-class AuthRequestService {
+class SIOPService {
     <<service>>
-    createAuthRequest(didAuthRequestCall: DidAuthRequestCall) Promise(uri: string)
-    verifyAuthRequest(didAuthJwt: string): Promise(DidAuthRequest)
+    createRequestJWT(didAuthRequestCall: DidAuthRequestCall) Promise(uri: string)
+    verifyJWTRequest(didAuthJwt: string): Promise(SIOPRequest)
     createAuthResponse(didAuthResponse: DidAuthResponseCall): Promise(UriResponse);
 }
-AuthRequestService <-- DidAuthRequestCall
-AuthRequestService <-- DidAuthResponseCall
-AuthRequestService --> UriResponse
+SIOPService <-- DidAuthRequestCall
+SIOPService <-- DidAuthResponseCall
+SIOPService --> UriResponse
 
 class DidAuthResponseCall {
     <<interface>>
@@ -65,21 +65,21 @@ class ResponseMode {
     bodyEncoded?: string;
 }
 UriResponse --> ResponseMode
-UriDidAuth <|-- UriResponse
+SIOPURI <|-- UriResponse
 
-class UriDidAuth {
+class SIOPURI {
     <<interface>>
-    urlEncoded: string;
-    encoding: UrlEncodingFormat;
+    encodedUri: string;
+    encodingFormat: UrlEncodingFormat;
 }
-UriDidAuth --> UrlEncodingFormat
+SIOPURI --> UrlEncodingFormat
 
 class UrlEncodingFormat {
     <<enum>>
 }
 
 
-class DidAuthRequest {
+class SIOPRequest {
     <<interface>>
     iss: string;
     scope: Scope;
@@ -89,7 +89,7 @@ class DidAuthRequest {
     did_doc?: DIDDocument;
     claims?: RequestClaims;
 }
-DidAuthRequest <|-- JWTPayload
+SIOPRequest <|-- JWTPayload
 
 class  JWTPayload {
   iss?: string

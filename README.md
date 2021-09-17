@@ -222,7 +222,7 @@ verifyDidJWT(jwt, resolver, {audience: '6B2bRWU3F7j3REx3vkJ..', callbackUrl: 'ht
 
 ## Auth Request Service
 
-### createAuthRequest
+### createRequestJWT
 Create a signed URL encoded URI with a signed DidAuth request token
 
 #### Data Interface
@@ -241,14 +241,14 @@ export interface RequestClaims {
     id_token?: IdToken;                 // Standard OpenID Connect ID Token
 }
 
-createAuthRequest(didAuthRequestCall: DidAuthRequestCall): Promise<{
+createRequestJWT(didAuthRequestCall: DidAuthRequestCall): Promise<{
     uri: string;
 }>;
 ```
 
 #### Usage
 ```typescript
-createAuthRequest({
+createRequestJWT({
     redirectUri: 'https://example.com/',
     hexPrivateKey: 'a3...',
     kid: 'did:eosio:example#key-0',
@@ -262,12 +262,12 @@ createAuthRequest({
 ```
 
 
-### verifyAuthRequest
+### verifyJWTRequest
 Verifies a DidAuth ID Request Token
 
 #### Data Interface
 ```typescript
-export interface DidAuthRequest extends JWTPayload {
+export interface SIOPRequest extends JWTPayload {
     iss: string;                            // literal "https://self-issued.me"
     scope: Scope;                           // literal "openid did_authn"
     response_type: ResponseType;            // literal "id_token"
@@ -296,12 +296,12 @@ export interface DIDDocument {              // Standard DID Document, see DID sp
     service?: ServiceEndpoint[]
 }
 
-verifyAuthRequest(didAuthJwt: string): Promise<DidAuthRequest>;
+verifyJWTRequest(didAuthJwt: string): Promise<SIOPRequest>;
 ```
 #### Usage
 
 ````typescript
-const jwt = await createAuthRequest({
+const jwt = await createRequestJWT({
     redirectUri: 'https://example.com/',
     hexPrivateKey: 'a3...',
     kid: 'did:eosio:example#key-0',
@@ -309,7 +309,7 @@ const jwt = await createAuthRequest({
     responseMode: 'query'
 });
 
-verifyAuthRequest(jwt).then(req => {
+verifyJWTRequest(jwt).then(req => {
     console.log(`nonce: ${req.nonce}`)
     // output: nonce: 5c1d29c1-cf7d-4e14-9305-9db46d8c1916
 })

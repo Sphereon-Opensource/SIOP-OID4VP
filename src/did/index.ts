@@ -1,3 +1,3 @@
-import * as didJwt from "./DidJWT";
+import * as didJwt from './DidJWT';
 
-export {didJwt};
+export { didJwt };
