@@ -1,3 +1,4 @@
+import {DIDDocument as DIFDIDDocument} from "did-resolver";
 import { JWK } from "jose/webcrypto/types";
 
 export interface CredentialSubject {
@@ -60,21 +61,15 @@ export interface OidcClaim {
     vc?: OidcClaimRequest;
     [x: string]: unknown;
 }
-export interface DIDDocument {
-    "@context": "https://w3id.org/did/v1";
-    id: string;
-    controller?: string;
+export interface DIDDocument extends DIFDIDDocument {
     owner?: string;
-    publicKey?: PublicKey[];
-    authentication?: Authentication[];
-    verificationMethod?: VerificationMethod[];
-    service?: ServiceEndpoint[];
     created?: string;
     updated?: string;
     proof?: LinkedDataProof;
 }
 
-export interface PublicKey {
+
+/*export interface PublicKey {
     id: string;
     type: string;
     controller: string;
@@ -84,7 +79,7 @@ export interface PublicKey {
     publicKeyHex?: string;
     publicKeyPem?: string;
     publicKeyJwk?: JWK;
-}
+}*/
 export interface VerificationMethod {
     id: string;
     type: string;
@@ -94,11 +89,11 @@ export interface VerificationMethod {
     publicKeyBase58?: string;
     publicKeyJwk?: JWK;
 }
-
+/*
 export interface Authentication {
     type: string;
     publicKey: string;
-}
+}*/
 export interface LinkedDataProof {
     type: string;
     created: string;
@@ -106,9 +101,11 @@ export interface LinkedDataProof {
     nonce: string;
     signatureValue: string;
 }
+/*
 export interface ServiceEndpoint {
     id: string;
     type: string;
     serviceEndpoint: string;
     description?: string;
 }
+*/

@@ -132,6 +132,23 @@ export interface ResponseOpts {
     vp?: VerifiablePresentation;
 }
 
+export interface InternalVerification {
+    registry?: string;
+    rpcUrl?: string;
+    didUrlResolver?: string;
+}
+
+export interface ExternalVerification {
+    verifyUri: string; // url to call to verify the id_token signature
+    authZToken?: string; // Optional: bearer token to use to the call
+    didUrlResolver?: string;
+}
+
+export interface VerifyRequestOpts {
+    verificationType?: InternalVerification | ExternalVerification;
+    nonce?: string;
+    redirectUri?: string;
+}
 /*
 
 export interface IdToken {
@@ -203,6 +220,12 @@ export interface UriResponse extends UriDidAuth {
     responseMode?: ResponseMode;
     bodyEncoded?: string;
 }
+
+
+export interface UriRequest extends UriDidAuth {
+    jwt?: string;
+}
+
 
 export declare enum KeyType {
     EC = "EC"

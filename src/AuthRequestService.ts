@@ -1,9 +1,8 @@
-import {decodeJWT} from "did-jwt";
 import {Resolvable} from "did-resolver";
 
 // import querystring from "querystring";
 import {didJwt} from "./did";
-import {signDidJwtPayload} from "./did/DidJWT";
+import {getAudience, signDidJwtPayload} from "./did/DidJWT";
 import {DidAuth, jwt} from "./types";
 import {
     AuthRequestResponse,
@@ -11,7 +10,9 @@ import {
     DidAuthResponse,
     PassBy,
     RequestOpts,
-    ResponseOpts
+    ResponseOpts,
+    UriRequest,
+    UrlEncodingFormat
 } from "./types/DidAuth-types";
 import {fetchDidDocument} from "./util/HttpUtils";
 import {
@@ -43,7 +44,7 @@ export default class AuthRequestService {
     }
 
     /**
-     * Create a signed URL encoded URI with a signed DidAuth request token
+     * Create a signed a signed Auth request response
      *
      * @param opts Request input data to build a  DidAuth Request Token
      */
@@ -59,34 +60,60 @@ export default class AuthRequestService {
             state
         }
 
-        /*const responseUri = `openid://?${querystring.encode({
-            response_type: DidAuth.ResponseType.ID_TOKEN,
-            client_id: opts.redirectUri,
-            scope: DidAuth.Scope.OPENID_DIDAUTHN,
-            nonce,
-            request: jwt,
-        })}`;
-        // returns a URI with Request JWT embedded
-        return {uri: responseUri};*/
+
     }
+
+    /**
+     * Create a signed URL encoded URI with a signed DidAuth request token
+     *
+     * @param opts Request input data to build a  DidAuth Request Token
+     */
+    async createUriRequest(opts: RequestOpts): Promise<UriRequest> {
+        AuthRequestService.assertValidRequestOpts(opts);
+        const {jwt, nonce, state} = await this.createAuthRequest(opts);
+        return AuthRequestService.createUriRequestImpl(opts, state, nonce, jwt);
+    }
+
+    /**
+     * Creates an URI Request
+     * @param opts Options to define the Uri Request
+     */
+    createUriRequestFromJwt(jwt: string, payload: DidAuthRequest, opts: RequestOpts): UriRequest {
+        if (!jwt ||
+            !payload || !payload.client_id || !payload.nonce || !payload.state) {
+            throw new Error("BAD_PARAMS");
+        }
+        return AuthRequestService.createUriRequestImpl(opts, payload.state, payload.nonce, jwt);
+
+    }
+
 
     /**
      * Verifies a DidAuth ID Request Token
      *
-     * @param didAuthJwt signed DidAuth Request Token
+     * @param jwt
+     * @param opts
      */
-    async verifyAuthRequest(didAuthJwt: string): Promise<jwt.VerifiedJWT> {
+    async verifyAuthRequest(jwt: string, /*opts?: VerifyRequestOpts*/): Promise<jwt.VerifiedJWT> {
+        if (!jwt) {
+            throw new Error("VERIFY_BAD_PARAMETERS")
+        }
+
+  /*
+        const {header, payload} = decodeJWT(jwt);
+        const issuerDid = getIssuerDid(jwt);
+        const issuerDidDoc = await resolveDidDocument(this.resolver, issuerDid);*/
+
         // as audience is set in payload as a DID, it is required to be set as options
         const options = {
-            audience: AuthRequestService.getAudience(didAuthJwt),
+            audience: getAudience(jwt),
         };
-        const verifiedJWT = await didJwt.verifyDidJWT(didAuthJwt, this.resolver, options);
+        const verifiedJWT = await didJwt.verifyDidJWT(jwt, this.resolver, options);
         if (!verifiedJWT || !verifiedJWT.payload) {
             throw Error("ERROR_VERIFYING_SIGNATURE");
         }
         return verifiedJWT;
     }
-
 
     /**
      * Creates a DidAuth Response Object
@@ -128,6 +155,26 @@ export default class AuthRequestService {
     }
 
 
+    private static createUriRequestImpl(opts: RequestOpts, state: string, nonce: string, jwt: string) {
+        const responseUri = `openid://?response_type=${DidAuth.ResponseType.ID_TOKEN}&client_id=${opts.redirectUri}&scope=${DidAuth.Scope.OPENID_DIDAUTHN}&state=${state}&nonce=${nonce}`;
+
+        switch (opts.requestBy?.type) {
+            case PassBy.REFERENCE:
+                return {
+                    urlEncoded: encodeURI(responseUri + `&requestUri=${opts.requestBy.referenceUri}`),
+                    encoding: UrlEncodingFormat.FORM_URL_ENCODED,
+                    jwt
+                }
+            case PassBy.VALUE:
+                return {
+                    urlEncoded: encodeURI(responseUri + `&request=${jwt}`),
+                    encoding: UrlEncodingFormat.FORM_URL_ENCODED,
+                }
+        }
+        throw new Error("NO_REQUESTBY_TYPE");
+    }
+
+
     private static createDidAuthRequestPayload(opts: RequestOpts): DidAuthRequest {
         AuthRequestService.assertValidRequestOpts(opts)
         const state = getState(opts.state);
@@ -147,17 +194,6 @@ export default class AuthRequestService {
         return requestPayload;
     }
 
-
-    private static getAudience(jwt: string) {
-        const {payload} = decodeJWT(jwt);
-        if (!payload)
-            throw new Error("NO_AUDIENCE");
-        if (!payload.aud)
-            return undefined;
-        if (Array.isArray(payload.aud))
-            throw new Error("INVALID_AUDIENCE");
-        return payload.aud;
-    }
 
     private static async createAuthResponsePayload(opts: ResponseOpts): Promise<DidAuthResponse> {
         this.assertValidResponseOpts(opts);
@@ -187,8 +223,6 @@ export default class AuthRequestService {
     }
 
 
-
-
     private static assertValidResponseOpts(opts: ResponseOpts) {
         if (!opts || !opts.redirectUri || !opts.signatureType || !opts.nonce || !opts.did) {
             throw new Error("BAD_PARAMS");
@@ -200,7 +234,7 @@ export default class AuthRequestService {
     private static assertValidRequestOpts(opts: RequestOpts) {
         if (!opts || !opts.redirectUri) {
             throw new Error("BAD_PARAMS");
-        } else if (!opts || !opts.redirectUri || !opts.requestBy || !opts.registrationType) {
+        } else if (!opts.requestBy || !opts.registrationType) {
             throw new Error("BAD_PARAMS");
         } else if (opts.requestBy.type !== PassBy.REFERENCE && opts.requestBy.type !== PassBy.VALUE) {
             throw new Error("REQUEST_OBJECT_TYPE_NOT_SET");

@@ -1,5 +1,6 @@
-import {EdDSASigner, ES256KSigner} from "did-jwt";
+import {decodeJWT, EdDSASigner, ES256KSigner} from "did-jwt";
 import {createJWT, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT} from "did-jwt/lib/JWT";
+import {JWTDecoded} from "did-jwt/src/JWT";
 import {Resolvable} from "did-resolver";
 
 import {DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA} from "../config";
@@ -7,11 +8,13 @@ import {DidAuth} from "../types";
 import {
     DidAuthRequest,
     DidAuthResponse,
-    expirationTime, isRequestOpts,
+    expirationTime,
+    isRequestOpts,
     KeyAlgo,
     RequestOpts,
     ResponseIss,
-    ResponseOpts, SignatureResponse
+    ResponseOpts,
+    SignatureResponse
 } from "../types/DidAuth-types";
 import {VerifiedJWT} from "../types/JWT-types";
 import {KeyUtils} from "../util";
@@ -128,6 +131,54 @@ export async function signDidJwtExternal(payload: DidAuthRequest | DidAuthRespon
 
     const response = await postWithBearerToken(signatureUri, body, authZToken);
     return (await response.json() as SignatureResponse).jws;
+}
+
+
+export function getAudience(jwt: string) {
+    const {payload} = decodeJWT(jwt);
+    if (!payload) {
+        throw new Error("NO_AUDIENCE");
+    } else if (!payload.aud) {
+        return undefined;
+    } else if (Array.isArray(payload.aud)) {
+        throw new Error("INVALID_AUDIENCE");
+    }
+
+    return payload.aud;
+}
+
+export function getIssuerDid(jwt: string): string {
+    const {payload} = parseJWT(jwt);
+    if (!payload.iss) {
+        throw new Error("NO_ISS_DID")
+    }
+
+    if (payload.iss === DidAuth.ResponseIss.SELF_ISSUE) {
+        return (payload as DidAuthResponse).did;
+    } else {
+        return payload.iss;
+    }
+}
+
+export function parseJWT(jwt: string): JWTDecoded {
+    const decodedJWT = decodeJWT(jwt);
+    const {payload, header} = decodedJWT;
+    if (!payload || !header) {
+        throw new Error("NO_ISS_DID");
+    }
+    return decodedJWT;
+}
+
+export function getNetworkFromDid(did: string): string {
+    const network = "mainnet"; // default
+    const splitDidFormat = did.split(":");
+    if (splitDidFormat.length === 4) {
+        return splitDidFormat[2];
+    }
+    if (splitDidFormat.length > 4) {
+        return `${splitDidFormat[2]}:${splitDidFormat[3]}`;
+    }
+    return network;
 }
 
 

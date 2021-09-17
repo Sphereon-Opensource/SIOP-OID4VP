@@ -1,4 +1,5 @@
 import {fetch} from "cross-fetch";
+import {Resolvable} from "did-resolver";
 
 import {ResponseOpts} from "../types/DidAuth-types";
 import {JWTPayload} from "../types/JWT-types";
@@ -28,6 +29,10 @@ export async function postWithBearerToken(
     } catch (error) {
         throw new Error(`${(error as Error).message}`);
     }
+}
+
+export async function resolveDidDocument(resolver: Resolvable, did: string) : Promise<DIDDocument> {
+    return (await resolver.resolve(did)).didDocument;
 }
 
 export async function fetchDidDocument(opts: ResponseOpts): Promise<DIDDocument> {
