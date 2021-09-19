@@ -1,4 +1,3 @@
-import {decodeJWT, verifyJWT} from "did-jwt";
 import * as dotenv from "dotenv";
 import SignJWT from "jose/JWT/sign";
 import parseJwk from "jose/jwk/parse";
@@ -6,19 +5,26 @@ import parseJwk from "jose/jwk/parse";
 import {AuthenticationRequest, SIOP} from "../src";
 import {State} from "../src/functions";
 import SIOPErrors from "../src/types/Errors";
-import {ResponseContext, ResponseMode, SubjectIdentifierType, VerificationMode} from "../src/types/SIOP.types";
+import {
+    PassBy,
+    ResponseContext,
+    ResponseMode,
+    SubjectIdentifierType,
+    VerificationMode,
+    VerifyAuthenticationRequestOpts
+} from "../src/types/SIOP.types";
 
 import {mockedGetEnterpriseAuthToken} from "./TestUtils";
 
 
 dotenv.config();
-// jest.mock("cross-fetch");
-jest.mock("did-JWT");
-const mockVerifyJwt = verifyJWT as jest.Mock;
-const mockDecodeJWT = decodeJWT as jest.Mock;
 
 describe("SIOP Request Validation", () => {
-    it("should throw ERROR_VERIFYING_SIGNATURE", async () => {
+
+    it("should verify", async () => {
+
+        // const mockVerifyJwt = verifyJWT as jest.Mock;
+        // const mockDecodeJWT = decodeJWT as jest.Mock;
         expect.assertions(1);
         const mockEntity = await mockedGetEnterpriseAuthToken("COMPANY AA INC");
         const header = {
@@ -63,19 +69,6 @@ describe("SIOP Request Validation", () => {
             .setProtectedHeader(header)
             .sign(privateKey);
 
-        // ###################################################################################################################################
-        // FIXME
-
-        /*jest.spyOn(fetch, "json").mockResolvedValue({
-            json: getParsedDidDocument({
-                did: mockEntity.did,
-                publicKeyHex: mockEntity.hexPublicKey,
-            }),
-        });*/
-        // ###################################################################################################################################
-        mockVerifyJwt.mockResolvedValue(undefined as never);
-        mockDecodeJWT.mockReturnValue({header, payload});
-
         const optsVerify: SIOP.VerifyAuthenticationRequestOpts = {
             verification: {
                 mode: VerificationMode.INTERNAL,
@@ -85,14 +78,13 @@ describe("SIOP Request Validation", () => {
             },
 
         };
-        await expect(AuthenticationRequest.verifyJWT(jwt, optsVerify)).rejects.toThrow(
-            SIOPErrors.ERROR_VERIFYING_SIGNATURE
-        );
-        jest.clearAllMocks();
+        await expect(AuthenticationRequest.verifyJWT(jwt, optsVerify)).resolves.toBeDefined();
     });
 });
 
+
 describe("verifyJWT should", () => {
+
     it("throw VERIFY_BAD_PARAMETERS when no JWT is passed", async () => {
         expect.assertions(1);
         await expect(
@@ -112,5 +104,44 @@ describe("verifyJWT should", () => {
         await expect(AuthenticationRequest.verifyJWT("a valid JWT", {} as never)).rejects.toThrow(
             SIOPErrors.VERIFY_BAD_PARAMETERS
         );
+    });
+
+    it("succeed if a valid JWT is passed", async () => {
+        const mockEntity = await mockedGetEnterpriseAuthToken("COMPANY AA INC");
+        /*const header = {
+            alg: SIOP.KeyAlgo.ES256K,
+            typ: "JWT",
+            kid: `${mockEntity.did}#controller`,
+        };
+        const state = State.getState();*/
+        const requestOpts = {
+            redirectUri: "https://acme.com/hello",
+            requestBy: {type: PassBy.REFERENCE, referenceUri: "https://my-request.com/here"},
+            signatureType: {
+                hexPrivateKey: mockEntity.hexPrivateKey,
+                did: mockEntity.did,
+                kid: `${mockEntity.did}#controller`,
+            },
+            registration: {
+                didMethodsSupported: "did:ethr:",
+                subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                registrationBy: {type: PassBy.VALUE}
+            }
+        }
+        const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+
+        const verifyOpts : VerifyAuthenticationRequestOpts = {
+            verification: {
+                mode: VerificationMode.INTERNAL,
+                resolveOpts: {
+                    didMethods: ["ethr"]
+                }
+            },
+        }
+
+        // expect.assertions(1);
+        const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);
+        console.log(JSON.stringify(verifyJWT));
+        expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
     });
 });

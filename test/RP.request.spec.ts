@@ -1,9 +1,9 @@
 import {getResolver as getUniResolver} from "@sphereon/did-uni-client/dist/resolver/Resolver";
 import {Resolver} from "did-resolver";
 
+import {SIOP} from "../src";
 import {RP} from "../src/RP";
 import {PassBy, ResponseMode, SubjectIdentifierType} from "../src/types/SIOP.types";
-import {SIOP} from "../src";
 
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
@@ -92,31 +92,30 @@ describe("RP should", () => {
         };
 
 
-        const expected = {
-            "encodedUri": "openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%5Bobject%20Object%5D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts",
-            "encodingFormat": "application/x-www-form-urlencoded",
-            "opts": {
-                "redirectUri": "https://acme.com/hello",
-                "requestBy": {"type": "REFERENCE", "referenceUri": "https://rp.acme.com/siop/jwts"},
-                "signatureType": {
-                    "hexPrivateKey": "f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f",
-                    "did": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
-                    "kid": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1"
-                },
-                "registration": {
-                    "didMethodsSupported": ["did:ethr:"],
-                    "subjectIdentifiersSupported": "did",
-                    "registrationBy": {"type": "VALUE"}
-                },
+        const expectedPayloadWithoutRequest = {
+                "response_type": "id_token",
+                "scope": "openid",
+                "client_id": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
+                "redirect_uri": "https://acme.com/hello",
+                "iss": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
+                "response_mode": "post",
+                "response_context": "rp",
+                "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
                 "state": "b32f0087fc9816eb813fd11f",
-                "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
-            },
-        };
+                "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did"}
+            };
 
-        await expect(RP.fromRequestOpts(opts).createAuthenticationRequest({
+        const expectedUri = "openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%5Bobject%20Object%5D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts";
+        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiOjE2MzIw.*nN1YmplY3RfaWRlbnRpZmllcnNfc3VwcG9ydGVkIjoiZGlkIn19\..*$/;
+
+        const request = await RP.fromRequestOpts(opts).createAuthenticationRequest({
             state: "b32f0087fc9816eb813fd11f",
             nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
-        })).resolves.toMatchObject(expected);
+        });
+        // console.log(request.jwt);
+        expect(request.requestPayload).toMatchObject(expectedPayloadWithoutRequest);
+        expect(request.encodedUri).toMatch(expectedUri);
+        expect(request.jwt).toMatch(expectedJwtRegex);
     });
 
 });

@@ -24,12 +24,13 @@ enum SIOPErrors {
   ERROR_RETRIEVING_VERIFICATION_METHOD = 'Error retrieving verificaton method from did document',
   VERIFICATION_METHOD_NO_MATCH = "The verification method from the RP's DID Document does NOT match the kid of the SIOP Request",
   NO_SELFISSUED_ISS = 'The Response Token Issuer Claim (iss) MUST be https://self-isued.me',
-  REPONSE_AUD_MISMATCH_REDIRECT_URI = 'The audience (aud) in Response Token does NOT match the redirect_uri value sent in the Authentication Request',
+  RESPONSE_AUD_MISMATCH_REDIRECT_URI = 'The audience (aud) in Response Token does NOT match the redirect_uri value sent in the Authentication Request',
   SUB_JWK_NOT_FOUND_OR_NOT_KID = 'Response Token does not contains sub_jwk claim or sub_jwk does not contain kid attribute.',
   NO_ALG_SUPPORTED_YET = 'Algorithm is not supported yet. Only ES256 supported for this version.',
   JWK_THUMBPRINT_MISMATCH_SUB = 'JWK computed thumbprint does not match thumbprint included in Response Token sub claim',
   ERROR_ON_POST_CALL = 'Error on Post call: ',
   NO_DID_PAYLOAD = 'payload must contain did field in payload for self-issued tokens',
+  NO_JWT = 'no JWT was supplied',
 }
 
 export default SIOPErrors;

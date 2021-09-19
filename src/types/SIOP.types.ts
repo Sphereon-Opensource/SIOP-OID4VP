@@ -30,7 +30,7 @@ export interface AuthenticationRequestOpts {
 }
 
 // https://openid.net/specs/openid-connect-implicit-1_0.html#AuthenticationRequest
-export interface AuthenticationRequestPayload extends JWTPayload {
+export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistrationPayload {
   scope: string;
   response_type: ResponseType;
   client_id: string; // did of RP
@@ -39,8 +39,8 @@ export interface AuthenticationRequestPayload extends JWTPayload {
   iss: string;
   response_mode: ResponseMode;
   response_context: ResponseContext;
-  registration?: RPRegistrationMetadataPayload /*| RegistrationJwksUri | RegistrationJwks*/; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
-  registration_uri?: string; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.2.
+  // registration?: RPRegistrationMetadataPayload /*| RegistrationJwksUri | RegistrationJwks*/; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
+  // registration_uri?: string; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.2.
 
   request?: string; // TODO Request Object value, as specified in Section 6.1. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
   request_uri?: string; //URL where Request Object value can be retrieved from, as specified in Section 6.2.
@@ -51,15 +51,41 @@ export interface AuthenticationRequestPayload extends JWTPayload {
   claims?: OidcClaim; // claims parameter value, as specified in Section 5.5.
 }
 
-export interface AuthenticationResponseOpts {
-  redirectUri: string;
-  signatureType: InternalSignature | ExternalSignature;
+export interface RequestRegistrationPayload {
+  registration?: RPRegistrationMetadataPayload /*| RegistrationJwksUri | RegistrationJwks*/; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
+  registration_uri?: string;
+}
+
+export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
+  payload: AuthenticationRequestPayload;
+  verifyOpts: VerifyAuthenticationRequestOpts;
+  /* didResolutionResult: DIDResolutionResult;
+     issuer?: string;
+     signer?: VerificationMethod;
+     jwt: string;*/
+}
+
+/**
+ *
+ */
+export interface AuthenticationRequestWithJWT {
+  jwt: string;
   nonce: string;
   state: string;
+  payload: AuthenticationRequestPayload;
+  opts: AuthenticationRequestOpts;
+}
+
+export interface AuthenticationResponseOpts {
+  // redirectUri: string;
+  signatureType: InternalSignature | ExternalSignature;
+  nonce?: string;
+  // state: string;
   registration: ResponseRegistrationOpts;
   responseMode?: ResponseMode;
   did: string;
   vp?: VerifiablePresentation;
+  expiresIn?: number;
 }
 
 export interface AuthenticationResponsePayload extends JWTPayload {
@@ -77,13 +103,16 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   sub_jwk: JWK;
 }
 
-export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
-  payload: AuthenticationRequestPayload;
-  verifyOpts: VerifyAuthenticationRequestOpts;
-  /* didResolutionResult: DIDResolutionResult;
-     issuer?: string;
-     signer?: VerificationMethod;
-     jwt: string;*/
+/**
+ *
+ */
+export interface AuthenticationResponseWithJWT {
+  jwt: string;
+  nonce: string;
+  state: string;
+  payload: AuthenticationResponsePayload;
+  verifyOpts?: VerifyAuthenticationRequestOpts;
+  responseOpts: AuthenticationResponseOpts;
 }
 export interface RequestRegistrationOpts extends RPRegistrationMetadataOpts {
   registrationBy: RegistrationType;
@@ -113,7 +142,7 @@ export interface DiscoveryMetadataPayload {
   // [x: string]: any;
 }
 
-export interface ResponseRegistrationOpts extends DiscoveryMetadataPayload {
+export interface ResponseRegistrationOpts extends DiscoveryMetadataOpts {
   registrationBy: RegistrationType;
 
   // slint-disable-next-line @typescript-eslint/no-explicit-any
@@ -190,17 +219,6 @@ export interface ExternalSignature {
   kid?: string; // Optional: key identifier. default did#keys-1
 }
 
-/**
- *
- */
-export interface AuthenticationRequestWithJWT {
-  jwt: string;
-  nonce: string;
-  state: string;
-  payload: AuthenticationRequestPayload;
-  opts: AuthenticationRequestOpts;
-}
-
 export enum VerificationMode {
   INTERNAL,
   EXTERNAL,
@@ -224,9 +242,9 @@ export interface ExternalVerification {
 
 export interface VerifyAuthenticationRequestOpts {
   verification: InternalVerification | ExternalVerification;
-  didDocument?: DIDDocument; // If not provided the DIDres document will be resolver from the request
+  // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string;
-  redirectUri?: string;
+  // redirectUri?: string;
 }
 
 /*
@@ -303,7 +321,8 @@ export interface UriResponse extends SIOPURI {
 
 export interface AuthenticationRequestURI extends SIOPURI {
   jwt?: string;
-  opts: AuthenticationRequestOpts;
+  requestOpts: AuthenticationRequestOpts;
+  requestPayload: AuthenticationRequestPayload;
 }
 
 export enum KeyType {
@@ -379,8 +398,8 @@ export const isResponseOpts = (
 
 export const isInternalVerification = (
   object: InternalVerification | ExternalVerification
-): object is InternalVerification => object.mode == VerificationMode.INTERNAL; /* && !isExternalVerification(object)*/
+): object is InternalVerification => object.mode === VerificationMode.INTERNAL; /* && !isExternalVerification(object)*/
 export const isExternalVerification = (
   object: InternalVerification | ExternalVerification
 ): object is ExternalVerification =>
-  object.mode == VerificationMode.EXTERNAL; /*&& 'verifyUri' in object || 'authZToken' in object*/
+  object.mode === VerificationMode.EXTERNAL; /*&& 'verifyUri' in object || 'authZToken' in object*/

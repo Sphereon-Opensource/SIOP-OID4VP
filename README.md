@@ -1,9 +1,9 @@
-<h1 align="center">
-  <br>
-  <a href="https://www.gimly.io/"><img src="https://images.squarespace-cdn.com/content/v1/5eb2942c4ac101328fe42dc2/1588768338657-JXDRVS09OBP3CUROD2ML/Gimly+Logo_Wit_Transparant_geen+text.png?format=1500w" alt="Gimly" width="150"></a>
-  <br>DID-Auth Self Issued OpenID Provider (SIOP)  
-  <br>
+<h1 style="text-align: center; vertical-align: middle">
+  <a href="https://www.gimly.io/"><img src="https://images.squarespace-cdn.com/content/v1/5eb2942c4ac101328fe42dc2/1588768338657-JXDRVS09OBP3CUROD2ML/Gimly+Logo_Wit_Transparant_geen+text.png?format=1500w" alt="Gimly" height="80" style="vertical-align: middle" > &nbsp;Gimly</a> &nbsp;and &nbsp; <a href="https://www.sphereon.com"><img src="https://sphereon.com/content/themes/sphereon/assets/img/logo.svg" alt="Sphereon" width="280" style="vertical-align: middle" ></a>
+
+Self Issued OpenID Provider v2 (SIOP)  
 </h1>
+<br>
 
 An authentication library for having clients/people as Self Issued OpenID Provider as specified in the OpenID Connect working group.
 
@@ -15,7 +15,7 @@ The term Self-Issued comes from the fact that the End-users issue self-signed ID
 ## Service
 The DID Auth SIOP library consists of a group of services and classes to:
 
-- Resolve DIDs using DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and Sphereon's [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client)
+- DID method neutral: Resolve DIDs using DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and Sphereon's [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client)
 - Verify and Create JWTs using DIDs
 - Client Auth Service to create and verify Authentication Requests
 - RP Auth Service to verify an Authenticaiton response on the RP side

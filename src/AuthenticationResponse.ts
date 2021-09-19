@@ -1,23 +1,48 @@
 import AuthenticationRequest from './AuthenticationRequest';
+import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
+import { State } from './functions';
 import { fetchDidDocument } from './functions/DIDResolution';
 import { signDidJwtPayload } from './functions/DidJWT';
 import { getPublicJWKFromHexPrivateKey, getThumbprint, getThumbprintFromJwk } from './functions/Keys';
 import { SIOP, SIOPErrors } from './types';
 
 export default class AuthenticationResponse {
+  /**
+   * Creates a SIOP Response Object
+   *
+   * @param didAuthResponse
+   */
+  static async createJWTFromRequestJWT(
+    requestJwt: string,
+    responseOpts: SIOP.AuthenticationResponseOpts,
+    verifyOpts: SIOP.VerifyAuthenticationRequestOpts
+  ): Promise<SIOP.AuthenticationResponseWithJWT> {
+    assertValidResponseOpts(responseOpts);
+    const verifiedJWT = await AuthenticationRequest.verifyJWT(requestJwt, verifyOpts);
+    return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJWT, responseOpts);
+  }
+
   static async createJWTFromVerifiedRequest(
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
-    resOpts: SIOP.AuthenticationResponseOpts
-  ): Promise<string> {
+    responseOpts: SIOP.AuthenticationResponseOpts
+  ): Promise<SIOP.AuthenticationResponseWithJWT> {
     console.log(verifiedJwt);
 
-    const payload = await createSIOPResponsePayload(resOpts);
-    return signDidJwtPayload(payload, resOpts);
+    const payload = await createSIOPResponsePayload(verifiedJwt, responseOpts);
+    const jwt = await signDidJwtPayload(payload, responseOpts);
 
-    /*if (isInternalSignature(resOpts.signatureType)) {
-                        return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, resOpts.signatureType.hexPrivateKey, resOpts.signatureType.kid);
-                    } else if (isExternalSignature(resOpts.signatureType)) {
-                        return DIDJwt.signDidJwtExternal(payload, resOpts.signatureType.signatureUri, resOpts.signatureType.authZToken, resOpts.signatureType.kid);
+    return {
+      jwt,
+      nonce: payload.nonce,
+      state: payload.state,
+      payload,
+      responseOpts,
+    };
+
+    /*if (isInternalSignature(responseOpts.signatureType)) {
+                        return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
+                    } else if (isExternalSignature(responseOpts.signatureType)) {
+                        return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
                     } else {
                         throw new Error("INVALID_SIGNATURE_TYPE");
                     }*/
@@ -42,58 +67,58 @@ export default class AuthenticationResponse {
                     }
                     return uriResponse;*/
   }
-
-  /**
-   * Creates a SIOP Response Object
-   *
-   * @param didAuthResponse
-   */
-  static async createJWTFromRequestJWT(
-    requestJwt: string,
-    resOpts: SIOP.AuthenticationResponseOpts,
-    verifyOpts?: SIOP.VerifyAuthenticationRequestOpts
-  ): Promise<string> {
-    assertValidResponseOpts(resOpts);
-    const verifiedJWT = await AuthenticationRequest.verifyJWT(requestJwt, verifyOpts);
-    return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJWT, resOpts);
-  }
 }
 
-async function createSIOPResponsePayload(
-  opts: SIOP.AuthenticationResponseOpts
-): Promise<SIOP.AuthenticationResponsePayload> {
-  assertValidResponseOpts(opts);
-
+async function createThumbprintAndJWK(resOpts: SIOP.AuthenticationResponseOpts) {
   let thumbprint;
   let subJwk;
-  if (SIOP.isInternalSignature(opts.signatureType)) {
-    thumbprint = getThumbprint(opts.signatureType.hexPrivateKey, opts.did);
+  if (SIOP.isInternalSignature(resOpts.signatureType)) {
+    thumbprint = getThumbprint(resOpts.signatureType.hexPrivateKey, resOpts.did);
     subJwk = getPublicJWKFromHexPrivateKey(
-      opts.signatureType.hexPrivateKey,
-      opts.signatureType.kid || `${opts.signatureType.did}#key-1`,
-      opts.did
+      resOpts.signatureType.hexPrivateKey,
+      resOpts.signatureType.kid || `${resOpts.signatureType.did}#key-1`,
+      resOpts.did
     );
-  } else if (SIOP.isExternalSignature(opts.signatureType)) {
-    const didDocument = await fetchDidDocument(opts.registration.registrationBy.referenceUri);
-    thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk, opts.did);
+  } else if (SIOP.isExternalSignature(resOpts.signatureType)) {
+    const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri);
+    thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk, resOpts.did);
     subJwk = didDocument.verificationMethod[0].publicKeyJwk;
   } else {
     throw new Error('SIGNATURE_OBJECT_TYPE_NOT_SET');
   }
+  return { thumbprint, subJwk };
+}
 
+async function createSIOPResponsePayload(
+  verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
+  resOpts: SIOP.AuthenticationResponseOpts
+): Promise<SIOP.AuthenticationResponsePayload> {
+  assertValidResponseOpts(resOpts);
+  if (!verifiedJwt || !verifiedJwt.jwt) {
+    throw new Error(SIOPErrors.VERIFY_BAD_PARAMETERS);
+  }
+
+  const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
+  const state = State.getState(verifiedJwt.payload.state);
+  const nonce = State.getNonce(state, resOpts.nonce);
+  const registration = createDiscoveryMetadataPayload(resOpts.registration);
   return {
     iss: SIOP.ResponseIss.SELF_ISSUED_V2,
     sub: thumbprint,
-    aud: opts.redirectUri,
-    nonce: opts.nonce,
-    did: opts.did,
+    aud: verifiedJwt.payload.redirect_uri,
+    did: resOpts.did,
     sub_jwk: subJwk,
-    vp: opts.vp,
+    state,
+    nonce,
+    iat: Date.now(),
+    exp: Date.now() + (resOpts.expiresIn || 600),
+    registration,
+    vp: resOpts.vp,
   };
 }
 
 function assertValidResponseOpts(opts: SIOP.AuthenticationResponseOpts) {
-  if (!opts || !opts.redirectUri || !opts.signatureType || !opts.nonce || !opts.did) {
+  if (!opts /*|| !opts.redirectUri*/ || !opts.signatureType /*|| !opts.nonce*/ || !opts.did) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   } else if (!(SIOP.isInternalSignature(opts.signatureType) || SIOP.isExternalSignature(opts.signatureType))) {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);

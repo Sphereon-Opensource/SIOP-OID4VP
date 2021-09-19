@@ -1,7 +1,6 @@
 import { JWTHeader } from 'did-jwt';
-import { ProofPurposeTypes } from 'did-jwt/lib/JWT';
 
-import RPRegistrationMetadata from './RPRegistrationMetadata';
+import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
 import { DIDJwt, DIDres, Encodings, Keys, State } from './functions';
 import { JWT, SIOP, SIOPErrors } from './types';
 import { AuthenticationRequestPayload } from './types/SIOP.types';
@@ -61,7 +60,7 @@ export default class AuthenticationRequest {
   ): Promise<SIOP.VerifiedAuthenticationRequestWithJWT> {
     assertValidVerifyOpts(opts);
     if (!jwt) {
-      throw new Error(SIOPErrors.VERIFY_BAD_PARAMETERS);
+      throw new Error(SIOPErrors.NO_JWT);
     }
 
     const { header, payload } = DIDJwt.parseJWT(jwt);
@@ -79,7 +78,7 @@ export default class AuthenticationRequest {
     // as audience is set in payload as a DID it is required to be set as options
     const options = {
       audience: DIDJwt.getAudience(jwt),
-      proofPurpose: verificationMethod.type as ProofPurposeTypes,
+      /*proofPurpose: verificationMethod.type as ProofPurposeTypes,*/
     };
 
     const verifiedJWT = await DIDJwt.verifyDidJWT(jwt, DIDres.getResolver(opts.verification.resolveOpts), options);
@@ -102,29 +101,31 @@ export default class AuthenticationRequest {
 
 /**
  * Creates an URI Request
- * @param opts Options to define the Uri Request
+ * @param requestOpts Options to define the Uri Request
  */
 function createURIFromJWT(
-  opts: SIOP.AuthenticationRequestOpts,
-  siopRequest: SIOP.AuthenticationRequestPayload,
+  requestOpts: SIOP.AuthenticationRequestOpts,
+  requestPayload: SIOP.AuthenticationRequestPayload,
   jwt: string
 ): SIOP.AuthenticationRequestURI {
   const schema = 'openid://';
-  const query = Encodings.encodeJsonAsURI(siopRequest);
+  const query = Encodings.encodeJsonAsURI(requestPayload);
 
-  switch (opts.requestBy?.type) {
+  switch (requestOpts.requestBy?.type) {
     case SIOP.PassBy.REFERENCE:
       return {
-        encodedUri: `${schema}?${query}&request_uri=${encodeURIComponent(opts.requestBy.referenceUri)}`,
+        encodedUri: `${schema}?${query}&request_uri=${encodeURIComponent(requestOpts.requestBy.referenceUri)}`,
         encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
-        opts,
+        requestOpts,
+        requestPayload,
         jwt,
       };
     case SIOP.PassBy.VALUE:
       return {
         encodedUri: `${schema}?${query}&request=${jwt}`,
         encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
-        opts,
+        requestOpts,
+        requestPayload,
       };
   }
   throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
@@ -154,29 +155,19 @@ function assertValidRequestOpts(opts: SIOP.AuthenticationRequestOpts) {
     throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   } else if (opts.requestBy.type === SIOP.PassBy.REFERENCE && !opts.requestBy.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
-  } else if (!opts.registration) {
-    throw new Error(SIOPErrors.REGISTRATION_NOT_SET);
-  } else if (
-    opts.registration.registrationBy.type !== SIOP.PassBy.REFERENCE &&
-    opts.registration.registrationBy.type !== SIOP.PassBy.VALUE
-  ) {
-    throw new Error(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
-  } else if (
-    opts.registration.registrationBy.type === SIOP.PassBy.REFERENCE &&
-    !opts.registration.registrationBy.referenceUri
-  ) {
-    throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
+  assertValidRequestRegistrationOpts(opts.registration);
 }
 
 function createInitialRequestPayload(opts: SIOP.AuthenticationRequestOpts): SIOP.AuthenticationRequestPayload {
   assertValidRequestOpts(opts);
   const state = State.getState(opts.state);
+  const registration = createRequestRegistration(opts.registration);
 
   return {
     response_type: SIOP.ResponseType.ID_TOKEN,
     scope: SIOP.Scope.OPENID,
-    client_id: opts.signatureType.did || opts.redirectUri, //todo: check redirectUri value here
+    client_id: opts.signatureType.did || opts.redirectUri, //todo: check whether we should include opts.redirectUri value here, or the whole of client_id to begin with
     redirect_uri: opts.redirectUri,
     //id_token_hint
     iss: opts.signatureType.did,
@@ -184,7 +175,7 @@ function createInitialRequestPayload(opts: SIOP.AuthenticationRequestOpts): SIOP
     response_context: opts.responseContext || SIOP.ResponseContext.RP,
     nonce: State.getNonce(state, opts.nonce),
     state,
-    registration: RPRegistrationMetadata.createPayload(opts.registration),
+    ...registration.requestRegistrationPayload,
     claims: opts.claims,
   };
 }
