@@ -97,7 +97,7 @@ class JsonWebKey {
 class DidJWT {
     <<service>>
     createDidJWT(payload: JWTPayload, options: JWTOptions, header: JWTJHeader) Promise(string)
-    verifyDidJWT(jwt: string, resolver: Resolvable) Promise(boolean)
+    verifyDidJWT(JWT: string, resolver: Resolvable) Promise(boolean)
 }
 JWTPayload --> DidJWT
 JWTOptions --> DidJWT

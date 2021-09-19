@@ -5,7 +5,7 @@ module.exports = {
         "^jose/(.*)$": "<rootDir>/node_modules/jose/dist/node/cjs/$1",
     },
     rootDir: ".",
-    roots: ["<rootDir>/src/", "<rootDir>/tests/"],
+    roots: ["<rootDir>/src/", "<rootDir>/test/"],
     testMatch: ["**/?(*.)+(spec|test).+(ts|tsx|js)"],
     transform: {
         "^.+\\.(ts|tsx)?$": "ts-jest",
@@ -17,7 +17,7 @@ module.exports = {
         "!src/**/*.d.ts",
         "!**/node_modules/**",
         "!jest.config.js",
-        "!lint-staged.config.js",
+        "!generator/**"
     ],
     collectCoverage: true,
     reporters: ["default", ["jest-junit", { outputDirectory: "./coverage" }]],

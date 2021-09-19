@@ -5,12 +5,12 @@ import { secp256k1 } from 'elliptic';
 import js_base64 from 'js-base64';
 import uuid from 'uuid';
 
-import { createDidJWT, verifyDidJWT } from './did/DidJWT';
+import { createDidJWT, verifyDidJWT } from './functions/DidJWT';
+import { bytesToHexString } from './functions/Encodings';
+import { encrypt } from './functions/Keys';
 import { AkeResponse } from './types/AuthKeyExchange-types';
-import { DidAuthValidationResponse } from './types/DidAuth-types';
-import { JWTPayload } from './types/JWT-types';
-import { bytesToHexString } from './util/Encodings';
-import { encrypt } from './util/KeyUtils';
+import { JWTPayload } from './types/JWT.types';
+import { DidAuthValidationResponse } from './types/SIOP.types';
 
 const defaultExpiration = {
   requestToken: 20,

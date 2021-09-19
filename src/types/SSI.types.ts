@@ -1,5 +1,11 @@
-import { DIDDocument as DIFDIDDocument } from 'did-resolver';
+import { DIDDocument as DIFDIDDocument, Resolvable } from 'did-resolver';
 import { JWK } from 'jose/webcrypto/types';
+
+export interface ResolveOpts {
+  resolver?: Resolvable;
+  resolveUrl?: string;
+  didMethods?: string[];
+}
 
 export interface CredentialSubject {
   [x: string]: unknown;

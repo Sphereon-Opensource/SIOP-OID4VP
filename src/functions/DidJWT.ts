@@ -1,28 +1,38 @@
-import { decodeJWT, EdDSASigner, ES256KSigner } from 'did-jwt';
-import { createJWT, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT } from 'did-jwt/lib/JWT';
+import {
+  createJWT,
+  decodeJWT,
+  EdDSASigner,
+  ES256KSigner,
+  JWTHeader,
+  JWTOptions,
+  JWTPayload,
+  JWTVerifyOptions,
+  verifyJWT,
+} from 'did-jwt';
 import { JWTDecoded } from 'did-jwt/src/JWT';
 import { Resolvable } from 'did-resolver';
 
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
-import { DidAuth } from '../types';
+import { JWT, SIOP, SIOPErrors } from '../types';
 import {
+  AuthenticationRequestOpts,
+  AuthenticationRequestPayload,
+  AuthenticationResponseOpts,
+  AuthenticationResponsePayload,
   expirationTime,
+  isExternalSignature,
+  isInternalSignature,
   isRequestOpts,
   KeyAlgo,
   ResponseIss,
-  ResponseOpts,
   SignatureResponse,
-  SIOPRequest,
-  SIOPRequestOpts,
-  SIOPResponse,
-} from '../types/DidAuth-types';
-import { VerifiedJWT } from '../types/JWT-types';
-import { KeyUtils } from '../util';
-import { base58ToBase64String } from '../util/Encodings';
-import { postWithBearerToken } from '../util/HttpUtils';
-import { isEd25519DidKeyMethod, isEd25519JWK, isExternalSignature, isInternalSignature } from '../util/KeyUtils';
+} from '../types/SIOP.types';
 
-import { didJwt } from './index';
+import { base58ToBase64String } from './Encodings';
+import { postWithBearerToken } from './HttpUtils';
+import { isEd25519DidKeyMethod, isEd25519JWK } from './Keys';
+
+import { DIDJwt, Keys } from './index';
 
 /**
  *  Verifies given JWT. If the JWT is valid, the promise returns an object including the JWT, the payload of the JWT,
@@ -30,33 +40,27 @@ import { didJwt } from './index';
  *
  *  @example
  *  verifyDidJWT('did:eosio:example', resolver, {audience: '5A8bRWU3F7j3REx3vkJ...', callbackUrl: 'https://...'}).then(obj => {
- *      const did = obj.did                 // DID of signer
+ *      const did = obj.did                 // DIDres of signer
  *      const payload = obj.payload
- *      const doc = obj.doc                 // DID Document of signer
- *      const jwt = obj.jwt                 // JWT
- *      const signerKeyId = obj.signerKeyId // ID of key in DID document that signed JWT
+ *      const doc = obj.doc                 // DIDres Document of signer
+ *      const JWT = obj.JWT                 // JWT
+ *      const signerKeyId = obj.signerKeyId // ID of key in DIDres document that signed JWT
  *      ...
  *  })
  *
  *  @param    {String}            jwt                   a JSON Web Token to verify
  *  @param    {Resolvable}        resolver
  *  @param    {JWTVerifyOptions}  [options]             Options
- *  @param    {String}            options.audience      DID of the recipient of the JWT
+ *  @param    {String}            options.audience      DIDres of the recipient of the JWT
  *  @param    {String}            options.callbackUrl   callback url in JWT
  *  @return   {Promise<Object, Error>}                  a promise which resolves with a response object or rejects with an error
  */
 export async function verifyDidJWT(
   jwt: string,
   resolver: Resolvable,
-  options: JWTVerifyOptions = {
-    resolver: resolver,
-    audience: undefined,
-    callbackUrl: undefined,
-    skewTime: undefined,
-    proofPurpose: undefined,
-  }
-): Promise<VerifiedJWT> {
-  return verifyJWT(jwt, options);
+  options: JWTVerifyOptions
+): Promise<JWT.VerifiedJWT> {
+  return verifyJWT(jwt, { resolver, ...options });
 }
 
 /**
@@ -64,13 +68,13 @@ export async function verifyDidJWT(
  *
  *  @example
  *  const signer = ES256KSigner(process.env.PRIVATE_KEY)
- *  createJWT({address: '5A8bRWU3F7j3REx3vkJ...', signer}, {key1: 'value', key2: ..., ... }).then(jwt => {
+ *  createJWT({address: '5A8bRWU3F7j3REx3vkJ...', signer}, {key1: 'value', key2: ..., ... }).then(JWT => {
  *      ...
  *  })
  *
  *  @param    {Object}            payload               payload object
  *  @param    {Object}            [options]             an unsigned credential object
- *  @param    {String}            options.issuer        The DID of the issuer (signer) of JWT
+ *  @param    {String}            options.issuer        The DIDres of the issuer (signer) of JWT
  *  @param    {Signer}            options.signer        a `Signer` function, Please see `ES256KSigner` or `EdDSASigner`
  *  @param    {boolean}           options.canonicalize  optional flag to canonicalize header and payload before signing
  *  @param    {Object}            header                optional object to specify or customize the JWT header
@@ -79,33 +83,36 @@ export async function verifyDidJWT(
 export async function createDidJWT(
   payload: Partial<JWTPayload>,
   { issuer, signer, expiresIn, canonicalize }: JWTOptions,
-  header: Partial<JWTHeader> = {}
+  header: Partial<JWTHeader>
 ): Promise<string> {
   return createJWT(payload, { issuer, signer, alg: header.alg, expiresIn, canonicalize }, header);
 }
 
-export async function signDidJwtPayload(payload: SIOPRequest | SIOPResponse, opts: SIOPRequestOpts | ResponseOpts) {
+export async function signDidJwtPayload(
+  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  opts: AuthenticationRequestOpts | AuthenticationResponseOpts
+) {
   if (isInternalSignature(opts.signatureType)) {
-    return didJwt.signDidJwtInternal(
+    return DIDJwt.signDidJwtInternal(
       payload,
       isRequestOpts(opts) ? opts.signatureType.did : ResponseIss.SELF_ISSUED_V2,
       opts.signatureType.hexPrivateKey,
       opts.signatureType.kid
     );
   } else if (isExternalSignature(opts.signatureType)) {
-    return didJwt.signDidJwtExternal(
+    return DIDJwt.signDidJwtExternal(
       payload,
       opts.signatureType.signatureUri,
       opts.signatureType.authZToken,
       opts.signatureType.kid
     );
   } else {
-    throw new Error('BAD_PARAMS');
+    throw new Error(SIOPErrors.BAD_SIGNATURE_PARAMS);
   }
 }
 
 export async function signDidJwtInternal(
-  payload: SIOPRequest | SIOPResponse,
+  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
   issuer: string,
   hexPrivateKey: string,
   kid?: string
@@ -114,7 +121,7 @@ export async function signDidJwtInternal(
   // const request = !!payload.client_id;
   const signer =
     algo == KeyAlgo.EDDSA
-      ? EdDSASigner(base58ToBase64String(KeyUtils.getBase58PrivateKeyFromHexPrivateKey(hexPrivateKey)))
+      ? EdDSASigner(base58ToBase64String(Keys.getBase58PrivateKeyFromHexPrivateKey(hexPrivateKey)))
       : ES256KSigner(hexPrivateKey.replace('0x', ''));
 
   const header = {
@@ -124,30 +131,28 @@ export async function signDidJwtInternal(
   const options = {
     issuer,
     signer,
-    expiresIn: DidAuth.expirationTime,
+    expiresIn: SIOP.expirationTime,
   };
 
   return await createDidJWT({ ...payload }, options, header);
 }
 
 export async function signDidJwtExternal(
-  payload: SIOPRequest | SIOPResponse,
+  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
   signatureUri: string,
   authZToken: string,
   kid?: string
 ): Promise<string> {
   const alg =
-    isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss)
-      ? DidAuth.KeyAlgo.EDDSA
-      : DidAuth.KeyAlgo.ES256K;
+    isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) ? SIOP.KeyAlgo.EDDSA : SIOP.KeyAlgo.ES256K;
 
   const body = {
     issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.did,
     payload,
-    type: alg === DidAuth.KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
+    type: alg === SIOP.KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
     expiresIn: expirationTime,
     alg,
-    selfIssued: payload.iss.includes(DidAuth.ResponseIss.SELF_ISSUED_V2) ? payload.iss : undefined,
+    selfIssued: payload.iss.includes(SIOP.ResponseIss.SELF_ISSUED_V2) ? payload.iss : undefined,
     kid,
   };
 
@@ -158,46 +163,82 @@ export async function signDidJwtExternal(
 export function getAudience(jwt: string) {
   const { payload } = decodeJWT(jwt);
   if (!payload) {
-    throw new Error('NO_AUDIENCE');
+    throw new Error(SIOPErrors.NO_AUDIENCE);
   } else if (!payload.aud) {
     return undefined;
   } else if (Array.isArray(payload.aud)) {
-    throw new Error('INVALID_AUDIENCE');
+    throw new Error(SIOPErrors.INVALID_AUDIENCE);
   }
 
   return payload.aud;
 }
 
-export function getIssuerDid(jwt: string): string {
-  const { payload } = parseJWT(jwt);
-  if (!payload.iss) {
-    throw new Error('NO_ISS_DID');
+export function getIssuerDidFromPayload(payload: JWTPayload) {
+  if (!payload.iss || !payload.iss.startsWith('did:')) {
+    throw new Error(SIOPErrors.NO_ISS_DID);
   }
 
-  if (payload.iss === DidAuth.ResponseIss.SELF_ISSUED_V2) {
-    return (payload as SIOPResponse).did;
-  } else {
-    return payload.iss;
-  }
+  /*if (payload.iss === SIOP.ResponseIss.SELF_ISSUED_V2) {
+            const did = (payload as AuthenticationResponsePayload).did;
+            if (did) {
+                return did;
+            }
+        }*/
+  return payload.iss;
+}
+
+export function getIssuerDidFromJWT(jwt: string): string {
+  const { payload } = parseJWT(jwt);
+  return getIssuerDidFromPayload(payload);
 }
 
 export function parseJWT(jwt: string): JWTDecoded {
   const decodedJWT = decodeJWT(jwt);
   const { payload, header } = decodedJWT;
   if (!payload || !header) {
-    throw new Error('NO_ISS_DID');
+    throw new Error(SIOPErrors.NO_ISS_DID);
   }
   return decodedJWT;
 }
 
+export function getMethodFromDid(did: string): string {
+  if (!did) {
+    throw new Error(SIOPErrors.BAD_PARAMS);
+  }
+  const split = did.split(':');
+  if (split.length == 1 && did.length > 0) {
+    return did;
+  } else if (!did.startsWith('did:') || split.length < 2) {
+    throw new Error(SIOPErrors.BAD_PARAMS);
+  }
+
+  return split[1];
+}
+
 export function getNetworkFromDid(did: string): string {
   const network = 'mainnet'; // default
-  const splitDidFormat = did.split(':');
-  if (splitDidFormat.length === 4) {
-    return splitDidFormat[2];
+  const split = did.split(':');
+  if (!did.startsWith('did:') || split.length < 2) {
+    throw new Error(SIOPErrors.BAD_PARAMS);
   }
-  if (splitDidFormat.length > 4) {
-    return `${splitDidFormat[2]}:${splitDidFormat[3]}`;
+
+  if (split.length === 4) {
+    return split[2];
+  } else if (split.length > 4) {
+    return `${split[2]}:${split[3]}`;
   }
   return network;
+}
+
+/**
+ * Since the OIDC SIOP spec incorrectly uses 'did:<method>:' and calls that a method, we have to fix it
+ * @param didOrMethod
+ */
+export function toSIOPRegistrationDidMethod(didOrMethod: string) {
+  let prefix = didOrMethod;
+  if (!didOrMethod.startsWith('did:')) {
+    prefix = 'did:' + didOrMethod;
+  }
+  const split = prefix.split(':');
+  return `${split[0]}:${split[1]}:`;
 }

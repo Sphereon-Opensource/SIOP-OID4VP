@@ -38,7 +38,8 @@
   "include": [
     "index.ts",
     "src/**/*.ts",
-    "test/**/*.ts"
+    "test/**/*.ts",
+    "generator/**/*.ts"
   ],
   "exclude": [
     "node_modules/**",

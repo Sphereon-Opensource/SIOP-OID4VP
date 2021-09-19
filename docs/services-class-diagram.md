@@ -27,15 +27,15 @@ RPSession <-- DidAuthValidationResponse
 RPSession --> AkeResponse
 RPSession --> JWTPayload
 
-class SIOPService {
+class AuthenticationRequest {
     <<service>>
-    createRequestJWT(didAuthRequestCall: DidAuthRequestCall) Promise(uri: string)
-    verifyJWTRequest(didAuthJwt: string): Promise(SIOPRequest)
-    createAuthResponse(didAuthResponse: DidAuthResponseCall): Promise(UriResponse);
+    createJWT(didAuthRequestCall: DidAuthRequestCall) Promise(uri: string)
+    verifyJWT(didAuthJwt: string): Promise(AuthenticationRequestPayload)
+    createJWT(didAuthResponse: DidAuthResponseCall): Promise(UriResponse);
 }
-SIOPService <-- DidAuthRequestCall
-SIOPService <-- DidAuthResponseCall
-SIOPService --> UriResponse
+AuthenticationRequest <-- DidAuthRequestCall
+AuthenticationRequest <-- DidAuthResponseCall
+AuthenticationRequest --> UriResponse
 
 class DidAuthResponseCall {
     <<interface>>
@@ -79,7 +79,7 @@ class UrlEncodingFormat {
 }
 
 
-class SIOPRequest {
+class AuthenticationRequestPayload {
     <<interface>>
     iss: string;
     scope: Scope;
@@ -89,7 +89,7 @@ class SIOPRequest {
     did_doc?: DIDDocument;
     claims?: RequestClaims;
 }
-SIOPRequest <|-- JWTPayload
+AuthenticationRequestPayload <|-- JWTPayload
 
 class  JWTPayload {
   iss?: string

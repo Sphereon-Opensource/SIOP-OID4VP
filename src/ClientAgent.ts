@@ -1,8 +1,7 @@
 import { Resolvable } from 'did-resolver';
 
-import { didJwt } from './did';
+import { DIDJwt, Keys } from './functions';
 import { AkeResponse } from './types/AuthKeyExchange-types';
-import { KeyUtils } from './util';
 
 export default class ClientAgent {
   private readonly privateKey: string;
@@ -13,8 +12,8 @@ export default class ClientAgent {
   /**
    * Creates the client application agent (the OP)
    *
-   * @param   {String}        opts.privateKey    The private key associated with a DID
-   * @param   {Resolvable}    opts.resolver      The DID resolver to use
+   * @param   {String}        opts.privateKey    The private key associated with a DIDres
+   * @param   {Resolvable}    opts.resolver      The DIDres resolver to use
    * @param   {}              opts                Optional options
    */
   constructor(opts?: { resolver: Resolvable; privateKey: string; did: string; audience?: string }) {
@@ -44,7 +43,7 @@ export default class ClientAgent {
    */
   async verifyAuthResponse(response: AkeResponse, nonce: string): Promise<string> {
     const decryptedPayload = JSON.parse(
-      await KeyUtils.decrypt(this.privateKey, response.signed_payload.encrypted_access_token)
+      await Keys.decrypt(this.privateKey, response.signed_payload.encrypted_access_token)
     );
 
     if (typeof decryptedPayload.did !== 'string' || typeof decryptedPayload.access_token !== 'string') {
@@ -53,7 +52,7 @@ export default class ClientAgent {
       throw new Error(`Expected nonce ${nonce}. Received ${decryptedPayload.nonce}`);
     }
 
-    const jwt = await didJwt.verifyDidJWT(decryptedPayload.access_token, this.resolver, { audience: this.audience });
+    const jwt = await DIDJwt.verifyDidJWT(decryptedPayload.access_token, this.resolver, { audience: this.audience });
     console.log(jwt);
     return decryptedPayload.access_token;
   }

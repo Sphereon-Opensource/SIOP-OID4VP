@@ -1,18 +1,30 @@
 import * as bs58 from 'bs58';
+import * as u8a from 'uint8arrays';
 
 export function bytesToHexString(bytes: Uint8Array): string {
   return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
 }
+
 export function encodeJsonAsURI(json) {
   const results = [];
   for (const key in json) {
-    const val = encodeURIComponent(key) + '=' + encodeURIComponent(json[key]);
-    results.push(val);
+    const val = json[key];
+    if (!val) {
+      continue;
+    }
+    const encoded = encodeURIComponent(key) + '=' + encodeURIComponent(json[key]);
+    results.push(encoded);
   }
   return results.join('&');
 }
+
 export function base64ToHexString(input: string): string {
   return Buffer.from(input, 'base64').toString('hex');
+}
+
+export function base64ToBytes(s: string): Uint8Array {
+  const inputBase64Url = s.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return u8a.fromString(inputBase64Url, 'base64url');
 }
 
 export function bytesFromHexString(hexString: string): Uint8Array {

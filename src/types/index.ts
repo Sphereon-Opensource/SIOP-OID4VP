@@ -1,6 +1,7 @@
 import * as AKE from './AuthKeyExchange-types';
-import * as DidAuth from './DidAuth-types';
-import * as jwt from './JWT-types';
-import * as SSI from './SSI-types';
+import SIOPErrors from './Errors';
+import * as JWT from './JWT.types';
+import * as SIOP from './SIOP.types';
+import * as SSI from './SSI.types';
 
-export { AKE, jwt, DidAuth, SSI };
+export { AKE, JWT, SIOP, SSI, SIOPErrors };

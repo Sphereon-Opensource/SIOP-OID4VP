@@ -2,9 +2,9 @@ import { decodeJWT } from 'did-jwt';
 import { Resolvable } from 'did-resolver';
 
 import { RPSession } from './RPSession';
-import { verifyDidJWT } from './did/DidJWT';
-import { DidAuth } from './types';
-import { DidAuthValidationResponse } from './types/DidAuth-types';
+import { verifyDidJWT } from './functions/DidJWT';
+import { SIOP } from './types';
+import { DidAuthValidationResponse } from './types/SIOP.types';
 
 export class RPAuthService {
   private resolver: Resolvable;
@@ -22,14 +22,14 @@ export class RPAuthService {
   }
 
   /**
-   * Verifies a DidAuth ID Response Token
+   * Verifies a SIOP ID Response Token
    *
    * @param idToken ID token to be validated
    * @param audience expected audience
    */
   async verifyAuthResponse(idToken: string, audience: string): Promise<DidAuthValidationResponse> {
     const { payload } = decodeJWT(idToken);
-    if (payload.iss !== DidAuth.ResponseIss.SELF_ISSUED_V2) {
+    if (payload.iss !== SIOP.ResponseIss.SELF_ISSUED_V2) {
       throw new Error('NO_SELFISSUED_ISS');
     }
 
