@@ -142,7 +142,7 @@ function assertValidVerifyOpts(opts: SIOP.VerifyAuthenticationRequestOpts) {
     !opts.verification ||
     (!SIOP.isExternalVerification(opts.verification) && !SIOP.isInternalVerification(opts.verification))
   ) {
-    throw new Error(SIOPErrors.VERIFY_BAD_PARAMETERS);
+    throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
 }
 

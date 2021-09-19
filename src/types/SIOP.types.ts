@@ -247,6 +247,13 @@ export interface VerifyAuthenticationRequestOpts {
   // redirectUri?: string;
 }
 
+export interface VerifyAuthenticationResponseOpts {
+  verification: InternalVerification | ExternalVerification;
+  // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
+  nonce?: string; // mandatory?
+  audience: string;
+}
+
 /*
 
 export interface IdToken {
@@ -292,6 +299,15 @@ export interface DidAuthValidationResponse {
   signatureValidation: boolean;
   signer: VerificationMethod;
   payload: JWTPayload;
+}
+
+export interface VerifiedAuthenticationResponseWithJWT extends VerifiedJWT {
+  payload: AuthenticationResponsePayload;
+  verifyOpts: VerifyAuthenticationResponseOpts;
+  /* didResolutionResult: DIDResolutionResult;
+     issuer?: string;
+     signer?: VerificationMethod;
+     jwt: string;*/
 }
 
 export enum ResponseMode {

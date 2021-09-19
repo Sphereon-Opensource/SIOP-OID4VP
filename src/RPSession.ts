@@ -1,24 +1,18 @@
-import base58 from 'bs58';
-import { ES256KSigner } from 'did-jwt';
-import { Resolvable } from 'did-resolver';
-import { secp256k1 } from 'elliptic';
-import js_base64 from 'js-base64';
-import uuid from 'uuid';
-
-import { createDidJWT, verifyDidJWT } from './functions/DidJWT';
-import { bytesToHexString } from './functions/Encodings';
-import { encrypt } from './functions/Keys';
 import { AkeResponse } from './types/AuthKeyExchange-types';
 import { JWTPayload } from './types/JWT.types';
 import { DidAuthValidationResponse } from './types/SIOP.types';
 
+// TODO: After inspection remove this class
+
+/*
 const defaultExpiration = {
   requestToken: 20,
   accessToken: 600, // 10 minutes
 };
+*/
 
 export class RPSession {
-  private resolver: Resolvable;
+  /*private resolver: Resolvable;
 
   private readonly kid: string;
   private readonly did: string;
@@ -49,27 +43,29 @@ export class RPSession {
     this.privateKey = opts.privateKey;
   }
 
-  /**
+  /!**
    * Sets the resolver to use for Relying Party Auth
    * @param resolver
-   */
+   *!/
   setResolver(resolver: Resolvable) {
     this.resolver = resolver;
   }
-
+*/
   /**
    * Verifies the bearer access token on the RP side as received from the OP/client
    *
    * @param accessToken
    */
   async verifyAccessToken(token: string): Promise<JWTPayload> {
-    const verifiedJWT = await verifyDidJWT(token, this.resolver, { audience: this.audience });
+    /* const verifiedJWT = await verifyDidJWT(token, this.resolver, { audience: this.audience });
 
     if (this.did !== verifiedJWT.issuer) {
       throw new Error(`Invalid iss ${verifiedJWT.issuer}. Expected ${this.did}`);
     }
 
-    return verifiedJWT.payload;
+    return verifiedJWT.payload;*/
+    console.log(token);
+    return null;
   }
 
   /**
@@ -82,7 +78,7 @@ export class RPSession {
     validation: DidAuthValidationResponse,
     opts?: { [key: string]: string | number }
   ): Promise<AkeResponse> {
-    const { payload } = validation;
+    /* const { payload } = validation;
     const headerOpts = {
       alg: 'ES256K',
       kid: this.kid,
@@ -151,6 +147,8 @@ export class RPSession {
       signed_payload: signedPayload,
       jws: jwsDetached,
       did: this.did,
-    };
+    };*/
+    console.log(JSON.stringify(validation) + JSON.stringify(opts));
+    return null;
   }
 }

@@ -89,20 +89,20 @@ describe("verifyJWT should", () => {
         expect.assertions(1);
         await expect(
             AuthenticationRequest.verifyJWT(undefined as never, undefined as never)
-        ).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMETERS);
+        ).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
     });
 
     it("throw VERIFY_BAD_PARAMETERS when no responseOpts is passed", async () => {
         expect.assertions(1);
         await expect(
             AuthenticationRequest.verifyJWT("a valid JWT", undefined as never)
-        ).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMETERS);
+        ).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
     });
 
     it("throw VERIFY_BAD_PARAMETERS when no responseOpts.verification is passed", async () => {
         expect.assertions(1);
         await expect(AuthenticationRequest.verifyJWT("a valid JWT", {} as never)).rejects.toThrow(
-            SIOPErrors.VERIFY_BAD_PARAMETERS
+            SIOPErrors.VERIFY_BAD_PARAMS
         );
     });
 

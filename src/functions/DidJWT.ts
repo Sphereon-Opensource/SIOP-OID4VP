@@ -51,7 +51,7 @@ import { DIDJwt, Keys } from './index';
  *  @param    {String}            jwt                   a JSON Web Token to verify
  *  @param    {Resolvable}        resolver
  *  @param    {JWTVerifyOptions}  [options]             Options
- *  @param    {String}            options.audience      DIDres of the recipient of the JWT
+ *  @param    {String}            options.audience      DID of the recipient of the JWT
  *  @param    {String}            options.callbackUrl   callback url in JWT
  *  @return   {Promise<Object, Error>}                  a promise which resolves with a response object or rejects with an error
  */
@@ -74,7 +74,7 @@ export async function verifyDidJWT(
  *
  *  @param    {Object}            payload               payload object
  *  @param    {Object}            [options]             an unsigned credential object
- *  @param    {String}            options.issuer        The DIDres of the issuer (signer) of JWT
+ *  @param    {String}            options.issuer        The DID of the issuer (signer) of JWT
  *  @param    {Signer}            options.signer        a `Signer` function, Please see `ES256KSigner` or `EdDSASigner`
  *  @param    {boolean}           options.canonicalize  optional flag to canonicalize header and payload before signing
  *  @param    {Object}            header                optional object to specify or customize the JWT header
