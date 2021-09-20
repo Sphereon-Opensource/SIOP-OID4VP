@@ -1,5 +1,5 @@
 import { DIDDocument as DIFDIDDocument, Resolvable } from 'did-resolver';
-import { JWK } from 'jose/webcrypto/types';
+import { JWK } from 'jose/types';
 
 export interface ResolveOpts {
   resolver?: Resolvable;
