@@ -1,4 +1,4 @@
-import * as DIDJwt from './DIDJwt';
+import * as DIDJwt from './DidJWT';
 import * as DIDres from './DIDResolution';
 import * as Encodings from './Encodings';
 import * as HTTP from './HttpUtils';

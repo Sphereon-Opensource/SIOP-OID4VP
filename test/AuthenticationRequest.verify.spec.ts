@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import SignJWT from "jose/JWT/sign";
+import SignJWT from "jose/jwt/sign";
 import parseJwk from "jose/jwk/parse";
 
 import {AuthenticationRequest, SIOP} from "../src";

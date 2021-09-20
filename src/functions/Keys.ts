@@ -5,7 +5,7 @@ import { decodeJWT } from 'did-jwt';
 import { VerificationMethod } from 'did-resolver';
 import { ec as EC } from 'elliptic';
 import eth_crypto from 'eth-crypto';
-import jwtVerify from 'jose/JWT/verify';
+import jwtVerify from 'jose/jwt/verify';
 import parseJwk from 'jose/jwk/parse';
 import { JWK } from 'jose/types';
 import Base64 from 'js-base64';

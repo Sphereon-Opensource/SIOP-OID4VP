@@ -4,7 +4,7 @@ import {resolve as didKeyResolve} from "@transmute/did-key.js";
 import base58 from "bs58";
 import {DIDDocument, DIDResolutionResult} from "did-resolver";
 import {ethers} from "ethers";
-import SignJWT from "jose/JWT/sign";
+import SignJWT from "jose/jwt/sign";
 import fromKeyLike from "jose/jwk/from_key_like";
 import parseJwk from "jose/jwk/parse";
 import {JWK, JWTPayload} from "jose/types";
