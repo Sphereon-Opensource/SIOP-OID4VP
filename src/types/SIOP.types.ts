@@ -168,17 +168,6 @@ export interface RegistrationType extends ObjectBy {
   id_token_encrypted_response_alg?: EncKeyAlgorithm;
   id_token_encrypted_response_enc?: EncSymmetricAlgorithmCode;
 }
-/*
-
-export interface RegistrationJwksUri {
-  jwks_uri: string;
-  id_token_signed_response_alg: KeyAlgo;
-}
-
-export interface RegistrationJwks {
-  jwks: JWK;
-}
-*/
 
 export enum EncSymmetricAlgorithmCode {
   XC20P = 'XC20P', // default

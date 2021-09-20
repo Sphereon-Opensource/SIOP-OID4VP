@@ -3,6 +3,7 @@ import {Resolver} from "did-resolver";
 
 import {SIOP} from "../src";
 import {RP} from "../src/RP";
+import RPBuilder from "../src/RPBuilder";
 import {PassBy, ResponseMode, SubjectIdentifierType} from "../src/types/SIOP.types";
 
 
@@ -16,12 +17,12 @@ const KID = "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1";
 describe("RP Builder should", () => {
     it("throw Error when no arguments are passed", async () => {
         expect.assertions(1);
-        await expect(() => new RP.Builder().build()).toThrowError(Error);
+        await expect(() => new RPBuilder().build()).toThrowError(Error);
     });
     it("build an RP when all arguments are set", async () => {
         expect.assertions(1);
 
-        expect(new RP.Builder()
+        expect(RP.builder()
             .addDidMethod('factom')
             .addResolver('ethr', new Resolver(getUniResolver('ethr')))
             .redirect('https://redirect.me')
@@ -93,20 +94,20 @@ describe("RP should", () => {
 
 
         const expectedPayloadWithoutRequest = {
-                "response_type": "id_token",
-                "scope": "openid",
-                "client_id": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
-                "redirect_uri": "https://acme.com/hello",
-                "iss": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
-                "response_mode": "post",
-                "response_context": "rp",
-                "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
-                "state": "b32f0087fc9816eb813fd11f",
-                "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did"}
-            };
+            "response_type": "id_token",
+            "scope": "openid",
+            "client_id": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
+            "redirect_uri": "https://acme.com/hello",
+            "iss": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
+            "response_mode": "post",
+            "response_context": "rp",
+            "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
+            "state": "b32f0087fc9816eb813fd11f",
+            "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did"}
+        };
 
         const expectedUri = "openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%5Bobject%20Object%5D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts";
-        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiOjE2MzIw.*nN1YmplY3RfaWRlbnRpZmllcnNfc3VwcG9ydGVkIjoiZGlkIn19\..*$/;
+        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5.*nN1YmplY3RfaWRlbnRpZmllcnNfc3VwcG9ydGVkIjoiZGlkIn19\..*$/;
 
         const request = await RP.fromRequestOpts(opts).createAuthenticationRequest({
             state: "b32f0087fc9816eb813fd11f",
