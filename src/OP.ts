@@ -4,7 +4,6 @@ import OPBuilder from './OPBuilder';
 import RPBuilder from './RPBuilder';
 import { State } from './functions';
 import { getResolver } from './functions/DIDResolution';
-import { SIOP } from './types';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
@@ -75,8 +74,8 @@ export class OP {
     };
   }
 
-  public static fromResponseOpts(opts: SIOP.AuthenticationResponseOpts): OP {
-    return new OP({ responseOpts: opts });
+  public static fromOpts(responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts): OP {
+    return new OP({ responseOpts, verifyOpts });
   }
 
   public static builder() {
@@ -99,9 +98,9 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: {
     : { ...opts.responseOpts };
 
   /*const valid = validate(responseOpts);
-    if (!valid) {
-        throw new Error('RP builder validation error: ' + JSON.stringify(validate.errors));
-    }*/
+      if (!valid) {
+          throw new Error('RP builder validation error: ' + JSON.stringify(validate.errors));
+      }*/
   return responseOpts;
 }
 
