@@ -1,8 +1,8 @@
-import {parse} from "querystring";
+import { parse } from "querystring";
 
-import {AuthenticationRequest, SIOP} from "../src";
+import { AuthenticationRequest, SIOP } from "../src";
 import SIOPErrors from "../src/types/Errors";
-import {SubjectIdentifierType} from "../src/types/SIOP.types";
+import { SubjectIdentifierType } from "../src/types/SIOP.types";
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const EXAMPLE_REFERENCE_URL = "https://rp.acme.com/siop/jwts";
@@ -324,11 +324,11 @@ describe("create Request JWT should", () => {
                 "iss": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
                 "response_mode": "post",
                 "response_context": "rp",
-                "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did"}
+                "registration": { "did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did" }
             },
             "opts": {
                 "redirectUri": "https://acme.com/hello",
-                "requestBy": {"type": "REFERENCE", "referenceUri": "https://rp.acme.com/siop/jwts"},
+                "requestBy": { "type": "REFERENCE", "referenceUri": "https://rp.acme.com/siop/jwts" },
                 "signatureType": {
                     "hexPrivateKey": "f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f",
                     "did": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
@@ -337,11 +337,73 @@ describe("create Request JWT should", () => {
                 "registration": {
                     "didMethodsSupported": ["did:ethr:"],
                     "subjectIdentifiersSupported": "did",
-                    "registrationBy": {"type": "VALUE"}
+                    "registrationBy": { "type": "VALUE" }
                 }
             }
         };
 
         await expect(AuthenticationRequest.createJWT(opts)).resolves.toMatchObject(expected);
+    });
+
+    it("succeed when requesting a VP via claim parameter", async () => {
+        const opts: SIOP.AuthenticationRequestOpts = {
+            redirectUri: EXAMPLE_REDIRECT_URL,
+            requestBy: {
+                type: SIOP.PassBy.REFERENCE,
+                referenceUri: EXAMPLE_REFERENCE_URL,
+            },
+            signatureType: {
+                hexPrivateKey: HEX_KEY,
+                did: DID,
+                kid: KID,
+            },
+            registration: {
+                didMethodsSupported: ['did:ethr:'],
+                subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                registrationBy: {
+                    type: SIOP.PassBy.VALUE,
+                },
+            },
+            claims: {
+                "id_token": {
+                    "acr": null,
+                    "verifiable_presentations": {
+                        "presentation_definition": {
+                            "input_descriptors": [
+                                {
+                                    "schema": [
+                                        {
+                                            "uri": "https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+
+        const uriRequest = await AuthenticationRequest.createURI(opts);
+        // console.log(JSON.stringify(uriRequest, null, 2));
+        expect(uriRequest).toBeDefined();
+        expect(uriRequest).toHaveProperty("encodedUri");
+        expect(uriRequest).toHaveProperty("encodingFormat");
+        // expect(uriRequest).toHaveProperty("claims");
+
+        const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
+        expect(uriDecoded).toContain(`openid://`);
+        expect(uriDecoded).toContain(`?response_type=${SIOP.ResponseType.ID_TOKEN}`);
+        expect(uriDecoded).toContain(`&redirect_uri=${opts.redirectUri}`);
+        expect(uriDecoded).toContain(`&scope=${SIOP.Scope.OPENID}`);
+        expect(uriDecoded).toContain(`&request_uri=`);
+        expect(uriDecoded).toContain(`&claims=`);
+
+        const data = parse(uriDecoded);
+        // console.log(JSON.stringify(data, null, 2));
+        expect(data.request_uri).toStrictEqual(opts.requestBy.referenceUri);
+        expect(data.claims).toBeDefined();
+        expect(uriRequest).toHaveProperty("jwt");
+        expect(uriRequest.jwt).toBeDefined();
     });
 });

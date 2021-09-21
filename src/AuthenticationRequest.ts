@@ -4,6 +4,7 @@ import { assertValidRequestRegistrationOpts, createRequestRegistration } from '.
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { JWT, SIOP, SIOPErrors } from './types';
 import { AuthenticationRequestPayload } from './types/SIOP.types';
+import { ObjectManipulationUtils } from './utils/ObjectManipulationUtils';
 
 export default class AuthenticationRequest {
   /**
@@ -119,7 +120,8 @@ function createURIFromJWT(
   jwt: string
 ): SIOP.AuthenticationRequestURI {
   const schema = 'openid://';
-  const query = Encodings.encodeJsonAsURI(requestPayload);
+  const flattenedReqPayload = ObjectManipulationUtils.flattenObject(requestPayload);
+  const query = Encodings.encodeJsonAsURI(flattenedReqPayload);
 
   switch (requestOpts.requestBy?.type) {
     case SIOP.PassBy.REFERENCE:
