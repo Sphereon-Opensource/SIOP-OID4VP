@@ -72,7 +72,7 @@ export default class AuthenticationRequest {
     // Determine the verification method from the RP's DIDres Document that matches the kid of the SIOP Request.
     const verificationMethod = Keys.getVerificationMethod(header.kid, issuerDidDoc);
     if (!verificationMethod) {
-      throw new Error(SIOPErrors.VERIFICATION_METHOD_NO_MATCH);
+      throw new Error(`${SIOPErrors.VERIFICATION_METHOD_NO_MATCH} kid: ${header.kid}, issuer: ${issuerDid}`);
     }
 
     // as audience is set in payload as a DID it is required to be set as options

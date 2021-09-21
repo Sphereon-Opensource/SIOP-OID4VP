@@ -6,14 +6,9 @@ import { DIDJwt } from './functions';
 import {
   ExternalSignature,
   InternalSignature,
-  KeyAlgo,
   PassBy,
   ResponseMode,
   ResponseRegistrationOpts,
-  Schema,
-  Scope,
-  SigningAlgo,
-  SubjectType,
 } from './types/SIOP.types';
 
 export default class OPBuilder {
@@ -38,6 +33,16 @@ export default class OPBuilder {
     return this;
   }
 
+  withDid(did: string): OPBuilder {
+    this.did = did;
+    return this;
+  }
+
+  withExpiresIn(expiresIn: number): OPBuilder {
+    this.expiresIn = expiresIn;
+    return this;
+  }
+
   response(responseMode: ResponseMode): OPBuilder {
     this.responseMode = responseMode;
     return this;
@@ -55,13 +60,13 @@ export default class OPBuilder {
     return this;
   }
 
-  //TODO registration object creation
+  /*//TODO registration object creation
   authorizationEndpoint?: Schema.OPENID | string;
   scopesSupported?: Scope[] | Scope;
   subjectTypesSupported?: SubjectType[] | SubjectType;
   idTokenSigningAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-
+*/
   // Only internal supported for now
   signature(signatureType: InternalSignature): OPBuilder {
     this.signatureType = signatureType;

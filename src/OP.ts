@@ -1,9 +1,11 @@
+import Ajv from 'ajv';
+
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import RPBuilder from './RPBuilder';
 import { State } from './functions';
 import { getResolver } from './functions/DIDResolution';
+import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
@@ -15,8 +17,8 @@ import {
   VerifyAuthenticationRequestOpts,
 } from './types/SIOP.types';
 
-/*const ajv = new Ajv();
-const validate = ajv.compile(AuthenticationRequestOptsSchema);*/
+const ajv = new Ajv();
+const validate = ajv.compile(AuthenticationResponseOptsSchema);
 
 export class OP {
   private readonly authResponseOpts: AuthenticationResponseOpts;
@@ -79,7 +81,7 @@ export class OP {
   }
 
   public static builder() {
-    return new RPBuilder();
+    return new OPBuilder();
   }
 }
 
@@ -97,10 +99,10 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: {
       }
     : { ...opts.responseOpts };
 
-  /*const valid = validate(responseOpts);
-      if (!valid) {
-          throw new Error('RP builder validation error: ' + JSON.stringify(validate.errors));
-      }*/
+  const valid = validate(responseOpts);
+  if (!valid) {
+    throw new Error('RP builder validation error: ' + JSON.stringify(validate.errors));
+  }
   return responseOpts;
 }
 
