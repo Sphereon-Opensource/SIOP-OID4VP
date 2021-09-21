@@ -1,5 +1,6 @@
 import { fetch } from 'cross-fetch';
 
+import { SIOPErrors } from '../types';
 import { JWTPayload } from '../types/JWT.types';
 
 export async function postWithBearerToken(url: string, body: JWTPayload, bearerToken: string): Promise<Response> {
@@ -13,7 +14,7 @@ export async function postWithBearerToken(url: string, body: JWTPayload, bearerT
     });
     if (!response || !response.status || (response.status !== 200 && response.status !== 201)) {
       throw new Error(
-        `Received unexpected respons status ${response.status}:${response.statusText}, ${await response.text()}`
+        `${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText}, ${await response.text()}`
       );
     }
     return response;
