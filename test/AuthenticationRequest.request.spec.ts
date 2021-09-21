@@ -101,6 +101,7 @@ describe("create Request Uri should", () => {
         expect(uriRequest).toHaveProperty("jwt");
         expect(uriRequest.jwt).toBeDefined();
     });
+
     it("return a reference url when using did:key", async () => {
         expect.assertions(3);
         const opts: SIOP.AuthenticationRequestOpts = {

@@ -7,6 +7,7 @@ enum SIOPErrors {
   ERROR_VALIDATING_NONCE = 'Error validating nonce.',
   NO_AUDIENCE = 'No audience found in JWT payload',
   NO_NONCE = 'No nonce found in JWT payload',
+  BAD_NONCE = 'The nonce in the payload does not match the supplied nonce',
   INVALID_AUDIENCE = 'Audience is invalid. Should be a string value.',
   REQUEST_OBJECT_TYPE_NOT_SET = 'Request object type is not set.',
   NO_REFERENCE_URI = 'referenceUri must be defined when REFERENCE option is used',

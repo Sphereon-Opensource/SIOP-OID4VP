@@ -93,7 +93,7 @@ describe("OP should", () => {
                 referenceUri: EXAMPLE_REFERENCE_URL,
             },
             signatureType: {
-                hexPrivateKey: HEX_KEY,
+                hexPrivateKey: mockEntity.hexPrivateKey,
                 /*did: DID,
                 kid: KID,*/
                 did: mockEntity.did,
@@ -135,10 +135,16 @@ describe("OP should", () => {
 
         const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.jwt, {
             audience: DID,
-            nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
+            // nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
         });
-        // console.log(request.jwt);
-        expect(verifiedRequest.signer).toMatch("  ");
+        console.log(JSON.stringify(verifiedRequest));
+        expect(verifiedRequest.issuer).toMatch(mockEntity.did);
+        expect(verifiedRequest.signer).toMatchObject({
+            "id": `${mockEntity.did}#controller`,
+            "type": "EcdsaSecp256k1RecoveryMethod2020",
+            "controller": `${mockEntity.did}`
+        })
+        expect(verifiedRequest.jwt).toBeDefined();
     });
 
     /* it("succeed from builder when all params are set", async () => {

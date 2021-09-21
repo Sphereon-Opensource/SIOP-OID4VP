@@ -36,7 +36,7 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   client_id: string; // did of RP
   redirect_uri: string;
   id_token_hint?: string; // TODO:  idtokenhint parameter value, as specified in Section 3.1.2. If the ID Token is encrypted to the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
-  iss: string;
+  // iss: string;
   response_mode: ResponseMode;
   response_context: ResponseContext;
   // registration?: RPRegistrationMetadataPayload /*| RegistrationJwksUri | RegistrationJwks*/; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.

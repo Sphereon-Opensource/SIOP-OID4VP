@@ -1,7 +1,7 @@
 import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
-import { DIDJwt, DIDres, Encodings, Keys, State } from './functions';
+import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { JWT, SIOP, SIOPErrors } from './types';
 import { AuthenticationRequestPayload } from './types/SIOP.types';
 
@@ -66,15 +66,16 @@ export default class AuthenticationRequest {
     const { header, payload } = DIDJwt.parseJWT(jwt);
     assertValidRequestJWT(header, payload);
 
-    const issuerDid = DIDJwt.getIssuerDidFromPayload(payload);
-    const issuerDidDoc = await DIDres.resolveDidDocument(issuerDid, opts.verification.resolveOpts);
+    // const issuerDid = DIDJwt.getIssuerDidFromPayload(payload);
+    // const issuerDidDoc = await DIDres.resolveDidDocument(issuerDid, opts.verification.resolveOpts);
 
-    // Determine the verification method from the RP's DIDres Document that matches the kid of the SIOP Request.
-    const verificationMethod = Keys.getVerificationMethod(header.kid, issuerDidDoc);
-    if (!verificationMethod) {
-      throw new Error(`${SIOPErrors.VERIFICATION_METHOD_NO_MATCH} kid: ${header.kid}, issuer: ${issuerDid}`);
-    }
-
+    /*
+        // Determine the verification method from the RP's DIDres Document that matches the kid of the SIOP Request.
+        const verificationMethod = Keys.getVerificationMethod(header.kid, issuerDidDoc);
+        if (!verificationMethod) {
+          throw new Error(`${SIOPErrors.VERIFICATION_METHOD_NO_MATCH} kid: ${header.kid}, issuer: ${issuerDid}`);
+        }
+    */
     // as audience is set in payload as a DID it is required to be set as options
     const options = {
       audience: DIDJwt.getAudience(jwt),
@@ -84,6 +85,9 @@ export default class AuthenticationRequest {
     const verifiedJWT = await DIDJwt.verifyDidJWT(jwt, DIDres.getResolver(opts.verification.resolveOpts), options);
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
+    }
+    if (opts.nonce && verifiedJWT.payload.nonce !== opts.nonce) {
+      throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${verifiedJWT.payload.nonce}, supplied: ${opts.nonce}`);
     }
     return {
       ...verifiedJWT,

@@ -16,6 +16,8 @@ import {
 
 import {mockedGetEnterpriseAuthToken} from "./TestUtils";
 
+const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
+const EXAMPLE_REFERENCE_URL = "https://rp.acme.com/siop/jwts";
 
 dotenv.config();
 
@@ -106,6 +108,45 @@ describe("verifyJWT should", () => {
         );
     });
 
+    it("throw BAD_NONCE when a different nonce is supplied during verification", async () => {
+        expect.assertions(1);
+        const requestOpts: SIOP.AuthenticationRequestOpts = {
+            redirectUri: EXAMPLE_REDIRECT_URL,
+            requestBy: {
+                type: SIOP.PassBy.REFERENCE,
+                referenceUri: EXAMPLE_REFERENCE_URL,
+            },
+            nonce: "expected nonce",
+            signatureType: {
+                hexPrivateKey:
+                    "d474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3",
+                did: "did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc",
+                kid: "did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#keys-1",
+            },
+            registration: {
+                didMethodsSupported: ['did:key:'],
+                subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                registrationBy: {
+                    type: SIOP.PassBy.VALUE,
+                },
+            }
+        };
+
+        const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+
+        const verifyOpts: VerifyAuthenticationRequestOpts = {
+            verification: {
+                mode: VerificationMode.INTERNAL,
+                resolveOpts: {
+                    didMethods: ["key"]
+                }
+            },
+            nonce: "This nonce is different and should throw error"
+        }
+
+        // expect.assertions(1);
+        await expect(AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
+    });
     it("succeed if a valid JWT is passed", async () => {
         const mockEntity = await mockedGetEnterpriseAuthToken("COMPANY AA INC");
         /*const header = {
@@ -130,7 +171,7 @@ describe("verifyJWT should", () => {
         }
         const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
 
-        const verifyOpts : VerifyAuthenticationRequestOpts = {
+        const verifyOpts: VerifyAuthenticationRequestOpts = {
             verification: {
                 mode: VerificationMode.INTERNAL,
                 resolveOpts: {
