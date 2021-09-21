@@ -36,6 +36,7 @@
     "types": ["jest", "node"]
   },
   "include": [
+    "index.ts",
     "src/**/*.ts",
     "test/**/*.ts",
     "generator/**/*.ts"
