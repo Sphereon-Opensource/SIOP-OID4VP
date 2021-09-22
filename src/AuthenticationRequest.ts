@@ -86,8 +86,14 @@ export default class AuthenticationRequest {
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
-    if (opts.nonce && verifiedJWT.payload.nonce !== opts.nonce) {
+    const verPayload = verifiedJWT.payload as AuthenticationRequestPayload;
+    if (opts.nonce && verPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${verifiedJWT.payload.nonce}, supplied: ${opts.nonce}`);
+    } else if (
+      verPayload.registration?.subject_identifiers_supported &&
+      verPayload.registration.subject_identifiers_supported.length == 0
+    ) {
+      throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
     return {
       ...verifiedJWT,

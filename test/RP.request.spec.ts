@@ -26,9 +26,9 @@ describe("RP Builder should", () => {
             .addDidMethod('factom')
             .addResolver('ethr', new Resolver(getUniResolver('ethr')))
             .redirect('https://redirect.me')
-            .requestRef(PassBy.VALUE)
+            .requestBy(PassBy.VALUE)
             .response(ResponseMode.POST)
-            .registrationRef(PassBy.REFERENCE, 'https://registration.here')
+            .registrationBy(PassBy.REFERENCE, 'https://registration.here')
             .internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
             .build()
         )
@@ -138,9 +138,9 @@ describe("RP should", () => {
 
         const request = await RP.builder()
             .redirect(EXAMPLE_REDIRECT_URL)
-            .requestRef(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+            .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
             .internalSignature(HEX_KEY, DID, KID)
-            .registrationRef(PassBy.VALUE)
+            .registrationBy(PassBy.VALUE)
             .addDidMethod('ethr')
             .build()
 

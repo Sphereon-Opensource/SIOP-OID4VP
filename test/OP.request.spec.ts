@@ -30,7 +30,7 @@ describe("OP Builder should", () => {
         expect(OP.builder()
             .addDidMethod('ethr')
             .response(ResponseMode.POST)
-            .registrationRef(PassBy.REFERENCE, 'https://registration.here')
+            .registrationBy(PassBy.REFERENCE, 'https://registration.here')
             .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
             .withDid(DID)
             .withExpiresIn(1000)
@@ -69,13 +69,11 @@ describe("OP should", () => {
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg'
     }
 
-    // const mockEntity = await mockedGetEnterpriseAuthToken("ACME");
-
-
     it("throw Error when build from request opts without enough params", async () => {
         expect.assertions(1);
         await expect(() => OP.fromOpts({} as never, {} as never)).toThrowError(Error);
     });
+
     it("return an OP when all request arguments are set", async () => {
 
         expect.assertions(1);
@@ -85,7 +83,7 @@ describe("OP should", () => {
 
     it("succeed from request opts when all params are set", async () => {
         // expect.assertions(1);
-        const mockEntity = await mockedGetEnterpriseAuthToken("COMPANY AA INC");
+        const mockEntity = await mockedGetEnterpriseAuthToken("ACME Corp");
         const requestOpts: AuthenticationRequestOpts = {
             redirectUri: EXAMPLE_REDIRECT_URL,
             requestBy: {
@@ -94,8 +92,6 @@ describe("OP should", () => {
             },
             signatureType: {
                 hexPrivateKey: mockEntity.hexPrivateKey,
-                /*did: DID,
-                kid: KID,*/
                 did: mockEntity.did,
                 kid: `${mockEntity.did}#controller`,
             },
@@ -109,24 +105,6 @@ describe("OP should", () => {
 
         };
 
-
-        /*
-                const expectedPayloadWithoutRequest = {
-                    "response_type": "id_token",
-                    "scope": "openid",
-                    "client_id": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
-                    "redirect_uri": "https://acme.com/hello",
-                    "iss": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
-                    "response_mode": "post",
-                    "response_context": "rp",
-                    "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
-                    "state": "b32f0087fc9816eb813fd11f",
-                    "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did"}
-                };
-        */
-
-        // const expectedUri = "openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%5Bobject%20Object%5D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts";
-        // const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5.*nN1YmplY3RfaWRlbnRpZmllcnNfc3VwcG9ydGVkIjoiZGlkIn19\..*$/;
 
         const requestURI = await RP.fromRequestOpts(requestOpts).createAuthenticationRequest({
             nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
@@ -147,39 +125,44 @@ describe("OP should", () => {
         expect(verifiedRequest.jwt).toBeDefined();
     });
 
-    /* it("succeed from builder when all params are set", async () => {
-         const expectedPayloadWithoutRequest = {
-             "response_type": "id_token",
-             "scope": "openid",
-             "client_id": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
-             "redirect_uri": "https://acme.com/hello",
-             "iss": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
-             "response_mode": "post",
-             "response_context": "rp",
-             "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
-             "state": "b32f0087fc9816eb813fd11f",
-             "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did"}
-         };
+    it("succeed from builder when all params are set", async () => {
+        // expect.assertions(1);
+        const rpMockEntity = await mockedGetEnterpriseAuthToken("ACME RP");
+        const opMockEntity = await mockedGetEnterpriseAuthToken("ACME OP");
 
-         const expectedUri = "openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%5Bobject%20Object%5D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts";
-         const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5.*nN1YmplY3RfaWRlbnRpZmllcnNfc3VwcG9ydGVkIjoiZGlkIn19\..*$/;
+        const requestURI = await RP.builder()
+            .redirect(EXAMPLE_REFERENCE_URL)
+            .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+            .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
+            .addDidMethod("ethr")
+            .registrationBy(PassBy.VALUE)
+            .build()
 
-         const request = await RP.builder()
-             .redirect(EXAMPLE_REDIRECT_URL)
-             .requestRef(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
-             .internalSignature(HEX_KEY, DID, KID)
-             .registrationRef(PassBy.VALUE)
-             .addDidMethod('ethr')
-             .build()
+            .createAuthenticationRequest({
+            nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
+            state: "b32f0087fc9816eb813fd11f"
+        });
 
-             .createAuthenticationRequest({
-             state: "b32f0087fc9816eb813fd11f",
-             nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
-         });
-         // console.log(request.jwt);
-         expect(request.requestPayload).toMatchObject(expectedPayloadWithoutRequest);
-         expect(request.encodedUri).toMatch(expectedUri);
-         expect(request.jwt).toMatch(expectedJwtRegex);
-     });*/
+        const verifiedRequest = await OP.builder()
+            .withDid(opMockEntity.did)
+            .withExpiresIn(1000)
+            .addDidMethod("ethr")
+            .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did)
+            .registrationBy(PassBy.VALUE)
+            .build()
+
+            .verifyAuthenticationRequest(requestURI.jwt, {
+            audience: opMockEntity.did,
+        });
+        console.log(JSON.stringify(verifiedRequest));
+        expect(verifiedRequest.issuer).toMatch(rpMockEntity.did);
+        expect(verifiedRequest.signer).toMatchObject({
+            "id": `${rpMockEntity.did}#controller`,
+            "type": "EcdsaSecp256k1RecoveryMethod2020",
+            "controller": `${rpMockEntity.did}`
+        })
+        expect(verifiedRequest.jwt).toBeDefined();
+    });
+
 
 });

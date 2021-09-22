@@ -5,6 +5,8 @@ import { DIDResolutionOptions, DIDResolutionResult, ParsedDID, Resolver } from '
 import SIOPErrors from '../types/Errors';
 import { DIDDocument, ResolveOpts } from '../types/SSI.types';
 
+import { getMethodFromDid } from './DidJWT';
+
 export function getResolver(opts: ResolveOpts) {
   if (opts && opts.resolver) {
     return opts.resolver;
@@ -22,7 +24,7 @@ export function getResolver(opts: ResolveOpts) {
     ) => Promise<DIDResolutionResult>;
   }[] = [];
   for (const didMethod of opts.didMethods) {
-    const uniResolver = getUniResolver(didMethod, { resolveUrl: opts.resolveUrl });
+    const uniResolver = getUniResolver(getMethodFromDid(didMethod), { resolveUrl: opts.resolveUrl });
     uniResolvers.push(uniResolver);
   }
   const resolver = new Resolver(...uniResolvers);

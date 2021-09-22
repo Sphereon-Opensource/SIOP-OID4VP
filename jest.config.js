@@ -13,8 +13,9 @@ module.exports = {
     moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
     coverageDirectory: "./coverage/",
     collectCoverageFrom: [
-        "!src/schemas/**",
         "src/**/*.{ts,tsx}",
+        "!did-jwt-fork/**",
+        "!src/schemas/**",
         "!src/**/*.d.ts",
         "!**/node_modules/**",
         "!jest.config.js",

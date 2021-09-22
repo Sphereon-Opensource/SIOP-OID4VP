@@ -48,7 +48,7 @@ export default class OPBuilder {
     return this;
   }
 
-  registrationRef(registrationBy: PassBy, refUri?: string): OPBuilder {
+  registrationBy(registrationBy: PassBy, refUri?: string): OPBuilder {
     this.responseRegistration = {
       registrationBy: {
         type: registrationBy,

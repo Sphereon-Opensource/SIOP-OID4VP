@@ -40,14 +40,19 @@ export class RP {
 
   public verifyAuthenticationResponseJwt(
     jwt: string,
-    opts?: { audience: string; nonce?: string; verification?: InternalVerification | ExternalVerification }
+    opts?: {
+      audience: string;
+      state?: string;
+      nonce?: string;
+      verification?: InternalVerification | ExternalVerification;
+    }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
-    const state = State.getState(opts?.state);
-    const nonce = State.getNonce(state, opts?.nonce);
+    const state = opts?.state || State.getState(opts?.state);
+    const nonce = opts?.nonce || State.getNonce(state, opts?.nonce);
     return {
       ...this.authRequestOpts,
       state,
@@ -56,6 +61,7 @@ export class RP {
   }
 
   public newVerifyAuthenticationResponseOpts(opts?: {
+    state?: string;
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
     audience: string;
@@ -63,7 +69,9 @@ export class RP {
     return {
       ...this.verifyAuthResponseOpts,
       audience: opts.audience,
+      state: opts?.state || this.verifyAuthResponseOpts.state,
       nonce: opts?.nonce || this.verifyAuthResponseOpts.nonce,
+
       verification: opts?.verification || this.verifyAuthResponseOpts.verification,
     };
   }
@@ -85,7 +93,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: {
     ? {
         registration: opts.builder.requestRegistration as RequestRegistrationOpts,
         redirectUri: opts.builder.redirectUri,
-        requestBy: opts.builder.requestBy,
+        requestBy: opts.builder.requestObjectBy,
         signatureType: opts.builder.signatureType,
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,

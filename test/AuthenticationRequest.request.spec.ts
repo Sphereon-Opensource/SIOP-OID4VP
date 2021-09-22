@@ -341,6 +341,7 @@ describe("create Request JWT should", () => {
                 }
             }
         };
+
         await expect(AuthenticationRequest.createJWT(opts)).resolves.toMatchObject(expected);
     });
 });

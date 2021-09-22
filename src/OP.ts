@@ -3,7 +3,6 @@ import Ajv from 'ajv';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { State } from './functions';
 import { getResolver } from './functions/DIDResolution';
 import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
 import {
@@ -38,7 +37,7 @@ export class OP {
     opts?: {
       nonce?: string;
       state?: string;
-      audience: string;
+      // audience: string;
       verification?: InternalVerification | ExternalVerification;
     }
   ): Promise<AuthenticationResponseWithJWT> {
@@ -57,11 +56,12 @@ export class OP {
   }
 
   public newAuthenticationResponseOpts(opts?: { nonce?: string; state?: string }): AuthenticationResponseOpts {
-    const state = State.getState(opts?.state);
-    const nonce = State.getNonce(state, opts?.nonce);
+    const state = opts?.state;
+    const nonce = opts?.nonce;
     return {
       ...this.authResponseOpts,
       nonce,
+      state,
     };
   }
 
@@ -101,7 +101,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: {
 
   const valid = validate(responseOpts);
   if (!valid) {
-    throw new Error('RP builder validation error: ' + JSON.stringify(validate.errors));
+    throw new Error('OP builder validation error: ' + JSON.stringify(validate.errors));
   }
   return responseOpts;
 }

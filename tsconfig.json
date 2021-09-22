@@ -38,7 +38,8 @@
   "include": [
     "src/**/*.ts",
     "test/**/*.ts",
-    "generator/**/*.ts"
+    "generator/**/*.ts",
+    "did-jwt-fork/**/*.ts"
   ],
   "exclude": [
     "node_modules/**",

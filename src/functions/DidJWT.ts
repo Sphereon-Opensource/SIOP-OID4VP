@@ -1,17 +1,16 @@
+import { EdDSASigner, ES256KSigner } from 'did-jwt';
+import { Resolvable } from 'did-resolver';
+
 import {
   createJWT,
   decodeJWT,
-  EdDSASigner,
-  ES256KSigner,
+  JWTDecoded,
   JWTHeader,
   JWTOptions,
   JWTPayload,
   JWTVerifyOptions,
   verifyJWT,
-} from 'did-jwt';
-import { JWTDecoded } from 'did-jwt/src/JWT';
-import { Resolvable } from 'did-resolver';
-
+} from '../../did-jwt-fork/JWT';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
 import { JWT, SIOP, SIOPErrors } from '../types';
 import {
@@ -22,7 +21,8 @@ import {
   expirationTime,
   isExternalSignature,
   isInternalSignature,
-  isRequestOpts,
+  isResponseOpts,
+  isResponsePayload,
   KeyAlgo,
   ResponseIss,
   SignatureResponse,
@@ -32,7 +32,7 @@ import { base58ToBase64String } from './Encodings';
 import { postWithBearerToken } from './HttpUtils';
 import { isEd25519DidKeyMethod, isEd25519JWK } from './Keys';
 
-import { DIDJwt, Keys } from './index';
+import { Keys } from './index';
 
 /**
  *  Verifies given JWT. If the JWT is valid, the promise returns an object including the JWT, the payload of the JWT,
@@ -92,15 +92,21 @@ export async function signDidJwtPayload(
   payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
   opts: AuthenticationRequestOpts | AuthenticationResponseOpts
 ) {
+  const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
+  if (isResponse) {
+    if (!payload.iss || payload.iss !== ResponseIss.SELF_ISSUED_V2) {
+      throw new Error(SIOPErrors.NO_SELFISSUED_ISS);
+    }
+  }
   if (isInternalSignature(opts.signatureType)) {
-    return DIDJwt.signDidJwtInternal(
+    return signDidJwtInternal(
       payload,
-      isRequestOpts(opts) ? opts.signatureType.did : ResponseIss.SELF_ISSUED_V2,
+      isResponse ? payload.iss : opts.signatureType.did,
       opts.signatureType.hexPrivateKey,
       opts.signatureType.kid
     );
   } else if (isExternalSignature(opts.signatureType)) {
-    return DIDJwt.signDidJwtExternal(
+    return signDidJwtExternal(
       payload,
       opts.signatureType.signatureUri,
       opts.signatureType.authZToken,
@@ -111,13 +117,16 @@ export async function signDidJwtPayload(
   }
 }
 
-export async function signDidJwtInternal(
+async function signDidJwtInternal(
   payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
   issuer: string,
   hexPrivateKey: string,
   kid?: string
 ) {
-  const algo = isEd25519DidKeyMethod(issuer) || isEd25519JWK(payload.sub_jwk) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
+  const algo =
+    isEd25519DidKeyMethod(issuer) || isEd25519DidKeyMethod(payload.kid) || isEd25519JWK(payload.sub_jwk)
+      ? KeyAlgo.EDDSA
+      : KeyAlgo.ES256K;
   // const request = !!payload.client_id;
   const signer =
     algo == KeyAlgo.EDDSA
@@ -126,7 +135,7 @@ export async function signDidJwtInternal(
 
   const header = {
     alg: algo,
-    kid: kid || (issuer === ResponseIss.SELF_ISSUED_V2 ? `${payload.did}#keys-1` : issuer),
+    kid: kid || `${payload.did}#keys-1`,
   };
   const options = {
     issuer,
@@ -137,7 +146,7 @@ export async function signDidJwtInternal(
   return await createDidJWT({ ...payload }, options, header);
 }
 
-export async function signDidJwtExternal(
+async function signDidJwtExternal(
   payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
   signatureUri: string,
   authZToken: string,
@@ -173,18 +182,32 @@ export function getAudience(jwt: string) {
   return payload.aud;
 }
 
-export function getIssuerDidFromPayload(payload: JWTPayload) {
-  if (!payload.iss || !payload.iss.startsWith('did:')) {
+function assertIssSelfIssuedOrDid(payload: JWTPayload) {
+  if (!payload.iss || !(payload.iss.startsWith('did:') || isIssSelfIssued(payload))) {
     throw new Error(SIOPErrors.NO_ISS_DID);
   }
+}
 
-  /*if (payload.iss === SIOP.ResponseIss.SELF_ISSUED_V2) {
-            const did = (payload as AuthenticationResponsePayload).did;
-            if (did) {
-                return did;
-            }
-        }*/
+export function getIssuerDidFromPayload(payload: JWTPayload, header?: JWTHeader): string {
+  assertIssSelfIssuedOrDid(payload);
+
+  if (isIssSelfIssued(payload)) {
+    let did;
+    if (payload.did) {
+      did = payload.did;
+    }
+    if (!did && header && header.kid && header.kid.startsWith('did:')) {
+      did = header.kid.split('#')[0];
+    }
+    if (did) {
+      return did;
+    }
+  }
   return payload.iss;
+}
+
+export function isIssSelfIssued(payload: JWTPayload): boolean {
+  return payload.iss.includes(ResponseIss.SELF_ISSUED_V1) || payload.iss.includes(ResponseIss.SELF_ISSUED_V2);
 }
 
 export function getIssuerDidFromJWT(jwt: string): string {

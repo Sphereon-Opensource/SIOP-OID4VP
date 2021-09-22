@@ -80,7 +80,7 @@ export interface AuthenticationResponseOpts {
   // redirectUri: string;
   signatureType: InternalSignature | ExternalSignature;
   nonce?: string;
-  // state: string;
+  state?: string;
   registration: ResponseRegistrationOpts;
   responseMode?: ResponseMode;
   did: string;
@@ -89,17 +89,19 @@ export interface AuthenticationResponseOpts {
 }
 
 export interface AuthenticationResponsePayload extends JWTPayload {
-  iss: ResponseIss.SELF_ISSUED_V2;
+  iss: ResponseIss.SELF_ISSUED_V2 | string; // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
   sub: string; //did (or thumbprint of sub_jwk key when type is jkt)
   aud: string; // redirect_uri from request
   exp?: number;
   iat?: number;
+  state: string;
   nonce: string;
   did: string;
   registration?: DiscoveryMetadataPayload;
   registration_uri?: string;
   vp?: VerifiablePresentation;
   claims?: ResponseClaims;
+  sub_type: SubjectIdentifierType;
   sub_jwk: JWK;
 }
 
@@ -240,6 +242,7 @@ export interface VerifyAuthenticationResponseOpts {
   verification: InternalVerification | ExternalVerification;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // mandatory?
+  state?: string; // mandatory?
   audience: string;
 }
 
@@ -379,6 +382,7 @@ export enum Schema {
 }
 
 export enum ResponseIss {
+  SELF_ISSUED_V1 = 'https://self-issued.me',
   SELF_ISSUED_V2 = 'https://self-issued.me/v2',
 }
 
@@ -400,6 +404,14 @@ export const isRequestOpts = (
 export const isResponseOpts = (
   object: AuthenticationRequestOpts | AuthenticationResponseOpts
 ): object is AuthenticationResponseOpts => 'did' in object;
+
+export const isRequestPayload = (
+  object: AuthenticationRequestPayload | AuthenticationResponsePayload
+): object is AuthenticationRequestPayload => 'response_mode' in object && 'response_type' in object;
+
+export const isResponsePayload = (
+  object: AuthenticationRequestPayload | AuthenticationResponsePayload
+): object is AuthenticationResponsePayload => 'iss' in object && 'aud' in object;
 
 export const isInternalVerification = (
   object: InternalVerification | ExternalVerification

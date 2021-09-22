@@ -23,7 +23,7 @@ export default class RPBuilder {
 
   requestRegistration: Partial<RequestRegistrationOpts> = {};
   redirectUri: string;
-  requestBy: ObjectBy;
+  requestObjectBy: ObjectBy;
   signatureType: InternalSignature | ExternalSignature | NoSignature;
   responseMode?: ResponseMode;
   responseContext?: ResponseContext.RP;
@@ -45,8 +45,8 @@ export default class RPBuilder {
     return this;
   }
 
-  requestRef(type: PassBy, referenceUri?: string): RPBuilder {
-    this.requestBy = {
+  requestBy(type: PassBy, referenceUri?: string): RPBuilder {
+    this.requestObjectBy = {
       type,
       referenceUri,
     };
@@ -58,7 +58,7 @@ export default class RPBuilder {
     return this;
   }
 
-  registrationRef(registrationBy: PassBy, refUri?: string): RPBuilder {
+  registrationBy(registrationBy: PassBy, refUri?: string): RPBuilder {
     this.requestRegistration = {
       registrationBy: {
         type: registrationBy,
