@@ -1,19 +1,32 @@
-// main.js
-
 const fs = require("fs");
-
 const tsj = require("ts-json-schema-generator");
 
-const config = {
+function writeSchema(config) {
+    const schema = tsj.createGenerator(config).createSchema(config.type);
+    const schemaString = JSON.stringify(schema, null, 2);
+    fs.writeFile(config.outputPath, `export const ${config.outputConstName} = ${schemaString};`, (err) => {
+        if (err) throw err;
+    });
+}
+
+const requestOptsConf = {
     path: "../src/types/SIOP.types.ts",
     tsconfig: "tsconfig.json",
     type: "AuthenticationRequestOpts", // Or <type-name> if you want to generate schema for that one type only
+    outputPath: "src/schemas/AuthenticationRequestOpts.schema.ts",
+    outputConstName: "AuthenticationRequestOptsSchema",
+    skipTypeCheck: true
 };
 
-const output_path = "src/schemas/AuthenticationRequestOpts.schema.ts";
 
-const schema = tsj.createGenerator(config).createSchema(config.type);
-const schemaString = JSON.stringify(schema, null, 2);
-fs.writeFile(output_path, `export const AuthenticationRequestOptsSchema = ${schemaString};`, (err) => {
-    if (err) throw err;
-});
+const responseOptsConf = {
+    path: "../src/types/SIOP.types.ts",
+    tsconfig: "tsconfig.json",
+    type: "AuthenticationResponseOpts", // Or <type-name> if you want to generate schema for that one type only
+    outputPath: "src/schemas/AuthenticationResponseOpts.schema.ts",
+    outputConstName: "AuthenticationResponseOptsSchema",
+    skipTypeCheck: true
+};
+
+writeSchema(requestOptsConf);
+writeSchema(responseOptsConf);

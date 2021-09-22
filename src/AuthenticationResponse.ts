@@ -9,6 +9,7 @@ import { getPublicJWKFromHexPrivateKey, getThumbprint, getThumbprintFromJwk } fr
 import { JWT, SIOP, SIOPErrors } from './types';
 import {
   AuthenticationResponsePayload,
+  SubjectIdentifierType,
   VerifiedAuthenticationResponseWithJWT,
   VerifyAuthenticationResponseOpts,
 } from './types/SIOP.types';
@@ -33,15 +34,16 @@ export default class AuthenticationResponse {
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
     responseOpts: SIOP.AuthenticationResponseOpts
   ): Promise<SIOP.AuthenticationResponseWithJWT> {
-    console.log(verifiedJwt);
+    // console.log(JSON.stringify(verifiedJwt));
 
     const payload = await createSIOPResponsePayload(verifiedJwt, responseOpts);
     const jwt = await signDidJwtPayload(payload, responseOpts);
 
+    console.log(jwt);
     return {
       jwt,
-      nonce: payload.nonce,
       state: payload.state,
+      nonce: payload.nonce,
       payload,
       responseOpts,
     };
@@ -49,32 +51,32 @@ export default class AuthenticationResponse {
     // todo add uri generation support in separate method, like in the AuthRequest class
 
     /*if (isInternalSignature(responseOpts.signatureType)) {
-                            return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
-                        } else if (isExternalSignature(responseOpts.signatureType)) {
-                            return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
-                        } else {
-                            throw new Error("INVALID_SIGNATURE_TYPE");
-                        }*/
+                                        return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
+                                    } else if (isExternalSignature(responseOpts.signatureType)) {
+                                        return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
+                                    } else {
+                                        throw new Error("INVALID_SIGNATURE_TYPE");
+                                    }*/
     /*const params = `id_token=${JWT}`;
-                        const uriResponse = {
-                            encodedUri: "",
-                            bodyEncoded: "",
-                            encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
-                            responseMode: didAuthResponseCall.responseMode
-                                ? didAuthResponseCall.responseMode
-                                : SIOP.ResponseMode.FRAGMENT, // FRAGMENT is the default
-                        };
+                                    const uriResponse = {
+                                        encodedUri: "",
+                                        bodyEncoded: "",
+                                        encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
+                                        responseMode: didAuthResponseCall.responseMode
+                                            ? didAuthResponseCall.responseMode
+                                            : SIOP.ResponseMode.FRAGMENT, // FRAGMENT is the default
+                                    };
 
-                        if (didAuthResponseCall.responseMode === SIOP.ResponseMode.FORM_POST) {
-                            uriResponse.encodedUri = encodeURI(didAuthResponseCall.redirectUri);
-                            uriResponse.bodyEncoded = encodeURI(params);
-                        } else if (didAuthResponseCall.responseMode === SIOP.ResponseMode.QUERY) {
-                            uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
-                        } else {
-                            uriResponse.responseMode = SIOP.ResponseMode.FRAGMENT;
-                            uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
-                        }
-                        return uriResponse;*/
+                                    if (didAuthResponseCall.responseMode === SIOP.ResponseMode.FORM_POST) {
+                                        uriResponse.encodedUri = encodeURI(didAuthResponseCall.redirectUri);
+                                        uriResponse.bodyEncoded = encodeURI(params);
+                                    } else if (didAuthResponseCall.responseMode === SIOP.ResponseMode.QUERY) {
+                                        uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
+                                    } else {
+                                        uriResponse.responseMode = SIOP.ResponseMode.FRAGMENT;
+                                        uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
+                                    }
+                                    return uriResponse;*/
   }
 
   /**
@@ -90,12 +92,10 @@ export default class AuthenticationResponse {
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
     }
-    //todo assert valid method for opts
+    assertValidVerifyOpts(verifyOpts);
 
     const { header, payload } = DIDJwt.parseJWT(jwt);
-    assertValidResponseJWT(header, payload);
-
-    //todo: check options audience against audience from jwt
+    assertValidResponseJWT({ header, payload });
 
     const verifiedJWT = await verifyDidJWT(jwt, DIDres.getResolver(verifyOpts.verification.resolveOpts), {
       audience: verifyOpts.audience,
@@ -105,9 +105,9 @@ export default class AuthenticationResponse {
 
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
-    } else if (!verifiedJWT.payload.nonce) {
-      throw Error(SIOPErrors.NO_NONCE);
     }
+    const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
+    assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
 
     return {
       signer: verifiedJWT.signer,
@@ -116,16 +116,35 @@ export default class AuthenticationResponse {
       verifyOpts,
       issuer: issuerDid,
       payload: {
-        ...(verifiedJWT.payload as AuthenticationResponsePayload),
+        ...verPayload,
       },
     };
   }
 }
 
-function assertValidResponseJWT(header: JWTHeader, payload: JWT.JWTPayload) {
-  console.log(header);
-  if (payload.iss !== SIOP.ResponseIss.SELF_ISSUED_V2) {
-    throw new Error(SIOPErrors.NO_SELFISSUED_ISS);
+function assertValidResponseJWT(opts: {
+  header: JWTHeader;
+  payload?: JWT.JWTPayload;
+  verPayload?: AuthenticationResponsePayload;
+  audience?: string;
+}) {
+  if (!opts.header) {
+    throw new Error(SIOPErrors.BAD_PARAMS);
+  }
+  if (opts.payload) {
+    if (opts.payload.iss !== SIOP.ResponseIss.SELF_ISSUED_V2) {
+      throw new Error(`${SIOPErrors.NO_SELFISSUED_ISS}, got: ${opts.payload.iss}`);
+    }
+  }
+
+  if (opts.verPayload) {
+    if (!opts.verPayload.nonce) {
+      throw Error(SIOPErrors.NO_NONCE);
+    } else if (!opts.verPayload.sub_type) {
+      throw Error(SIOPErrors.NO_SUB_TYPE);
+    } else if (opts.audience && opts.audience != opts.verPayload.aud) {
+      throw Error(SIOPErrors.INVALID_AUDIENCE);
+    }
   }
 }
 
@@ -157,21 +176,26 @@ async function createSIOPResponsePayload(
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
+  const isDidSupported = verifiedJwt.payload.registration?.subject_identifiers_supported?.includes(
+    SubjectIdentifierType.DID
+  );
+  // todo did method check against supported did registration value here
 
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
-  const state = State.getState(verifiedJwt.payload.state);
-  const nonce = State.getNonce(state, resOpts.nonce);
+  const state = resOpts.state || State.getState(verifiedJwt.payload.state);
+  const nonce = resOpts.nonce || State.getNonce(state, resOpts.nonce);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
   return {
     iss: SIOP.ResponseIss.SELF_ISSUED_V2,
-    sub: thumbprint,
+    sub: isDidSupported && resOpts.did ? resOpts.did : thumbprint,
     aud: verifiedJwt.payload.redirect_uri,
     did: resOpts.did,
+    sub_type: isDidSupported && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
     sub_jwk: subJwk,
     state,
     nonce,
-    iat: Date.now(),
-    exp: Date.now() + (resOpts.expiresIn || 600),
+    iat: Date.now() / 1000,
+    exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
     vp: resOpts.vp,
   };
@@ -182,5 +206,15 @@ function assertValidResponseOpts(opts: SIOP.AuthenticationResponseOpts) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   } else if (!(SIOP.isInternalSignature(opts.signatureType) || SIOP.isExternalSignature(opts.signatureType))) {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
+  }
+}
+
+function assertValidVerifyOpts(opts: SIOP.VerifyAuthenticationResponseOpts) {
+  if (
+    !opts ||
+    !opts.verification ||
+    (!SIOP.isExternalVerification(opts.verification) && !SIOP.isInternalVerification(opts.verification))
+  ) {
+    throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
 }

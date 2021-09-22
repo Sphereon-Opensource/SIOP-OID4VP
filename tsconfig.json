@@ -37,11 +37,13 @@
   },
   "include": [
     "src/**/*.ts",
-    "test/**/*.ts"
+    "test/**/*.ts",
+    "generator/**/*.ts",
+    "did-jwt-fork/**/*.ts"
   ],
   "exclude": [
     "node_modules/**",
-    "dist/**",
+    "dist/**"
   ],
   "compileOnSave": false
 }

@@ -102,6 +102,7 @@ describe("create Request Uri should", () => {
         expect(uriRequest).toHaveProperty("jwt");
         expect(uriRequest.jwt).toBeDefined();
     });
+
     it("return a reference url when using did:key", async () => {
         expect.assertions(3);
         const opts: SIOP.AuthenticationRequestOpts = {
@@ -344,6 +345,7 @@ describe("create Request JWT should", () => {
                 }
             }
         };
+
         await expect(AuthenticationRequest.createJWT(opts)).resolves.toMatchObject(expected);
     });
 });

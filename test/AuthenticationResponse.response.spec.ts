@@ -81,14 +81,15 @@ describe("create JWT from Request JWT should", () => {
     it("succeed when valid JWT is passed in", async () => {
         expect.assertions(1);
 
-        const mockEntity = await mockedGetEnterpriseAuthToken("COMPANY");
+        const mockReqEntity = await mockedGetEnterpriseAuthToken("REQ COMPANY");
+        const mockResEntity = await mockedGetEnterpriseAuthToken("RES COMPANY");
         const requestOpts = {
             redirectUri: "https://acme.com/hello",
             requestBy: {type: PassBy.REFERENCE, referenceUri: "https://my-request.com/here"},
             signatureType: {
-                hexPrivateKey: mockEntity.hexPrivateKey,
-                did: mockEntity.did,
-                kid: `${mockEntity.did}#controller`,
+                hexPrivateKey: mockReqEntity.hexPrivateKey,
+                did: mockReqEntity.did,
+                kid: `${mockReqEntity.did}#controller`,
             },
             registration: {
                 didMethodsSupported: "did:ethr:",
@@ -97,8 +98,23 @@ describe("create JWT from Request JWT should", () => {
                 registrationBy: {type: PassBy.VALUE}
             }
         }
+        const responseOpts: AuthenticationResponseOpts = {
+            registration: {
+                registrationBy: {
+                    type: PassBy.REFERENCE,
+                    referenceUri: EXAMPLE_REFERENCE_URL
+                },
+            },
+            signatureType: {
+                did: mockResEntity.did,
+                hexPrivateKey: mockResEntity.hexPrivateKey,
+                kid: `${mockResEntity.did}#controller`
+            },
+            did: mockResEntity.did,   // FIXME: Why do we need this, isn't this handled in the signature type already?
+            responseMode: ResponseMode.POST
+        }
         const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-        // console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
+        console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
         await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
     });
 });
