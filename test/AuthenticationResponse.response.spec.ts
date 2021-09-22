@@ -94,7 +94,7 @@ describe("create JWT from Request JWT should", () => {
             registration: {
                 didMethodsSupported: "did:ethr:",
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credential_formats_supported: CredentialType.JWT,
+                credentialFormatsSupported: CredentialType.JWT,
                 registrationBy: {type: PassBy.VALUE}
             }
         }

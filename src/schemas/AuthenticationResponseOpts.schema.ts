@@ -18,6 +18,9 @@ export const AuthenticationResponseOptsSchema = {
         "nonce": {
           "type": "string"
         },
+        "state": {
+          "type": "string"
+        },
         "registration": {
           "$ref": "#/definitions/ResponseRegistrationOpts"
         },
@@ -143,6 +146,57 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
+        "dids_supported": {
+          "type": "boolean"
+        },
+        "did_methods_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "credential_supported": {
+          "type": "boolean"
+        },
+        "credential_endpoint": {
+          "type": "string"
+        },
+        "credential_formats_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CredentialType"
+              }
+            },
+            {
+              "$ref": "#/definitions/CredentialType"
+            }
+          ]
+        },
+        "credential_claims_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "credential_name": {
+          "type": "string"
+        },
         "registrationBy": {
           "$ref": "#/definitions/RegistrationType"
         }
@@ -183,6 +237,13 @@ export const AuthenticationResponseOptsSchema = {
         "ES256",
         "ES256K",
         "none"
+      ]
+    },
+    "CredentialType": {
+      "type": "string",
+      "enum": [
+        "w3cvc-jsonld",
+        "jwt"
       ]
     },
     "RegistrationType": {

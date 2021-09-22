@@ -1,7 +1,7 @@
 import { getResolver as getUniResolver } from '@sphereon/did-uni-client/dist/resolver/Resolver';
 import { Resolver } from 'did-resolver';
 
-import { SIOP } from '../src';
+import { RPBuilder, SIOP } from '../src';
 import { RP } from '../src/RP';
 import { CredentialType, PassBy, ResponseMode, SubjectIdentifierType } from '../src/types/SIOP.types';
 
@@ -28,6 +28,7 @@ describe("RP Builder should", () => {
             .requestBy(PassBy.VALUE)
             .response(ResponseMode.POST)
             .registrationBy(PassBy.REFERENCE, 'https://registration.here')
+            .addCredentialType(CredentialType.JWT)
             .internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
             .build()
         )
@@ -59,7 +60,7 @@ describe("RP should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credential_formats_supported: CredentialType.JWT,
+                credentialFormatsSupported: CredentialType.JWT,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -85,7 +86,7 @@ describe("RP should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credential_formats_supported: [CredentialType.JWT, CredentialType.JSON_LD],
+                credentialFormatsSupported: [CredentialType.JWT, CredentialType.JSON_LD],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -131,11 +132,11 @@ describe("RP should", () => {
             "response_context": "rp",
             "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
             "state": "b32f0087fc9816eb813fd11f",
-            "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did"}
+            "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did", "credential_formats_supported": ["jwt"]}
         };
 
         const expectedUri = "openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%5Bobject%20Object%5D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts";
-        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5.*nN1YmplY3RfaWRlbnRpZmllcnNfc3VwcG9ydGVkIjoiZGlkIn19\..*$/;
+        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiOjE2MzIz.*3JlZGVudGlhbF9mb3JtYXRzX3N1cHBvcnRlZCI6WyJqd3QiXX19\..*$/;
 
         const request = await RP.builder()
             .redirect(EXAMPLE_REDIRECT_URL)
@@ -143,13 +144,14 @@ describe("RP should", () => {
             .internalSignature(HEX_KEY, DID, KID)
             .registrationBy(PassBy.VALUE)
             .addDidMethod('ethr')
+            .addCredentialType(CredentialType.JWT)
             .build()
 
             .createAuthenticationRequest({
             state: "b32f0087fc9816eb813fd11f",
             nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
         });
-        // console.log(request.jwt);
+        console.log(request.jwt);
         expect(request.requestPayload).toMatchObject(expectedPayloadWithoutRequest);
         expect(request.encodedUri).toMatch(expectedUri);
         expect(request.jwt).toMatch(expectedJwtRegex);

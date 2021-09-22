@@ -78,7 +78,7 @@ describe("create Request Uri should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credential_formats_supported: CredentialType.JWT,
+                credentialFormatsSupported: CredentialType.JWT,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -120,7 +120,7 @@ describe("create Request Uri should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credential_formats_supported: CredentialType.JWT,
+                credentialFormatsSupported: CredentialType.JWT,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -152,7 +152,7 @@ describe("create Request Uri should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credential_formats_supported: CredentialType.JWT,
+                credentialFormatsSupported: CredentialType.JWT,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -311,7 +311,7 @@ describe("create Request JWT should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credential_formats_supported: CredentialType.JWT,
+                credentialFormatsSupported: [CredentialType.JWT],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -328,7 +328,7 @@ describe("create Request JWT should", () => {
                 "iss": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
                 "response_mode": "post",
                 "response_context": "rp",
-                "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did"}
+                "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did", "credential_formats_supported": ["jwt"]}
             },
             "opts": {
                 "redirectUri": "https://acme.com/hello",
@@ -341,7 +341,7 @@ describe("create Request JWT should", () => {
                 "registration": {
                     "didMethodsSupported": ["did:ethr:"],
                     "subjectIdentifiersSupported": "did",
-                    "registrationBy": {"type": "VALUE"}
+                    "registrationBy": {"type": "VALUE"},
                 }
             }
         };

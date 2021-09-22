@@ -1,6 +1,6 @@
-import {VerifyAuthenticationResponseOpts} from "../dist/main/types/SIOP.types";
 import {AuthenticationResponse} from "../src";
 import SIOPErrors from "../src/types/Errors";
+import {VerifyAuthenticationResponseOpts} from "../src/types/SIOP.types";
 import {VerificationMode} from "../src/types/SIOP.types";
 
 // const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";

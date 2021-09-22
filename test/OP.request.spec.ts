@@ -1,15 +1,17 @@
+import { OP, OPBuilder, SIOP } from '../src';
+import { RP } from '../src/RP';
 import {
     AuthenticationRequestOpts,
     AuthenticationResponseOpts,
+    CredentialType,
+    PassBy,
     ResponseMode,
+    SubjectIdentifierType,
     VerificationMode,
     VerifyAuthenticationRequestOpts
-} from "../dist/main/types/SIOP.types";
-import {OP, OPBuilder, SIOP} from "../src";
-import {RP} from "../src/RP";
-import {PassBy, SubjectIdentifierType} from "../src/types/SIOP.types";
+} from '../src/types/SIOP.types';
 
-import {mockedGetEnterpriseAuthToken} from "./TestUtils";
+import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
@@ -98,6 +100,7 @@ describe("OP should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialType.JWT],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },

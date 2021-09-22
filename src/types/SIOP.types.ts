@@ -129,13 +129,13 @@ export interface DiscoveryMetadataOpts {
   subjectTypesSupported?: SubjectType[] | SubjectType;
   idTokenSigningAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  dids_supported: boolean;
-  did_methods_supported: string[] | string;
-  credential_supported: boolean;
-  credential_endpoint: string;
-  credential_formats_supported: CredentialType[] | CredentialType;
-  credential_claims_supported: string[] | string;
-  credential_name: string;
+  dids_supported?: boolean;
+  did_methods_supported?: string[] | string;
+  credential_supported?: boolean;
+  credential_endpoint?: string;
+  credential_formats_supported?: CredentialType[] | CredentialType;
+  credential_claims_supported?: string[] | string;
+  credential_name?: string;
 }
 
 export interface DiscoveryMetadataPayload {
@@ -167,7 +167,7 @@ export interface ResponseRegistrationOpts extends DiscoveryMetadataOpts {
 export interface RPRegistrationMetadataOpts {
   subjectIdentifiersSupported: SubjectIdentifierType[] | SubjectIdentifierType;
   didMethodsSupported?: string[] | string;
-  credential_formats_supported: CredentialType[] | CredentialType;
+  credentialFormatsSupported: CredentialType[] | CredentialType;
 }
 
 export interface RPRegistrationMetadataPayload {

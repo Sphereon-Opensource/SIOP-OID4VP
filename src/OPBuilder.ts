@@ -4,6 +4,7 @@ import { Resolvable, Resolver } from 'did-resolver';
 import { OP } from './OP';
 import { DIDJwt } from './functions';
 import {
+  CredentialType,
   ExternalSignature,
   InternalSignature,
   PassBy,
@@ -15,12 +16,17 @@ export default class OPBuilder {
   didMethods: string[] = [];
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   signatureType: InternalSignature | ExternalSignature;
-
+  credentialFormats: CredentialType[] = [];
   responseRegistration: ResponseRegistrationOpts;
   responseMode?: ResponseMode;
   did: string;
   // vp?: VerifiablePresentation;
   expiresIn?: number;
+
+  addCredentialType(credentialFormat: CredentialType): OPBuilder {
+    this.credentialFormats.push(credentialFormat);
+    return this;
+  }
 
   addResolver(didMethod: string, resolver: Resolvable): OPBuilder {
     this.didMethods.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));

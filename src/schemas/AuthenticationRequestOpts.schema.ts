@@ -219,7 +219,7 @@ export const AuthenticationRequestOptsSchema = {
             }
           ]
         },
-        "credential_formats_supported": {
+        "credentialFormatsSupported": {
           "anyOf": [
             {
               "type": "array",
@@ -237,7 +237,7 @@ export const AuthenticationRequestOptsSchema = {
         }
       },
       "required": [
-        "credential_formats_supported",
+        "credentialFormatsSupported",
         "registrationBy",
         "subjectIdentifiersSupported"
       ],

@@ -38,6 +38,6 @@ function createRPRegistrationMetadataPayload(
   return {
     did_methods_supported: opts.didMethodsSupported || ['did:eosio:', 'did:ethr:', 'did:factom:', 'did:lto:'],
     subject_identifiers_supported: opts.subjectIdentifiersSupported || SIOP.SubjectIdentifierType.DID,
-    credential_formats_supported: opts.credential_formats_supported || [],
+    credential_formats_supported: opts.credentialFormatsSupported || [],
   };
 }

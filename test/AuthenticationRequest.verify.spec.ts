@@ -128,6 +128,7 @@ describe("verifyJWT should", () => {
             registration: {
                 didMethodsSupported: ['did:key:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialType.JWT],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -168,7 +169,7 @@ describe("verifyJWT should", () => {
             registration: {
                 didMethodsSupported: "did:ethr:",
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credential_formats_supported: CredentialType.JWT,
+                credentialFormatsSupported: [CredentialType.JWT],
                 registrationBy: { type: PassBy.VALUE }
             }
         }
