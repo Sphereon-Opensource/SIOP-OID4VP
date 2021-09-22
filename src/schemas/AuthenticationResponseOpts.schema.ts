@@ -18,6 +18,9 @@ export const AuthenticationResponseOptsSchema = {
         "nonce": {
           "type": "string"
         },
+        "state": {
+          "type": "string"
+        },
         "registration": {
           "$ref": "#/definitions/ResponseRegistrationOpts"
         },

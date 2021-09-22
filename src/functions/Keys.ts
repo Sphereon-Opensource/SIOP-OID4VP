@@ -24,7 +24,7 @@ export function isEd25519DidKeyMethod(did?: string) {
 }
 
 export function isEd25519JWK(jwk: JWK): boolean {
-  return jwk && jwk.crv && jwk.crv === SIOP.KeyCurve.ED25519;
+  return jwk && !!jwk.crv && jwk.crv === SIOP.KeyCurve.ED25519;
 }
 
 export function getHexPrivateKey(key: JWK): string {

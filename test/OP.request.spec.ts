@@ -1,12 +1,12 @@
+import {OP, OPBuilder, SIOP} from "../src";
+import {RP} from "../src/RP";
 import {
     AuthenticationRequestOpts,
     AuthenticationResponseOpts,
     ResponseMode,
     VerificationMode,
     VerifyAuthenticationRequestOpts
-} from "../dist/main/types/SIOP.types";
-import {OP, OPBuilder, SIOP} from "../src";
-import {RP} from "../src/RP";
+} from "../src/types/SIOP.types";
 import {PassBy, SubjectIdentifierType} from "../src/types/SIOP.types";
 
 import {mockedGetEnterpriseAuthToken} from "./TestUtils";
@@ -132,7 +132,7 @@ describe("OP should", () => {
 
         const requestURI = await RP.builder()
             .redirect(EXAMPLE_REFERENCE_URL)
-            .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+            .requestBy(PassBy.VALUE/*, EXAMPLE_REFERENCE_URL*/)
             .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
             .addDidMethod("ethr")
             .registrationBy(PassBy.VALUE)
@@ -142,6 +142,8 @@ describe("OP should", () => {
             nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
             state: "b32f0087fc9816eb813fd11f"
         });
+
+        console.log(requestURI.encodedUri)
 
         const verifiedRequest = await OP.builder()
             .withDid(opMockEntity.did)

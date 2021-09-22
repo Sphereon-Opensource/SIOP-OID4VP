@@ -5,21 +5,24 @@ Self Issued OpenID Provider v2 (SIOP)
 </h1>
 <br>
 
-An authentication library for having clients/people as Self Issued OpenID Provider as specified in the OpenID Connect working group.
+An authentication library for having clients/people conforming to the [Self Issued OpenID Provider v2 (SIOPv2)](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html) and  [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html) as specified in the OpenID Connect working group.
 
 ## Introduction
-DID SIOP is an extension of OpenID Connect to allow End-users to use OpenID Providers (OPs) that they control. Using Self-Issued OPs, End-users can authenticate themselves and present claims directly to the Relying Parties (RPs), typically a webapp,  without relying on a third-party Identity Provider. This makes the solution fully self sovereign, as it does not rely on any third parties and strictly happens peer 2 peer, but still uses the OpenID Connect protocol.
+SIOP v2 is an extension of OpenID Connect to allow End-users to act as OpenID Providers (OPs) themselves. Using Self-Issued OPs, End-users can authenticate themselves and present claims directly to the Relying Parties (RPs), typically a webapp,  without relying on a third-party Identity Provider. This makes the solution fully self sovereign, as it does not rely on any third parties and strictly happens peer 2 peer, but still uses the OpenID Connect protocol.
 
-The term Self-Issued comes from the fact that the End-users issue self-signed ID Tokens to prove validity of the identifiers and claims. This is a trust model different from that of the rest of OpenID Connect where OP is run by the third party who issues ID Tokens on behalf of the End-user upon End-user's consent. 
+Next to the user acting as an OpenID Provider, this library also includes support for Verifiable Presentations using the [Presentation Exchange](https://identity.foundation/presentation-exchange/) support provided by our [pe-js](https://github.com/Sphereon-Opensource/pe-js) library. This means that the Relying Party can pose submission requirements on the Verifiable Credentials it would like to receive from the client/OP. The OP then checks whether it has the credentials to support the submission requirements. Only if that is the case it will send the relevant (parts of the) credentials as a Verifiable Presentation in the Authentication Response destined for the Webapp/Relying Party. The relying party in turn checks validity of the Verifiable Presentation(s) as well as the match with the submission requirements. Only if everything is verified successfully the RP serves the protected page(s). This means that the authentication can be extended with claims about the authenticating entity, but it can also be used to easily consume credentials from supporting applications, without having to setup DIDComm connections for instance.
+
+The term Self-Issued comes from the fact that the End-users (OP) issue self-signed ID Tokens to prove validity of the identifiers and claims. This is a trust model different from that of the rest of OpenID Connect where OP is run by the third party who issues ID Tokens on behalf of the End-user to the Relying Party upon the End-user's consent. This means the End-User is in control about his/her data instead of the 3rd party OP.
 
 ## Service
-The DID Auth SIOP library consists of a group of services and classes to:
+The DID Auth SIOP v2 library consists of a group of services and classes to:
 
-- DID method neutral: Resolve DIDs using DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and Sphereon's [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client)
-- Verify and Create JWTs using DIDs
-- Client Auth Service to create and verify Authentication Requests
-- RP Auth Service to verify an Authenticaiton response on the RP side
-- RP Session, to create and verify bearer access tokens
+- [Decentralized Identifiers (DID)](https://www.w3.org/TR/did-core/) method neutral: Resolve DIDs using DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and Sphereon's [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client)
+- Verify and Create Json Web Tokens (JWTs) as used in OpenID Connect using Decentralized Identifiers (DIDs)
+- OP class to create Authentication Requests and verify Authentication Responses
+- RP class to verify Authentication Requests and create Authentication Responses
+- Verifiable Presentation and Presentation Exchange support on the RP and OP sides
+
 
 ## Steps involved
 
@@ -28,57 +31,62 @@ Flow diagram:
 ![Flow diagram](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/Sphereon-Opensource/did-auth-siop/develop/docs/auth-flow-diagram.txt)
 
 
-1. Client initiates an Auth request by POST-ing to /did-siop/v1/authentications
-2. RP receives the request and creates the authentication request as JWT, signs it and returns the response as an OpenID Connect URI 
+1. Client (OP) initiates an Auth request by POST-ing to an endpoint, like for instance `/did-siop/v1/authentications` or clicking a Login button and scanning a QR code
+2. Web (RP) receives the request and access the RP object which creates the authentication request as JWT, signs it and returns the response as an OpenID Connect URI 
    1. JWT example:
     ```json
     // JWT Header
     {
       "alg": "ES256K",
-      "typ": "JWT",
-      "jwk": "{Auth JWK here}",
+      "kid": "did:ethr:0xcBe71d18b5F1259faA9fEE8f9a5FAbe2372BE8c9#controller",
+      "typ": "JWT"
     }
      
     // JWT Payload
-    {
-      "scope": "openid did_authn",
-      "iss": "did:eosio:example-rp",
+   {
+      "iat": 1632336634,
+      "exp": 1632337234,
       "response_type": "id_token",
-      "client_id": "<redirect-uri>",
-      "nonce": "<random-nonce>",
-      "registration": { /* chapter 9 siop spec */
-          "redirect_uris": ["https://acme.com/example-redirect"],
-          "response_types": "id_token",
-          "id_token_signed_response_alg": ["RS256", "ES256", "ES256K", "EdDSA"],
-          "request_object_signing_alg": ["RS256", "ES256", "ES256K", "EdDSA"],
-          "access_token_signing_alg": ["RS256", "ES256", "ES256K", "EdDSA"],
-          "access_token_encryption_alg_values_supported": ["ECDH-ES"],
-          "access_token_encryption_enc_values_supported": ["A128GCM", "A256GCM"],
-          "jwks_uri": "https://uniresolver.test.sphereon.com/did/1.0/identifiers/did:eosio:example-rp"
-      },
-      "claims": {
-        /* TODO */
-      
+      "scope": "openid",
+      "client_id": "did:ethr:0xcBe71d18b5F1259faA9fEE8f9a5FAbe2372BE8c9",
+      "redirect_uri": "https://acme.com/siop/v1/sessions",
+      "iss": "did:ethr:0xcBe71d18b5F1259faA9fEE8f9a5FAbe2372BE8c9",
+      "response_mode": "post",
+      "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
+      "state": "b32f0087fc9816eb813fd11f",
+      "registration": {
+         "did_methods_supported": [
+          "did:ethr:",
+          "did:eosio:"
+         ],
+         "subject_identifiers_supported": "did"
       }
-    }
+   }
     ```
    
-   2. JWS scheme (JWS Compact Serialization, https://datatracker.ietf.org/doc/html/rfc7515#section-7.1): 
+   2. The Signed JWT, called the JWS follows the following scheme (JWS Compact Serialization, https://datatracker.ietf.org/doc/html/rfc7515#section-7.1): 
    
-   `BASE64URL(UTF8(JWS Protected Header)) || '.' ||
-   BASE64URL(JWS Payload) || '.' ||
+   `BASE64URL(UTF8(JWT Protected Header)) || '.' ||
+   BASE64URL(JWT Payload) || '.' ||
    BASE64URL(JWS Signature)`
 
-   3. URI: 
+   3. Create the URI containing the JWS: 
    ```
-   openid://?response_type=id_token
-      &client_id=https%3A%2F%2Fapp.acme.com%2Fexample
-      &scope=openid%20did_authn
-      &request=<auth-request-JWS>
+   openid://?response_type=id_token 
+      &scope=openid
+      &client_id=did%3Aethr%3A0xBC9484414c1DcA4Aa85BadBBd8a36E3973934444
+      &redirect_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts
+      &iss=did%3Aethr%3A0xBC9484414c1DcA4Aa85BadBBd8a36E3973934444
+      &response_mode=post
+      &nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f
+      &registration=%5Bobject%20Object%5D
+      &request=<JWS here>
    ```
-3. Client receives the Auth Request URI in the response body
-4. Client verifies it and
-5. Client creates the authentication response as follows:
+3. Web receives the Auth Request URI Object from RP
+4. Web sends the Auth Request URI in the response body to the client
+5. Client accesses OP object to create an Authentication response
+6. OP verifies the authentication request, including checks on whether the RP did and keytypes are supported, next to whether the OP can satisfy the RPs requested Verifiable Credentials
+7. OP creates the authentication response object as follows:
    1. Create an ID token as shown below:
 
     ````json
@@ -86,19 +94,43 @@ Flow diagram:
     // JWT Header
     {
       "alg": "ES256K",
+      "kid": "did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda#keys-1",
       "typ": "JWT",
-      "kid": "did:eosio:example-client#auth-key-1",
     }
     // JWT Payload
-    {
-      "iss": "did:eosio:example-client",
-      "sub": "{thumbprint of the sub_jwk}",
-      "aud": "did:eosio:example-rp",
-      "iat": 1620252000,
-      "exp": 1620252600,
-      "nonce": "<random-nonce>"
-     }
-    }
+   {
+      "iat": 1632343857.084,
+      "exp": 1632344857.084,
+      "iss": "https://self-issued.me/v2",
+      "sub": "did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda",
+      "aud": "https://acme.com/siop/v1/sessions",
+      "did": "did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda",
+      "sub_type": "did",
+      "sub_jwk": {
+         "kid": "did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda#key-1",
+         "kty": "EC",
+         "crv": "secp256k1",
+         "x": "a4IvJILPHe3ddGPi9qvAyXY9qMTEHvQw5DpQYOJVA0c",
+         "y": "IKOy0JfBF8FOlsOJaC41xiKuGc2-_iqTI01jWHYIyJU"
+      },
+      "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
+      "state": "b32f0087fc9816eb813fd11f",
+      "registration": {
+         "issuer": "https://self-issued.me/v2",
+         "response_types_supported": "id_token",
+         "authorization_endpoint": "openid:",
+         "scopes_supported": "openid",
+         "id_token_signing_alg_values_supported": [
+            "ES256K",
+            "EdDSA"
+         ],
+         "request_object_signing_alg_values_supported": [
+            "ES256K",
+            "EdDSA"
+         ],
+         "subject_types_supported": "pairwise"
+      }
+   }
     ````
 
     2. Sign the ID token using the DID key (kid) using JWS scheme (JWS Compact Serialization, https://datatracker.ietf.org/doc/html/rfc7515#section-7.1) and send it to the RP:
@@ -107,35 +139,46 @@ Flow diagram:
    BASE64URL(JWS Payload) || '.' ||
    BASE64URL(JWS Signature)`
 
-6. Client posts to /did-siop/v1/sessions
-7. RP receives the ID token (auth response), verifies it (signature & client DID) and
-8. Issues an access token. Create an Authenticated Key Exchange response and return that to the client
-9. Client receives the access token and
-10. verifies the Authenticated Key Exchange response and the access token in it
+8. OP returns the Auth response and jwt object to the client
+9. Client does an HTTP POST to redirect_uri from the request (and the aud in the response): https://acme.com/siop/v1/sessions using "application/x-www-form-urlencoded"
+10. Web receives the ID token (auth response) and uses the RP's object verify method 
+11. RP performs the validation of the token, including signature validation, expiration and Verifiable Presentations if any. It returns the Verified Auth Response to WEB
+12. WEB returns a 200 response to Client with a redirect to another page (logged in or confirmation of VP receipt etc).
+13. From that moment on Client can use the Auth Response as bearer token as long as it is valid
 ## DID resolution
 
 ### Description
 Resolves the DID to a DID document using the DID method provided in didUrl and using DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and Sphereons [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client). 
 
-This process allows to retrieve public keys and verificationMethod material, as well as services provided by a DID controller. To be used in both the webapp and mobile applications. Uses the did-uni-client, but could use other DIF did-resolver drivers as well. The benefit of the uni client is that it can resolve many different DID methods. Since the resolution is provided by the mentioned external dependencies we suffice with a usage example.
+This process allows retrieving public keys and verificationMethod material, as well as services provided by a DID controller. Can be used in both the webapp and mobile applications. Uses the did-uni-client, but could use other DIF did-resolver drivers as well. The benefit of the uni client is that it can resolve many DID methods. Since the resolution itself is provided by the mentioned external dependencies above, we suffice with a usage example.
 
 #### Usage
 ```typescript
 import { Resolver } from 'did-resolver'
-import uni from '@sphereon/did-uni-client'
+import { getResolver as getUniResolver } from '@sphereon/did-uni-client'
 
-const uniResolver = uni.getResolver();
-const resolver = new Resolver(uniResolver);
+const resolver = new Resolver(getUniResolver('ethr'));
 
-resolver.resolve('did:eosio:example').then(doc => console.log)
+resolver.resolve('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda').then(doc => console.log)
 ```
 
+The DidResolution file exposes 2 functions that help with the resolution as well:
+```typescript
+import { getResolver, resolveDidDocument } from './functions/DIDResolution';
+
+// combines 2 uni resolvers for ethr and eosio together with the myCustomResolver and return that as a single resolver
+const myCustomResolver = new MyCustomResolver();
+getResolver({ didMethods: ["ethr", "eosio"], resolver: myCustomResolver });
+
+// Returns a DID document for the specified DID, using the universal resolver client for the ehtr DID method
+await resolveDidDocument('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda', { didMethods: ["ethr"]});
+```
 
 ## JWT and DID creation and verification
+Please note that this chapter is about low level JWT functions, which normally aren't used by end users of this library. Typically, you use the AuthenticationRequest and Response classes (low-level) or the OP and RP classes (high-level).
+
 ### Create JWT
-
 Creates a signed JWT given a DID which becomes the issuer, a signer function, and a payload over which the signature is created.
-
 
 #### Data Interface
 ```typescript
@@ -147,6 +190,7 @@ export interface JWTPayload { // This is a standard JWT payload described on for
   nbf?: number
   exp?: number
   rexp?: number
+  jti?: string;
   [x: string]: any
 }
 
@@ -209,77 +253,129 @@ export interface VerificationMethod {
 
 #### Usage
 ```typescript
-verifyDidJWT(jwt, resolver, {audience: '6B2bRWU3F7j3REx3vkJ..', callbackUrl: 'https://example.com/callback'}).then(obj => {
-       const did = obj.issuer                           // DID of signer
-       const payload = obj.payload
-       const doc = obj.didResolutionResult.didDocument  // DID Document of signer
-       const jwt = obj.jwt                              // JWT 
-       const signerKeyId = obj.signer.id                // ID of key in DID document that signed JWT
+verifyDidJWT(jwt, resolver, {audience: '6B2bRWU3F7j3REx3vkJ..'}).then(verifiedJWT => {
+       const did = verifiedJWT.issuer;                          // DID of signer
+       const payload = verifiedJWT.payload;                     // The JHT payload
+       const doc = verifiedJWT.didResolutionResult.didDocument; // DID Document of signer
+       const jwt = verifiedJWT.jwt;                             // JWS in string format 
+       const signerKeyId = verifiedJWT.signer.id;               // ID of key in DID document that signed JWT
        ...
    });
 ```
 
 
-## Auth Request Service
+## AuthenticationRequest class
 
-### createRequestJWT
-Create a signed URL encoded URI with a signed DidAuth request token
+### createURI
+Create a signed URL encoded URI with a signed SIOP Authentication request 
 
 #### Data Interface
 ```typescript
-export interface DidAuthRequestCall {
-    redirectUri: string;                // The redirect URI
-    hexPrivateKey: string;              // The private key used to sign
-    kid: string;                        // The DID Key id
-    issuer: string;                     // The issuer DID
-    responseMode?: string;              // How the response should be handled (fragment, form_post, query)
-    claims?: RequestClaims;             // The UserInfo and ID Token
+interface AuthenticationRequestURI extends SIOPURI {
+   jwt?: string;                                    // The JWT when requestBy was set to mode Reference, undefined if the mode is Value
+   requestOpts: AuthenticationRequestOpts;          // The supplied request opts as passed in to the method
+   requestPayload: AuthenticationRequestPayload;    // The json payload that ends up signed in the JWT
+}
+export type SIOPURI = {
+   encodedUri: string;                  // The encode JWT as URI
+   encodingFormat: UrlEncodingFormat;   // The encoding format used
+};
+
+// https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
+export interface AuthenticationRequestOpts {
+   redirectUri: string;                // The redirect URI
+   requestBy: ObjectBy;                // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
+   signatureType: InternalSignature | ExternalSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication)
+   responseMode?: ResponseMode;        // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
+   responseContext?: ResponseContext;  // Defines the context of these opts. Either RP side or OP side
+   claims?: OidcClaim;                 // The claims
+   registration: RequestRegistrationOpts; // Registration metadata options
+   nonce?: string;                     // An optional nonce, will be generated if not provided
+   state?: string;                     // An optional state, will be generated if not provided
+
+   // slint-disable-next-line @typescript-eslint/no-explicit-any
+   // [x: string]: any;
 }
 
-export interface RequestClaims {
-    userinfo?: UserInfo;                // Standard OpenID Connect UserInfo.
-    id_token?: IdToken;                 // Standard OpenID Connect ID Token
-}
-
-createRequestJWT(didAuthRequestCall: DidAuthRequestCall): Promise<{
-    uri: string;
-}>;
+static async createURI(opts: SIOP.AuthenticationRequestOpts): Promise<SIOP.AuthenticationRequestURI>
 ```
 
 #### Usage
 ```typescript
-createRequestJWT({
-    redirectUri: 'https://example.com/',
-    hexPrivateKey: 'a3...',
-    kid: 'did:eosio:example#key-0',
-    issuer: 'did:esoio:example',
-    responseMode: 'query'
-})
-    .then(uri => console.log(uri));
+const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
+const EXAMPLE_REFERENCE_URL = "https://rp.acme.com/siop/jwts";
+const HEX_KEY = "f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f";
+const DID = "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0";
+const KID = "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1";
 
-// Output: openid://?response_type=id_token&client_id=https%3A%2F%2Fexample.com%2F&scope=openid%20did_authn&request=<JWT>
+const opts = {
+   redirectUri: EXAMPLE_REDIRECT_URL,
+   requestBy: {
+      type: SIOP.PassBy.VALUE,
+   },
+   signatureType: {
+      hexPrivateKey: HEX_KEY,
+      did: DID,
+      kid: KID,
+   },
+   registration: {
+      didMethodsSupported: ['did:ethr:'],
+      subjectIdentifiersSupported: SubjectIdentifierType.DID,
+      registrationBy: {
+         type: SIOP.PassBy.VALUE,
+      },
+   }
+};
+
+AuthenticationRequest.createURI(opts)
+    .then(uri => console.log(uri.encodedUri));
+
+// Output: 
+// 
+// openid://
+//      ?response_type=id_token
+//      &scope=openid
+//      &client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0
+//      &redirect_uri=https%3A%2F%2Facme.com%2Fhello
+//      &iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0
+//      &response_mode=post
+//      &response_context=rp
+//      &nonce=aTO_jvEBPyigHFIueD1cT657LxVZwWxBesd2v6LVnjA
+//      &state=b34b64db619e798b317fd4c0
+//      &registration=%5Bobject%20Object%5D
+//      &request=eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0.eyJpYXQiOjE2MzIzNTAxNDYsImV4cCI6MTYzMjM1MDc0NiwicmVzcG9uc2VfdHlwZSI6ImlkX3Rva2VuIiwic2NvcGUiOiJvcGVuaWQiLCJjbGllbnRfaWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAiLCJyZWRpcmVjdF91cmkiOiJodHRwczovL2FjbWUuY29tL2hlbGxvIiwiaXNzIjoiZGlkOmV0aHI6MHgwMTA2YTJlOTg1YjFFMURlOUI1ZGRiNGFGNmRDOWU5MjhGNGU5OUQwIiwicmVzcG9uc2VfbW9kZSI6InBvc3QiLCJyZXNwb25zZV9jb250ZXh0IjoicnAiLCJub25jZSI6Im1kSFdxQnc1TlRkNTVlckJjcFlBdmNrMEdVOHRDQWZJYUdscVVHVE1rREEiLCJzdGF0ZSI6ImYyYTIzYTNkZDI2MWQ4NTczOGE1ZWMyYyIsInJlZ2lzdHJhdGlvbiI6eyJkaWRfbWV0aG9kc19zdXBwb3J0ZWQiOlsiZGlkOmV0aHI6Il0sInN1YmplY3RfaWRlbnRpZmllcnNfc3VwcG9ydGVkIjoiZGlkIn19.gPLLvFhD77MJC7IulbvdZ1dm0A1pXMh5VxFfz1ExMA_IQZmBdjyXih6RMWvYFh3Hn0Cn8R_su-ki5OP9HH7jLQ
+
 
 ```
 
 
-### verifyJWTRequest
-Verifies a DidAuth ID Request Token
+### verifyJWT
+Verifies a SIOP Authentication Request JWT. Throws an error if the verifation fails. Returns the verified JWT and metadata if the verification succeeds
 
 #### Data Interface
 ```typescript
-export interface SIOPRequest extends JWTPayload {
-    iss: string;                            // literal "https://self-issued.me"
-    scope: Scope;                           // literal "openid did_authn"
-    response_type: ResponseType;            // literal "id_token"
-    client_id: string;                      // The OpenID client id
-    nonce: string;                          // The nonce, a random generated string (v4 uuid)
-    did_doc?: DIDDocument;                  // optional: The (resolved) DID Document conforming to the DID spec
-    claims?: RequestClaims;                 // optional: The UserInfo and ID Token
+export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
+   payload: AuthenticationRequestPayload;       // The unsigned Authentication Request payload
+   verifyOpts: VerifyAuthenticationRequestOpts; // The verification options for the authentication request
 }
 
-export interface RequestClaims {
-    userinfo?: UserInfo;                    // optional: Standard OpenID Connect UserInfo.
-    id_token?: IdToken;                     // optional: Standard OpenID Connect ID Token
+export interface VerifiedJWT {
+   payload: Partial<JWTPayload>;            // The JWT payload
+   didResolutionResult: DIDResolutionResult;// DID resolution result including DID document
+   issuer: string;                          // The issuer (did) of the JWT
+   signer: VerificationMethod;              // The matching verification method from the DID that was used to sign
+   jwt: string;                             // The JWT
+}
+
+export interface VerifyAuthenticationRequestOpts {
+   verification: InternalVerification | ExternalVerification;  // To use internal verification or external hosted verification
+   nonce?: string; // If provided the nonce in the request needs to match
+}
+
+export interface DIDResolutionResult {
+   didResolutionMetadata: DIDResolutionMetadata // Did resolver metadata
+   didDocument: DIDDocument                     // The DID document
+   didDocumentMetadata: DIDDocumentMetadata     // DID document metadata
 }
 
 export interface DIDDocument {              // Standard DID Document, see DID spec for explanation
@@ -296,46 +392,34 @@ export interface DIDDocument {              // Standard DID Document, see DID sp
     service?: ServiceEndpoint[]
 }
 
-verifyJWTRequest(didAuthJwt: string): Promise<SIOPRequest>;
+static async verifyJWT(jwt: string, opts: SIOP.VerifyAuthenticationRequestOpts): Promise<SIOP.VerifiedAuthenticationRequestWithJWT>
 ```
 #### Usage
 
 ````typescript
-const jwt = await createRequestJWT({
-    redirectUri: 'https://example.com/',
-    hexPrivateKey: 'a3...',
-    kid: 'did:eosio:example#key-0',
-    issuer: 'did:esoio:example',
-    responseMode: 'query'
-});
-
-verifyJWTRequest(jwt).then(req => {
-    console.log(`nonce: ${req.nonce}`)
-    // output: nonce: 5c1d29c1-cf7d-4e14-9305-9db46d8c1916
-})
-
-````
-
-
-### createAuthResponse
-Creates a DidAuth Response Object
-
-#### Usage
-````typescript
-export interface DidAuthResponseCall {
-    hexPrivateKey: string;                  // The private key in hex
-    did: string;                            // The DID
-    redirectUri: string;                    // The redirect URI
-    nonce?: string;                         // The nonce (random v4 UUID)
-    responseMode?: ResponseMode;     // Response mode
-    claims?: ResponseClaims;
+const verifyOpts: VerifyAuthenticationRequestOpts = {
+   verification: {
+      mode: VerificationMode.INTERNAL,
+      resolveOpts: {
+         didMethods: ["ethr"]
+      }
+   },
 }
-
-createAuthResponse(didAuthResponse: DidAuthResponseCall): Promise<UriResponse>;
+const jwt = 'ey..........' // JWT created by RP
+AuthenticationRequest.verifyJWT(jwt).then(req => {
+   console.log(`issuer: ${req.issuer}`);
+   console.log(JSON.stringify(req.signer));
+});
+// issuer: "did:ethr:0x56C4b92D4a6083Fcee825893A29023cDdfff5c66"
+// "signer": {
+//      "id": "did:ethr:0x56C4b92D4a6083Fcee825893A29023cDdfff5c66#controller",
+//      "type": "EcdsaSecp256k1RecoveryMethod2020",
+//      "controller": "did:ethr:0x56C4b92D4a6083Fcee825893A29023cDdfff5c66",
+//      "blockchainAccountId": "0x56C4b92D4a6083Fcee825893A29023cDdfff5c66@eip155:1"
+// }
 ````
 
-
-## Relying Party Auth Service
+## AuthenticationResponse class
 
 ### verifyAuthResponse
 Verifies a DidAuth ID Response Token and the audience. Return a DID Auth Validation Response, which contains the JWT payload as well as the verification method that signed the JWT.
@@ -370,55 +454,7 @@ verifyAuthResponse('ey....', 'my-audience').then(resp => {
 });
 ````
 
-## Relying Party Session
 
-### createAccessToken
-Creates an access token as a JWS placed in an Authenticated Key Exchange response. Uses the response from the above verifyAuthResponse call as input.
-
-#### Data Interface
-````typescript
-export interface DidAuthValidationResponse {
-    signatureValidation: boolean;               // Whether the signature needs to be validated (defaults tot true)
-    signer: VerificationMethod;                 // DID VerificationMethod  (described already before)
-    payload: JWTPayload;                        // The JWT Payload (described already before)
-}
-
-export interface AkeResponse {
-    version: 1;                                 // Version 1 of the Authenticated Key Exchange Response
-    signed_payload: AkeSigned;                  // The signed (encrypted) payload
-    jws: string;                                // The JWS
-    did?: string;                               // The DID associated with the response
-}
-
-export interface AkeSigned {
-    //JWT Header: typ:JWT
-
-    version: 1;                                 // Version 1 of the Authenticated Key Exchange Response
-
-    // Encrypted access token
-    encrypted_access_token: string;             // The encrypted access token
-
-    // ID Token nonce
-    nonce: string;                              // The nonce (random v4 uuid)
-    kid?: string;                               // The DID key id
-    iat: number;                                // Issued at (time)
-    iss: string;                                // Identity of the issuer (DID)
-}
-
-createAccessToken(validation: DidAuthValidationResponse, opts?: { [key: string]: string | number; }): Promise<AkeResponse>;
-````
-
-#### Usage
-````typescript
-const didAuthValResponse = await verifyAuthResponse('ey....', 'my-audience');
-
-createAccessToken(didAuthValResponse).then(akeResp => {
-    console.log(`did: ${akeResp.did}`);
-    // output: did: did:eosio:example
-    console.log(akeResp.signed_payload.nonce);
-    // output: 5c1d29c1-cf7d-4e14-9305-9db46d8c1916
-})
-````
 
 ### verifyAccessToken
 Verifies the bearer access token on the RP side as received from the OP/client. Throws an error if the token is invalid, otherwise returns the JWT

@@ -62,11 +62,12 @@ export default class RPBuilder {
     this.requestRegistration = {
       registrationBy: {
         type: registrationBy,
+        referenceUri: refUri,
       },
     };
-    if (refUri) {
+    /*if (refUri) {
       this.requestRegistration.registrationBy.referenceUri = refUri;
-    }
+    }*/
     return this;
   }
 
