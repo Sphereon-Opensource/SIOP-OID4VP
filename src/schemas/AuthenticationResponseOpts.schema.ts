@@ -146,10 +146,10 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
-        "dids_supported": {
+        "didsSupported": {
           "type": "boolean"
         },
-        "did_methods_supported": {
+        "didMethodsSupported": {
           "anyOf": [
             {
               "type": "array",
@@ -162,26 +162,26 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
-        "credential_supported": {
+        "credentialSupported": {
           "type": "boolean"
         },
-        "credential_endpoint": {
+        "credentialEndpoint": {
           "type": "string"
         },
-        "credential_formats_supported": {
+        "credentialFormatsSupported": {
           "anyOf": [
             {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/CredentialType"
+                "$ref": "#/definitions/CredentialFormat"
               }
             },
             {
-              "$ref": "#/definitions/CredentialType"
+              "$ref": "#/definitions/CredentialFormat"
             }
           ]
         },
-        "credential_claims_supported": {
+        "credentialClaimsSupported": {
           "anyOf": [
             {
               "type": "array",
@@ -194,7 +194,7 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
-        "credential_name": {
+        "credentialName": {
           "type": "string"
         },
         "registrationBy": {
@@ -239,7 +239,7 @@ export const AuthenticationResponseOptsSchema = {
         "none"
       ]
     },
-    "CredentialType": {
+    "CredentialFormat": {
       "type": "string",
       "enum": [
         "w3cvc-jsonld",

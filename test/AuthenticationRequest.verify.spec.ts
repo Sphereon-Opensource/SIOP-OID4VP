@@ -6,7 +6,7 @@ import { AuthenticationRequest, SIOP } from '../src';
 import { State } from '../src/functions';
 import SIOPErrors from '../src/types/Errors';
 import {
-    CredentialType,
+    CredentialFormat,
     PassBy,
     ResponseContext,
     ResponseMode,
@@ -50,7 +50,7 @@ describe("SIOP Request Validation", () => {
             registration: {
                 did_methods_supported: ['did:ethr:'],
                 subject_identifiers_supported: SubjectIdentifierType.DID,
-                credential_formats_supported: [CredentialType.JSON_LD, CredentialType.JWT]
+                credential_formats_supported: [CredentialFormat.JSON_LD, CredentialFormat.JWT]
                 /*subject_types_supported: SubjectType.PAIRWISE,
                 scopes_supported: Scope.OPENID,
                 request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
@@ -128,7 +128,7 @@ describe("verifyJWT should", () => {
             registration: {
                 didMethodsSupported: ['did:key:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credentialFormatsSupported: [CredentialType.JWT],
+                credentialFormatsSupported: [CredentialFormat.JWT],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -169,7 +169,7 @@ describe("verifyJWT should", () => {
             registration: {
                 didMethodsSupported: "did:ethr:",
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credentialFormatsSupported: [CredentialType.JWT],
+                credentialFormatsSupported: [CredentialFormat.JWT],
                 registrationBy: { type: PassBy.VALUE }
             }
         }
@@ -191,29 +191,23 @@ describe("verifyJWT should", () => {
     });
 });
 
-describe('OP and RP should', () => {
+describe('OP and RP communication should', () => {
 
-    it('work with the same did methods', () => {
-        const verify = jest.spyOn(metadata, 'verify');
+    it('work if both support the same did methods', () => {
         metadata.verify();
-        expect(verify).toHaveBeenCalledTimes(1);
-        verify.mockClear();
+        expect(metadata.verify()).toEqual({op_rp_credential_formats_supported: ['jwt', 'w3cvc-jsonld'], op_rp_did_methods_supported: ['did:web:']});
     });
 
-    it('work with any did method', () => {
+    it('work if RP supports any OP did methods', () => {
+        metadata.opMetadata.credential_formats_supported = [CredentialFormat.JSON_LD];
         metadata.rpMetadata.subject_identifiers_supported = SubjectIdentifierType.DID;
         metadata.rpMetadata.did_methods_supported = undefined;
-        const verify = jest.spyOn(metadata, 'verify');
-        metadata.verify();
-        expect(verify).toHaveBeenCalledTimes(1);
-        verify.mockClear();
+        expect(metadata.verify()).toEqual({op_rp_credential_formats_supported: ['w3cvc-jsonld'], op_rp_did_methods_supported: ['did:web:']});
     });
 
-    it('work if RP supports any OP credentials', () => {
-        const verify = jest.spyOn(metadata, 'verify');
-        metadata.verify();
-        expect(verify).toHaveBeenCalledTimes(1);
-        verify.mockClear();
+    it('work if RP supports any OP credential formats', () => {
+        metadata.opMetadata.credential_formats_supported = [CredentialFormat.JSON_LD];
+        expect(metadata.verify()).toEqual({op_rp_credential_formats_supported: ['w3cvc-jsonld'], op_rp_did_methods_supported: ['did:web:']});
     });
 
     it('not work if RP does not support any OP did method', () => {

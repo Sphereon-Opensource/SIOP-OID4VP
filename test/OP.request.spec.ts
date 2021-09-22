@@ -3,7 +3,7 @@ import { RP } from '../src/RP';
 import {
     AuthenticationRequestOpts,
     AuthenticationResponseOpts,
-    CredentialType,
+    CredentialFormat,
     PassBy,
     ResponseMode,
     SubjectIdentifierType,
@@ -100,7 +100,7 @@ describe("OP should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credentialFormatsSupported: [CredentialType.JWT],
+                credentialFormatsSupported: [CredentialFormat.JWT],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },

@@ -129,13 +129,13 @@ export interface DiscoveryMetadataOpts {
   subjectTypesSupported?: SubjectType[] | SubjectType;
   idTokenSigningAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  dids_supported?: boolean;
-  did_methods_supported?: string[] | string;
-  credential_supported?: boolean;
-  credential_endpoint?: string;
-  credential_formats_supported?: CredentialType[] | CredentialType;
-  credential_claims_supported?: string[] | string;
-  credential_name?: string;
+  didsSupported?: boolean;
+  didMethodsSupported?: string[] | string;
+  credentialSupported?: boolean;
+  credentialEndpoint?: string;
+  credentialFormatsSupported?: CredentialFormat[] | CredentialFormat;
+  credentialClaimsSupported?: string[] | string;
+  credentialName?: string;
 }
 
 export interface DiscoveryMetadataPayload {
@@ -150,7 +150,7 @@ export interface DiscoveryMetadataPayload {
   did_methods_supported: string[] | string;
   credential_supported: boolean;
   credential_endpoint: string;
-  credential_formats_supported: CredentialType[] | CredentialType;
+  credential_formats_supported: CredentialFormat[] | CredentialFormat;
   credential_claims_supported: string[] | string;
   credential_name: string;
   // slint-disable-next-line @typescript-eslint/no-explicit-any
@@ -167,13 +167,18 @@ export interface ResponseRegistrationOpts extends DiscoveryMetadataOpts {
 export interface RPRegistrationMetadataOpts {
   subjectIdentifiersSupported: SubjectIdentifierType[] | SubjectIdentifierType;
   didMethodsSupported?: string[] | string;
-  credentialFormatsSupported: CredentialType[] | CredentialType;
+  credentialFormatsSupported: CredentialFormat[] | CredentialFormat;
 }
 
 export interface RPRegistrationMetadataPayload {
   subject_identifiers_supported: SubjectIdentifierType[] | SubjectIdentifierType;
   did_methods_supported?: string[] | string;
-  credential_formats_supported: CredentialType[] | CredentialType;
+  credential_formats_supported: CredentialFormat[] | CredentialFormat;
+}
+
+export interface SupportedTypes {
+  op_rp_did_methods_supported?: string[];
+  op_rp_credential_formats_supported: string[];
 }
 
 export type ObjectBy = {
@@ -387,7 +392,7 @@ export enum SubjectIdentifierType {
   DID = 'did',
 }
 
-export enum CredentialType {
+export enum CredentialFormat {
   JSON_LD = 'w3cvc-jsonld',
   JWT = 'jwt',
 }

@@ -18,7 +18,7 @@ import { assertValidMetadata } from '../src/functions/DidSiopMetadata';
 import { base64ToHexString } from '../src/functions/Encodings';
 import SIOPErrors from '../src/types/Errors';
 import {
-    CredentialType,
+    CredentialFormat,
     ResponseIss,
     ResponseType,
     Scope,
@@ -241,14 +241,14 @@ export const resolveDidKey = async (
 
 export const metadata = {
     opMetadata: {
-        credential_formats_supported: [CredentialType.JWT],
+        credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
         issuer: ResponseIss.SELF_ISSUED_V2,
         authorization_endpoint: 'http://test.com',
         credential_claims_supported: ['test'],
         credential_endpoint: 'http://test.com',
         credential_name: 'test',
         credential_supported: true,
-        did_methods_supported: ['did:web'],
+        did_methods_supported: ['did:web:'],
         dids_supported: true,
         id_token_signing_alg_values_supported: undefined,
         request_object_signing_alg_values_supported: SigningAlgo.EDDSA,
@@ -258,11 +258,11 @@ export const metadata = {
     },
     rpMetadata: {
         subject_identifiers_supported: SubjectIdentifierType.DID,
-        did_methods_supported: ['did:web', 'did:key'],
-        credential_formats_supported: [CredentialType.JWT, CredentialType.JSON_LD]
+        did_methods_supported: ['did:web:', 'did:key:'],
+        credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD]
     },
     verify() {
-        assertValidMetadata(this.opMetadata, this.rpMetadata);
+        return assertValidMetadata(this.opMetadata, this.rpMetadata);
     }
 }
 

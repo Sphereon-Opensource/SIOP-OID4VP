@@ -3,7 +3,7 @@ import { Resolver } from 'did-resolver';
 
 import { RPBuilder, SIOP } from '../src';
 import { RP } from '../src/RP';
-import { CredentialType, PassBy, ResponseMode, SubjectIdentifierType } from '../src/types/SIOP.types';
+import { CredentialFormat, PassBy, ResponseMode, SubjectIdentifierType } from '../src/types/SIOP.types';
 
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
@@ -28,7 +28,7 @@ describe("RP Builder should", () => {
             .requestBy(PassBy.VALUE)
             .response(ResponseMode.POST)
             .registrationBy(PassBy.REFERENCE, 'https://registration.here')
-            .addCredentialType(CredentialType.JWT)
+            .addCredentialFormat(CredentialFormat.JWT)
             .internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
             .build()
         )
@@ -60,7 +60,7 @@ describe("RP should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credentialFormatsSupported: CredentialType.JWT,
+                credentialFormatsSupported: CredentialFormat.JWT,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -86,7 +86,7 @@ describe("RP should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credentialFormatsSupported: [CredentialType.JWT, CredentialType.JSON_LD],
+                credentialFormatsSupported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -144,7 +144,7 @@ describe("RP should", () => {
             .internalSignature(HEX_KEY, DID, KID)
             .registrationBy(PassBy.VALUE)
             .addDidMethod('ethr')
-            .addCredentialType(CredentialType.JWT)
+            .addCredentialFormat(CredentialFormat.JWT)
             .build()
 
             .createAuthenticationRequest({

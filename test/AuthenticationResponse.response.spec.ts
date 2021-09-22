@@ -2,7 +2,7 @@ import { AuthenticationRequest, AuthenticationResponse } from '../src';
 import SIOPErrors from '../src/types/Errors';
 import {
     AuthenticationResponseOpts,
-    CredentialType,
+    CredentialFormat,
     PassBy,
     ResponseMode,
     SubjectIdentifierType,
@@ -25,13 +25,13 @@ const validButExpiredJWT = 'eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDUwMjM4
 describe("create JWT from Request JWT should", () => {
     const responseOpts: AuthenticationResponseOpts = {
         registration: {
-            dids_supported: true,
-            did_methods_supported: ['did:web'],
-            credential_supported: false,
-            credential_name: 'test',
-            credential_endpoint: 'http://test.com',
-            credential_claims_supported: 'any',
-            credential_formats_supported: CredentialType.JWT,
+            didsSupported: true,
+            didMethodsSupported: ['did:web'],
+            credentialSupported: false,
+            credentialName: 'test',
+            credentialEndpoint: 'http://test.com',
+            credentialClaimsSupported: 'any',
+            credentialFormatsSupported: CredentialFormat.JSON_LD,
             registrationBy: {
                 type: PassBy.REFERENCE,
                 referenceUri: EXAMPLE_REFERENCE_URL
@@ -94,7 +94,7 @@ describe("create JWT from Request JWT should", () => {
             registration: {
                 didMethodsSupported: "did:ethr:",
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
-                credentialFormatsSupported: CredentialType.JWT,
+                credentialFormatsSupported: CredentialFormat.JSON_LD,
                 registrationBy: {type: PassBy.VALUE}
             }
         }

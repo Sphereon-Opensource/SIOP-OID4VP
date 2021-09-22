@@ -224,11 +224,11 @@ export const AuthenticationRequestOptsSchema = {
             {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/CredentialType"
+                "$ref": "#/definitions/CredentialFormat"
               }
             },
             {
-              "$ref": "#/definitions/CredentialType"
+              "$ref": "#/definitions/CredentialFormat"
             }
           ]
         },
@@ -250,7 +250,7 @@ export const AuthenticationRequestOptsSchema = {
         "did"
       ]
     },
-    "CredentialType": {
+    "CredentialFormat": {
       "type": "string",
       "enum": [
         "w3cvc-jsonld",

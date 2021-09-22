@@ -4,7 +4,7 @@ import { Resolvable, Resolver } from 'did-resolver';
 import { RP } from './RP';
 import { DIDJwt } from './functions';
 import {
-  CredentialType,
+  CredentialFormat,
   ExternalSignature,
   InternalSignature,
   NoSignature,
@@ -21,7 +21,7 @@ export default class RPBuilder {
   subjectIdentifierTypes: SubjectIdentifierType = SubjectIdentifierType.DID;
   didMethods: string[] = [];
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-  credentialFormats: CredentialType[] = [];
+  credentialFormats: CredentialFormat[] = [];
   requestRegistration: Partial<RequestRegistrationOpts> = {};
   redirectUri: string;
   requestObjectBy: ObjectBy;
@@ -30,7 +30,7 @@ export default class RPBuilder {
   responseContext?: ResponseContext.RP;
   claims?: OidcClaim;
 
-  addCredentialType(credentialType: CredentialType): RPBuilder {
+  addCredentialFormat(credentialType: CredentialFormat): RPBuilder {
     this.credentialFormats.push(credentialType);
     return this;
   }

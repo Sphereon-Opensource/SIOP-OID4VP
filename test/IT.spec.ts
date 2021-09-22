@@ -1,6 +1,6 @@
 import { OP } from '../src';
 import { RP } from '../src/RP';
-import { CredentialType, PassBy } from '../src/types/SIOP.types';
+import { CredentialFormat, PassBy } from '../src/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
@@ -21,7 +21,7 @@ describe("RP and OP interaction should", () => {
             .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
             .addDidMethod("ethr")
             .registrationBy(PassBy.VALUE)
-            .addCredentialType(CredentialType.JWT)
+            .addCredentialFormat(CredentialFormat.JWT)
             .build();
         const op = OP.builder()
             .withDid(opMockEntity.did)
@@ -29,7 +29,7 @@ describe("RP and OP interaction should", () => {
             .addDidMethod("ethr")
             .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did)
             .registrationBy(PassBy.VALUE)
-            .addCredentialType(CredentialType.JWT)
+            .addCredentialFormat(CredentialFormat.JWT)
             .build();
 
         const requestURI = await rp.createAuthenticationRequest({

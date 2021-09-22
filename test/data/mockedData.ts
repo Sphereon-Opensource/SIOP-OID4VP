@@ -1,7 +1,7 @@
 import { DIDDocument } from 'did-resolver';
 
 import { JWTHeader, SIOP } from '../../src';
-import { CredentialType, ResponseContext, ResponseMode, SubjectIdentifierType } from '../../src/types/SIOP.types';
+import { CredentialFormat, ResponseContext, ResponseMode, SubjectIdentifierType } from '../../src/types/SIOP.types';
 
 export const DIDAUTH_HEADER: JWTHeader = {
     typ: "JWT",
@@ -22,7 +22,7 @@ export const DIDAUTH_REQUEST_PAYLOAD: SIOP.AuthenticationRequestPayload = {
     registration: {
       did_methods_supported: ['did:ethr:'],
       subject_identifiers_supported: SubjectIdentifierType.DID,
-      credential_formats_supported: [CredentialType.JSON_LD, CredentialType.JWT]
+      credential_formats_supported: [CredentialFormat.JSON_LD, CredentialFormat.JWT]
     },
     /*registration: {
         subject_types_supported: SubjectType.PAIRWISE,
