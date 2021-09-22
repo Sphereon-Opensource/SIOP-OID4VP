@@ -1,8 +1,8 @@
-import {parse} from "querystring";
+import { parse } from 'querystring';
 
-import {AuthenticationRequest, SIOP} from "../src";
-import SIOPErrors from "../src/types/Errors";
-import {SubjectIdentifierType} from "../src/types/SIOP.types";
+import { AuthenticationRequest, SIOP } from '../src';
+import SIOPErrors from '../src/types/Errors';
+import { CredentialType, SubjectIdentifierType } from '../src/types/SIOP.types';
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const EXAMPLE_REFERENCE_URL = "https://rp.acme.com/siop/jwts";
@@ -78,6 +78,7 @@ describe("create Request Uri should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credential_formats_supported: CredentialType.JWT,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -118,6 +119,7 @@ describe("create Request Uri should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credential_formats_supported: CredentialType.JWT,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -149,6 +151,7 @@ describe("create Request Uri should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credential_formats_supported: CredentialType.JWT,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -307,6 +310,7 @@ describe("create Request JWT should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credential_formats_supported: CredentialType.JWT,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },

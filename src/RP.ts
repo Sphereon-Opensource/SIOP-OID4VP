@@ -9,6 +9,7 @@ import { SIOP } from './types';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
+  CredentialType,
   ExternalSignature,
   InternalSignature,
   NoSignature,
@@ -72,8 +73,8 @@ export class RP {
   public static Builder = class {
     subjectIdentifierTypes: SubjectIdentifierType = SubjectIdentifierType.DID;
     didMethods: string[] = [];
+    credentialFormats: CredentialType[] = [];
     resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-
     requestRegistration: Partial<RequestRegistrationOpts> = {};
     redirectUri: string;
     requestBy: ObjectBy;
@@ -90,6 +91,11 @@ export class RP {
 
     addDidMethod(didMethod: string): RP.Builder {
       this.addResolver(didMethod, new Resolver(getUniResolver(DIDJwt.getMethodFromDid(didMethod))));
+      return this;
+    }
+
+    addCredentialFormats(credentialFormat: CredentialType): RP.Builder {
+      this.credentialFormats.push(credentialFormat);
       return this;
     }
 
@@ -137,6 +143,7 @@ export class RP {
     build(): RP {
       this.requestRegistration.didMethodsSupported = this.didMethods;
       this.requestRegistration.subjectIdentifiersSupported = this.subjectIdentifierTypes;
+      this.requestRegistration.credential_formats_supported = this.credentialFormats;
       return new RP({ builder: this });
     }
   };

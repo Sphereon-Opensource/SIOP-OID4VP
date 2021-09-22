@@ -127,6 +127,13 @@ export interface DiscoveryMetadataOpts {
   subjectTypesSupported?: SubjectType[] | SubjectType;
   idTokenSigningAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
+  dids_supported: boolean;
+  did_methods_supported: string[] | string;
+  credential_supported: boolean;
+  credential_endpoint: string;
+  credential_formats_supported: CredentialType[] | CredentialType;
+  credential_claims_supported: string[] | string;
+  credential_name: string;
 }
 
 export interface DiscoveryMetadataPayload {
@@ -137,7 +144,13 @@ export interface DiscoveryMetadataPayload {
   subject_types_supported: SubjectType[] | SubjectType;
   id_token_signing_alg_values_supported: KeyAlgo[] | KeyAlgo;
   request_object_signing_alg_values_supported: SigningAlgo[] | SigningAlgo;
-
+  dids_supported: boolean;
+  did_methods_supported: string[] | string;
+  credential_supported: boolean;
+  credential_endpoint: string;
+  credential_formats_supported: CredentialType[] | CredentialType;
+  credential_claims_supported: string[] | string;
+  credential_name: string;
   // slint-disable-next-line @typescript-eslint/no-explicit-any
   // [x: string]: any;
 }
@@ -150,13 +163,15 @@ export interface ResponseRegistrationOpts extends DiscoveryMetadataOpts {
 }
 
 export interface RPRegistrationMetadataOpts {
-  subjectIdentifiersSupported?: SubjectIdentifierType[] | SubjectIdentifierType;
-  didMethodsSupported: string[] | string;
+  subjectIdentifiersSupported: SubjectIdentifierType[] | SubjectIdentifierType;
+  didMethodsSupported?: string[] | string;
+  credential_formats_supported: CredentialType[] | CredentialType;
 }
 
 export interface RPRegistrationMetadataPayload {
-  subject_identifiers_supported?: SubjectIdentifierType[] | SubjectIdentifierType;
-  did_methods_supported: string[] | string;
+  subject_identifiers_supported: SubjectIdentifierType[] | SubjectIdentifierType;
+  did_methods_supported?: string[] | string;
+  credential_formats_supported: CredentialType[] | CredentialType;
 }
 
 export type ObjectBy = {
@@ -378,6 +393,11 @@ export enum ResponseType {
 export enum SubjectIdentifierType {
   JKT = 'jkt',
   DID = 'did',
+}
+
+export enum CredentialType {
+  JSON_LD = 'w3cvc-jsonld',
+  JWT = 'jwt',
 }
 
 export enum SubjectType {

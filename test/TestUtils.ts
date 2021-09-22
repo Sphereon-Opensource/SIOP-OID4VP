@@ -1,23 +1,33 @@
-import crypto from "crypto";
+import crypto from 'crypto';
 
-import {resolve as didKeyResolve} from "@transmute/did-key.js";
-import base58 from "bs58";
-import {DIDDocument, DIDResolutionResult} from "did-resolver";
-import {ethers} from "ethers";
-import fromKeyLike from "jose/jwk/from_key_like";
-import parseJwk from "jose/jwk/parse";
-import SignJWT from "jose/jwt/sign";
-import {JWK, JWTPayload} from "jose/types";
-import jwt_decode from "jwt-decode";
-import moment from "moment";
-import {v4 as uuidv4} from "uuid";
+import { resolve as didKeyResolve } from '@transmute/did-key.js';
+import base58 from 'bs58';
+import { DIDDocument, DIDResolutionResult } from 'did-resolver';
+import { ethers } from 'ethers';
+import fromKeyLike from 'jose/jwk/from_key_like';
+import parseJwk from 'jose/jwk/parse';
+import SignJWT from 'jose/jwt/sign';
+import { JWK, JWTPayload } from 'jose/types';
+import jwt_decode from 'jwt-decode';
+import moment from 'moment';
+import { v4 as uuidv4 } from 'uuid';
 
 
-import {SIOP} from "../src";
-import {base64ToHexString} from "../src/functions/Encodings";
-import SIOPErrors from "../src/types/Errors";
+import { SIOP } from '../src';
+import { assertValidMetadata } from '../src/functions/DidSiopMetadata';
+import { base64ToHexString } from '../src/functions/Encodings';
+import SIOPErrors from '../src/types/Errors';
+import {
+    CredentialType,
+    ResponseIss,
+    ResponseType,
+    Scope,
+    SigningAlgo,
+    SubjectIdentifierType,
+    SubjectType
+} from '../src/types/SIOP.types';
 
-import {DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK,} from "./data/mockedData";
+import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
 
 export interface TESTKEY {
     key: JWK;
@@ -228,4 +238,31 @@ export const resolveDidKey = async (
         accept: 'application/did+ld+json'
     })) as DIDResolutionResult;
 };
+
+export const metadata = {
+    opMetadata: {
+        credential_formats_supported: [CredentialType.JWT],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        authorization_endpoint: 'http://test.com',
+        credential_claims_supported: ['test'],
+        credential_endpoint: 'http://test.com',
+        credential_name: 'test',
+        credential_supported: true,
+        did_methods_supported: ['did:web'],
+        dids_supported: true,
+        id_token_signing_alg_values_supported: undefined,
+        request_object_signing_alg_values_supported: SigningAlgo.EDDSA,
+        response_types_supported: ResponseType.ID_TOKEN,
+        scopes_supported: Scope.OPENID_DIDAUTHN,
+        subject_types_supported: SubjectType.PAIRWISE
+    },
+    rpMetadata: {
+        subject_identifiers_supported: SubjectIdentifierType.DID,
+        did_methods_supported: ['did:web', 'did:key'],
+        credential_formats_supported: [CredentialType.JWT, CredentialType.JSON_LD]
+    },
+    verify() {
+        assertValidMetadata(this.opMetadata, this.rpMetadata);
+    }
+}
 

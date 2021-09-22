@@ -32,6 +32,8 @@ enum SIOPErrors {
   ERROR_ON_POST_CALL = 'Error on Post call: ',
   NO_DID_PAYLOAD = 'payload must contain did field in payload for self-issued tokens',
   NO_JWT = 'no JWT was supplied',
+  DID_METHODS_NOT_SUPORTED = 'DID_METHODS_NOT_SUPPORTED',
+  CREDENTIAL_FORMATS_NOT_SUPPORTED = 'CREDENTIAL_FORMATS_NOT_SUPPORTED',
 }
 
 export default SIOPErrors;
