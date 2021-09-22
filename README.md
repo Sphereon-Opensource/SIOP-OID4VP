@@ -25,7 +25,7 @@ The DID Auth SIOP library consists of a group of services and classes to:
 
 Flow diagram:
 
-![flow diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/Sphereon-Opensource/did-auth-siop/master/docs/auth-flow-diagram.txt)
+![Flow diagram](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/Sphereon-Opensource/did-auth-siop/develop/docs/auth-flow-diagram.txt)
 
 
 1. Client initiates an Auth request by POST-ing to /did-siop/v1/authentications
