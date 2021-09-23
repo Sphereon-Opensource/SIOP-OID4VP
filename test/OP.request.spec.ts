@@ -9,7 +9,7 @@ import {
     SubjectIdentifierType,
     VerificationMode,
     VerifyAuthenticationRequestOpts
-} from '../src/types/SIOP.types';
+} from "../src/types/SIOP.types";
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 

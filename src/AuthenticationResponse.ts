@@ -1,4 +1,5 @@
 import { JWTHeader } from 'did-jwt';
+import { JWK } from 'jose/types';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
@@ -148,7 +149,9 @@ function assertValidResponseJWT(opts: {
   }
 }
 
-async function createThumbprintAndJWK(resOpts: SIOP.AuthenticationResponseOpts) {
+async function createThumbprintAndJWK(
+  resOpts: SIOP.AuthenticationResponseOpts
+): Promise<{ thumbprint: string; subJwk: JWK }> {
   let thumbprint;
   let subJwk;
   if (SIOP.isInternalSignature(resOpts.signatureType)) {
@@ -159,9 +162,12 @@ async function createThumbprintAndJWK(resOpts: SIOP.AuthenticationResponseOpts) 
       resOpts.did
     );
   } else if (SIOP.isExternalSignature(resOpts.signatureType)) {
-    const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri);
-    thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk, resOpts.did);
-    subJwk = didDocument.verificationMethod[0].publicKeyJwk;
+    const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
+    if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
+      throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
+    }
+    thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
+    subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;
   } else {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }

@@ -19,11 +19,11 @@ export interface JWTPayload {
 }
 
 export interface VerifiedJWT {
-  payload: Partial<JWTPayload>;
-  didResolutionResult: DIDResolutionResult;
-  issuer: string;
-  signer: VerificationMethod;
-  jwt: string;
+  payload: Partial<JWTPayload>; // The JWT payload
+  didResolutionResult: DIDResolutionResult; // DID resolution result including DID document
+  issuer: string; //The issuer (did) of the JWT
+  signer: VerificationMethod; // The matching verification method from the DID that was used to sign
+  jwt: string; // The JWT
 }
 
 /*

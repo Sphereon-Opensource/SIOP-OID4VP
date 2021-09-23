@@ -1,13 +1,13 @@
 import { getResolver as getUniResolver } from '@sphereon/did-uni-client/dist/resolver/Resolver';
 import { fetch } from 'cross-fetch';
-import { DIDResolutionOptions, DIDResolutionResult, ParsedDID, Resolver } from 'did-resolver';
+import { DIDResolutionOptions, DIDResolutionResult, ParsedDID, Resolvable, Resolver } from 'did-resolver';
 
 import SIOPErrors from '../types/Errors';
 import { DIDDocument, ResolveOpts } from '../types/SSI.types';
 
 import { getMethodFromDid } from './DidJWT';
 
-export function getResolver(opts: ResolveOpts) {
+export function getResolver(opts: ResolveOpts): Resolvable {
   if (opts && opts.resolver) {
     return opts.resolver;
   }

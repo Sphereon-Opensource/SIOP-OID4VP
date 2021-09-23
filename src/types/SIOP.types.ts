@@ -6,24 +6,17 @@ import { OidcClaim, ResolveOpts, VerifiablePresentation } from './SSI.types';
 
 export const expirationTime = 10 * 60;
 
-export interface EnterpriseAuthZToken extends JWTPayload {
-  did: string;
-  enterpriseName: string;
-  nonce: string;
-}
-
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
 export interface AuthenticationRequestOpts {
-  redirectUri: string;
-  requestBy: ObjectBy;
-  signatureType: InternalSignature | ExternalSignature | NoSignature;
-  responseMode?: ResponseMode;
-  responseContext?: ResponseContext;
-  claims?: OidcClaim;
-  // keySigningAlgorithm?: KeyAlgorithm;
-  registration: RequestRegistrationOpts;
-  nonce?: string;
-  state?: string;
+  redirectUri: string; // The redirect URI
+  requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
+  signatureType: InternalSignature | ExternalSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication)
+  responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
+  responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
+  claims?: OidcClaim; // The claims
+  registration: RequestRegistrationOpts; // Registration metadata options
+  nonce?: string; // An optional nonce, will be generated if not provided
+  state?: string; // An optional state, will be generated if not provided
 
   // slint-disable-next-line @typescript-eslint/no-explicit-any
   // [x: string]: any;
@@ -39,8 +32,6 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   // iss: string;
   response_mode: ResponseMode;
   response_context: ResponseContext;
-  // registration?: RPRegistrationMetadataPayload /*| RegistrationJwksUri | RegistrationJwks*/; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
-  // registration_uri?: string; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.2.
 
   request?: string; // TODO Request Object value, as specified in Section 6.1. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
   request_uri?: string; //URL where Request Object value can be retrieved from, as specified in Section 6.2.
@@ -52,17 +43,13 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
 }
 
 export interface RequestRegistrationPayload {
-  registration?: RPRegistrationMetadataPayload /*| RegistrationJwksUri | RegistrationJwks*/; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
+  registration?: RPRegistrationMetadataPayload; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
   registration_uri?: string;
 }
 
 export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
-  payload: AuthenticationRequestPayload;
-  verifyOpts: VerifyAuthenticationRequestOpts;
-  /* didResolutionResult: DIDResolutionResult;
-     issuer?: string;
-     signer?: VerificationMethod;
-     jwt: string;*/
+  payload: AuthenticationRequestPayload; // The unsigned Authentication Request payload
+  verifyOpts: VerifyAuthenticationRequestOpts; // The verification options for the authentication request
 }
 
 /**
@@ -207,7 +194,6 @@ export enum PassBy {
 export enum ResponseContext {
   RP = 'rp',
   OP = 'op',
-  WALLET = 'wallet',
 }
 
 export interface InternalSignature {
@@ -239,22 +225,20 @@ export interface InternalVerification {
   mode: VerificationMode;
   /*registry?: string;
     rpcUrl?: string;*/
-  // didUrlResolver?: string;
-  resolveOpts?: ResolveOpts;
+  resolveOpts: ResolveOpts;
 }
 
 export interface ExternalVerification {
   mode: VerificationMode;
   verifyUri: string; // url to call to verify the id_token signature
   authZToken?: string; // Optional: bearer token to use to the call
-  resolveOpts?: ResolveOpts;
-  // didUrlResolver?: string;
+  resolveOpts: ResolveOpts;
 }
 
 export interface VerifyAuthenticationRequestOpts {
-  verification: InternalVerification | ExternalVerification;
+  verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
-  nonce?: string;
+  nonce?: string; // If provided the nonce in the request needs to match
   // redirectUri?: string;
 }
 
@@ -266,46 +250,10 @@ export interface VerifyAuthenticationResponseOpts {
   audience: string;
 }
 
-/*
-
-export interface IdToken {
-    [x: string]: unknown;
-}
-
-export interface UserInfo {
-    [x: string]: unknown;
-}
-
-export interface RequestClaims {
-    userinfo?: UserInfo;
-    id_token?: IdToken;
-}
-*/
 export interface ResponseClaims {
   verified_claims?: string;
   encryption_key?: JsonWebKey;
 }
-
-/*
-export interface DidAuthRequestCall {
-    redirectUri: string;
-    hexPrivateKey: string;
-    kid: string;
-    issuer: string;
-    responseMode?: string;
-    responseContext?: string;
-    claims?: RequestClaims;
-}
-
-export interface DidAuthResponseCall {
-    hexPrivateKey: string;
-    did: string;
-    redirectUri: string;
-    nonce?: string;
-    responseMode?: ResponseMode;
-    claims?: ResponseClaims;
-}
-*/
 
 export interface DidAuthValidationResponse {
   signatureValidation: boolean;
@@ -316,10 +264,6 @@ export interface DidAuthValidationResponse {
 export interface VerifiedAuthenticationResponseWithJWT extends VerifiedJWT {
   payload: AuthenticationResponsePayload;
   verifyOpts: VerifyAuthenticationResponseOpts;
-  /* didResolutionResult: DIDResolutionResult;
-     issuer?: string;
-     signer?: VerificationMethod;
-     jwt: string;*/
 }
 
 export enum ResponseMode {
@@ -338,19 +282,19 @@ export enum UrlEncodingFormat {
 }
 
 export type SIOPURI = {
-  encodedUri: string;
-  encodingFormat: UrlEncodingFormat;
+  encodedUri: string; // The encode JWT as URI
+  encodingFormat: UrlEncodingFormat; // The encoding format used
 };
 
 export interface UriResponse extends SIOPURI {
-  responseMode?: ResponseMode;
-  bodyEncoded?: string;
+  responseMode?: ResponseMode; // The response mode as passed in during creation
+  bodyEncoded?: string; // The URI encoded body (JWS)
 }
 
 export interface AuthenticationRequestURI extends SIOPURI {
-  jwt?: string;
-  requestOpts: AuthenticationRequestOpts;
-  requestPayload: AuthenticationRequestPayload;
+  jwt?: string; // The JWT when requestBy was set to mode Reference, undefined if the mode is Value
+  requestOpts: AuthenticationRequestOpts; // The supplied request opts as passed in to the method
+  requestPayload: AuthenticationRequestPayload; // The json payload that ends up signed in the JWT
 }
 
 export enum KeyType {

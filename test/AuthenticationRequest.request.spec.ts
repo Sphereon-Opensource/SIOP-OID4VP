@@ -351,6 +351,8 @@ describe("create Request JWT should", () => {
             }
         };
 
+        AuthenticationRequest.createURI(opts)
+            .then(uri => console.log(uri.encodedUri));
         await expect(AuthenticationRequest.createJWT(opts)).resolves.toMatchObject(expected);
     });
 });

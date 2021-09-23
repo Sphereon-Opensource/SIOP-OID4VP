@@ -6,39 +6,48 @@ end title
 
 autonumber
 
-participant "Client\n(OP)" as OP order 0
-participant "Auth API\nClientAuth" as auth1 order 1 #White
-participant "Auth API\nRPAuth" as auth2 order 1 #White
-participant "Web component\n(RP)" as RP order 2
+participant "Client\n(OP)" as CLIENT order 0
+participant "OP\nclass" as OP order 1 #White
+participant "RP\nclass" as RP order 2 #White
+participant "Web component\n(RP)" as WEB order 3
 
-OP -> auth1: HTTPS POST /authentication-requests
-activate auth1
-auth1 -> auth1: Create\n<Authentication Request>
-auth1 -> OP: 200: <Authentication Request>
-deactivate auth1
+activate WEB
+CLIENT -> WEB: HTTPS POST
 
+WEB -> RP: CreateAuthRequest\n(Request Opts)
+activate RP
+RP -> WEB: Return\n<Auth Request>
+deactivate RP
+WEB -> CLIENT: 302: Redirect <Auth Request> (can include VC request), optionally displays a QR
+deactivate WEB
+
+activate CLIENT
+CLIENT-> OP: createAuthResponse\n(Auth Request,Response Opts, Verify Opts)
 activate OP
-OP -> OP: Verify\n<Authentication Request>
-OP -> OP: Create\n<Authentication Response>
-OP -> auth2: HTTPS POST <Authentication Response>\n/siop-sessions
+OP -> OP: verifyAuthRequest\n(Auth Request, Verify Opts)
+OP -> OP: createAuthResponse\n(Auth Request, Response Opts)
+OP-> CLIENT: Return\n<Auth Response>
 deactivate OP
+CLIENT-> WEB: HTTPS POST <Auth Response> (can include Verifiable Credentials)
+deactivate CLIENT
 
-activate auth2
-auth2 -> auth2: Verify\n<Authentication Response>
-auth2 -> auth2: Create <Access Token>
-OP <- auth2: 200: <Access Token>
-deactivate auth2
 
-activate OP
-OP -> OP: Verify <Access Token>
-deactivate OP
+activate WEB
+WEB -> RP: Verify\n(Auth Response, Verify Opts)
+activate RP
+
+RP -> WEB: Return\n<VerifiedAuthResponse>
+deactivate RP
+WEB -> CLIENT: 200
+deactivate WEB
+
 
 == Protected resources ==
 
-OP -> RP: HTTPS POST <Access Token>\n/protected-resources
+CLIENT-> WEB: HTTPS POST <Access Token>\n/protected-resources
 
-activate RP
-RP -> RP: Verify\n<Access Token>
-RP -> OP: 200: <response>
-deactivate RP
+activate WEB
+WEB-> WEB: Verify\n<Access Token>
+WEB-> CLIENT: 200: <response>
+deactivate WEB
 @enduml
