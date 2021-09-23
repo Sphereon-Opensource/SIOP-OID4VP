@@ -4,9 +4,8 @@ import { JWK } from 'jose/types';
 import AuthenticationRequest from './AuthenticationRequest';
 import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
 import { DIDJwt, DIDres, State } from './functions';
-import { fetchDidDocument } from './functions/DIDResolution';
 import { signDidJwtPayload, verifyDidJWT } from './functions/DidJWT';
-import { getPublicJWKFromHexPrivateKey, getThumbprint, getThumbprintFromJwk } from './functions/Keys';
+import { getPublicJWKFromHexPrivateKey, getThumbprint } from './functions/Keys';
 import { JWT, SIOP, SIOPErrors } from './types';
 import {
   AuthenticationResponsePayload,
@@ -103,10 +102,6 @@ export default class AuthenticationResponse {
     });
 
     const issuerDid = DIDJwt.getIssuerDidFromPayload(payload);
-
-    if (!verifiedJWT || !verifiedJWT.payload) {
-      throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
-    }
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
 
@@ -161,13 +156,13 @@ async function createThumbprintAndJWK(
       resOpts.signatureType.kid || `${resOpts.signatureType.did}#key-1`,
       resOpts.did
     );
-  } else if (SIOP.isExternalSignature(resOpts.signatureType)) {
-    const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
-    if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
-      throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
-    }
-    thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
-    subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;
+    /*  } else if (SIOP.isExternalSignature(resOpts.signatureType)) {
+        const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
+        if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
+          throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
+        }
+        thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
+        subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
   } else {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }

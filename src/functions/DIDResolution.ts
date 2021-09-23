@@ -1,5 +1,4 @@
 import { getResolver as getUniResolver } from '@sphereon/did-uni-client/dist/resolver/Resolver';
-import { fetch } from 'cross-fetch';
 import { DIDResolutionOptions, DIDResolutionResult, ParsedDID, Resolvable, Resolver } from 'did-resolver';
 
 import SIOPErrors from '../types/Errors';
@@ -36,6 +35,7 @@ export async function resolveDidDocument(did: string, opts?: ResolveOpts): Promi
   return (await getResolver(opts).resolve(did)).didDocument;
 }
 
+/*
 export async function fetchDidDocument(uri: string): Promise<DIDDocument> {
   const response = await fetch(uri);
   if (!response) {
@@ -48,3 +48,4 @@ export async function fetchDidDocument(uri: string): Promise<DIDDocument> {
   }
   return didDoc;
 }
+*/
