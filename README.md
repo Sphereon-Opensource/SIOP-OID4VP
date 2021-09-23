@@ -4,7 +4,8 @@
 Self Issued OpenID Provider v2 (SIOP)  
 </h1>
 <br>
-[![CI](https://github.com/Sphereon-Opensource/did-auth-js/actions/workflows/main.yml/badge.svg)](https://github.com/Sphereon-Opensource/did-auth-js/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/Sphereon-Opensource/did-auth-js/branch/develop/graph/badge.svg?token=9P1JGUYA35)](https://codecov.io/gh/Sphereon-Opensource/did-auth-js) [![NPM Version](https://img.shields.io/npm/v/@sphereon/did-auth-js.svg)](https://npm.im/@sphereon/did-auth-js)
+
+[![CI](https://github.com/Sphereon-Opensource/did-auth-siop/actions/workflows/main.yml/badge.svg)](https://github.com/Sphereon-Opensource/did-auth-siop/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/Sphereon-Opensource/did-auth-siop/branch/develop/graph/badge.svg?token=9P1JGUYA35)](https://codecov.io/gh/Sphereon-Opensource/did-auth-siop) [![NPM Version](https://img.shields.io/npm/v/@sphereon/did-auth-siop.svg)](https://npm.im/@sphereon/did-auth-siop)
 
 An authentication library for having clients/people conforming to the [Self Issued OpenID Provider v2 (SIOPv2)](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html) and  [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html) as specified in the OpenID Connect working group.
 

@@ -14,7 +14,6 @@
     "test": "run-s build test:*",
     "test:lint": "eslint . --ext .ts",
     "test:prettier": "prettier \"{src, test}/**/*.ts\" --list-different",
-    "test:unit": "jest",
     "test:cov": "jest --ci --coverage && codecov"
   },
   "engines": {
