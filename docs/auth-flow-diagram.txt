@@ -18,7 +18,7 @@ WEB -> RP: CreateAuthRequest\n(Request Opts)
 activate RP
 RP -> WEB: Return\n<Auth Request>
 deactivate RP
-WEB -> CLIENT: 200: <Auth Request> (can include VC request), optionally displays a QR
+WEB -> CLIENT: 302: Redirect <Auth Request> (can include VC request), optionally displays a QR
 deactivate WEB
 
 activate CLIENT

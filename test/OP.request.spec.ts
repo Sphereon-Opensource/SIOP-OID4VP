@@ -132,7 +132,7 @@ describe("OP should", () => {
 
         const requestURI = await RP.builder()
             .redirect(EXAMPLE_REFERENCE_URL)
-            .requestBy(PassBy.VALUE/*, EXAMPLE_REFERENCE_URL*/)
+            .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
             .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
             .addDidMethod("ethr")
             .registrationBy(PassBy.VALUE)

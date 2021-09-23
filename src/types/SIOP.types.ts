@@ -216,9 +216,9 @@ export interface ExternalVerification {
 }
 
 export interface VerifyAuthenticationRequestOpts {
-  verification: InternalVerification | ExternalVerification;  // To use internal verification or external hosted verification
+  verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
-  nonce?: string;   // If provided the nonce in the request needs to match
+  nonce?: string; // If provided the nonce in the request needs to match
   // redirectUri?: string;
 }
 

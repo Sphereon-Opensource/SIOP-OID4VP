@@ -146,8 +146,7 @@ export const AuthenticationRequestOptsSchema = {
       "type": "string",
       "enum": [
         "rp",
-        "op",
-        "wallet"
+        "op"
       ]
     },
     "OidcClaim": {
