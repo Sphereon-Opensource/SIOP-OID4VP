@@ -218,13 +218,27 @@ export const AuthenticationRequestOptsSchema = {
             }
           ]
         },
+        "credentialFormatsSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CredentialFormat"
+              }
+            },
+            {
+              "$ref": "#/definitions/CredentialFormat"
+            }
+          ]
+        },
         "registrationBy": {
           "$ref": "#/definitions/RegistrationType"
         }
       },
       "required": [
-        "didMethodsSupported",
-        "registrationBy"
+        "credentialFormatsSupported",
+        "registrationBy",
+        "subjectIdentifiersSupported"
       ],
       "additionalProperties": false
     },
@@ -233,6 +247,13 @@ export const AuthenticationRequestOptsSchema = {
       "enum": [
         "jkt",
         "did"
+      ]
+    },
+    "CredentialFormat": {
+      "type": "string",
+      "enum": [
+        "w3cvc-jsonld",
+        "jwt"
       ]
     },
     "RegistrationType": {

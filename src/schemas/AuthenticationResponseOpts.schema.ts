@@ -146,6 +146,57 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
+        "didsSupported": {
+          "type": "boolean"
+        },
+        "didMethodsSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "credentialSupported": {
+          "type": "boolean"
+        },
+        "credentialEndpoint": {
+          "type": "string"
+        },
+        "credentialFormatsSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/CredentialFormat"
+              }
+            },
+            {
+              "$ref": "#/definitions/CredentialFormat"
+            }
+          ]
+        },
+        "credentialClaimsSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "credentialName": {
+          "type": "string"
+        },
         "registrationBy": {
           "$ref": "#/definitions/RegistrationType"
         }
@@ -186,6 +237,13 @@ export const AuthenticationResponseOptsSchema = {
         "ES256",
         "ES256K",
         "none"
+      ]
+    },
+    "CredentialFormat": {
+      "type": "string",
+      "enum": [
+        "w3cvc-jsonld",
+        "jwt"
       ]
     },
     "RegistrationType": {

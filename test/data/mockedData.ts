@@ -1,7 +1,7 @@
-import {DIDDocument} from "did-resolver";
+import { DIDDocument } from 'did-resolver';
 
-import {JWTHeader, SIOP} from "../../src";
-import {ResponseContext, ResponseMode, SubjectIdentifierType} from "../../src/types/SIOP.types";
+import { JWTHeader, SIOP } from '../../src';
+import { CredentialFormat, ResponseContext, ResponseMode, SubjectIdentifierType } from '../../src/types/SIOP.types';
 
 export const DIDAUTH_HEADER: JWTHeader = {
     typ: "JWT",
@@ -20,8 +20,9 @@ export const DIDAUTH_REQUEST_PAYLOAD: SIOP.AuthenticationRequestPayload = {
     nonce: "n-0S6_WzA2M", // MUST be a random string from a high-entropy source
     state: "af0ifjsldkj",
     registration: {
-        did_methods_supported: ['did:ethr:'],
-        subject_identifiers_supported: SubjectIdentifierType.DID
+      did_methods_supported: ['did:ethr:'],
+      subject_identifiers_supported: SubjectIdentifierType.DID,
+      credential_formats_supported: [CredentialFormat.JSON_LD, CredentialFormat.JWT]
     },
     /*registration: {
         subject_types_supported: SubjectType.PAIRWISE,

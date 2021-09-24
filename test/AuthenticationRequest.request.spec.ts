@@ -1,8 +1,8 @@
-import {parse} from "querystring";
+import { parse } from 'querystring';
 
-import {AuthenticationRequest, SIOP} from "../src";
-import SIOPErrors from "../src/types/Errors";
-import {SubjectIdentifierType} from "../src/types/SIOP.types";
+import { AuthenticationRequest, SIOP } from '../src';
+import SIOPErrors from '../src/types/Errors';
+import { CredentialFormat, SubjectIdentifierType } from '../src/types/SIOP.types';
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const EXAMPLE_REFERENCE_URL = "https://rp.acme.com/siop/jwts";
@@ -78,6 +78,7 @@ describe("create Request Uri should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: CredentialFormat.JSON_LD,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -119,6 +120,7 @@ describe("create Request Uri should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: CredentialFormat.JSON_LD,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -150,6 +152,7 @@ describe("create Request Uri should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: CredentialFormat.JSON_LD,
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -183,6 +186,7 @@ describe("create Request JWT should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialFormat.JSON_LD],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -208,6 +212,7 @@ describe("create Request JWT should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialFormat.JSON_LD],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -230,6 +235,7 @@ describe("create Request JWT should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialFormat.JSON_LD],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -256,6 +262,7 @@ describe("create Request JWT should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialFormat.JSON_LD],
                 registrationBy: {
                     type: 'FAILURE'
                 }
@@ -282,6 +289,7 @@ describe("create Request JWT should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialFormat.JSON_LD],
                 registrationBy: {
                     type: SIOP.PassBy.REFERENCE,
                 },
@@ -308,6 +316,7 @@ describe("create Request JWT should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialFormat.JSON_LD],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -324,7 +333,7 @@ describe("create Request JWT should", () => {
                 "iss": "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
                 "response_mode": "post",
                 "response_context": "rp",
-                "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did"}
+                "registration": {"did_methods_supported": ["did:ethr:"], "subject_identifiers_supported": "did", "credential_formats_supported": ["w3cvc-jsonld"]}
             },
             "opts": {
                 "redirectUri": "https://acme.com/hello",
@@ -337,7 +346,7 @@ describe("create Request JWT should", () => {
                 "registration": {
                     "didMethodsSupported": ["did:ethr:"],
                     "subjectIdentifiersSupported": "did",
-                    "registrationBy": {"type": "VALUE"}
+                    "registrationBy": {"type": "VALUE"},
                 }
             }
         };
