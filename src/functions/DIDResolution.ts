@@ -27,9 +27,7 @@ export function getResolver(opts: ResolveOpts): Resolvable {
     const uniResolver = getUniResolver(getMethodFromDid(didMethod), { resolveUrl: opts.resolveUrl });
     uniResolvers.push(uniResolver);
   }
-  const resolver = new Resolver(...uniResolvers);
-
-  return resolver;
+  return new Resolver(...uniResolvers);
 }
 
 export async function resolveDidDocument(did: string, opts?: ResolveOpts): Promise<DIDDocument> {

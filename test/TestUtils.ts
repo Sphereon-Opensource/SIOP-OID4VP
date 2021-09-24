@@ -248,7 +248,7 @@ export const metadata = {
         credential_endpoint: 'http://test.com',
         credential_name: 'test',
         credential_supported: true,
-        did_methods_supported: ['did:web:'],
+        did_methods_supported: ['did:web'],
         dids_supported: true,
         id_token_signing_alg_values_supported: undefined,
         request_object_signing_alg_values_supported: SigningAlgo.EDDSA,
@@ -258,7 +258,7 @@ export const metadata = {
     },
     rpMetadata: {
         subject_identifiers_supported: SubjectIdentifierType.DID,
-        did_methods_supported: ['did:web:', 'did:key:'],
+        did_methods_supported: ['did:web', 'did:key'],
         credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD]
     },
     verify() {

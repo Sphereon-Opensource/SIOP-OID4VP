@@ -184,9 +184,7 @@ describe("verifyJWT should", () => {
             },
         }
 
-        // expect.assertions(1);
         const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);
-        console.log(JSON.stringify(verifyJWT));
         expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
     });
 });
@@ -195,19 +193,19 @@ describe('OP and RP communication should', () => {
 
     it('work if both support the same did methods', () => {
         metadata.verify();
-        expect(metadata.verify()).toEqual({op_rp_credential_formats_supported: ['jwt', 'w3cvc-jsonld'], op_rp_did_methods_supported: ['did:web:']});
+        expect(metadata.verify()).toEqual({op_rp_credential_formats_supported: ['jwt', 'w3cvc-jsonld'], op_rp_did_methods_supported: ['did:web']});
     });
 
     it('work if RP supports any OP did methods', () => {
         metadata.opMetadata.credential_formats_supported = [CredentialFormat.JSON_LD];
         metadata.rpMetadata.subject_identifiers_supported = SubjectIdentifierType.DID;
         metadata.rpMetadata.did_methods_supported = undefined;
-        expect(metadata.verify()).toEqual({op_rp_credential_formats_supported: ['w3cvc-jsonld'], op_rp_did_methods_supported: ['did:web:']});
+        expect(metadata.verify()).toEqual({op_rp_credential_formats_supported: ['w3cvc-jsonld'], op_rp_did_methods_supported: ['did:web']});
     });
 
     it('work if RP supports any OP credential formats', () => {
         metadata.opMetadata.credential_formats_supported = [CredentialFormat.JSON_LD];
-        expect(metadata.verify()).toEqual({op_rp_credential_formats_supported: ['w3cvc-jsonld'], op_rp_did_methods_supported: ['did:web:']});
+        expect(metadata.verify()).toEqual({op_rp_credential_formats_supported: ['w3cvc-jsonld'], op_rp_did_methods_supported: ['did:web']});
     });
 
     it('not work if RP does not support any OP did method', () => {

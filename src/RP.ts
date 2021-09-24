@@ -111,7 +111,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: {
   builder?: RPBuilder;
   verifyOpts?: Partial<VerifyAuthenticationResponseOpts>;
 }) {
-  const verifyOpts: Partial<VerifyAuthenticationResponseOpts> = opts.builder
+  return opts.builder
     ? {
         verification: {
           mode: VerificationMode.INTERNAL,
@@ -122,5 +122,4 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: {
         },
       }
     : opts.verifyOpts;
-  return verifyOpts;
 }

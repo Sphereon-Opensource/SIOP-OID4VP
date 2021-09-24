@@ -109,13 +109,12 @@ describe("RP should", () => {
             };
 
         const expectedUri = "openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%5Bobject%20Object%5D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts";
-        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiOjE2MzIz.*XRzX3N1cHBvcnRlZCI6WyJqd3QiLCJ3M2N2Yy1qc29ubGQiXX19\..*$/;
+        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiOjE2MzI0.*XRzX3N1cHBvcnRlZCI6WyJqd3QiLCJ3M2N2Yy1qc29ubGQiXX19\..*$/;
 
         const request = await RP.fromRequestOpts(opts).createAuthenticationRequest({
             state: "b32f0087fc9816eb813fd11f",
             nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
         });
-        // console.log(request.jwt);
         expect(request.requestPayload).toMatchObject(expectedPayloadWithoutRequest);
         expect(request.encodedUri).toMatch(expectedUri);
         expect(request.jwt).toMatch(expectedJwtRegex);
@@ -136,7 +135,7 @@ describe("RP should", () => {
         };
 
         const expectedUri = "openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%5Bobject%20Object%5D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts";
-        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiOjE2MzIz.*3JlZGVudGlhbF9mb3JtYXRzX3N1cHBvcnRlZCI6WyJqd3QiXX19\..*$/;
+        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiOjE2MzI0.*Y3JlZGVudGlhbF9mb3JtYXRzX3N1cHBvcnRlZCI6WyJqd3QiXX19\..*$/;
 
         const request = await RP.builder()
             .redirect(EXAMPLE_REDIRECT_URL)
@@ -151,10 +150,8 @@ describe("RP should", () => {
             state: "b32f0087fc9816eb813fd11f",
             nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
         });
-        console.log(request.jwt);
         expect(request.requestPayload).toMatchObject(expectedPayloadWithoutRequest);
         expect(request.encodedUri).toMatch(expectedUri);
         expect(request.jwt).toMatch(expectedJwtRegex);
     });
-
 });

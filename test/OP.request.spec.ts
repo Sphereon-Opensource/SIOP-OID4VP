@@ -84,7 +84,6 @@ describe("OP should", () => {
     });
 
     it("succeed from request opts when all params are set", async () => {
-        // expect.assertions(1);
         const mockEntity = await mockedGetEnterpriseAuthToken("ACME Corp");
         const requestOpts: AuthenticationRequestOpts = {
             redirectUri: EXAMPLE_REDIRECT_URL,
@@ -116,7 +115,6 @@ describe("OP should", () => {
 
         const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.jwt, {
             audience: DID,
-            // nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
         });
         console.log(JSON.stringify(verifiedRequest));
         expect(verifiedRequest.issuer).toMatch(mockEntity.did);
@@ -129,7 +127,6 @@ describe("OP should", () => {
     });
 
     it("succeed from builder when all params are set", async () => {
-        // expect.assertions(1);
         const rpMockEntity = await mockedGetEnterpriseAuthToken("ACME RP");
         const opMockEntity = await mockedGetEnterpriseAuthToken("ACME OP");
 
@@ -166,6 +163,4 @@ describe("OP should", () => {
         })
         expect(verifiedRequest.jwt).toBeDefined();
     });
-
-
 });
