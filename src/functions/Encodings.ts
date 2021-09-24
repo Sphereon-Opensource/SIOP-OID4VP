@@ -6,13 +6,31 @@ export function bytesToHexString(bytes: Uint8Array): string {
 }
 
 export function encodeJsonAsURI(json) {
+  if (typeof json === 'string') {
+    return encodeJsonAsURI(JSON.parse(json));
+  }
+
   const results = [];
-  for (const key in json) {
-    const val = json[key];
-    if (!val) {
+
+  function encodeAndStripWhitespace(key: string) {
+    return encodeURIComponent(key.replace(' ', ''));
+  }
+
+  for (const [key, value] of Object.entries(json)) {
+    if (!value) {
       continue;
     }
-    const encoded = encodeURIComponent(key) + '=' + encodeURIComponent(json[key]);
+    const isBool = typeof value == 'boolean';
+    const isNumber = typeof value == 'number';
+    const isString = typeof value == 'string';
+    let encoded;
+    if (isBool || isNumber) {
+      encoded = `${encodeAndStripWhitespace(key)}=${value}`;
+    } else if (isString) {
+      encoded = `${encodeAndStripWhitespace(key)}=${encodeURIComponent(value)}`;
+    } else {
+      encoded = `${encodeAndStripWhitespace(key)}=${encodeURIComponent(JSON.stringify(value))}`;
+    }
     results.push(encoded);
   }
   return results.join('&');

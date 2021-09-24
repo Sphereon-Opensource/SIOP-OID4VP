@@ -39,5 +39,10 @@ describe("verify JWT from Request JWT should", () => {
         await expect(AuthenticationResponse.verifyJWT(validButExpiredResJWT, {...verifyOpts, audience: "https://acme.com/hello"})).rejects.toThrow(/invalid_jwt: JWT has expired: exp: 1632272403/)
     });
 
+    it("throw JWT_ERROR when expired but valid JWT is passed in", async () => {
+        expect.assertions(1);
+        await expect(AuthenticationResponse.verifyJWT(validButExpiredResJWT, {...verifyOpts, audience: "https://acme.com/hello"})).rejects.toThrow(/invalid_jwt: JWT has expired: exp: 1632272403/)
+    });
+
 
 });

@@ -19,7 +19,9 @@ module.exports = {
         "!src/**/*.d.ts",
         "!**/node_modules/**",
         "!jest.config.js",
-        "!generator/**"
+        "!generator/**",
+        "!index.ts"
+
     ],
     collectCoverage: true,
     reporters: ["default", ["jest-junit", { outputDirectory: "./coverage" }]],
