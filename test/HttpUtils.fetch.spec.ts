@@ -1,7 +1,7 @@
 import nock from "nock";
 
-import {postWithBearerToken} from "../src/functions/HttpUtils";
-import {SIOPErrors} from "../src/types";
+import {postWithBearerToken} from "../src/main/functions/HttpUtils";
+import {SIOPErrors} from "../src/main/types";
 
 const URL = 'https://example.com';
 nock(URL).post('/404', {iss: "mock"}, {reqheaders: {Authorization: "Bearer bearerToken"}}).reply(404, "Not found");

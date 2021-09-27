@@ -1,5 +1,5 @@
-import { OP, OPBuilder, SIOP } from '../src';
-import { RP } from '../src/RP';
+import { OP, OPBuilder, SIOP } from '../src/main';
+import { RP } from '../src/main/RP';
 import {
     AuthenticationRequestOpts,
     AuthenticationResponseOpts,
@@ -9,7 +9,7 @@ import {
     SubjectIdentifierType,
     VerificationMode,
     VerifyAuthenticationRequestOpts
-} from "../src/types/SIOP.types";
+} from "../src/main/types/SIOP.types";
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
