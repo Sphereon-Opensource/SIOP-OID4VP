@@ -51,11 +51,20 @@ export class OP {
       this.newVerifyAuthenticationRequestOpts(opts)
     );
   }
+
   public createAuthenticationResponseFromVerifiedRequest(
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
-    responseOpts: SIOP.AuthenticationResponseOpts
+    responseOpts?: {
+      nonce?: string;
+      state?: string;
+      // audience: string;
+      verification?: InternalVerification | ExternalVerification;
+    }
   ): Promise<AuthenticationResponseWithJWT> {
-    return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJwt, responseOpts);
+    return AuthenticationResponse.createJWTFromVerifiedRequest(
+      verifiedJwt,
+      this.newAuthenticationResponseOpts(responseOpts)
+    );
   }
 
   public verifyAuthenticationRequest(

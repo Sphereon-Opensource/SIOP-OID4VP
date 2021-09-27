@@ -60,7 +60,7 @@ describe("RP and OP interaction should", () => {
 
         const rp = RP.builder()
             .redirect(EXAMPLE_REDIRECT_URL)
-            .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+            .requestBy(PassBy.VALUE)
             .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
             .addDidMethod("ethr")
             .registrationBy(PassBy.VALUE)
@@ -77,8 +77,22 @@ describe("RP and OP interaction should", () => {
             state: "b32f0087fc9816eb813fd11f"
         });
 
+
+        // Let's test the parsing
+        const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+        expect(parsedAuthReqURI.requestPayload).toBeDefined();
+        expect(parsedAuthReqURI.jwt).toBeDefined();
+        expect(parsedAuthReqURI.registration).toBeDefined();
+
+        const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+
+
         // The create method also calls the verifyRequest method, so no need to do it manually
-        const authenticationResponseWithJWT = await op.createAuthenticationResponse(requestURI.jwt);
+        const authenticationResponseWithJWT = await op.createAuthenticationResponseFromVerifiedRequest(verifiedAuthReqWithJWT);
+
+
+
+
 
         const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
             audience: EXAMPLE_REDIRECT_URL,
