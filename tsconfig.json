@@ -2,7 +2,7 @@
   "compilerOptions": {
     "incremental": true,
     "target": "ES6",
-    "outDir": "dist/main",
+    "outDir": "dist",
     "moduleResolution": "node",
     "module": "commonjs",
     "declaration": true,
@@ -39,7 +39,6 @@
     "src/**/*.ts",
     "test/**/*.ts",
     "generator/**/*.ts",
-    "did-jwt-fork/**/*.ts"
   ],
   "exclude": [
     "node_modules/**",

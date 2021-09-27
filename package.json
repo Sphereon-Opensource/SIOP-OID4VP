@@ -60,7 +60,8 @@
     "typescript": "^4.4.3"
   },
   "files": [
-    "dist/main"
+    "dist/main",
+    "dist/did-jwt-fork"
   ],
   "prettier": {
     "singleQuote": true,
