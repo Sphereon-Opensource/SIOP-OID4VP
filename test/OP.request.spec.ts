@@ -3,11 +3,12 @@ import {RP} from "../src/RP";
 import {
     AuthenticationRequestOpts,
     AuthenticationResponseOpts,
+    PassBy,
     ResponseMode,
+    SubjectIdentifierType,
     VerificationMode,
     VerifyAuthenticationRequestOpts
 } from "../src/types/SIOP.types";
-import {PassBy, SubjectIdentifierType} from "../src/types/SIOP.types";
 
 import {mockedGetEnterpriseAuthToken} from "./TestUtils";
 
@@ -33,7 +34,6 @@ describe("OP Builder should", () => {
             .response(ResponseMode.POST)
             .registrationBy(PassBy.REFERENCE, 'https://registration.here')
             .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
-            .withDid(DID)
             .withExpiresIn(1000)
             .build()
         )
@@ -112,10 +112,7 @@ describe("OP should", () => {
             state: "b32f0087fc9816eb813fd11f"
         });
 
-        const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.jwt, {
-            audience: DID,
-            // nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg"
-        });
+        const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.jwt);
         console.log(JSON.stringify(verifiedRequest));
         expect(verifiedRequest.issuer).toMatch(mockEntity.did);
         expect(verifiedRequest.signer).toMatchObject({
@@ -140,23 +137,20 @@ describe("OP should", () => {
             .build()
 
             .createAuthenticationRequest({
-            nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
-            state: "b32f0087fc9816eb813fd11f"
-        });
+                nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
+                state: "b32f0087fc9816eb813fd11f"
+            });
 
         console.log(requestURI.encodedUri)
 
         const verifiedRequest = await OP.builder()
-            .withDid(opMockEntity.did)
             .withExpiresIn(1000)
             .addDidMethod("ethr")
-            .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did)
+            .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
             .registrationBy(PassBy.VALUE)
             .build()
 
-            .verifyAuthenticationRequest(requestURI.jwt, {
-            audience: opMockEntity.did,
-        });
+            .verifyAuthenticationRequest(requestURI.jwt);
         console.log(JSON.stringify(verifiedRequest));
         expect(verifiedRequest.issuer).toMatch(rpMockEntity.did);
         expect(verifiedRequest.signer).toMatchObject({

@@ -23,10 +23,9 @@ describe("RP and OP interaction should", () => {
             .registrationBy(PassBy.VALUE)
             .build();
         const op = OP.builder()
-            .withDid(opMockEntity.did)
             .withExpiresIn(1000)
             .addDidMethod("ethr")
-            .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did)
+            .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
             .registrationBy(PassBy.VALUE)
             .build();
 
@@ -65,10 +64,9 @@ describe("RP and OP interaction should", () => {
             .registrationBy(PassBy.VALUE)
             .build();
         const op = OP.builder()
-            .withDid(opMockEntity.did)
             .withExpiresIn(1000)
             .addDidMethod("ethr")
-            .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did)
+            .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
             .registrationBy(PassBy.VALUE)
             .build();
 

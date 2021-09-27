@@ -151,129 +151,191 @@ Flow diagram:
 11. RP performs the validation of the token, including signature validation, expiration and Verifiable Presentations if any. It returns the Verified Auth Response to WEB
 12. WEB returns a 200 response to Client with a redirect to another page (logged in or confirmation of VP receipt etc).
 13. From that moment on Client can use the Auth Response as bearer token as long as it is valid
-## DID resolution
 
-### Description
-Resolves the DID to a DID document using the DID method provided in didUrl and using DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and Sphereons [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client). 
 
-This process allows retrieving public keys and verificationMethod material, as well as services provided by a DID controller. Can be used in both the webapp and mobile applications. Uses the did-uni-client, but could use other DIF did-resolver drivers as well. The benefit of the uni client is that it can resolve many DID methods. Since the resolution itself is provided by the mentioned external dependencies above, we suffice with a usage example.
 
-#### Usage
-```typescript
-import { Resolver } from 'did-resolver'
-import { getResolver as getUniResolver } from '@sphereon/did-uni-client'
 
-const resolver = new Resolver(getUniResolver('ethr'));
+## OP and RP setup and interactions
 
-resolver.resolve('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda').then(doc => console.log)
-```
+This chapter is a walk-through for using the SIOP authentication library using the highlevel OP and RP classes. To keep it simple, the examples work without the HTTP endpoints involved in the above schema.
 
-The DidResolution file exposes 2 functions that help with the resolution as well:
-```typescript
-import { getResolver, resolveDidDocument } from './functions/DIDResolution';
+---
+**NOTE**
 
-// combines 2 uni resolvers for ethr and eosio together with the myCustomResolver and return that as a single resolver
-const myCustomResolver = new MyCustomResolver();
-getResolver({ didMethods: ["ethr", "eosio"], resolver: myCustomResolver });
+The examples use Ethereum (ethr) DIDs, but these could be other DIDs as well. The creation of DIDs is out of scope. We provide an [ethereum DID example](ethr-dids-testnet.md), if you want to test it
+yourself without having DIDs currently. You could also use the actual example keys and DIDs, as they are valid Ethr Ropsten testnet keys.
 
-// Returns a DID document for the specified DID, using the universal resolver client for the ehtr DID method
-await resolveDidDocument('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda', { didMethods: ["ethr"]});
-```
+---
 
-## JWT and DID creation and verification
-Please note that this chapter is about low level JWT functions, which normally aren't used by end users of this library. Typically, you use the AuthenticationRequest and Response classes (low-level) or the OP and RP classes (high-level).
+### Relying Party and SIOP should have keys and DIDs
 
-### Create JWT
-Creates a signed JWT given a DID which becomes the issuer, a signer function, and a payload over which the signature is created.
+Since the SIOP Auth library uses DIDs for both the Relying Party and the Self-Issued OpenID Provider, we expect these DIDs to be
+present on both sides, as well as the respective parties having access to their private key(s). How DIDs are created is
+out of scope of this library, but we provide a [ethereum DID example](ethr-dids-testnet.md)
+and [manual eosio DID walk-through](eosio-dids-testnet.md) if you want to test it yourself without having DIDs.
 
-#### Data Interface
-```typescript
-export interface JWTPayload { // This is a standard JWT payload described on for instance https://jwt.io
-  iss?: string
-  sub?: string
-  aud?: string | string[]
-  iat?: number
-  nbf?: number
-  exp?: number
-  rexp?: number
-  jti?: string;
-  [x: string]: any
-}
+### Setting up the Relying Party (RP)
 
-export interface JWTHeader { // This is a standard JWT header
-    typ: 'JWT'
-    alg: string             // The JWT signing algorithm to use. Supports: [ES256K, ES256K-R, Ed25519, EdDSA], Defaults to: ES256K
-    [x: string]: any
-}
+The Relying Party, typically a web app, but can also be something else, like a mobile app.
 
-export interface JWTOptions {
-    issuer: string          // The DID of the issuer (signer) of JWT
-    signer: Signer          // A signer function, eg: `ES256KSigner` or `EdDSASigner`
-    expiresIn?: number      // optional expiration time
-    canonicalize?: boolean  // optional flag to canonicalize header and payload before signing
-}
-```
+We will use an example private key and DID on the Ethereum Ropsten testnet network. Both the actual JWT request and the
+registration metadata will be sent as part of the AuthRequest since we pass them by value instead of by reference where
+we would have to host the data at the reference URL. The redirect URL means that the OP will need to deliver the
+authentication response at the URL specified by the RP. Lastly we have enabled the 'ethr' DID method on the RP side for
+doing Authentication Response checks with Ethereum DIDs in them. Please note that you can add multiple DID methods, and
+they have no influence on the DIDs being used to sign, the internal signature.
 
-#### Usage
 ````typescript
-const signer = ES256KSigner(process.env.PRIVATE_KEY);
-createDidJWT({requested: ['name', 'phone']}, {issuer: 'did:eosio:example', signer}).then(jwt => console.log)
+
+// The relying party (web) private key and DID and DID key (public key)
+const rpKeys = {
+    hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
+    did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
+    didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller'
+}
+const rp = RP.builder()
+    .redirect(EXAMPLE_REDIRECT_URL)
+    .requestBy(PassBy.VALUE)
+    .internalSignature(rpKeys.hexPrivateKey, rpKeys.did, rpKeys.didKey)
+    .addDidMethod("ethr")
+    .registrationBy(PassBy.VALUE)
+    .build();
 ````
 
-### Verify JWT
-Verifies the given JWT. If the JWT is valid, the promise returns an object including the JWT, the payload of the JWT, and the DID Document of the issuer of the JWT, using the resolver mentioned earlier. The checks performed include, general JWT decoding, DID resolution, Proof purposes
+### OpenID Provider (SIOP)
 
-proof purposes allows restriction of verification methods to the ones specifically listed, otherwise the 'authentication' verification method of the resolved DID document will be used
+The SIOP, typically a browser together with a mobile phone is accessing a protected resource at the RP, or needs to sent
+in Verifiable Presentations.
 
-#### Data Interface
-Verify options:
-```typescript
-export interface JWTVerifyOptions {
-  audience?: string                            // DID of the recipient of the JWT
-  callbackUrl?: string                         // callback url in JWT
-  skewTime?: number                            // Allow to skey time in the expiration check with this amount
-  proofPurpose?: ProofPurposeTypes             // Restrict to this proof purpose type in the DID resolution
-}
-```
-Response:
-```typescript
-export interface VerifiedJWT {
-    payload: Partial<JWTPayload>                // Standard partial JWT payload, see above
-    didResolutionResult: DIDResolutionResult    // The DID resolution
-    issuer?: string                             // The DID that issued the JWT
-    signer?: VerificationMethod                 // The verification method that issued the JWT
-    jwt: string                                 // The JWT itself
+````typescript
+// The OpenID Provider (client) private key and DID and DID key (public key)
+const opKeys = {
+    hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
+    did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
+    didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller'
 }
 
-export interface VerificationMethod {
-    id: string                      // The id of the key
-    type: string                    // authentication, assertionMethod etc (see DID spec)
-    controller: string              // The controller of the Verification method
-    publicKeyBase58?: string        // Public key in base58 if any
-    publicKeyJwk?: JsonWebKey       // Public key in JWK if any
-    publicKeyHex?: string           // Public key in hex if any
-    blockchainAccountId?: string    // optional blockchain account id associated with the DID
-    ethereumAddress?: string        // deprecated
-}
-```
+const op = OP.builder()
+    .withExpiresIn(6000)
+    .addDidMethod("ethr")
+    .internalSignature(opKeys.hexPrivateKey, opKeys.did, opKeys.didKey)
+    .registrationBy(PassBy.VALUE)
+    .build();
+````
 
-#### Usage
-```typescript
-verifyDidJWT(jwt, resolver, {audience: '6B2bRWU3F7j3REx3vkJ..'}).then(verifiedJWT => {
-       const did = verifiedJWT.issuer;                          // DID of signer
-       const payload = verifiedJWT.payload;                     // The JHT payload
-       const doc = verifiedJWT.didResolutionResult.didDocument; // DID Document of signer
-       const jwt = verifiedJWT.jwt;                             // JWS in string format 
-       const signerKeyId = verifiedJWT.signer.id;               // ID of key in DID document that signed JWT
-       ...
-   });
-```
+### RP creates the Authentication Request
+
+The Relying Party create the request. This could have been triggered by accessing a URL, or clicking a button for
+instance. The Created SIOP V2 Authentication Request could be transported by QR code if one wishes. Here we are leaving
+the transport out of scope.
+
+Given we already have configured the RP itself, all we need to provide is a nonce and state. These will be communicated
+throughout the process. The RP definitely needs to keep track of these for later usage. If no nonce and state a provided
+then the createAuthenticationRequest method will automatically provide values for these and return them in the object
+that is returned from the method.
+
+````typescript
+const reqURI = await rp.createAuthenticationRequest({
+    nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
+    state: "b32f0087fc9816eb813fd11f"
+});
+
+console.log(`nonce: ${reqURI.nonce}, state: ${reqURI.state}`);
+// nonce: qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg, state: b32f0087fc9816eb813fd11f
+
+
+console.log(reqURI.encodedUri)
+// openid://?response_type=id_token&scope=openid&client_id=did.......&jwt=ey..........
+````
+
+#### Optional: OP Authentication Request Payload parsing access
+
+The OP class has a method that both parses the Authentication Request URI as it was created by the RP, but it als resolves both the JWT and the Registration values from the Authentication Request Payload.
+Both values can be either passed by value in the Authentication Request, meaning they are present in the request, or passed by reference, meaning they are hosted by the OP. In the latter case the values have to be retrieved. The parseAuthenticationRequestURI takes care of both values and returns the Authentication Request Payload for easy access, the resolved signed JWT as well as the resolved registration metadata of the RP. Please note that the Authentication Request Payload that is also returned is the original payload from the URI, so it will not contain the resolved JWT nor Registration if the OP passed one of them by reference instead of value. Only the direct access to jwt and registration in the Parsed Authentication Request URI are guaranteed to be resolved.
+
+---
+**NOTE**
+
+Please note that the parsing also automatically happens when calling the createAuthenticationResponse method with a URI as input argument. This method allows for manual intervention in the different steps.
+
+---
+
+````typescript
+
+const parsedReqURI = op.parseAuthenticationRequestURI(reqURI.encodedUri);
+
+console.log(parsedReqURI.requestPayload.request);
+// ey....... , but could be empty if the OP would have passed the request by reference usiing request_uri!
+
+console.log(parsedReqURI.jwt);
+// ey....... , always resolved even if the OP would have passed the request by reference!
+
+````
+
+#### Optional: OP Authentication Request JWT verification access
+
+Once the JWT is extracted from the URI, either manually or as part of the Authentication Response creation, the JWT needs to be verified. The verifyAuthenticationRequest method of the OP class takes care of this. As input it expects the JWT string together with optional verify options. The options can contain an optional nonce, which means the request will be checked against the supplied nonce, otherwise the supplied nonce is only checked for presence. Normally the OP doesn't know. the nonce beforehand so this option can be left out.
+
+The verified authentication request object returned again contains the Authentication Request payload, the DID resolution result, including DID document of the RP, the issuer (DID of RP) and the signer (the DID verification method that signed). The verification method will throw an error if something is of with the JWT, or if the JWT has not been signed by the DID of the RP.
+
+---
+**NOTE**
+
+Please note that JWT verification automatically happens when calling the createAuthenticationResponse. This method allows for manual intervention in the different steps.
+
+---
+````typescript
+const verifiedReq = op.verifyAuthenticationRequest(parsedReqURI.jwt);
+
+console.log(`RP DID: ${verifiedReq.issuer}`);
+// RP DID: did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98
+
+````
+
+
+### OP creates the Authentication Response using the Request
+
+The above 2 steps were optional and are handled automatically if you provide the string jwt or URI to the createAuthenticationResponse method. If you do want to use the above 2 methods, then there is also a createJWTFromVerifiedRequest method which accepts the output of the verifyAuthenticationRequest method as input.
+
+---
+**NOTE**
+
+In the below example we directly access requestURI.jwt, in a real world scenario the RP and OP don't have access to shared objects. Normally you would have received the openid:// URI as a string, which you can also directly pass into the createAuthenticationResponse method of the OP class. The method accepts both a JWT or an openid:// URI as input
+
+---
+
+
+
+````typescript
+// The create method also calls the verify and parse methods, so no need to do it manually
+const authRespWithJWT = await op.createAuthenticationResponse(requestURI.jwt);
+
+// The below call would be equivilent if the optional steps above would have been used
+//const authRespWithJWT = await op.createAuthenticationResponseFromVerifiedRequest(verifiedReq);
+````
+
+### RP verifies the Authentication Response
+
+
+
+````typescript
+const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authRespWithJWT.jwt, {
+    audience: EXAMPLE_REDIRECT_URL,
+})
+
+expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
+expect(verifiedAuthResponseWithJWT.payload.state).toMatch("b32f0087fc9816eb813fd11f");
+expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch("qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg");
+````
 
 
 ## AuthenticationRequest class
 
+In the previous chapter we have seen the highlevel OP and RP classes. These classes use the Authentication Request and Response objects explained in this chapter and the next chapter. If you want you can do most interactions using these classes at a lower level. This however means you will not get automatic resolution of values passed by reference like for instance request and registration data.
+
+
 ### createURI
-Create a signed URL encoded URI with a signed SIOP Authentication request 
+Create a signed URL encoded URI with a signed SIOP Authentication request
 
 #### Data Interface
 ```typescript
@@ -573,6 +635,128 @@ verifyJWT('ey......', verifyOpts).then(jwt => {
     // output: nonce: 5c1d29c1-cf7d-4e14-9305-9db46d8c1916
 })
 ````
+
+
+## DID resolution
+
+### Description
+Resolves the DID to a DID document using the DID method provided in didUrl and using DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and Sphereons [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client). 
+
+This process allows retrieving public keys and verificationMethod material, as well as services provided by a DID controller. Can be used in both the webapp and mobile applications. Uses the did-uni-client, but could use other DIF did-resolver drivers as well. The benefit of the uni client is that it can resolve many DID methods. Since the resolution itself is provided by the mentioned external dependencies above, we suffice with a usage example.
+
+#### Usage
+```typescript
+import { Resolver } from 'did-resolver'
+import { getResolver as getUniResolver } from '@sphereon/did-uni-client'
+
+const resolver = new Resolver(getUniResolver('ethr'));
+
+resolver.resolve('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda').then(doc => console.log)
+```
+
+The DidResolution file exposes 2 functions that help with the resolution as well:
+```typescript
+import { getResolver, resolveDidDocument } from './functions/DIDResolution';
+
+// combines 2 uni resolvers for ethr and eosio together with the myCustomResolver and return that as a single resolver
+const myCustomResolver = new MyCustomResolver();
+getResolver({ didMethods: ["ethr", "eosio"], resolver: myCustomResolver });
+
+// Returns a DID document for the specified DID, using the universal resolver client for the ehtr DID method
+await resolveDidDocument('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda', { didMethods: ["ethr"]});
+```
+
+## JWT and DID creation and verification
+Please note that this chapter is about low level JWT functions, which normally aren't used by end users of this library. Typically, you use the AuthenticationRequest and Response classes (low-level) or the OP and RP classes (high-level).
+
+### Create JWT
+Creates a signed JWT given a DID which becomes the issuer, a signer function, and a payload over which the signature is created.
+
+#### Data Interface
+```typescript
+export interface JWTPayload { // This is a standard JWT payload described on for instance https://jwt.io
+  iss?: string
+  sub?: string
+  aud?: string | string[]
+  iat?: number
+  nbf?: number
+  exp?: number
+  rexp?: number
+  jti?: string;
+  [x: string]: any
+}
+
+export interface JWTHeader { // This is a standard JWT header
+    typ: 'JWT'
+    alg: string             // The JWT signing algorithm to use. Supports: [ES256K, ES256K-R, Ed25519, EdDSA], Defaults to: ES256K
+    [x: string]: any
+}
+
+export interface JWTOptions {
+    issuer: string          // The DID of the issuer (signer) of JWT
+    signer: Signer          // A signer function, eg: `ES256KSigner` or `EdDSASigner`
+    expiresIn?: number      // optional expiration time
+    canonicalize?: boolean  // optional flag to canonicalize header and payload before signing
+}
+```
+
+#### Usage
+````typescript
+const signer = ES256KSigner(process.env.PRIVATE_KEY);
+createDidJWT({requested: ['name', 'phone']}, {issuer: 'did:eosio:example', signer}).then(jwt => console.log)
+````
+
+### Verify JWT
+Verifies the given JWT. If the JWT is valid, the promise returns an object including the JWT, the payload of the JWT, and the DID Document of the issuer of the JWT, using the resolver mentioned earlier. The checks performed include, general JWT decoding, DID resolution, Proof purposes
+
+proof purposes allows restriction of verification methods to the ones specifically listed, otherwise the 'authentication' verification method of the resolved DID document will be used
+
+#### Data Interface
+Verify options:
+```typescript
+export interface JWTVerifyOptions {
+  audience?: string                            // DID of the recipient of the JWT
+  callbackUrl?: string                         // callback url in JWT
+  skewTime?: number                            // Allow to skey time in the expiration check with this amount
+  proofPurpose?: ProofPurposeTypes             // Restrict to this proof purpose type in the DID resolution
+}
+```
+Response:
+```typescript
+export interface VerifiedJWT {
+    payload: Partial<JWTPayload>                // Standard partial JWT payload, see above
+    didResolutionResult: DIDResolutionResult    // The DID resolution
+    issuer?: string                             // The DID that issued the JWT
+    signer?: VerificationMethod                 // The verification method that issued the JWT
+    jwt: string                                 // The JWT itself
+}
+
+export interface VerificationMethod {
+    id: string                      // The id of the key
+    type: string                    // authentication, assertionMethod etc (see DID spec)
+    controller: string              // The controller of the Verification method
+    publicKeyBase58?: string        // Public key in base58 if any
+    publicKeyJwk?: JsonWebKey       // Public key in JWK if any
+    publicKeyHex?: string           // Public key in hex if any
+    blockchainAccountId?: string    // optional blockchain account id associated with the DID
+    ethereumAddress?: string        // deprecated
+}
+```
+
+#### Usage
+```typescript
+verifyDidJWT(jwt, resolver, {audience: '6B2bRWU3F7j3REx3vkJ..'}).then(verifiedJWT => {
+       const did = verifiedJWT.issuer;                          // DID of signer
+       const payload = verifiedJWT.payload;                     // The JHT payload
+       const doc = verifiedJWT.didResolutionResult.didDocument; // DID Document of signer
+       const jwt = verifiedJWT.jwt;                             // JWS in string format 
+       const signerKeyId = verifiedJWT.signer.id;               // ID of key in DID document that signed JWT
+       ...
+   });
+```
+
+
+
 ## Class and Flow diagram of the interactions
 
 DID JWTs:
