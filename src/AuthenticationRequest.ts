@@ -122,6 +122,10 @@ export default class AuthenticationRequest {
 /**
  * Creates an URI Request
  * @param requestOpts Options to define the Uri Request
+ * @param requestPayload
+ * @param jwt
+ * @param requestPayload
+ * @param jwt
  */
 function createURIFromJWT(
   requestOpts: SIOP.AuthenticationRequestOpts,
@@ -189,7 +193,6 @@ function createInitialRequestPayload(opts: SIOP.AuthenticationRequestOpts): SIOP
     scope: SIOP.Scope.OPENID,
     client_id: opts.signatureType.did || opts.redirectUri, //todo: check whether we should include opts.redirectUri value here, or the whole of client_id to begin with
     redirect_uri: opts.redirectUri,
-    //id_token_hint
     iss: opts.signatureType.did,
     response_mode: opts.responseMode || SIOP.ResponseMode.POST,
     response_context: opts.responseContext || SIOP.ResponseContext.RP,

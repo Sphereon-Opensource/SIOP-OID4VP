@@ -16,5 +16,12 @@ export function createDiscoveryMetadataPayload(opts: SIOP.DiscoveryMetadataOpts)
       SIOP.SigningAlgo.EDDSA,
     ],
     subject_types_supported: opts?.subjectTypesSupported || SubjectType.PAIRWISE,
+    credential_formats_supported: opts.credentialFormatsSupported,
+    did_methods_supported: opts.didMethodsSupported,
+    credential_claims_supported: opts.credentialClaimsSupported,
+    credential_endpoint: opts.credentialEndpoint,
+    credential_name: opts.credentialName,
+    credential_supported: opts.credentialSupported,
+    dids_supported: opts.didsSupported,
   };
 }

@@ -1,8 +1,8 @@
-import {OP} from "../src";
-import {RP} from "../src/RP";
-import {PassBy} from "../src/types/SIOP.types";
+import { OP } from '../src';
+import { RP } from '../src/RP';
+import { CredentialFormat, PassBy } from '../src/types/SIOP.types';
 
-import {mockedGetEnterpriseAuthToken} from "./TestUtils";
+import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
@@ -21,12 +21,14 @@ describe("RP and OP interaction should", () => {
             .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
             .addDidMethod("ethr")
             .registrationBy(PassBy.VALUE)
+            .addCredentialFormat(CredentialFormat.JWT)
             .build();
         const op = OP.builder()
             .withExpiresIn(1000)
             .addDidMethod("ethr")
             .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
             .registrationBy(PassBy.VALUE)
+            .addCredentialFormat(CredentialFormat.JWT)
             .build();
 
         const requestURI = await rp.createAuthenticationRequest({

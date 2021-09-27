@@ -18,7 +18,13 @@ export default class AuthenticationResponse {
   /**
    * Creates a SIOP Response Object
    *
-   * @param didAuthResponse
+   * @param verifyOpts
+   * @param requestJwt
+   * @param responseOpts
+   * @param verifyOpts
+   * @param requestJwt
+   * @param responseOpts
+   * @param verifyOpts
    */
   static async createJWTFromRequestJWT(
     requestJwt: string,
@@ -34,12 +40,9 @@ export default class AuthenticationResponse {
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
     responseOpts: SIOP.AuthenticationResponseOpts
   ): Promise<SIOP.AuthenticationResponseWithJWT> {
-    // console.log(JSON.stringify(verifiedJwt));
-
     const payload = await createSIOPResponsePayload(verifiedJwt, responseOpts);
     const jwt = await signDidJwtPayload(payload, responseOpts);
 
-    console.log(jwt);
     return {
       jwt,
       state: payload.state,
@@ -83,7 +86,7 @@ export default class AuthenticationResponse {
    * Verifies a SIOP ID Response JWT on the RP Side
    *
    * @param jwt ID token to be validated
-   * @param audience expected audience
+   * @param verifyOpts
    */
   static async verifyJWT(
     jwt: string,

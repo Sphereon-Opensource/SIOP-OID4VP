@@ -1,14 +1,16 @@
-import {AuthenticationRequest, AuthenticationResponse} from "../src";
-import SIOPErrors from "../src/types/Errors";
+import { AuthenticationRequest, AuthenticationResponse } from '../src';
+import SIOPErrors from '../src/types/Errors';
 import {
     AuthenticationResponseOpts,
+    CredentialFormat,
     PassBy,
-    ResponseMode, SubjectIdentifierType,
+    ResponseMode,
+    SubjectIdentifierType,
     VerificationMode,
     VerifyAuthenticationRequestOpts
-} from "../src/types/SIOP.types";
+} from '../src/types/SIOP.types';
 
-import {mockedGetEnterpriseAuthToken} from "./TestUtils";
+import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
 // const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const EXAMPLE_REFERENCE_URL = "https://rp.acme.com/siop/jwts";
@@ -23,6 +25,13 @@ const validButExpiredJWT = 'eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDUwMjM4
 describe("create JWT from Request JWT should", () => {
     const responseOpts: AuthenticationResponseOpts = {
         registration: {
+            didsSupported: true,
+            didMethodsSupported: ['did:web'],
+            credentialSupported: false,
+            credentialName: 'test',
+            credentialEndpoint: 'http://test.com',
+            credentialClaimsSupported: 'any',
+            credentialFormatsSupported: CredentialFormat.JSON_LD,
             registrationBy: {
                 type: PassBy.REFERENCE,
                 referenceUri: EXAMPLE_REFERENCE_URL
@@ -85,6 +94,7 @@ describe("create JWT from Request JWT should", () => {
             registration: {
                 didMethodsSupported: "did:ethr:",
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: CredentialFormat.JSON_LD,
                 registrationBy: {type: PassBy.VALUE}
             }
         }

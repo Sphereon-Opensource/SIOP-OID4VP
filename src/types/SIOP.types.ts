@@ -65,45 +65,44 @@ export interface AuthenticationRequestWithJWT {
 
 export interface AuthenticationResponseOpts {
   // redirectUri: string;
-  signatureType: InternalSignature | ExternalSignature; // Using an internal/private key signature, or hosted signature
-  nonce?: string; // Allows to override the nonce, otherwise the nonce of the request will be used
-  state?: string; // Allows to override the state, otherwise the state of the request will be used
-  registration: ResponseRegistrationOpts; // Registration options
-  responseMode?: ResponseMode; // Response mode should be form in case a mobile device is being used together with a browser
-  did: string; // The DID of the OP
-  vp?: VerifiablePresentation; // Verifiable Presentation
-  expiresIn?: number; // Expiration
+  signatureType: InternalSignature | ExternalSignature;
+  nonce?: string;
+  state?: string;
+  registration: ResponseRegistrationOpts;
+  responseMode?: ResponseMode;
+  did: string;
+  vp?: VerifiablePresentation;
+  expiresIn?: number;
 }
 
 export interface AuthenticationResponsePayload extends JWTPayload {
-  iss: ResponseIss.SELF_ISSUED_V2 | string; // The SIOP V2 spec mentions this is required
+  iss: ResponseIss.SELF_ISSUED_V2 | string; // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
   sub: string; // did (or thumbprint of sub_jwk key when type is jkt)
   aud: string; // redirect_uri from request
-  exp?: number; // expiration time
-  iat?: number; // issued at
-  state: string; // The state which should match the AuthRequest state
-  nonce: string; // The nonce which should match the AuthRequest nonce
-  did: string; // The DID of the OP
-  registration?: DiscoveryMetadataPayload; // The registration metadata from the OP
-  registration_uri?: string; // The URI of the registration metadata if it is returned by reference/URL
-  vp?: VerifiablePresentation; // Verifiable Presentations
-  claims?: ResponseClaims; // Response claim
-  sub_type: SubjectIdentifierType; // Whether subject is a DID or a jkt
-  sub_jwk: JWK; // JWK containing DID key if subtype is did, or thumbprint if it is JKT
+  exp?: number;
+  iat?: number;
+  state: string;
+  nonce: string;
+  did: string;
+  registration?: DiscoveryMetadataPayload;
+  registration_uri?: string;
+  vp?: VerifiablePresentation;
+  claims?: ResponseClaims;
+  sub_type: SubjectIdentifierType;
+  sub_jwk: JWK;
 }
 
 /**
  *
  */
 export interface AuthenticationResponseWithJWT {
-  jwt: string; // The signed Response JWT
-  nonce: string; // The nonce which should match the nonce from the request
-  state: string; // The state which should match the state from the request
-  payload: AuthenticationResponsePayload; // The unsigned payload object
-  verifyOpts?: VerifyAuthenticationRequestOpts; // The Authentication Request verification parameters that were used
-  responseOpts: AuthenticationResponseOpts; // The Authentication Response options used during generation of the Response
+  jwt: string;
+  nonce: string;
+  state: string;
+  payload: AuthenticationResponsePayload;
+  verifyOpts?: VerifyAuthenticationRequestOpts;
+  responseOpts: AuthenticationResponseOpts;
 }
-
 export interface RequestRegistrationOpts extends RPRegistrationMetadataOpts {
   registrationBy: RegistrationType;
 
@@ -117,6 +116,13 @@ export interface DiscoveryMetadataOpts {
   subjectTypesSupported?: SubjectType[] | SubjectType;
   idTokenSigningAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
+  didsSupported?: boolean;
+  didMethodsSupported?: string[] | string;
+  credentialSupported?: boolean;
+  credentialEndpoint?: string;
+  credentialFormatsSupported?: CredentialFormat[] | CredentialFormat;
+  credentialClaimsSupported?: string[] | string;
+  credentialName?: string;
 }
 
 export interface DiscoveryMetadataPayload {
@@ -127,7 +133,13 @@ export interface DiscoveryMetadataPayload {
   subject_types_supported: SubjectType[] | SubjectType;
   id_token_signing_alg_values_supported: KeyAlgo[] | KeyAlgo;
   request_object_signing_alg_values_supported: SigningAlgo[] | SigningAlgo;
-
+  dids_supported: boolean;
+  did_methods_supported: string[] | string;
+  credential_supported: boolean;
+  credential_endpoint: string;
+  credential_formats_supported: CredentialFormat[] | CredentialFormat;
+  credential_claims_supported: string[] | string;
+  credential_name: string;
   // slint-disable-next-line @typescript-eslint/no-explicit-any
   // [x: string]: any;
 }
@@ -140,13 +152,20 @@ export interface ResponseRegistrationOpts extends DiscoveryMetadataOpts {
 }
 
 export interface RPRegistrationMetadataOpts {
-  subjectIdentifiersSupported?: SubjectIdentifierType[] | SubjectIdentifierType;
-  didMethodsSupported: string[] | string;
+  subjectIdentifiersSupported: SubjectIdentifierType[] | SubjectIdentifierType;
+  didMethodsSupported?: string[] | string;
+  credentialFormatsSupported: CredentialFormat[] | CredentialFormat;
 }
 
 export interface RPRegistrationMetadataPayload {
-  subject_identifiers_supported?: SubjectIdentifierType[] | SubjectIdentifierType;
-  did_methods_supported: string[] | string;
+  subject_identifiers_supported: SubjectIdentifierType[] | SubjectIdentifierType;
+  did_methods_supported?: string[] | string;
+  credential_formats_supported: CredentialFormat[] | CredentialFormat;
+}
+
+export interface SupportedTypes {
+  op_rp_did_methods_supported?: string[];
+  op_rp_credential_formats_supported: string[];
 }
 
 export type ObjectBy = {
@@ -205,7 +224,7 @@ export enum VerificationMode {
 export interface InternalVerification {
   mode: VerificationMode;
   /*registry?: string;
-      rpcUrl?: string;*/
+    rpcUrl?: string;*/
   resolveOpts: ResolveOpts;
 }
 
@@ -224,10 +243,11 @@ export interface VerifyAuthenticationRequestOpts {
 }
 
 export interface VerifyAuthenticationResponseOpts {
-  verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
-  nonce?: string; // To verify the response against the supplied nonce
-  state?: string; // To verify the response against the supplied state
-  audience: string; // To verify the response against the supplied audience (redirect_uri)
+  verification: InternalVerification | ExternalVerification;
+  // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
+  nonce?: string; // mandatory?
+  state?: string; // mandatory?
+  audience: string;
 }
 
 export interface ResponseClaims {
@@ -242,8 +262,8 @@ export interface DidAuthValidationResponse {
 }
 
 export interface VerifiedAuthenticationResponseWithJWT extends VerifiedJWT {
-  payload: AuthenticationResponsePayload; // The unsigned authentication response payload
-  verifyOpts: VerifyAuthenticationResponseOpts; // The authentication request payload
+  payload: AuthenticationResponsePayload;
+  verifyOpts: VerifyAuthenticationResponseOpts;
 }
 
 export enum ResponseMode {
@@ -320,6 +340,11 @@ export enum ResponseType {
 export enum SubjectIdentifierType {
   JKT = 'jkt',
   DID = 'did',
+}
+
+export enum CredentialFormat {
+  JSON_LD = 'w3cvc-jsonld',
+  JWT = 'jwt',
 }
 
 export enum SubjectType {

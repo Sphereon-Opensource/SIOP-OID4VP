@@ -140,7 +140,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
   builder?: OPBuilder;
   verifyOpts?: Partial<VerifyAuthenticationRequestOpts>;
 }) {
-  const verifyOpts: Partial<VerifyAuthenticationRequestOpts> = opts.builder
+  return opts.builder
     ? {
         verification: {
           mode: VerificationMode.INTERNAL,
@@ -151,5 +151,4 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
         },
       }
     : opts.verifyOpts;
-  return verifyOpts;
 }

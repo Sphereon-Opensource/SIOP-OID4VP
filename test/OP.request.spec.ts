@@ -1,8 +1,9 @@
-import {OP, OPBuilder, SIOP} from "../src";
-import {RP} from "../src/RP";
+import { OP, OPBuilder, SIOP } from '../src';
+import { RP } from '../src/RP';
 import {
     AuthenticationRequestOpts,
     AuthenticationResponseOpts,
+    CredentialFormat,
     PassBy,
     ResponseMode,
     SubjectIdentifierType,
@@ -10,7 +11,7 @@ import {
     VerifyAuthenticationRequestOpts
 } from "../src/types/SIOP.types";
 
-import {mockedGetEnterpriseAuthToken} from "./TestUtils";
+import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
@@ -83,7 +84,6 @@ describe("OP should", () => {
     });
 
     it("succeed from request opts when all params are set", async () => {
-        // expect.assertions(1);
         const mockEntity = await mockedGetEnterpriseAuthToken("ACME Corp");
         const requestOpts: AuthenticationRequestOpts = {
             redirectUri: EXAMPLE_REDIRECT_URL,
@@ -99,6 +99,7 @@ describe("OP should", () => {
             registration: {
                 didMethodsSupported: ['did:ethr:'],
                 subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialFormat.JWT],
                 registrationBy: {
                     type: SIOP.PassBy.VALUE,
                 },
@@ -124,7 +125,6 @@ describe("OP should", () => {
     });
 
     it("succeed from builder when all params are set", async () => {
-        // expect.assertions(1);
         const rpMockEntity = await mockedGetEnterpriseAuthToken("ACME RP");
         const opMockEntity = await mockedGetEnterpriseAuthToken("ACME OP");
 
@@ -140,8 +140,6 @@ describe("OP should", () => {
                 nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
                 state: "b32f0087fc9816eb813fd11f"
             });
-
-        console.log(requestURI.encodedUri)
 
         const verifiedRequest = await OP.builder()
             .withExpiresIn(1000)
@@ -160,6 +158,4 @@ describe("OP should", () => {
         })
         expect(verifiedRequest.jwt).toBeDefined();
     });
-
-
 });
