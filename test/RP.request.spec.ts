@@ -112,7 +112,7 @@ describe("RP should", () => {
           "d%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=" +
           "%7B%22did_methods_supported%22%3A%5B%22did%3Aethr%3A%22%5D%2C%22subject_identifiers_supported%22%3A%22did%22%2C%22credential_formats_supported%22%3A%5B%22jwt%22%2C%22w3cvc-jsonld%22%5D%7D" +
           "&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts";
-        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiOjE2MzI0.*XRzX3N1cHBvcnRlZCI6WyJqd3QiLCJ3M2N2Yy1qc29ubGQiXX19\..*$/;
+        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.ey.*$/;
 
         const request = await RP.fromRequestOpts(opts).createAuthenticationRequest({
             state: "b32f0087fc9816eb813fd11f",
@@ -141,7 +141,7 @@ describe("RP should", () => {
           "d%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=" +
           "%7B%22did_methods_supported%22%3A%5B%22did%3Aethr%3A%22%5D%2C%22subject_identifiers_supported%22%3A%22did%22%2C%22credential_formats_supported%22%3A%5B%22jwt%22%5D%7D&request_uri=https%3A" +
           "%2F%2Frp.acme.com%2Fsiop%2Fjwts";
-        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiOjE2MzI0.*Y3JlZGVudGlhbF9mb3JtYXRzX3N1cHBvcnRlZCI6WyJqd3QiXX19\..*$/;
+        const expectedJwtRegex = /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
 
         const request = await RP.builder()
             .redirect(EXAMPLE_REDIRECT_URL)

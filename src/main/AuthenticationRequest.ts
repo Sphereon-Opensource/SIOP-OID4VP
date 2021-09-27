@@ -2,6 +2,7 @@ import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
+import { decodeUriAsJson } from './functions/Encodings';
 import { JWT, SIOP, SIOPErrors } from './types';
 import { AuthenticationRequestPayload } from './types/SIOP.types';
 
@@ -18,6 +19,15 @@ export default class AuthenticationRequest {
   static async createURI(opts: SIOP.AuthenticationRequestOpts): Promise<SIOP.AuthenticationRequestURI> {
     const { jwt, payload } = await AuthenticationRequest.createJWT(opts);
     return createURIFromJWT(opts, payload, jwt);
+  }
+
+  /**
+   * Create a Authentication Request Payload from a URI string
+   *
+   * @param uri
+   */
+  static parseURI(uri: string): AuthenticationRequestPayload {
+    return decodeUriAsJson(uri) as AuthenticationRequestPayload;
   }
 
   /**
@@ -70,12 +80,12 @@ export default class AuthenticationRequest {
     // const issuerDidDoc = await DIDres.resolveDidDocument(issuerDid, opts.verification.resolveOpts);
 
     /*
-        // Determine the verification method from the RP's DIDres Document that matches the kid of the SIOP Request.
-        const verificationMethod = Keys.getVerificationMethod(header.kid, issuerDidDoc);
-        if (!verificationMethod) {
-          throw new Error(`${SIOPErrors.VERIFICATION_METHOD_NO_MATCH} kid: ${header.kid}, issuer: ${issuerDid}`);
-        }
-    */
+            // Determine the verification method from the RP's DIDres Document that matches the kid of the SIOP Request.
+            const verificationMethod = Keys.getVerificationMethod(header.kid, issuerDidDoc);
+            if (!verificationMethod) {
+              throw new Error(`${SIOPErrors.VERIFICATION_METHOD_NO_MATCH} kid: ${header.kid}, issuer: ${issuerDid}`);
+            }
+        */
     // as audience is set in payload as a DID it is required to be set as options
     const options = {
       audience: DIDJwt.getAudience(jwt),

@@ -19,7 +19,7 @@ export default class OPBuilder {
   credentialFormats: CredentialFormat[] = [];
   responseRegistration: ResponseRegistrationOpts;
   responseMode?: ResponseMode;
-  did: string;
+  // did: string;
   // vp?: VerifiablePresentation;
   expiresIn?: number;
 
@@ -39,11 +39,11 @@ export default class OPBuilder {
     return this;
   }
 
-  withDid(did: string): OPBuilder {
+  /*withDid(did: string): OPBuilder {
     this.did = did;
     return this;
   }
-
+*/
   withExpiresIn(expiresIn: number): OPBuilder {
     this.expiresIn = expiresIn;
     return this;
@@ -79,7 +79,7 @@ export default class OPBuilder {
     return this;
   }
 
-  internalSignature(hexPrivateKey: string, did: string, kid?: string): OPBuilder {
+  internalSignature(hexPrivateKey: string, did: string, kid: string): OPBuilder {
     this.signature({ hexPrivateKey, did, kid });
     return this;
   }

@@ -1,8 +1,42 @@
+import { parse } from 'querystring';
+
 import * as bs58 from 'bs58';
 import * as u8a from 'uint8arrays';
 
+import { SIOPErrors } from '../types';
+
 export function bytesToHexString(bytes: Uint8Array): string {
   return bytes.reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+}
+
+export function decodeUriAsJson(uri: string) {
+  if (!uri || !uri.includes('openid')) {
+    throw new Error(SIOPErrors.BAD_PARAMS);
+  }
+  const parts = parse(uri);
+
+  const json = {};
+  for (const key in parts) {
+    const value = parts[key];
+    if (!value) {
+      continue;
+    }
+    const isBool = typeof value == 'boolean';
+    const isNumber = typeof value == 'number';
+    const isString = typeof value == 'string';
+
+    if (isBool || isNumber) {
+      json[decodeURIComponent(key)] = value;
+    } else if (isString) {
+      const decoded = decodeURIComponent(value);
+      if (decoded.startsWith('{') && decoded.endsWith('}')) {
+        json[decodeURIComponent(key)] = JSON.parse(decoded);
+      } else {
+        json[decodeURIComponent(key)] = decoded;
+      }
+    }
+  }
+  return json;
 }
 
 export function encodeJsonAsURI(json) {

@@ -77,7 +77,7 @@ export interface AuthenticationResponseOpts {
 
 export interface AuthenticationResponsePayload extends JWTPayload {
   iss: ResponseIss.SELF_ISSUED_V2 | string; // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
-  sub: string; //did (or thumbprint of sub_jwk key when type is jkt)
+  sub: string; // did (or thumbprint of sub_jwk key when type is jkt)
   aud: string; // redirect_uri from request
   exp?: number;
   iat?: number;
@@ -295,6 +295,12 @@ export interface AuthenticationRequestURI extends SIOPURI {
   jwt?: string; // The JWT when requestBy was set to mode Reference, undefined if the mode is Value
   requestOpts: AuthenticationRequestOpts; // The supplied request opts as passed in to the method
   requestPayload: AuthenticationRequestPayload; // The json payload that ends up signed in the JWT
+}
+
+export interface ParsedAuthenticationRequestURI extends SIOPURI {
+  jwt: string;
+  requestPayload: AuthenticationRequestPayload; // The json payload that ends up signed in the JWT
+  registration: RPRegistrationMetadataPayload;
 }
 
 export enum KeyType {
