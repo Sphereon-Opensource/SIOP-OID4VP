@@ -1,429 +1,365 @@
 export const AuthenticationResponseOptsSchema = {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/AuthenticationResponseOpts",
-  "definitions": {
-    "AuthenticationResponseOpts": {
-      "type": "object",
-      "properties": {
-        "signatureType": {
-          "anyOf": [
+  $schema: 'http://json-schema.org/draft-07/schema#',
+  $ref: '#/definitions/AuthenticationResponseOpts',
+  definitions: {
+    AuthenticationResponseOpts: {
+      type: 'object',
+      properties: {
+        signatureType: {
+          anyOf: [
             {
-              "$ref": "#/definitions/InternalSignature"
+              $ref: '#/definitions/InternalSignature',
             },
             {
-              "$ref": "#/definitions/ExternalSignature"
-            }
-          ]
+              $ref: '#/definitions/ExternalSignature',
+            },
+          ],
         },
-        "nonce": {
-          "type": "string"
+        nonce: {
+          type: 'string',
         },
-        "state": {
-          "type": "string"
+        state: {
+          type: 'string',
         },
-        "registration": {
-          "$ref": "#/definitions/ResponseRegistrationOpts"
+        registration: {
+          $ref: '#/definitions/ResponseRegistrationOpts',
         },
-        "responseMode": {
-          "$ref": "#/definitions/ResponseMode"
+        responseMode: {
+          $ref: '#/definitions/ResponseMode',
         },
-        "did": {
-          "type": "string"
+        did: {
+          type: 'string',
         },
-        "vp": {
-          "$ref": "#/definitions/VerifiablePresentation"
+        vp: {
+          $ref: '#/definitions/VerifiablePresentation',
         },
-        "expiresIn": {
-          "type": "number"
-        }
+        expiresIn: {
+          type: 'number',
+        },
       },
-      "required": [
-        "signatureType",
-        "registration",
-        "did"
-      ],
-      "additionalProperties": false
+      required: ['signatureType', 'registration', 'did'],
+      additionalProperties: false,
     },
-    "InternalSignature": {
-      "type": "object",
-      "properties": {
-        "hexPrivateKey": {
-          "type": "string"
+    InternalSignature: {
+      type: 'object',
+      properties: {
+        hexPrivateKey: {
+          type: 'string',
         },
-        "did": {
-          "type": "string"
+        did: {
+          type: 'string',
         },
-        "kid": {
-          "type": "string"
-        }
+        kid: {
+          type: 'string',
+        },
       },
-      "required": [
-        "hexPrivateKey",
-        "did"
-      ],
-      "additionalProperties": false
+      required: ['hexPrivateKey', 'did'],
+      additionalProperties: false,
     },
-    "ExternalSignature": {
-      "type": "object",
-      "properties": {
-        "signatureUri": {
-          "type": "string"
+    ExternalSignature: {
+      type: 'object',
+      properties: {
+        signatureUri: {
+          type: 'string',
         },
-        "did": {
-          "type": "string"
+        did: {
+          type: 'string',
         },
-        "authZToken": {
-          "type": "string"
+        authZToken: {
+          type: 'string',
         },
-        "hexPublicKey": {
-          "type": "string"
+        hexPublicKey: {
+          type: 'string',
         },
-        "kid": {
-          "type": "string"
-        }
+        kid: {
+          type: 'string',
+        },
       },
-      "required": [
-        "signatureUri",
-        "did"
-      ],
-      "additionalProperties": false
+      required: ['signatureUri', 'did'],
+      additionalProperties: false,
     },
-    "ResponseRegistrationOpts": {
-      "type": "object",
-      "properties": {
-        "authorizationEndpoint": {
-          "type": "string"
+    ResponseRegistrationOpts: {
+      type: 'object',
+      properties: {
+        authorizationEndpoint: {
+          type: 'string',
         },
-        "scopesSupported": {
-          "anyOf": [
+        scopesSupported: {
+          anyOf: [
             {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Scope"
-              }
+              type: 'array',
+              items: {
+                $ref: '#/definitions/Scope',
+              },
             },
             {
-              "$ref": "#/definitions/Scope"
-            }
-          ]
+              $ref: '#/definitions/Scope',
+            },
+          ],
         },
-        "subjectTypesSupported": {
-          "anyOf": [
+        subjectTypesSupported: {
+          anyOf: [
             {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectType"
-              }
+              type: 'array',
+              items: {
+                $ref: '#/definitions/SubjectType',
+              },
             },
             {
-              "$ref": "#/definitions/SubjectType"
-            }
-          ]
+              $ref: '#/definitions/SubjectType',
+            },
+          ],
         },
-        "idTokenSigningAlgValuesSupported": {
-          "anyOf": [
+        idTokenSigningAlgValuesSupported: {
+          anyOf: [
             {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/KeyAlgo"
-              }
+              type: 'array',
+              items: {
+                $ref: '#/definitions/KeyAlgo',
+              },
             },
             {
-              "$ref": "#/definitions/KeyAlgo"
-            }
-          ]
+              $ref: '#/definitions/KeyAlgo',
+            },
+          ],
         },
-        "requestObjectSigningAlgValuesSupported": {
-          "anyOf": [
+        requestObjectSigningAlgValuesSupported: {
+          anyOf: [
             {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
+              type: 'array',
+              items: {
+                $ref: '#/definitions/SigningAlgo',
+              },
             },
             {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
+              $ref: '#/definitions/SigningAlgo',
+            },
+          ],
         },
-        "didsSupported": {
-          "type": "boolean"
+        didsSupported: {
+          type: 'boolean',
         },
-        "didMethodsSupported": {
-          "anyOf": [
+        didMethodsSupported: {
+          anyOf: [
             {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              type: 'array',
+              items: {
+                type: 'string',
+              },
             },
             {
-              "type": "string"
-            }
-          ]
+              type: 'string',
+            },
+          ],
         },
-        "credentialSupported": {
-          "type": "boolean"
+        credentialSupported: {
+          type: 'boolean',
         },
-        "credentialEndpoint": {
-          "type": "string"
+        credentialEndpoint: {
+          type: 'string',
         },
-        "credentialFormatsSupported": {
-          "anyOf": [
+        credentialFormatsSupported: {
+          anyOf: [
             {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/CredentialFormat"
-              }
+              type: 'array',
+              items: {
+                $ref: '#/definitions/CredentialFormat',
+              },
             },
             {
-              "$ref": "#/definitions/CredentialFormat"
-            }
-          ]
+              $ref: '#/definitions/CredentialFormat',
+            },
+          ],
         },
-        "credentialClaimsSupported": {
-          "anyOf": [
+        credentialClaimsSupported: {
+          anyOf: [
             {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              type: 'array',
+              items: {
+                type: 'string',
+              },
             },
             {
-              "type": "string"
-            }
-          ]
+              type: 'string',
+            },
+          ],
         },
-        "credentialName": {
-          "type": "string"
+        credentialName: {
+          type: 'string',
         },
-        "registrationBy": {
-          "$ref": "#/definitions/RegistrationType"
-        }
+        registrationBy: {
+          $ref: '#/definitions/RegistrationType',
+        },
       },
-      "required": [
-        "registrationBy"
-      ],
-      "additionalProperties": false
+      required: ['registrationBy'],
+      additionalProperties: false,
     },
-    "Scope": {
-      "type": "string",
-      "enum": [
-        "openid",
-        "openid did_authn"
-      ]
+    Scope: {
+      type: 'string',
+      enum: ['openid', 'openid did_authn'],
     },
-    "SubjectType": {
-      "type": "string",
-      "enum": [
-        "public",
-        "pairwise"
-      ]
+    SubjectType: {
+      type: 'string',
+      enum: ['public', 'pairwise'],
     },
-    "KeyAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K"
-      ]
+    KeyAlgo: {
+      type: 'string',
+      enum: ['EdDSA', 'RS256', 'ES256', 'ES256K'],
     },
-    "SigningAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K",
-        "none"
-      ]
+    SigningAlgo: {
+      type: 'string',
+      enum: ['EdDSA', 'RS256', 'ES256', 'ES256K', 'none'],
     },
-    "CredentialFormat": {
-      "type": "string",
-      "enum": [
-        "w3cvc-jsonld",
-        "jwt"
-      ]
+    CredentialFormat: {
+      type: 'string',
+      enum: ['w3cvc-jsonld', 'jwt'],
     },
-    "RegistrationType": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "REFERENCE",
-            "VALUE"
-          ]
+    RegistrationType: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
+          enum: ['REFERENCE', 'VALUE'],
         },
-        "referenceUri": {
-          "type": "string"
+        referenceUri: {
+          type: 'string',
         },
-        "id_token_encrypted_response_alg": {
-          "$ref": "#/definitions/EncKeyAlgorithm"
+        id_token_encrypted_response_alg: {
+          $ref: '#/definitions/EncKeyAlgorithm',
         },
-        "id_token_encrypted_response_enc": {
-          "$ref": "#/definitions/EncSymmetricAlgorithmCode"
-        }
+        id_token_encrypted_response_enc: {
+          $ref: '#/definitions/EncSymmetricAlgorithmCode',
+        },
       },
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ]
+      additionalProperties: false,
+      required: ['type'],
     },
-    "EncKeyAlgorithm": {
-      "type": "string",
-      "const": "ECDH-ES"
+    EncKeyAlgorithm: {
+      type: 'string',
+      const: 'ECDH-ES',
     },
-    "EncSymmetricAlgorithmCode": {
-      "type": "string",
-      "const": "XC20P"
+    EncSymmetricAlgorithmCode: {
+      type: 'string',
+      const: 'XC20P',
     },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
+    ResponseMode: {
+      type: 'string',
+      enum: ['fragment', 'form_post', 'post', 'query'],
     },
-    "VerifiablePresentation": {
-      "type": "object",
-      "properties": {
-        "@context": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+    VerifiablePresentation: {
+      type: 'object',
+      properties: {
+        '@context': {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
         },
-        "type": {
-          "type": "string"
+        type: {
+          type: 'string',
         },
-        "verifiableCredential": {
-          "anyOf": [
+        verifiableCredential: {
+          anyOf: [
             {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              type: 'array',
+              items: {
+                type: 'string',
+              },
             },
             {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/VerifiableCredential"
-              }
-            }
-          ]
+              type: 'array',
+              items: {
+                $ref: '#/definitions/VerifiableCredential',
+              },
+            },
+          ],
         },
-        "proof": {
-          "$ref": "#/definitions/Proof"
-        }
+        proof: {
+          $ref: '#/definitions/Proof',
+        },
       },
-      "required": [
-        "@context",
-        "proof",
-        "type",
-        "verifiableCredential"
-      ],
-      "additionalProperties": false
+      required: ['@context', 'proof', 'type', 'verifiableCredential'],
+      additionalProperties: false,
     },
-    "VerifiableCredential": {
-      "type": "object",
-      "properties": {
-        "@context": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+    VerifiableCredential: {
+      type: 'object',
+      properties: {
+        '@context': {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
         },
-        "id": {
-          "type": "string"
+        id: {
+          type: 'string',
         },
-        "type": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+        type: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
         },
-        "credentialSubject": {
-          "$ref": "#/definitions/CredentialSubject"
+        credentialSubject: {
+          $ref: '#/definitions/CredentialSubject',
         },
-        "issuer": {
-          "type": "string"
+        issuer: {
+          type: 'string',
         },
-        "issuanceDate": {
-          "type": "string"
+        issuanceDate: {
+          type: 'string',
         },
-        "expirationDate": {
-          "type": "string"
+        expirationDate: {
+          type: 'string',
         },
-        "credentialStatus": {
-          "$ref": "#/definitions/CredentialStatus"
+        credentialStatus: {
+          $ref: '#/definitions/CredentialStatus',
         },
-        "proof": {
-          "$ref": "#/definitions/Proof"
-        }
+        proof: {
+          $ref: '#/definitions/Proof',
+        },
       },
-      "required": [
-        "@context",
-        "credentialSubject",
-        "id",
-        "issuanceDate",
-        "issuer",
-        "proof",
-        "type"
-      ]
+      required: ['@context', 'credentialSubject', 'id', 'issuanceDate', 'issuer', 'proof', 'type'],
     },
-    "CredentialSubject": {
-      "type": "object",
-      "additionalProperties": {}
+    CredentialSubject: {
+      type: 'object',
+      additionalProperties: {},
     },
-    "CredentialStatus": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
+    CredentialStatus: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
         },
-        "type": {
-          "type": "string"
-        }
+        type: {
+          type: 'string',
+        },
       },
-      "required": [
-        "id",
-        "type"
-      ],
-      "additionalProperties": false
+      required: ['id', 'type'],
+      additionalProperties: false,
     },
-    "Proof": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string"
+    Proof: {
+      type: 'object',
+      properties: {
+        type: {
+          type: 'string',
         },
-        "created": {
-          "type": "string"
+        created: {
+          type: 'string',
         },
-        "proofPurpose": {
-          "type": "string"
+        proofPurpose: {
+          type: 'string',
         },
-        "verificationMethod": {
-          "type": "string"
+        verificationMethod: {
+          type: 'string',
         },
-        "jws": {
-          "type": "string"
-        }
+        jws: {
+          type: 'string',
+        },
       },
-      "required": [
-        "type",
-        "created",
-        "proofPurpose",
-        "verificationMethod",
-        "jws"
-      ],
-      "additionalProperties": {
-        "type": "string"
-      }
-    }
-  }
+      required: ['type', 'created', 'proofPurpose', 'verificationMethod', 'jws'],
+      additionalProperties: {
+        type: 'string',
+      },
+    },
+  },
 };
