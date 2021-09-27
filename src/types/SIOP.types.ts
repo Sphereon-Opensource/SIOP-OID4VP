@@ -163,9 +163,9 @@ export interface RPRegistrationMetadataPayload {
   credential_formats_supported: CredentialFormat[] | CredentialFormat;
 }
 
-export interface SupportedTypes {
-  op_rp_did_methods_supported?: string[];
-  op_rp_credential_formats_supported: string[];
+export interface CommonSupportedMetadata {
+  did_methods_supported?: string[];
+  credential_formats_supported: string[];
 }
 
 export type ObjectBy = {

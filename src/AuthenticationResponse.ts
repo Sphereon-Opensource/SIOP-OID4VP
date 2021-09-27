@@ -18,10 +18,6 @@ export default class AuthenticationResponse {
   /**
    * Creates a SIOP Response Object
    *
-   * @param verifyOpts
-   * @param requestJwt
-   * @param responseOpts
-   * @param verifyOpts
    * @param requestJwt
    * @param responseOpts
    * @param verifyOpts
@@ -32,6 +28,9 @@ export default class AuthenticationResponse {
     verifyOpts: SIOP.VerifyAuthenticationRequestOpts
   ): Promise<SIOP.AuthenticationResponseWithJWT> {
     assertValidResponseOpts(responseOpts);
+    if (!requestJwt || !requestJwt.startsWith('ey')) {
+      throw new Error(SIOPErrors.NO_JWT);
+    }
     const verifiedJWT = await AuthenticationRequest.verifyJWT(requestJwt, verifyOpts);
     return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJWT, responseOpts);
   }
@@ -54,32 +53,32 @@ export default class AuthenticationResponse {
     // todo add uri generation support in separate method, like in the AuthRequest class
 
     /*if (isInternalSignature(responseOpts.signatureType)) {
-                                        return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
-                                    } else if (isExternalSignature(responseOpts.signatureType)) {
-                                        return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
-                                    } else {
-                                        throw new Error("INVALID_SIGNATURE_TYPE");
-                                    }*/
+                                            return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
+                                        } else if (isExternalSignature(responseOpts.signatureType)) {
+                                            return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
+                                        } else {
+                                            throw new Error("INVALID_SIGNATURE_TYPE");
+                                        }*/
     /*const params = `id_token=${JWT}`;
-                                    const uriResponse = {
-                                        encodedUri: "",
-                                        bodyEncoded: "",
-                                        encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
-                                        responseMode: didAuthResponseCall.responseMode
-                                            ? didAuthResponseCall.responseMode
-                                            : SIOP.ResponseMode.FRAGMENT, // FRAGMENT is the default
-                                    };
+                                        const uriResponse = {
+                                            encodedUri: "",
+                                            bodyEncoded: "",
+                                            encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
+                                            responseMode: didAuthResponseCall.responseMode
+                                                ? didAuthResponseCall.responseMode
+                                                : SIOP.ResponseMode.FRAGMENT, // FRAGMENT is the default
+                                        };
 
-                                    if (didAuthResponseCall.responseMode === SIOP.ResponseMode.FORM_POST) {
-                                        uriResponse.encodedUri = encodeURI(didAuthResponseCall.redirectUri);
-                                        uriResponse.bodyEncoded = encodeURI(params);
-                                    } else if (didAuthResponseCall.responseMode === SIOP.ResponseMode.QUERY) {
-                                        uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
-                                    } else {
-                                        uriResponse.responseMode = SIOP.ResponseMode.FRAGMENT;
-                                        uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
-                                    }
-                                    return uriResponse;*/
+                                        if (didAuthResponseCall.responseMode === SIOP.ResponseMode.FORM_POST) {
+                                            uriResponse.encodedUri = encodeURI(didAuthResponseCall.redirectUri);
+                                            uriResponse.bodyEncoded = encodeURI(params);
+                                        } else if (didAuthResponseCall.responseMode === SIOP.ResponseMode.QUERY) {
+                                            uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
+                                        } else {
+                                            uriResponse.responseMode = SIOP.ResponseMode.FRAGMENT;
+                                            uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
+                                        }
+                                        return uriResponse;*/
   }
 
   /**
@@ -160,12 +159,12 @@ async function createThumbprintAndJWK(
       resOpts.did
     );
     /*  } else if (SIOP.isExternalSignature(resOpts.signatureType)) {
-        const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
-        if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
-          throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
-        }
-        thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
-        subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
+            const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
+            if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
+              throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
+            }
+            thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
+            subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
   } else {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
