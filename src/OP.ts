@@ -1,13 +1,17 @@
+import { Presentation, SelectResults, Validated, VerifiableCredential, VP } from '@sphereon/pe-js';
 import Ajv from 'ajv';
 import fetch from 'cross-fetch';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
+import { PresentationExchangeAgent } from './PresentationExchangeAgent';
 import { getResolver } from './functions/DIDResolution';
+import { extractDataFromPath } from './functions/ObjectUtils';
 import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
 import { SIOP, SIOPErrors } from './types';
 import {
+  AuthenticationRequestPayload,
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
   ExternalVerification,
@@ -21,11 +25,13 @@ import {
 } from './types/SIOP.types';
 
 const ajv = new Ajv();
+
 const validate = ajv.compile(AuthenticationResponseOptsSchema);
 
 export class OP {
   private readonly authResponseOpts: AuthenticationResponseOpts;
   private readonly verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
+  private presentationExchangeAgent: PresentationExchangeAgent = new PresentationExchangeAgent();
 
   public constructor(opts: {
     builder?: OPBuilder;
@@ -96,6 +102,30 @@ export class OP {
     };
   }
 
+  public async newAuthenticationResponseWithSelected(
+    verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
+    verifiableCredentials: VerifiableCredential[],
+    holderDID: string,
+    responseOpts?: {
+      nonce?: string;
+      state?: string;
+      // audience: string;
+      verification?: InternalVerification | ExternalVerification;
+    }
+  ): Promise<AuthenticationResponseWithJWT> {
+    const optionalPD = extractDataFromPath(verifiedJwt.payload, '$..presentation_definition');
+    if (optionalPD && optionalPD.length) {
+      const ps = this.presentationExchangeAgent.submissionFrom(optionalPD[0].value, verifiableCredentials);
+      responseOpts['vp'] = new VP(
+        new Presentation(null, ps, ['VerifiableCredential'], verifiableCredentials, holderDID, null)
+      );
+    }
+    return AuthenticationResponse.createJWTFromVerifiedRequest(
+      verifiedJwt,
+      this.newAuthenticationResponseOpts(responseOpts)
+    );
+  }
+
   public newAuthenticationResponseOpts(opts?: { nonce?: string; state?: string }): AuthenticationResponseOpts {
     const state = opts?.state;
     const nonce = opts?.nonce;
@@ -115,6 +145,23 @@ export class OP {
       nonce: opts?.nonce || this.verifyAuthRequestOpts.nonce,
       verification: opts?.verification || this.verifyAuthRequestOpts.verification,
     };
+  }
+
+  public async selectVerifiableCredentialsForSubmission(
+    authenticationRequestPayload: AuthenticationRequestPayload,
+    verifiableCredentials: VerifiableCredential[],
+    holderDid: string
+  ): Promise<SelectResults> {
+    const optionalPD = extractDataFromPath(authenticationRequestPayload, '$..presentation_definition');
+    if (optionalPD && optionalPD.length) {
+      const validationResult: Validated | Validated[] = this.presentationExchangeAgent.validatePresentationDefinition(
+        optionalPD[0].value
+      );
+      if (validationResult[0].message != 'ok') {
+        throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+      }
+    }
+    return this.presentationExchangeAgent.selectFrom(optionalPD[0].value, verifiableCredentials, holderDid);
   }
 
   public static fromOpts(responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts): OP {

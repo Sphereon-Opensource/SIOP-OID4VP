@@ -1,7 +1,8 @@
-import { PEJS, Validated } from '@sphereon/pe-js';
+import { Validated } from '@sphereon/pe-js';
 import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
+import { PresentationExchangeAgent } from './PresentationExchangeAgent';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
 import { extractDataFromPath } from './functions/ObjectUtils';
@@ -135,10 +136,10 @@ function createURIFromJWT(
   jwt: string
 ): SIOP.AuthenticationRequestURI {
   const schema = 'openid://';
-  const pejs: PEJS = new PEJS();
+  const peAgent: PresentationExchangeAgent = new PresentationExchangeAgent();
   const optionalPD = extractDataFromPath(requestPayload, '$..presentation_definition');
   if (optionalPD && optionalPD.length) {
-    const validationResult: Validated | Validated[] = pejs.validateDefinition(optionalPD[0].value);
+    const validationResult: Validated | Validated[] = peAgent.validatePresentationDefinition(optionalPD[0].value);
     if (validationResult[0].message != 'ok') {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
