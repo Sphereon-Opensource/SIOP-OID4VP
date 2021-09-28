@@ -62,7 +62,8 @@ export const DIDAUTH_RESPONSE_PAYLOAD: SIOP.AuthenticationResponsePayload = {
 
 
 export const DID_DOCUMENT_PUBKEY_B58: DIDDocument = {
-    "@context": "https://w3id.org/did/v1",
+  assertionMethod: [], capabilityDelegation: [], capabilityInvocation: [], keyAgreement: [],
+  "@context": "https://w3id.org/did/v1",
     id: "did:ethr:0xE3f80bcbb360F04865AfA795B7507d384154216C",
     controller: "did:ethr:0xE3f80bcbb360F04865AfA795B7507d384154216C",
     authentication: ["did:ethr:0xE3f80bcbb360F04865AfA795B7507d384154216C#key-1"],
@@ -74,11 +75,12 @@ export const DID_DOCUMENT_PUBKEY_B58: DIDDocument = {
             publicKeyBase58:
                 "PSPfR29Snu5yxJcLHf2t6SyJ9mttet19ECkDHr4HY3FD5YC8ZenjvspPSAGSpaQ8B8kXADV97WSd7JqaNAUTn8YG",
         },
-    ],
+    ]
 };
 
 export const DID_DOCUMENT_PUBKEY_JWK: DIDDocument = {
-    "@context": "https://w3id.org/did/v1",
+  assertionMethod: [], capabilityDelegation: [], capabilityInvocation: [], keyAgreement: [],
+  "@context": "https://w3id.org/did/v1",
     id: "did:ethr:0x96e9A346905a8F8D5ee0e6BA5D13456965e74513",
     controller: "did:ethr:0x96e9A346905a8F8D5ee0e6BA5D13456965e74513",
     authentication: [
@@ -98,5 +100,5 @@ export const DID_DOCUMENT_PUBKEY_JWK: DIDDocument = {
                 kid: "JTa8+HgHPyId90xmMFw6KRD4YUYLosBuWJw33nAuRS0=",
             },
         },
-    ],
+    ]
 };

@@ -1,5 +1,4 @@
 import { EvaluationResults, PEJS } from '@sphereon/pe-js';
-import { PresentationDefinition } from '@sphereon/pe-models/model/presentationDefinition';
 import { JWTHeader } from 'did-jwt';
 import { JWK } from 'jose/types';
 
@@ -8,6 +7,7 @@ import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistra
 import { DIDJwt, DIDres, State } from './functions';
 import { signDidJwtPayload, verifyDidJWT } from './functions/DidJWT';
 import { getPublicJWKFromHexPrivateKey, getThumbprint } from './functions/Keys';
+import { extractDataFromPath } from './functions/ObjectUtils';
 import { JWT, SIOP, SIOPErrors } from './types';
 import {
   AuthenticationResponsePayload,
@@ -41,16 +41,17 @@ export default class AuthenticationResponse {
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
     responseOpts: SIOP.AuthenticationResponseOpts
   ): Promise<SIOP.AuthenticationResponseWithJWT> {
-    const pejs: PEJS = new PEJS();
     // bunch of ifs to make sure we need to call evaluate
-    const pd: PresentationDefinition =
-      verifiedJwt.payload.claims['id_token']['verifiable_presentations'].presentation_definition;
-    const result: EvaluationResults = pejs.evaluate(pd, responseOpts.vp);
-    if (result.errors.length) {
-      throw new Error(`${SIOPErrors.EVALUATE_PRSENTATION_EXCHANGE_FAILED}`);
+    const optionalPD = extractDataFromPath(verifiedJwt.payload, '$..presentation_definition');
+    if (optionalPD && responseOpts.vp) {
+      const pejs: PEJS = new PEJS();
+      const result: EvaluationResults = pejs.evaluate(optionalPD[0].value, responseOpts.vp);
+      if (result.errors.length) {
+        throw new Error(`${SIOPErrors.EVALUATE_PRSENTATION_EXCHANGE_FAILED}`);
+      }
+      const ps = pejs.submissionFrom(optionalPD[0].value, responseOpts.vp.getVerifiableCredentials());
+      responseOpts.vp.getRoot()['presentation_submission'] = ps;
     }
-    const ps = pejs.submissionFrom(pd, responseOpts.vp.getVerifiableCredentials());
-    responseOpts.vp.getRoot()['presentation_submission'] = ps;
     const payload = await createSIOPResponsePayload(verifiedJwt, responseOpts);
     const jwt = await signDidJwtPayload(payload, responseOpts);
 

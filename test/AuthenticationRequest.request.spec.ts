@@ -429,7 +429,6 @@ describe("create Request JWT should", () => {
                     'acr': null,
                     'verifiable_presentations': {
                         'presentation_definition': {
-                            'id': 'for testing presentation definition validation',
                             'input_descriptors': [
                                 {
                                     'id': 'Ontario Health Insurance Plan',
