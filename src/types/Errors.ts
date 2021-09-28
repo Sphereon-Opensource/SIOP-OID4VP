@@ -6,6 +6,7 @@ enum SIOPErrors {
   CREDENTIAL_FORMATS_NOT_SUPPORTED = 'CREDENTIAL_FORMATS_NOT_SUPPORTED',
   DIDAUTH_REQUEST_PAYLOAD_NOT_CREATED = 'DidAuthRequestPayload not created',
   DID_METHODS_NOT_SUPORTED = 'DID_METHODS_NOT_SUPPORTED',
+  EVALUATE_PRSENTATION_EXCHANGE_FAILED = 'Evaluation of presentation definition from the request against the Verifiable Presentation failed.',
   ERROR_ON_POST_CALL = 'Error on Post call: ',
   ERROR_RETRIEVING_DID_DOCUMENT = 'Error retrieving did document',
   ERROR_RETRIEVING_VERIFICATION_METHOD = 'Error retrieving verificaton method from did document',
