@@ -13,7 +13,7 @@ import {
   AuthenticationResponsePayload,
   SubjectIdentifierType,
   VerifiedAuthenticationResponseWithJWT,
-  VerifyAuthenticationResponseOpts
+  VerifyAuthenticationResponseOpts,
 } from './types/SIOP.types';
 
 export default class AuthenticationResponse {
@@ -43,7 +43,8 @@ export default class AuthenticationResponse {
   ): Promise<SIOP.AuthenticationResponseWithJWT> {
     const pejs: PEJS = new PEJS();
     // bunch of ifs to make sure we need to call evaluate
-    const pd: PresentationDefinition = verifiedJwt.payload.claims['id_token']['verifiable_presentations'].presentation_definition;
+    const pd: PresentationDefinition =
+      verifiedJwt.payload.claims['id_token']['verifiable_presentations'].presentation_definition;
     const result: EvaluationResults = pejs.evaluate(pd, responseOpts.vp);
     if (result.errors.length) {
       throw new Error(`${SIOPErrors.EVALUATE_PRSENTATION_EXCHANGE_FAILED}`);
@@ -58,7 +59,7 @@ export default class AuthenticationResponse {
       state: payload.state,
       nonce: payload.nonce,
       payload,
-      responseOpts
+      responseOpts,
     };
 
     // todo add uri generation support in separate method, like in the AuthRequest class
@@ -111,7 +112,7 @@ export default class AuthenticationResponse {
     assertValidResponseJWT({ header, payload });
 
     const verifiedJWT = await verifyDidJWT(jwt, DIDres.getResolver(verifyOpts.verification.resolveOpts), {
-      audience: verifyOpts.audience
+      audience: verifyOpts.audience,
     });
 
     const issuerDid = DIDJwt.getIssuerDidFromPayload(payload);
@@ -125,8 +126,8 @@ export default class AuthenticationResponse {
       verifyOpts,
       issuer: issuerDid,
       payload: {
-        ...verPayload
-      }
+        ...verPayload,
+      },
     };
   }
 }
@@ -211,7 +212,7 @@ async function createSIOPResponsePayload(
     iat: Date.now() / 1000,
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
-    vp: resOpts.vp
+    vp: resOpts.vp,
   };
 }
 
