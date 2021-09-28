@@ -1,11 +1,12 @@
+import { PEJS, Validated } from '@sphereon/pe-js';
 import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
+import { extractDataFromPath } from './functions/ObjectUtils';
 import { JWT, SIOP, SIOPErrors } from './types';
 import { AuthenticationRequestPayload } from './types/SIOP.types';
-import { ObjectManipulationUtils } from './utils/ObjectManipulationUtils';
 
 export default class AuthenticationRequest {
   /**
@@ -134,8 +135,15 @@ function createURIFromJWT(
   jwt: string
 ): SIOP.AuthenticationRequestURI {
   const schema = 'openid://';
-  const flattenedReqPayload = ObjectManipulationUtils.flattenObject(requestPayload);
-  const query = Encodings.encodeJsonAsURI(flattenedReqPayload);
+  const pejs: PEJS = new PEJS();
+  const optionalPD = extractDataFromPath(requestPayload, '$..presentation_definition');
+  if (optionalPD && optionalPD.length) {
+    const validationResult: Validated | Validated[] = pejs.validateDefinition(optionalPD[0].value);
+    if (validationResult[0].message != 'ok') {
+      throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+    }
+  }
+  const query = Encodings.encodeJsonAsURI(requestPayload);
 
   switch (requestOpts.requestBy?.type) {
     case SIOP.PassBy.REFERENCE:

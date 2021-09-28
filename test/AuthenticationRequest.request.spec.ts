@@ -355,4 +355,98 @@ describe("create Request JWT should", () => {
             .then(uri => console.log(uri.encodedUri));
         await expect(AuthenticationRequest.createJWT(opts)).resolves.toMatchObject(expected);
     });
+
+    it('succeed when requesting with a valid PD', async () => {
+        const opts: SIOP.AuthenticationRequestOpts = {
+            redirectUri: EXAMPLE_REDIRECT_URL,
+            requestBy: {
+                type: SIOP.PassBy.REFERENCE,
+                referenceUri: EXAMPLE_REFERENCE_URL
+            },
+            signatureType: {
+                hexPrivateKey: HEX_KEY,
+                did: DID,
+                kid: KID
+            },
+            registration: {
+                didMethodsSupported: ['did:ethr:'],
+                subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialFormat.JSON_LD],
+                registrationBy: {
+                    type: SIOP.PassBy.VALUE
+                }
+            },
+            claims: {
+                'id_token': {
+                    'acr': null,
+                    'verifiable_presentations': {
+                        'presentation_definition': {
+                            'id': 'Insurance Plans',
+                            'input_descriptors': [
+                                {
+                                    'id': 'Ontario Health Insurance Plan',
+                                    'schema': [
+                                        {
+                                            'uri': 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan'
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+
+        const uriRequest = await AuthenticationRequest.createURI(opts);
+
+        const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
+        expect(uriDecoded).toContain(`&claims=`);
+    });
+
+    it('should throw error if presentation definition object is not valid', async () => {
+        const opts: SIOP.AuthenticationRequestOpts = {
+            redirectUri: EXAMPLE_REDIRECT_URL,
+            requestBy: {
+                type: SIOP.PassBy.REFERENCE,
+                referenceUri: EXAMPLE_REFERENCE_URL
+            },
+            signatureType: {
+                hexPrivateKey: HEX_KEY,
+                did: DID,
+                kid: KID
+            },
+            registration: {
+                didMethodsSupported: ['did:ethr:'],
+                subjectIdentifiersSupported: SubjectIdentifierType.DID,
+                credentialFormatsSupported: [CredentialFormat.JSON_LD],
+                registrationBy: {
+                    type: SIOP.PassBy.VALUE
+                }
+            },
+            claims: {
+                'id_token': {
+                    'acr': null,
+                    'verifiable_presentations': {
+                        'presentation_definition': {
+                            'id': 'for testing presentation definition validation',
+                            'input_descriptors': [
+                                {
+                                    'id': 'Ontario Health Insurance Plan',
+                                    'schema': [
+                                        {
+                                            'uri': 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan'
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        };
+        await expect(AuthenticationRequest.createURI(opts))
+            .rejects
+            .toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+    });
 });
