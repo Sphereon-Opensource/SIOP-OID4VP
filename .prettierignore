@@ -6,4 +6,4 @@ coverage
 did-jwt-fork
 
 # Ignore all schema files:
-src/schemas
+src/main/schemas
