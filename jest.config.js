@@ -13,14 +13,14 @@ module.exports = {
     moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json"],
     coverageDirectory: "./coverage/",
     collectCoverageFrom: [
-        "!src/did-jwt-fork/**",
+        "src/**/*.{ts,tsx}",
+        "!src/did-jwt-fork/*.ts",
         "!src/schemas/**",
         "!src/**/*.d.ts",
         "!**/node_modules/**",
         "!jest.config.js",
         "!generator/**",
         "!index.ts",
-        "src/**/*.{ts,tsx}",
 
     ],
     collectCoverage: true,
