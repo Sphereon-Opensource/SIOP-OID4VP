@@ -132,10 +132,7 @@ export class OP {
       holderDID?: string;
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    const pd = this.presentationExchangeAgent.findValidPresentationDefinition(
-      verifiedJwt.payload,
-      '$..presentation_definition'
-    );
+    const pd = this.presentationExchangeAgent.findValidPresentationDefinition(verifiedJwt.payload);
     if (pd) {
       if (!responseOpts.verifiableCredentials || !responseOpts.verifiableCredentials.length || responseOpts.holderDID) {
         throw new Error(`${SIOPErrors.RESPONSE_OPTS_MUST_CONTAIN_VERIFIABLE_CREDENTIALS_AND_HOLDER_DID}`);
@@ -184,10 +181,7 @@ export class OP {
     verifiableCredentials: VerifiableCredential[],
     holderDid: string
   ): Promise<SelectResults> {
-    const pd = this.presentationExchangeAgent.findValidPresentationDefinition(
-      authenticationRequestPayload,
-      '$..presentation_definition'
-    );
+    const pd = this.presentationExchangeAgent.findValidPresentationDefinition(authenticationRequestPayload);
     return this.presentationExchangeAgent.selectFrom(pd, verifiableCredentials, holderDid);
   }
 

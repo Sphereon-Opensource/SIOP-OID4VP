@@ -1,5 +1,5 @@
-import { EvaluationResults, PEJS, SelectResults, Validated } from '@sphereon/pe-js';
-import { VerifiableCredential, VerifiablePresentation } from '@sphereon/pe-js/lib/verifiablePresentation/index';
+import { EvaluationResults, PEJS, SelectResults, VerifiablePresentation } from '@sphereon/pe-js';
+import { VerifiableCredential } from '@sphereon/pe-js/lib/verifiablePresentation/index';
 import { PresentationDefinition, PresentationSubmission } from '@sphereon/pe-models';
 
 import { extractDataFromPath } from './functions/ObjectUtils';
@@ -33,19 +33,22 @@ export class PresentationExchangeAgent {
     return this.pejs.selectFrom(presentationDefinition, selectedCredentials, holderDid);
   }
 
-  public validatePresentationDefinition(presentationDefinition: PresentationDefinition) {
+  private validatePresentationDefinition(presentationDefinition: PresentationDefinition) {
     const validationResult = this.pejs.validateDefinition(presentationDefinition);
     if (validationResult[0].message != 'ok') {
-      throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+      throw new Error(`${SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID}`);
     }
   }
 
-  public validatePresentationSubmission(presentationSubmission: PresentationSubmission): Validated {
-    return this.pejs.validateSubmission(presentationSubmission);
-  }
-
-  public findValidPresentationDefinition(obj: unknown, path: string) {
-    const optionalPD = extractDataFromPath(obj, path);
+  /**
+   * Finds a valid PresentationDefinition inside the given object
+   * throws exception if the PresentationDefinition is not valid
+   * returns null if no property named "presentation_definition" is found
+   * returns a PresentationDefinition if a valid instance found
+   * @param obj
+   */
+  public findValidPresentationDefinition(obj: unknown) {
+    const optionalPD = extractDataFromPath(obj, '$..presentation_definition');
     if (optionalPD && optionalPD.length) {
       this.validatePresentationDefinition(optionalPD[0].value);
       return optionalPD[0].value;

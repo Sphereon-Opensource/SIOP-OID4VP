@@ -135,7 +135,7 @@ function createURIFromJWT(
 ): SIOP.AuthenticationRequestURI {
   const schema = 'openid://';
   const peAgent: PresentationExchangeAgent = new PresentationExchangeAgent();
-  peAgent.findValidPresentationDefinition(requestPayload, '$..presentation_definition');
+  peAgent.findValidPresentationDefinition(requestPayload);
   const query = Encodings.encodeJsonAsURI(requestPayload);
 
   switch (requestOpts.requestBy?.type) {
