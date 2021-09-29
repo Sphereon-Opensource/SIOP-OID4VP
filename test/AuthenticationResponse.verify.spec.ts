@@ -11,38 +11,38 @@ const validButExpiredResJWT = 'eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDk3N
 
 describe("verify JWT from Request JWT should", () => {
 
-    const verifyOpts: VerifyAuthenticationResponseOpts = {
-        audience: DID,
-        verification: {
-            resolveOpts: {
-                didMethods: ["ethr"],
-            },
-            mode: VerificationMode.INTERNAL,
-        }
+  const verifyOpts: VerifyAuthenticationResponseOpts = {
+    audience: DID,
+    verification: {
+      resolveOpts: {
+        didMethods: ["ethr"],
+      },
+      mode: VerificationMode.INTERNAL,
     }
+  }
 
-    it("throw NO_JWT when no jwt is passed", async () => {
-        expect.assertions(1);
-        await expect(AuthenticationResponse.verifyJWT(undefined as never, verifyOpts)).rejects.toThrow(
-            SIOPErrors.NO_JWT
-        );
-    });
-    it("throw VERIFY_BAD_PARAMS when no verifyOpts is passed", async () => {
-        expect.assertions(1);
-        await expect(AuthenticationResponse.verifyJWT(validButExpiredResJWT, undefined as never)).rejects.toThrow(
-            SIOPErrors.VERIFY_BAD_PARAMS
-        );
-    });
+  it("throw NO_JWT when no jwt is passed", async () => {
+    expect.assertions(1);
+    await expect(AuthenticationResponse.verifyJWT(undefined as never, verifyOpts)).rejects.toThrow(
+      SIOPErrors.NO_JWT
+    );
+  });
+  it("throw VERIFY_BAD_PARAMS when no verifyOpts is passed", async () => {
+    expect.assertions(1);
+    await expect(AuthenticationResponse.verifyJWT(validButExpiredResJWT, undefined as never)).rejects.toThrow(
+      SIOPErrors.VERIFY_BAD_PARAMS
+    );
+  });
 
-    it("throw JWT_ERROR when expired but valid JWT is passed in", async () => {
-        expect.assertions(1);
-        await expect(AuthenticationResponse.verifyJWT(validButExpiredResJWT, {...verifyOpts, audience: "https://acme.com/hello"})).rejects.toThrow(/invalid_jwt: JWT has expired: exp: 1632272403/)
-    });
+  it("throw JWT_ERROR when expired but valid JWT is passed in", async () => {
+    expect.assertions(1);
+    await expect(AuthenticationResponse.verifyJWT(validButExpiredResJWT, {...verifyOpts, audience: "https://acme.com/hello"})).rejects.toThrow(/invalid_jwt: JWT has expired: exp: 1632272403/)
+  });
 
-    it("throw JWT_ERROR when expired but valid JWT is passed in", async () => {
-        expect.assertions(1);
-        await expect(AuthenticationResponse.verifyJWT(validButExpiredResJWT, {...verifyOpts, audience: "https://acme.com/hello"})).rejects.toThrow(/invalid_jwt: JWT has expired: exp: 1632272403/)
-    });
+  it("throw JWT_ERROR when expired but valid JWT is passed in", async () => {
+    expect.assertions(1);
+    await expect(AuthenticationResponse.verifyJWT(validButExpiredResJWT, {...verifyOpts, audience: "https://acme.com/hello"})).rejects.toThrow(/invalid_jwt: JWT has expired: exp: 1632272403/)
+  });
 
 
 });
