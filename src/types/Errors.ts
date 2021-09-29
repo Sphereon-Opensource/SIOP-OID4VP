@@ -5,6 +5,7 @@ enum SIOPErrors {
   NO_KEY_CURVE_SUPPORTED = 'Key Curve not supported.',
   ERROR_VERIFYING_SIGNATURE = 'Error verifying the DID Auth Token signature.',
   ERROR_VALIDATING_NONCE = 'Error validating nonce.',
+  EXPIRED = 'The token has expired',
   NO_AUDIENCE = 'No audience found in JWT payload',
   NO_NONCE = 'No nonce found in JWT payload',
   NO_SUB_TYPE = 'No or empty sub_type found in JWT payload',
@@ -35,8 +36,8 @@ enum SIOPErrors {
   ERROR_ON_POST_CALL = 'Error on Post call: ',
   NO_DID_PAYLOAD = 'payload must contain did field in payload for self-issued tokens',
   NO_JWT = 'no JWT was supplied',
-  DID_METHODS_NOT_SUPORTED = 'DID_METHODS_NOT_SUPPORTED',
-  CREDENTIAL_FORMATS_NOT_SUPPORTED = 'CREDENTIAL_FORMATS_NOT_SUPPORTED',
+  DID_METHODS_NOT_SUPORTED = 'DID methods not supported',
+  CREDENTIAL_FORMATS_NOT_SUPPORTED = 'Credential formats not supported',
 }
 
 export default SIOPErrors;

@@ -5,6 +5,7 @@ import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
 import { getResolver } from './functions/DIDResolution';
+import { postAuthenticationResponse, postAuthenticationResponseJwt } from './functions/HttpUtils';
 import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
 import { SIOP, SIOPErrors } from './types';
 import {
@@ -13,6 +14,7 @@ import {
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
+  ResponseMode,
   ResponseRegistrationOpts,
   UrlEncodingFormat,
   VerificationMode,
@@ -34,6 +36,10 @@ export class OP {
   }) {
     this.authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
     this.verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
+  }
+
+  public async postAuthenticationResponse(authenticationResponse: AuthenticationResponseWithJWT): Promise<Response> {
+    return postAuthenticationResponse(authenticationResponse.payload.aud, authenticationResponse);
   }
 
   public async createAuthenticationResponse(
@@ -70,6 +76,20 @@ export class OP {
       verifiedJwt,
       this.newAuthenticationResponseOpts(responseOpts)
     );
+  }
+
+  public submitAuthenticationResponse(verifiedJwt: SIOP.AuthenticationResponseWithJWT): Promise<Response> {
+    if (
+      !verifiedJwt ||
+      (verifiedJwt.responseOpts.responseMode &&
+        !(
+          verifiedJwt.responseOpts.responseMode == ResponseMode.POST ||
+          verifiedJwt.responseOpts.responseMode == ResponseMode.FORM_POST
+        ))
+    ) {
+      throw new Error(SIOPErrors.BAD_PARAMS);
+    }
+    return postAuthenticationResponseJwt(verifiedJwt.payload.aud, verifiedJwt.jwt);
   }
 
   public verifyAuthenticationRequest(
