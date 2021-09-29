@@ -3,7 +3,7 @@ import type { DIDDocument, DIDResolutionResult, Resolvable, VerificationMethod }
 import {decodeBase64url, EcdsaSignature, encodeBase64url} from "./util";
 import SignerAlg from "./SignerAlgorithm";
 import VerifierAlgorithm from "./VerifierAlgorithm";
-import {ResponseIss} from "../src/types/SIOP.types";
+import {ResponseIss} from "../main/types/SIOP.types";
 
 export type Signer = (data: string | Uint8Array) => Promise<EcdsaSignature | string>
 export type SignerAlgorithm = (payload: string, signer: Signer) => Promise<string>

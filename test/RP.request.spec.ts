@@ -1,9 +1,9 @@
 import { getResolver as getUniResolver } from '@sphereon/did-uni-client/dist/resolver/Resolver';
 import { Resolver } from 'did-resolver';
 
-import { RPBuilder, SIOP } from '../src';
-import { RP } from '../src/RP';
-import { CredentialFormat, PassBy, ResponseMode, SubjectIdentifierType } from '../src/types/SIOP.types';
+import { RPBuilder, SIOP } from '../src/main';
+import { RP } from '../src/main/RP';
+import { CredentialFormat, PassBy, ResponseMode, SubjectIdentifierType } from '../src/main/types/SIOP.types';
 
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";

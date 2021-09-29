@@ -1,5 +1,5 @@
-import { AuthenticationRequest, AuthenticationResponse } from '../src';
-import SIOPErrors from '../src/types/Errors';
+import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
+import SIOPErrors from '../src/main/types/Errors';
 import {
     AuthenticationResponseOpts,
     CredentialFormat,
@@ -8,7 +8,7 @@ import {
     SubjectIdentifierType,
     VerificationMode,
     VerifyAuthenticationRequestOpts
-} from '../src/types/SIOP.types';
+} from '../src/main/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
