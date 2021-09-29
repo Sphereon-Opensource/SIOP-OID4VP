@@ -1,5 +1,11 @@
 # Release Notes
 
+## v0.1.1 - 2021-09-29
+This is the second Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
+
+- Fixed:
+  * Packaging fix for the did-jwt fork we include for now
+
 ## v0.1.0 - 2021-09-29
 This is the first Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
 
