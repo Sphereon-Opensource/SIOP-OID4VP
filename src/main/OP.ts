@@ -5,14 +5,16 @@ import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
 import { getResolver } from './functions/DIDResolution';
+import { postAuthenticationResponse, postAuthenticationResponseJwt } from './functions/HttpUtils';
 import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
-import { SIOP } from './types';
+import { SIOP, SIOPErrors } from './types';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
+  ResponseMode,
   ResponseRegistrationOpts,
   UrlEncodingFormat,
   VerificationMode,
@@ -36,8 +38,12 @@ export class OP {
     this.verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
   }
 
-  public createAuthenticationResponse(
-    requestJwt: string,
+  public async postAuthenticationResponse(authenticationResponse: AuthenticationResponseWithJWT): Promise<Response> {
+    return postAuthenticationResponse(authenticationResponse.payload.aud, authenticationResponse);
+  }
+
+  public async createAuthenticationResponse(
+    requestJwtorUri: string,
     opts?: {
       nonce?: string;
       state?: string;
@@ -45,8 +51,13 @@ export class OP {
       verification?: InternalVerification | ExternalVerification;
     }
   ): Promise<AuthenticationResponseWithJWT> {
+    if (!requestJwtorUri) {
+      throw new Error(SIOPErrors.BAD_PARAMS);
+    }
+    const jwt = requestJwtorUri.startsWith('ey') ? requestJwtorUri : (await parseAndResolveUri(requestJwtorUri)).jwt;
+
     return AuthenticationResponse.createJWTFromRequestJWT(
-      requestJwt,
+      jwt,
       this.newAuthenticationResponseOpts(opts),
       this.newVerifyAuthenticationRequestOpts(opts)
     );
@@ -67,6 +78,20 @@ export class OP {
     );
   }
 
+  public submitAuthenticationResponse(verifiedJwt: SIOP.AuthenticationResponseWithJWT): Promise<Response> {
+    if (
+      !verifiedJwt ||
+      (verifiedJwt.responseOpts.responseMode &&
+        !(
+          verifiedJwt.responseOpts.responseMode == ResponseMode.POST ||
+          verifiedJwt.responseOpts.responseMode == ResponseMode.FORM_POST
+        ))
+    ) {
+      throw new Error(SIOPErrors.BAD_PARAMS);
+    }
+    return postAuthenticationResponseJwt(verifiedJwt.payload.aud, verifiedJwt.jwt);
+  }
+
   public verifyAuthenticationRequest(
     requestJwt: string,
     opts?: { /*audience?: string;*/ nonce?: string; verification?: InternalVerification | ExternalVerification }
@@ -80,10 +105,7 @@ export class OP {
    * @param encodedUri
    */
   public async parseAuthenticationRequestURI(encodedUri: string): Promise<ParsedAuthenticationRequestURI> {
-    const requestPayload = AuthenticationRequest.parseURI(encodedUri);
-    const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
-    await this.verifyAuthenticationRequest(jwt);
-    const registration = requestPayload.registration || (await (await fetch(requestPayload.registration_uri)).json());
+    const { requestPayload, jwt, registration } = await parseAndResolveUri(encodedUri);
 
     return {
       encodedUri,
@@ -122,6 +144,13 @@ export class OP {
   public static builder() {
     return new OPBuilder();
   }
+}
+
+async function parseAndResolveUri(encodedUri: string) {
+  const requestPayload = AuthenticationRequest.parseURI(encodedUri);
+  const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
+  const registration = requestPayload.registration || (await (await fetch(requestPayload.registration_uri)).json());
+  return { requestPayload, jwt, registration };
 }
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: {

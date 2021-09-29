@@ -1,58 +1,119 @@
 ````mermaid
 classDiagram
 
-
-class DidAuthValidationResponse {
-    <<interface>>
-    signatureValidation: boolean;
-    signer: 'VerificationMethod (see_other_diagram)';
-    payload: JWTPayload;
-}
-DidAuthValidationResponse --> JWTPayload
-
-
-class RPAuthService {
+class RP {
     <<service>>
-    verifyAuthResponse(idToken: string, audience: string) Promise(DidAuthValidationResponse)
+    createAuthenticationRequest(opts?) Promise(AuthenticationRequestURI)
+    verifyAuthenticationResponseJwt(jwt: string, opts?) Promise(VerifiedAuthenticationResponseWithJWT)
 }
-DidAuthValidationResponse <-- RPAuthService
+RP --> AuthenticationRequestURI
+RP --> VerifiedAuthenticationResponseWithJWT
+RP --> AuthenticationRequest
+RP --> AuthenticationResponse
 
-
-class RPSession {
+class OP {
     <<service>>
-    createAccessToken(validation: DidAuthValidationResponse) Promise(AkeResponse)
-    verifyAccessToken(accessToken: string) Promise(JWTPayload)
+    createAuthenticationResponse(jwtOrUri: string, opts?) Promise(AuthenticationResponseWithJWT)
+    verifyAuthenticationRequest(jwt: string, opts?) Promise(VerifiedAuthenticationRequestWithJWT)
 }
-RPSession <-- DidAuthValidationResponse
-RPSession --> AkeResponse
-RPSession --> JWTPayload
+OP --> AuthenticationResponseWithJWT
+OP --> VerifiedAuthenticationRequestWithJWT
+OP --> AuthenticationRequest
+OP --> AuthenticationResponse
+
+
+class AuthenticationRequestOpts {
+  <<interface>>
+  redirectUri: string;
+  requestBy: ObjectBy;
+  signatureType: InternalSignature | ExternalSignature | NoSignature;
+  responseMode?: ResponseMode;
+  claims?: OidcClaim;
+  registration: RequestRegistrationOpts;
+  nonce?: string;
+  state?: string;
+}
+AuthenticationRequestOpts --> ResponseMode
+AuthenticationRequestOpts --> RPRegistrationMetadataOpts
+
+
+
+class RPRegistrationMetadataOpts {
+  <<interface>>
+  subjectIdentifiersSupported: SubjectIdentifierType[] | SubjectIdentifierType;
+  didMethodsSupported?: string[] | string;
+  credentialFormatsSupported: CredentialFormat[] | CredentialFormat;
+}
+
+class RequestRegistrationOpts {
+  <<interface>>
+  registrationBy: RegistrationType;
+}
+RequestRegistrationOpts --|> RPRegistrationMetadataOpts
+
+
+class VerifyAuthenticationRequestOpts {
+  <<interface>>
+  verification: InternalVerification | ExternalVerification;
+  nonce?: string;
+}
 
 class AuthenticationRequest {
     <<service>>
-    createJWT(didAuthRequestCall: DidAuthRequestCall) Promise(uri: string)
-    verifyJWT(didAuthJwt: string): Promise(AuthenticationRequestPayload)
-    createJWT(didAuthResponse: DidAuthResponseCall): Promise(UriResponse);
+    createURI(opts: AuthenticationRequestOpts) Promise(AuthenticationRequestURI)
+    createJWT(opts: AuthenticationRequestOpts) Promise(AuthenticationRequestWithJWT);
+    verifyJWT(jwt: string, opts: VerifyAuthenticationRequestOpts) Promise(VerifiedAuthenticationRequestWithJWT)
 }
-AuthenticationRequest <-- DidAuthRequestCall
-AuthenticationRequest <-- DidAuthResponseCall
-AuthenticationRequest --> UriResponse
+AuthenticationRequest <-- AuthenticationRequestOpts
+AuthenticationRequest <-- VerifyAuthenticationRequestOpts
+AuthenticationRequest --> AuthenticationRequestURI
+AuthenticationRequest --> AuthenticationRequestWithJWT
+AuthenticationRequest --> VerifiedAuthenticationRequestWithJWT
 
-class DidAuthResponseCall {
-    <<interface>>
-    hexPrivateKey: string;
-    did: string;
-    redirectUri: string;
-    nonce?: string;
-    responseMode?: ResponseMode;
-    claims?: ResponseClaims;
+class AuthenticationResponse {
+  <<interface>>
+  createJWTFromRequestJWT(jwt: string, responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts) Promise(AuthenticationResponseWithJWT)
+  verifyJWT(jwt: string, verifyOpts: VerifyAuthenticationResponseOpts) Promise(VerifiedAuthenticationResponseWithJWT)
 }
-DidAuthResponseCall --> ResponseMode
-DidAuthResponseCall --> ResponseClaims
+AuthenticationResponse <-- AuthenticationResponseOpts
+AuthenticationResponse <-- VerifyAuthenticationRequestOpts
+AuthenticationResponse --> AuthenticationResponseWithJWT
+AuthenticationResponse <-- VerifyAuthenticationResponseOpts
+AuthenticationResponse --> VerifiedAuthenticationResponseWithJWT
 
-class ResponseClaims {
-    <<interface>>
-    verified_claims?: string;
-    encryption_key?: JsonWebKey;
+class AuthenticationResponseOpts {
+  <<interface>>
+  signatureType: InternalSignature | ExternalSignature;
+  nonce?: string;
+  state?: string;
+  registration: ResponseRegistrationOpts;
+  responseMode?: ResponseMode;
+  did: string;
+  vp?: VerifiablePresentation;
+  expiresIn?: number;
+}
+AuthenticationResponseOpts --> ResponseMode
+
+class AuthenticationResponseWithJWT {
+  <<interface>>
+  jwt: string;
+  nonce: string;
+  state: string;
+  payload: AuthenticationResponsePayload;
+  verifyOpts?: VerifyAuthenticationRequestOpts;
+  responseOpts: AuthenticationResponseOpts;
+}
+AuthenticationResponseWithJWT --> AuthenticationResponsePayload
+AuthenticationResponseWithJWT --> VerifyAuthenticationRequestOpts
+AuthenticationResponseWithJWT --> AuthenticationResponseOpts
+
+
+class VerifyAuthenticationResponseOpts {
+  <<interface>>
+  verification: InternalVerification | ExternalVerification;
+  nonce?: string;
+  state?: string;
+  audience: string;
 }
 
 class ResponseMode {
@@ -65,7 +126,7 @@ class ResponseMode {
     bodyEncoded?: string;
 }
 UriResponse --> ResponseMode
-SIOPURI <|-- UriResponse
+UriResponse <|-- SIOPURI
 
 class SIOPURI {
     <<interface>>
@@ -73,23 +134,39 @@ class SIOPURI {
     encodingFormat: UrlEncodingFormat;
 }
 SIOPURI --> UrlEncodingFormat
+SIOPURI <|-- AuthenticationRequestURI
+
+class AuthenticationRequestURI {
+  <<interface>>
+  jwt?: string; 
+  requestOpts: AuthenticationRequestOpts;
+  requestPayload: AuthenticationRequestPayload;
+}
+AuthenticationRequestURI --> AuthenticationRequestPayload
 
 class UrlEncodingFormat {
     <<enum>>
 }
 
+class ResponseMode {
+  <<enum>>
+}
 
 class AuthenticationRequestPayload {
     <<interface>>
-    iss: string;
     scope: Scope;
     response_type: ResponseType;
     client_id: string;
+    redirect_uri: string;
+    response_mode: ResponseMode;
+    request: string;
+    request_uri: string;
+    state?: string;
     nonce: string;
     did_doc?: DIDDocument;
     claims?: RequestClaims;
 }
-AuthenticationRequestPayload <|-- JWTPayload
+AuthenticationRequestPayload --|> JWTPayload
 
 class  JWTPayload {
   iss?: string
@@ -102,55 +179,31 @@ class  JWTPayload {
   [x: string]: any
 }
 
-class DidAuthRequestCall {
-    <<interface>>
-    redirectUri: string;
-    hexPrivateKey: string;
-    kid: string;
-    issuer: string;
-    responseMode?: string;
-    responseContext?: string;
-    claims?: RequestClaims;
-}
-DidAuthRequestCall --> RequestClaims
 
-class RequestClaims {
-    <<interface>>
-    userinfo?: UserInfo (external_openid_userinfo);
-    id_token?: IdToken (external_openid_userinfo);
+class VerifiedAuthenticationRequestWithJWT {
+  <<interface>>
+  payload: AuthenticationRequestPayload; 
+  verifyOpts: VerifyAuthenticationRequestOpts; 
 }
+VerifiedJWT <|-- VerifiedAuthenticationRequestWithJWT
+VerifiedAuthenticationRequestWithJWT --> VerifyAuthenticationRequestOpts
+VerifiedAuthenticationRequestWithJWT --> AuthenticationRequestPayload
 
-class ClientAgent {
-    <<service>>
-    verifyAuthResponse(response: AkeResponse, nonce: string) Promise(AkeDecrypted);
+class VerifiedAuthenticationResponseWithJWT {
+  <<interface>>
+  payload: AuthenticationResponsePayload;
+  verifyOpts: VerifyAuthenticationResponseOpts;
 }
-ClientAgent <-- AkeResponse
-ClientAgent --> AkeDecrypted
+VerifiedAuthenticationResponseWithJWT --> AuthenticationResponsePayload
+VerifiedAuthenticationResponseWithJWT --> VerifyAuthenticationResponseOpts
+VerifiedJWT <|-- VerifiedAuthenticationResponseWithJWT
 
-class AkeResponse {
-    <<interface>>
-    version: 1;
-    signed_payload: AkeSigned;
-    jws: string;
-    did?: string;
-}
-AkeResponse --> AkeSigned
-
-class AkeSigned {
-    <<interface>>
-    version: 1;
-    encrypted_access_token: string;
-    nonce: string;
-    kid?: string;
-    iat: number;
-    iss: string;
-}
-
-class  AkeDecrypted {
-    <<interface>>
-    version: 1;
-    access_token: string;
-    kid: string;
-    nonce: string;
+class VerifiedJWT {
+  <<interface>>
+  payload: Partial<JWTPayload>;
+  didResolutionResult: DIDResolutionResult;
+  issuer: string;
+  signer: VerificationMethod;
+  jwt: string;
 }
 ````

@@ -1,15 +1,15 @@
 import { SIOP, SIOPErrors } from '../types';
 import {
+  CommonSupportedMetadata,
   DiscoveryMetadataPayload,
   RPRegistrationMetadataPayload,
   SubjectIdentifierType,
-  SupportedTypes,
 } from '../types/SIOP.types';
 
 export function assertValidMetadata(
   opMetadata: DiscoveryMetadataPayload,
   rpMetadata: RPRegistrationMetadataPayload
-): SupportedTypes {
+): CommonSupportedMetadata {
   let methods = [];
   const credentials = supportedCredentialsFormats(
     rpMetadata.credential_formats_supported,
@@ -23,7 +23,7 @@ export function assertValidMetadata(
       methods = [...opMetadata.did_methods_supported];
     }
   }
-  return { op_rp_credential_formats_supported: credentials, op_rp_did_methods_supported: methods };
+  return { credential_formats_supported: credentials, did_methods_supported: methods };
 }
 
 function getIntersection<T>(rpMetadata: Array<T> | T, opMetadata: Array<T> | T): Array<T> {

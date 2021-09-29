@@ -27,7 +27,7 @@ export default class AuthenticationRequest {
    * @param uri
    */
   static parseURI(uri: string): AuthenticationRequestPayload {
-    return decodeUriAsJson(uri) as AuthenticationRequestPayload;
+    return decodeUriAsJson(uri.replace(/^.*:\/\/\??/, '')) as AuthenticationRequestPayload;
   }
 
   /**
@@ -150,14 +150,15 @@ function createURIFromJWT(
         encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
         requestOpts,
         requestPayload,
+        jwt,
       };
   }
   throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
 }
 
-function assertValidRequestJWT(header: JWTHeader, payload: JWT.JWTPayload) {
-  console.log(header);
-  console.log(payload);
+function assertValidRequestJWT(_header: JWTHeader, _payload: JWT.JWTPayload) {
+  /*console.log(_header);
+  console.log(_payload);*/
 }
 
 function assertValidVerifyOpts(opts: SIOP.VerifyAuthenticationRequestOpts) {
