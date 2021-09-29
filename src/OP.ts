@@ -1,4 +1,4 @@
-import { Presentation, SelectResults, Validated, VerifiableCredential, VP } from '@sphereon/pe-js';
+import { Presentation, SelectResults, VerifiableCredential, VP } from '@sphereon/pe-js';
 import Ajv from 'ajv';
 import fetch from 'cross-fetch';
 
@@ -7,7 +7,6 @@ import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
 import { PresentationExchangeAgent } from './PresentationExchangeAgent';
 import { getResolver } from './functions/DIDResolution';
-import { extractDataFromPath } from './functions/ObjectUtils';
 import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
 import { SIOP, SIOPErrors } from './types';
 import {
@@ -104,20 +103,33 @@ export class OP {
 
   public async newAuthenticationResponseWithSelected(
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
-    verifiableCredentials: VerifiableCredential[],
-    holderDID: string,
     responseOpts?: {
       nonce?: string;
       state?: string;
       // audience: string;
       verification?: InternalVerification | ExternalVerification;
+      verifiableCredentials?: VerifiableCredential[];
+      holderDID?: string;
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    const optionalPD = extractDataFromPath(verifiedJwt.payload, '$..presentation_definition');
-    if (optionalPD && optionalPD.length) {
-      const ps = this.presentationExchangeAgent.submissionFrom(optionalPD[0].value, verifiableCredentials);
+    const pd = this.presentationExchangeAgent.findValidPresentationDefinition(
+      verifiedJwt.payload,
+      '$..presentation_definition'
+    );
+    if (pd) {
+      if (!responseOpts.verifiableCredentials || !responseOpts.verifiableCredentials.length || responseOpts.holderDID) {
+        throw new Error(`${SIOPErrors.RESPONSE_OPTS_MUST_CONTAIN_VERIFIABLE_CREDENTIALS_AND_HOLDER_DID}`);
+      }
+      const ps = this.presentationExchangeAgent.submissionFrom(pd, responseOpts.verifiableCredentials);
       responseOpts['vp'] = new VP(
-        new Presentation(null, ps, ['VerifiableCredential'], verifiableCredentials, holderDID, null)
+        new Presentation(
+          null,
+          ps,
+          ['VerifiableCredential'],
+          responseOpts.verifiableCredentials,
+          responseOpts.holderDID,
+          null
+        )
       );
     }
     return AuthenticationResponse.createJWTFromVerifiedRequest(
@@ -152,16 +164,11 @@ export class OP {
     verifiableCredentials: VerifiableCredential[],
     holderDid: string
   ): Promise<SelectResults> {
-    const optionalPD = extractDataFromPath(authenticationRequestPayload, '$..presentation_definition');
-    if (optionalPD && optionalPD.length) {
-      const validationResult: Validated | Validated[] = this.presentationExchangeAgent.validatePresentationDefinition(
-        optionalPD[0].value
-      );
-      if (validationResult[0].message != 'ok') {
-        throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-      }
-    }
-    return this.presentationExchangeAgent.selectFrom(optionalPD[0].value, verifiableCredentials, holderDid);
+    const pd = this.presentationExchangeAgent.findValidPresentationDefinition(
+      authenticationRequestPayload,
+      '$..presentation_definition'
+    );
+    return this.presentationExchangeAgent.selectFrom(pd, verifiableCredentials, holderDid);
   }
 
   public static fromOpts(responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts): OP {

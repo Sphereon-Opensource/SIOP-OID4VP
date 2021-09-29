@@ -1,8 +1,7 @@
 import { getResolver as getUniResolver } from '@sphereon/did-uni-client/dist/resolver/Resolver';
 import { Resolver } from 'did-resolver';
 
-import { RPBuilder, SIOP } from '../src';
-import { RP } from '../src/RP';
+import { RP, RPBuilder, SIOP } from '../src';
 import { CredentialFormat, PassBy, ResponseMode, SubjectIdentifierType } from '../src/types/SIOP.types';
 
 

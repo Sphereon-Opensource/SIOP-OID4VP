@@ -32,6 +32,7 @@ enum SIOPErrors {
   REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID = 'Presentation definition in the request claims is not valid',
   REQUEST_OBJECT_TYPE_NOT_SET = 'Request object type is not set.',
   RESPONSE_AUD_MISMATCH_REDIRECT_URI = 'The audience (aud) in Response Token does NOT match the redirect_uri value sent in the Authentication Request',
+  RESPONSE_OPTS_MUST_CONTAIN_VERIFIABLE_CREDENTIALS_AND_HOLDER_DID = "Since the request has a presentation definition, response must contain verifiable credentials and holder's did",
   RESPONSE_STATUS_UNEXPECTED = 'Received unexpected respons status',
   REGISTRATION_OBJECT_TYPE_NOT_SET = 'Registration object type is not set.',
   SIGNATURE_OBJECT_TYPE_NOT_SET = 'Signature object type is not set.',

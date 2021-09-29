@@ -2,6 +2,9 @@ import { EvaluationResults, PEJS, SelectResults, Validated } from '@sphereon/pe-
 import { VerifiableCredential, VerifiablePresentation } from '@sphereon/pe-js/lib/verifiablePresentation/index';
 import { PresentationDefinition, PresentationSubmission } from '@sphereon/pe-models';
 
+import { extractDataFromPath } from './functions/ObjectUtils';
+import { SIOPErrors } from './types';
+
 export class PresentationExchangeAgent {
   // We update this if necessary
   pejs: PEJS = new PEJS();
@@ -30,11 +33,23 @@ export class PresentationExchangeAgent {
     return this.pejs.selectFrom(presentationDefinition, selectedCredentials, holderDid);
   }
 
-  public validatePresentationDefinition(presentationDefinition: PresentationDefinition): Validated {
-    return this.pejs.validateDefinition(presentationDefinition);
+  public validatePresentationDefinition(presentationDefinition: PresentationDefinition) {
+    const validationResult = this.pejs.validateDefinition(presentationDefinition);
+    if (validationResult[0].message != 'ok') {
+      throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+    }
   }
 
   public validatePresentationSubmission(presentationSubmission: PresentationSubmission): Validated {
     return this.pejs.validateSubmission(presentationSubmission);
+  }
+
+  public findValidPresentationDefinition(obj: unknown, path: string) {
+    const optionalPD = extractDataFromPath(obj, path);
+    if (optionalPD && optionalPD.length) {
+      this.validatePresentationDefinition(optionalPD[0].value);
+      return optionalPD[0].value;
+    }
+    return null;
   }
 }
