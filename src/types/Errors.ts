@@ -12,6 +12,7 @@ enum SIOPErrors {
   ERROR_RETRIEVING_VERIFICATION_METHOD = 'Error retrieving verificaton method from did document',
   ERROR_VALIDATING_NONCE = 'Error validating nonce.',
   ERROR_VERIFYING_SIGNATURE = 'Error verifying the DID Auth Token signature.',
+  EXPIRED = 'The token has expired',
   INVALID_AUDIENCE = 'Audience is invalid. Should be a string value.',
   ISS_DID_NOT_JWKS_URI_DID = ' DID in the jwks_uri does NOT match the DID in the iss claim',
   JWK_THUMBPRINT_MISMATCH_SUB = 'JWK computed thumbprint does not match thumbprint included in Response Token sub claim',

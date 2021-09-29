@@ -44,6 +44,11 @@ describe("RP and OP interaction should", () => {
         // The create method also calls the verifyRequest method, so no need to do it manually
         const authenticationResponseWithJWT = await op.createAuthenticationResponse(requestURI.encodedUri);
 
+        nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, {"result": "ok"});
+        const response = await op.submitAuthenticationResponse(authenticationResponseWithJWT);
+        await expect(response.json()).resolves.toMatchObject({"result": "ok"});
+
+
         const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
             audience: EXAMPLE_REDIRECT_URL,
         })

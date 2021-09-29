@@ -38,7 +38,7 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   request_uri?: string; //URL where Request Object value can be retrieved from, as specified in Section 6.2.
 
   state?: string;
-  nonce?: string;
+  nonce: string;
   did_doc?: DIDDocument;
   claims?: OidcClaim; // claims parameter value, as specified in Section 5.5.
 }
@@ -79,9 +79,11 @@ export interface AuthenticationResponseOpts {
 export interface AuthenticationResponsePayload extends JWTPayload {
   iss: ResponseIss.SELF_ISSUED_V2 | string; // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
   sub: string; // did (or thumbprint of sub_jwk key when type is jkt)
+  sub_type: SubjectIdentifierType;
+  sub_jwk: JWK;
   aud: string; // redirect_uri from request
-  exp?: number;
-  iat?: number;
+  exp: number;
+  iat: number;
   state: string;
   nonce: string;
   did: string;
@@ -89,8 +91,6 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   registration_uri?: string;
   vp?: VerifiablePresentation;
   claims?: ResponseClaims;
-  sub_type: SubjectIdentifierType;
-  sub_jwk: JWK;
 }
 
 /**
