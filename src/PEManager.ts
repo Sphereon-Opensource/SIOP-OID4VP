@@ -5,7 +5,7 @@ import { PresentationDefinition, PresentationSubmission } from '@sphereon/pe-mod
 import { extractDataFromPath } from './functions/ObjectUtils';
 import { SIOPErrors } from './types';
 
-export class PresentationExchangeAgent {
+export class PEManager {
   // We update this if necessary
   pejs: PEJS = new PEJS();
 

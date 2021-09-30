@@ -1,16 +1,16 @@
 import { PresentationDefinition } from '@sphereon/pe-models';
 
-import { PresentationExchangeAgent } from '../src/PresentationExchangeAgent';
+import { PEManager } from '../src';
 
-describe("presentation exchange agent tests", () => {
+describe("presentation exchange manager tests", () => {
   it("pass if no PresentationDefinition is found", async () => {
-    const peAgent: PresentationExchangeAgent = new PresentationExchangeAgent();
-    const pd: PresentationDefinition = peAgent.findValidPresentationDefinition({ url: "http://localhost:8080"});
+    const peManager: PEManager = new PEManager();
+    const pd: PresentationDefinition = peManager.findValidPresentationDefinition({ url: "http://localhost:8080"});
     expect(pd).toBeNull();
   });
 
   it("pass if findValidPresentationDefinition finds a valid presentation_definition", async () => {
-    const peAgent: PresentationExchangeAgent = new PresentationExchangeAgent();
+    const peManager: PEManager = new PEManager();
     const obj = {
       'id_token': {
         'acr': null,
@@ -31,7 +31,7 @@ describe("presentation exchange agent tests", () => {
         }
       }
     };
-    const pd = peAgent.findValidPresentationDefinition(obj);
+    const pd = peManager.findValidPresentationDefinition(obj);
     expect(pd["id"]).toBe("Health Insurance Plan");
     expect(pd["input_descriptors"][0].schema.length).toBe(1);
   });

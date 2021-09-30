@@ -5,7 +5,7 @@ import fetch from 'cross-fetch';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { PresentationExchangeAgent } from './PresentationExchangeAgent';
+import { PEManager } from './PEManager';
 import { getResolver } from './functions/DIDResolution';
 import { postAuthenticationResponse, postAuthenticationResponseJwt } from './functions/HttpUtils';
 import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
@@ -32,7 +32,7 @@ const validate = ajv.compile(AuthenticationResponseOptsSchema);
 export class OP {
   private readonly authResponseOpts: AuthenticationResponseOpts;
   private readonly verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
-  private presentationExchangeAgent: PresentationExchangeAgent = new PresentationExchangeAgent();
+  private peManager: PEManager = new PEManager();
 
   public constructor(opts: {
     builder?: OPBuilder;
@@ -132,12 +132,12 @@ export class OP {
       holderDID?: string;
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    const pd = this.presentationExchangeAgent.findValidPresentationDefinition(verifiedJwt.payload);
+    const pd = this.peManager.findValidPresentationDefinition(verifiedJwt.payload);
     if (pd) {
       if (!responseOpts.verifiableCredentials || !responseOpts.verifiableCredentials.length || responseOpts.holderDID) {
         throw new Error(`${SIOPErrors.RESPONSE_OPTS_MUST_CONTAIN_VERIFIABLE_CREDENTIALS_AND_HOLDER_DID}`);
       }
-      const ps = this.presentationExchangeAgent.submissionFrom(pd, responseOpts.verifiableCredentials);
+      const ps = this.peManager.submissionFrom(pd, responseOpts.verifiableCredentials);
       responseOpts['vp'] = new VP(
         new Presentation(
           null,
@@ -181,8 +181,8 @@ export class OP {
     verifiableCredentials: VerifiableCredential[],
     holderDid: string
   ): Promise<SelectResults> {
-    const pd = this.presentationExchangeAgent.findValidPresentationDefinition(authenticationRequestPayload);
-    return this.presentationExchangeAgent.selectFrom(pd, verifiableCredentials, holderDid);
+    const pd = this.peManager.findValidPresentationDefinition(authenticationRequestPayload);
+    return this.peManager.selectFrom(pd, verifiableCredentials, holderDid);
   }
 
   public static fromOpts(responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts): OP {

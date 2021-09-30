@@ -1,7 +1,7 @@
 import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
-import { PresentationExchangeAgent } from './PresentationExchangeAgent';
+import { PEManager } from './PEManager';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
 import { JWT, SIOP, SIOPErrors } from './types';
@@ -134,8 +134,8 @@ function createURIFromJWT(
   jwt: string
 ): SIOP.AuthenticationRequestURI {
   const schema = 'openid://';
-  const peAgent: PresentationExchangeAgent = new PresentationExchangeAgent();
-  peAgent.findValidPresentationDefinition(requestPayload);
+  const peManager: PEManager = new PEManager();
+  peManager.findValidPresentationDefinition(requestPayload);
   const query = Encodings.encodeJsonAsURI(requestPayload);
 
   switch (requestOpts.requestBy?.type) {
