@@ -1,9 +1,9 @@
 import { Presentation, VP } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 
-import { SIOPErrors } from '../dist/main/types';
 import { PEManager, SIOP } from '../src/main';
 import { State } from '../src/main/functions';
+import { SIOPErrors } from '../src/main/types';
 import {
   AuthenticationRequestPayload,
   CredentialFormat,
