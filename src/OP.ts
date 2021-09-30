@@ -181,8 +181,11 @@ export class OP {
     verifiableCredentials: VerifiableCredential[],
     holderDid: string
   ): Promise<SelectResults> {
-    const pd = this.peManager.findValidPresentationDefinition(authenticationRequestPayload);
-    return this.peManager.selectFrom(pd, verifiableCredentials, holderDid);
+    return this.peManager.selectVerifiableCredentialsForSubmission(
+      authenticationRequestPayload,
+      verifiableCredentials,
+      holderDid
+    );
   }
 
   public static fromOpts(responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts): OP {
