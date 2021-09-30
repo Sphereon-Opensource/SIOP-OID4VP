@@ -137,7 +137,7 @@ export class OP {
       if (!responseOpts.verifiableCredentials || !responseOpts.verifiableCredentials.length || responseOpts.holderDID) {
         throw new Error(`${SIOPErrors.RESPONSE_OPTS_MUST_CONTAIN_VERIFIABLE_CREDENTIALS_AND_HOLDER_DID}`);
       }
-      const ps = this.peManager.submissionFrom(pd, responseOpts.verifiableCredentials);
+      const ps = await this.peManager.submissionFrom(verifiedJwt.payload, responseOpts.verifiableCredentials);
       responseOpts['vp'] = new VP(
         new Presentation(
           null,

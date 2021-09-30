@@ -16,16 +16,22 @@ export class PEManager {
    * @param requestPayload: payload object created by the RP
    * @param verifiablePresentation:
    */
-  public evaluate(
+  public async evaluate(
     requestPayload: SIOP.AuthenticationRequestPayload,
     verifiablePresentation: VerifiablePresentation
-  ): EvaluationResults {
+  ): Promise<EvaluationResults> {
     this.pejs = new PEJS();
-    const presentationDefinition = this.findValidPresentationDefinition(requestPayload);
+    const presentationDefinition = await this.findValidPresentationDefinition(requestPayload);
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
-    return this.pejs.evaluate(presentationDefinition, verifiablePresentation);
+    const evaluationResults: EvaluationResults = this.pejs.evaluate(presentationDefinition, verifiablePresentation);
+    if (evaluationResults.errors.length) {
+      throw new Error(
+        `message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(evaluationResults.errors)}`
+      );
+    }
+    return evaluationResults;
   }
 
   /**
@@ -33,11 +39,11 @@ export class PEManager {
    * @param requestPayload: payload object received by the OP from the RP
    * @param selectedCredentials
    */
-  public submissionFrom(
+  public async submissionFrom(
     requestPayload: SIOP.AuthenticationRequestPayload,
     selectedCredentials: VerifiableCredential[]
-  ): PresentationSubmission {
-    const presentationDefinition = this.findValidPresentationDefinition(requestPayload);
+  ): Promise<PresentationSubmission> {
+    const presentationDefinition = await this.findValidPresentationDefinition(requestPayload);
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
@@ -56,12 +62,12 @@ export class PEManager {
    * @param credentials: a set of VCs that user selects in response to the given PD
    * @param holderDid: did of the holder related to this presentationDefinition
    */
-  public selectVerifiableCredentialsForSubmission(
+  public async selectVerifiableCredentialsForSubmission(
     requestPayload: SIOP.AuthenticationRequestPayload,
     credentials: VerifiableCredential[],
     holderDid: string
-  ): SelectResults {
-    const presentationDefinition = this.findValidPresentationDefinition(requestPayload);
+  ): Promise<SelectResults> {
+    const presentationDefinition = await this.findValidPresentationDefinition(requestPayload);
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }

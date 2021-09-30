@@ -1,5 +1,7 @@
+import { Presentation, VP } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 
+import { SIOPErrors } from '../dist/main/types';
 import { PEManager, SIOP } from '../src/main';
 import { State } from '../src/main/functions';
 import {
@@ -11,6 +13,8 @@ import {
 } from '../src/main/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
+
+const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
 
 async function getPayload() {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
@@ -72,20 +76,111 @@ async function getPayload() {
   };
 }
 
-describe("presentation exchange manager tests", () => {
-  it("pass if no PresentationDefinition is found", async () => {
+async function getVCs() {
+  return [{
+    '@context': [
+      'https://www.w3.org/2018/credentials/v1',
+      'https://www.w3.org/2018/credentials/examples/v1'
+    ],
+    'id': 'https://example.com/credentials/1872',
+    'type': [
+      'VerifiableCredential',
+      'IDCardCredential'
+    ],
+    'issuer': {
+      'id': 'did:example:issuer'
+    },
+    'credentialSubject': {
+      'given_name': 'Fredrik',
+      'family_name': 'Stremberg',
+      'birthdate': '1949-01-22'
+    }
+  }];
+}
+
+describe('presentation exchange manager tests', () => {
+  it('evaluate: should throw error if provided VP doesn\'t match the PD', async function() {
+    const peManager: PEManager = new PEManager();
+    const payload: AuthenticationRequestPayload = await getPayload();
+    const vcs = await getVCs();
+    vcs[0].issuer = { 'id': 'did:example:totallyDifferentIssuer' };
+    try {
+      await peManager.evaluate(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
+    } catch (e) {
+      expect(e.message).toContain(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
+    }
+  });
+
+  it('evaluate: should pass if provided VP match the PD', async function() {
+    const peManager: PEManager = new PEManager();
+    const payload: AuthenticationRequestPayload = await getPayload();
+    const vcs = await getVCs();
+    const result = await peManager.evaluate(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
+    console.log(JSON.stringify(result));
+    expect(result.errors.length).toBe(0);
+    expect(result.value.definition_id).toBe('Insurance Plans');
+  });
+
+  it('submissionFrom: should fail if can\'t create a valid presentationSubmission object', async function() {
+    const peManager: PEManager = new PEManager();
+    const payload: AuthenticationRequestPayload = await getPayload();
+    const vcs = await getVCs();
+    await peManager.evaluate(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
+    delete payload.claims['id_token'];
+    await expect(peManager.submissionFrom(payload, vcs)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+  });
+
+  it('submissionFrom: should pass if a valid presentationSubmission object created', async function() {
+    const peManager: PEManager = new PEManager();
+    const payload: AuthenticationRequestPayload = await getPayload();
+    const vcs = await getVCs();
+    await peManager.evaluate(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
+    const result = await peManager.submissionFrom(payload, vcs);
+    expect(result.definition_id).toBe('Insurance Plans');
+    expect(result.descriptor_map.length).toBe(1);
+    expect(result.descriptor_map[0]).toStrictEqual({
+      'id': 'Ontario Health Insurance Plan',
+      'format': 'ldp_vc',
+      'path': '$.verifiableCredential[0]'
+    });
+  });
+
+  it('selectVerifiableCredentialsForSubmission: should fail if selectResults object contains error', async function() {
+    const peManager: PEManager = new PEManager();
+    const payload: AuthenticationRequestPayload = await getPayload();
+    const vcs = await getVCs();
+    vcs[0].issuer = undefined;
+    try {
+      await expect(peManager.selectVerifiableCredentialsForSubmission(payload, vcs, HOLDER_DID)).rejects.toThrow();
+    } catch (e) {
+      expect(e.message).toContain(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
+    }
+  });
+
+  it('selectVerifiableCredentialsForSubmission: should pass if a valid selectResults object created', async function() {
+    const peManager: PEManager = new PEManager();
+    const payload: AuthenticationRequestPayload = await getPayload();
+    const vcs = await getVCs();
+    const result = await peManager.selectVerifiableCredentialsForSubmission(payload, vcs, HOLDER_DID);
+    expect(result.errors.length).toBe(0);
+    expect(result.matches.length).toBe(1);
+    expect(result.matches[0].matches.length).toBe(1);
+    expect(result.matches[0].matches[0]).toBe('$.verifiableCredential[0]');
+  });
+
+  it('pass if no PresentationDefinition is found', async () => {
     const payload: AuthenticationRequestPayload = await getPayload();
     const peManager: PEManager = new PEManager();
     payload.claims = undefined;
-    const pd: PresentationDefinition = peManager.findValidPresentationDefinition(payload);
+    const pd: PresentationDefinition = await peManager.findValidPresentationDefinition(payload);
     expect(pd).toBeNull();
   });
 
-  it("pass if findValidPresentationDefinition finds a valid presentation_definition", async () => {
+  it('pass if findValidPresentationDefinition finds a valid presentation_definition', async () => {
     const peManager: PEManager = new PEManager();
     const payload: AuthenticationRequestPayload = await getPayload();
-    const pd = peManager.findValidPresentationDefinition(payload);
-    expect(pd["id"]).toBe("Insurance Plans");
-    expect(pd["input_descriptors"][0].schema.length).toBe(2);
+    const pd = await peManager.findValidPresentationDefinition(payload);
+    expect(pd['id']).toBe('Insurance Plans');
+    expect(pd['input_descriptors'][0].schema.length).toBe(2);
   });
 });
