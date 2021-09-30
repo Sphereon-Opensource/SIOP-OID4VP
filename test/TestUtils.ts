@@ -13,19 +13,19 @@ import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
 
-import { SIOP } from '../src';
-import { assertValidMetadata } from '../src/functions/DidSiopMetadata';
-import { base64ToHexString } from '../src/functions/Encodings';
-import SIOPErrors from '../src/types/Errors';
+import { SIOP } from '../src/main';
+import { assertValidMetadata } from '../src/main/functions/DidSiopMetadata';
+import { base64ToHexString } from '../src/main/functions/Encodings';
+import SIOPErrors from '../src/main/types/Errors';
 import {
-  CredentialFormat,
-  ResponseIss,
-  ResponseType,
-  Scope,
-  SigningAlgo,
-  SubjectIdentifierType,
-  SubjectType
-} from '../src/types/SIOP.types';
+    CredentialFormat,
+    ResponseIss,
+    ResponseType,
+    Scope,
+    SigningAlgo,
+    SubjectIdentifierType,
+    SubjectType
+} from '../src/main/types/SIOP.types';
 
 import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
 

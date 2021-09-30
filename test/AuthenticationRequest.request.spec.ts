@@ -1,8 +1,8 @@
 import { parse } from 'querystring';
 
-import { AuthenticationRequest, SIOP } from '../src';
-import SIOPErrors from '../src/types/Errors';
-import { CredentialFormat, SubjectIdentifierType } from '../src/types/SIOP.types';
+import { AuthenticationRequest, SIOP } from '../src/main';
+import SIOPErrors from '../src/main/types/Errors';
+import { CredentialFormat, SubjectIdentifierType } from '../src/main/types/SIOP.types';
 
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const EXAMPLE_REFERENCE_URL = "https://rp.acme.com/siop/jwts";

@@ -1,8 +1,8 @@
 import nock from "nock";
 
-import { OP } from '../src';
-import { RP } from '../src/RP';
-import { CredentialFormat, PassBy } from '../src/types/SIOP.types';
+import { OP } from '../src/main';
+import { RP } from '../src/main/RP';
+import { CredentialFormat, PassBy } from '../src/main/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 

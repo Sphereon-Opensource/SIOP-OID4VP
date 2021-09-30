@@ -1,16 +1,16 @@
 import { VP } from '@sphereon/pe-js';
 
-import { AuthenticationRequest, AuthenticationResponse } from '../src';
-import SIOPErrors from '../src/types/Errors';
+import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
+import SIOPErrors from '../src/main/types/Errors';
 import {
-  AuthenticationResponseOpts,
-  CredentialFormat,
-  PassBy,
-  ResponseMode,
-  SubjectIdentifierType,
-  VerificationMode,
-  VerifyAuthenticationRequestOpts
-} from '../src/types/SIOP.types';
+    AuthenticationResponseOpts,
+    CredentialFormat,
+    PassBy,
+    ResponseMode,
+    SubjectIdentifierType,
+    VerificationMode,
+    VerifyAuthenticationRequestOpts
+} from '../src/main/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
@@ -178,7 +178,7 @@ describe('create JWT from Request JWT should', () => {
         }
       }
     };
-    const vp:VP = new VP({
+    const vp: VP = new VP({
       context: [],
       presentation_submission: undefined,
       type: ['verifiableCredential'],

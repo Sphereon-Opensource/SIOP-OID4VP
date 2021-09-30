@@ -10,20 +10,20 @@ function writeSchema(config) {
 }
 
 const requestOptsConf = {
-    path: "../src/types/SIOP.types.ts",
+    path: "../src/main/types/SIOP.types.ts",
     tsconfig: "tsconfig.json",
     type: "AuthenticationRequestOpts", // Or <type-name> if you want to generate schema for that one type only
-    outputPath: "src/schemas/AuthenticationRequestOpts.schema.ts",
+    outputPath: "src/main/schemas/AuthenticationRequestOpts.schema.ts",
     outputConstName: "AuthenticationRequestOptsSchema",
     skipTypeCheck: true
 };
 
 
 const responseOptsConf = {
-    path: "../src/types/SIOP.types.ts",
+    path: "../src/main/types/SIOP.types.ts",
     tsconfig: "tsconfig.json",
     type: "AuthenticationResponseOpts", // Or <type-name> if you want to generate schema for that one type only
-    outputPath: "src/schemas/AuthenticationResponseOpts.schema.ts",
+    outputPath: "src/main/schemas/AuthenticationResponseOpts.schema.ts",
     outputConstName: "AuthenticationResponseOptsSchema",
     skipTypeCheck: true
 };

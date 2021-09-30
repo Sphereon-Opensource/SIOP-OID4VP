@@ -1,7 +1,7 @@
 import { DIDDocument } from 'did-resolver';
 
-import { JWTHeader, SIOP } from '../../src';
-import { CredentialFormat, ResponseContext, ResponseMode, SubjectIdentifierType } from '../../src/types/SIOP.types';
+import { JWTHeader, SIOP } from '../../src/main';
+import { CredentialFormat, ResponseContext, ResponseMode, SubjectIdentifierType } from '../../src/main/types/SIOP.types';
 
 export const DIDAUTH_HEADER: JWTHeader = {
   typ: "JWT",

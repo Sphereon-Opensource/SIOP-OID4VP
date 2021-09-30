@@ -1,14 +1,14 @@
 import { PresentationDefinition } from '@sphereon/pe-models';
 
-import { PEManager, SIOP } from '../src';
-import { State } from '../src/functions';
+import { PEManager, SIOP } from '../src/main';
+import { State } from '../src/main/functions';
 import {
   AuthenticationRequestPayload,
   CredentialFormat,
   ResponseContext,
   ResponseMode,
   SubjectIdentifierType
-} from '../src/types/SIOP.types';
+} from '../src/main/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 

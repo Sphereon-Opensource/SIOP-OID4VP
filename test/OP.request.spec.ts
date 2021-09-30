@@ -1,10 +1,11 @@
 import { SelectResults } from '@sphereon/pe-js';
 
-import { OP, OPBuilder, RP, SIOP } from '../src';
-import { State } from '../src/functions';
+import { OP, OPBuilder, RP, SIOP } from '../src/main';
+import { State } from '../src/main/functions';
 import {
   AuthenticationRequestOpts,
-  AuthenticationResponseOpts, AuthenticationResponseWithJWT,
+  AuthenticationResponseOpts,
+  AuthenticationResponseWithJWT,
   CredentialFormat,
   PassBy,
   ResponseContext,
@@ -12,7 +13,7 @@ import {
   SubjectIdentifierType,
   VerificationMode,
   VerifyAuthenticationRequestOpts
-} from '../src/types/SIOP.types';
+} from '../src/main/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
