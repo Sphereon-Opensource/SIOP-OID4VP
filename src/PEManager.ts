@@ -3,7 +3,7 @@ import { VerifiableCredential } from '@sphereon/pe-js/lib/verifiablePresentation
 import { PresentationDefinition, PresentationSubmission } from '@sphereon/pe-models';
 
 import { extractDataFromPath } from './functions/ObjectUtils';
-import { SIOPErrors } from './types';
+import { SIOP, SIOPErrors } from './types';
 
 export class PEManager {
   // We update this if necessary
@@ -45,10 +45,10 @@ export class PEManager {
    * throws exception if the PresentationDefinition is not valid
    * returns null if no property named "presentation_definition" is found
    * returns a PresentationDefinition if a valid instance found
-   * @param obj
+   * @param requestPayload
    */
-  public findValidPresentationDefinition(obj: unknown) {
-    const optionalPD = extractDataFromPath(obj, '$..presentation_definition');
+  public findValidPresentationDefinition(requestPayload: SIOP.AuthenticationRequestPayload) {
+    const optionalPD = extractDataFromPath(requestPayload, '$..presentation_definition');
     if (optionalPD && optionalPD.length) {
       this.validatePresentationDefinition(optionalPD[0].value);
       return optionalPD[0].value;
