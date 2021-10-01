@@ -76,15 +76,13 @@ export class OP {
       vp?: VerifiablePresentation;
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    const pd = PEManager.findValidPresentationDefinition(verifiedJwt.payload);
-    if (pd) {
+    if (verifiedJwt.presentationDefinition) {
       if (!responseOpts && !responseOpts.vp) {
         throw new Error(`${SIOPErrors.AUTH_REQUEST_EXPECTS_VP}`);
       }
-      new PEManager().evaluate(pd, responseOpts.vp);
+      new PEManager().evaluate(verifiedJwt, responseOpts.vp);
       PEManager.validatePresentationSubmission(responseOpts.vp.getPresentationSubmission());
-    }
-    if (!pd && responseOpts && responseOpts.vp) {
+    } else if (responseOpts && responseOpts.vp) {
       throw new Error(`${SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP}`);
     }
     return AuthenticationResponse.createJWTFromVerifiedRequest(

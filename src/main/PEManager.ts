@@ -13,19 +13,18 @@ export class PEManager {
   /**
    * evaluate function is called mainly by the RP
    * after receiving the VP from the OP
-   * @param requestPayload: payload object created by the RP
+   * @param verifiedJwt: object containing PD
    * @param verifiablePresentation:
    */
   public async evaluate(
-    requestPayload: SIOP.AuthenticationRequestPayload,
+    verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
     verifiablePresentation: VerifiablePresentation
   ): Promise<EvaluationResults> {
     this.pejs = new PEJS();
-    const presentationDefinition = PEManager.findValidPresentationDefinition(requestPayload);
-    if (!presentationDefinition) {
+    if (!verifiedJwt.presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
-    const evaluationResults: EvaluationResults = this.pejs.evaluate(presentationDefinition, verifiablePresentation);
+    const evaluationResults: EvaluationResults = this.pejs.evaluate(verifiedJwt.presentationDefinition, verifiablePresentation);
     if (evaluationResults.errors.length) {
       throw new Error(
         `message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(evaluationResults.errors)}`

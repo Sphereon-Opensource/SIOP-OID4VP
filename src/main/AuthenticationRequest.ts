@@ -106,9 +106,11 @@ export default class AuthenticationRequest {
     ) {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
+    const pd = PEManager.findValidPresentationDefinition(payload);
     return {
       ...verifiedJWT,
       verifyOpts: opts,
+      presentationDefinition: pd,
       payload: verifiedJWT.payload as AuthenticationRequestPayload,
     };
   }

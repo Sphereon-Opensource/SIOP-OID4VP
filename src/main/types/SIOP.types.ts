@@ -1,4 +1,5 @@
 import { VerifiablePresentation } from '@sphereon/pe-js';
+import { PresentationDefinition } from '@sphereon/pe-models';
 import { DIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
 
@@ -50,6 +51,7 @@ export interface RequestRegistrationPayload {
 
 export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
   payload: AuthenticationRequestPayload; // The unsigned Authentication Request payload
+  presentationDefinition?: PresentationDefinition; // The presentation definition object that RP requests
   verifyOpts: VerifyAuthenticationRequestOpts; // The verification options for the authentication request
 }
 
