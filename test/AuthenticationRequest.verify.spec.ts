@@ -6,13 +6,14 @@ import { AuthenticationRequest, SIOP } from '../src/main';
 import { State } from '../src/main/functions';
 import SIOPErrors from '../src/main/types/Errors';
 import {
-    CredentialFormat,
-    PassBy,
-    ResponseContext,
-    ResponseMode,
-    SubjectIdentifierType,
-    VerificationMode,
-    VerifyAuthenticationRequestOpts
+  CredentialFormat,
+  PassBy,
+  PresentationExchangeContext,
+  ResponseContext,
+  ResponseMode,
+  SubjectIdentifierType,
+  VerificationMode,
+  VerifyAuthenticationRequestOpts
 } from '../src/main/types/SIOP.types';
 
 import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
@@ -46,6 +47,7 @@ describe("SIOP Request Validation", () => {
       response_type: SIOP.ResponseType.ID_TOKEN,
       client_id: "http://localhost:8080/test",
       state,
+      peContext: PresentationExchangeContext.NO_PE,
       nonce: State.getNonce(state),
       registration: {
         did_methods_supported: ['did:ethr:'],

@@ -35,6 +35,7 @@ enum SIOPErrors {
   REQUEST_OBJECT_TYPE_NOT_SET = 'Request object type is not set.',
   RESPONSE_AUD_MISMATCH_REDIRECT_URI = 'The audience (aud) in Response Token does NOT match the redirect_uri value sent in the Authentication Request',
   RESPONSE_OPTS_MUST_CONTAIN_VERIFIABLE_CREDENTIALS_AND_HOLDER_DID = "Since the request has a presentation definition, response must contain verifiable credentials and holder's did",
+  RESPONSE_OPTS_PRESENTATIONS_SUBMISSION_IS_NOT_VALID = 'presentation_submission object inside the response opts vp should be valid',
   RESPONSE_STATUS_UNEXPECTED = 'Received unexpected respons status',
   REGISTRATION_OBJECT_TYPE_NOT_SET = 'Registration object type is not set.',
   SIGNATURE_OBJECT_TYPE_NOT_SET = 'Signature object type is not set.',
@@ -42,6 +43,9 @@ enum SIOPErrors {
   VERIFY_BAD_PARAMS = 'Verify bad parameters',
   VERIFICATION_METHOD_NOT_SUPPORTED = 'Verification method not supported',
   VERIFICATION_METHOD_NO_MATCH = "The verification method from the RP's DID Document does NOT match the kid of the SIOP Request",
+  WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_PD = 'This endpoint is only for authentication requests without presentation_definition',
+  WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_VCS = 'This endpoint is only for response opts without verifiable credentials',
+  WRONG_FUNCTION_CALL_ENDPOINT_IS_FOR_PD_ONLY = 'This endpoint is only for authentication requests with presentation_definition',
 }
 
 export default SIOPErrors;

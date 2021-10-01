@@ -1,4 +1,4 @@
-import { EvaluationResults, PEJS, SelectResults, VerifiablePresentation } from '@sphereon/pe-js';
+import { EvaluationResults, PEJS, Presentation, SelectResults, VerifiablePresentation, VP } from '@sphereon/pe-js';
 import { VerifiableCredential } from '@sphereon/pe-js/lib/verifiablePresentation/index';
 import { PresentationDefinition, PresentationSubmission } from '@sphereon/pe-models';
 
@@ -21,7 +21,7 @@ export class PEManager {
     verifiablePresentation: VerifiablePresentation
   ): Promise<EvaluationResults> {
     this.pejs = new PEJS();
-    const presentationDefinition = await this.findValidPresentationDefinition(requestPayload);
+    const presentationDefinition = PEManager.findValidPresentationDefinition(requestPayload);
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
@@ -36,18 +36,28 @@ export class PEManager {
 
   /**
    * Construct presentation submission from selected credentials
-   * @param requestPayload: payload object received by the OP from the RP
+   * @param verifiedJwt: payload object received by the OP from the RP
    * @param selectedCredentials
    */
   public async submissionFrom(
-    requestPayload: SIOP.AuthenticationRequestPayload,
+    verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
     selectedCredentials: VerifiableCredential[]
-  ): Promise<PresentationSubmission> {
-    const presentationDefinition = await this.findValidPresentationDefinition(requestPayload);
+  ): Promise<VerifiablePresentation> {
+    const presentationDefinition = PEManager.findValidPresentationDefinition(verifiedJwt);
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
-    return this.pejs.submissionFrom(presentationDefinition, selectedCredentials);
+    const ps: PresentationSubmission = this.pejs.submissionFrom(presentationDefinition, selectedCredentials);
+    return new VP(
+      new Presentation(
+        null,
+        ps,
+        ['verifiableCredential'],
+        selectedCredentials,
+        verifiedJwt.didResolutionResult.didDocument.id,
+        null
+      )
+    );
   }
 
   /**
@@ -58,21 +68,24 @@ export class PEManager {
    * if requestPayload doesn't contain any valid presentationDefinition throws an error
    * if PE-JS library returns any error in the process, throws the error
    * returns the SelectResults object if successful
-   * @param requestPayload: payload object received by the OP from the RP
+   * @param verifiedJwt: object received by the OP from the RP
    * @param credentials: a set of VCs that user selects in response to the given PD
-   * @param holderDid: did of the holder related to this presentationDefinition
    */
   public async selectVerifiableCredentialsForSubmission(
-    requestPayload: SIOP.AuthenticationRequestPayload,
-    credentials: VerifiableCredential[],
-    holderDid: string
+    verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
+    credentials: VerifiableCredential[]
   ): Promise<SelectResults> {
-    const presentationDefinition = await this.findValidPresentationDefinition(requestPayload);
+    const presentationDefinition = PEManager.findValidPresentationDefinition(verifiedJwt.payload);
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
     this.pejs = new PEJS();
-    const selectResults: SelectResults = this.pejs.selectFrom(presentationDefinition, credentials, holderDid);
+    //TODO: I'm not sure about the correct reference to holderDid
+    const selectResults: SelectResults = this.pejs.selectFrom(
+      presentationDefinition,
+      credentials,
+      verifiedJwt.didResolutionResult.didDocument.id
+    );
     if (selectResults.errors.length) {
       throw new Error(
         `message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(selectResults.errors)}`
@@ -81,10 +94,17 @@ export class PEManager {
     return selectResults;
   }
 
-  private validatePresentationDefinition(presentationDefinition: PresentationDefinition) {
-    const validationResult = this.pejs.validateDefinition(presentationDefinition);
+  private static validatePresentationDefinition(presentationDefinition: PresentationDefinition) {
+    const validationResult = new PEJS().validateDefinition(presentationDefinition);
     if (validationResult[0].message != 'ok') {
       throw new Error(`${SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID}`);
+    }
+  }
+
+  public static validatePresentationSubmission(presentationSubmission: PresentationSubmission) {
+    const validationResult = new PEJS().validateSubmission(presentationSubmission);
+    if (validationResult[0].message != 'ok') {
+      throw new Error(`${SIOPErrors.RESPONSE_OPTS_PRESENTATIONS_SUBMISSION_IS_NOT_VALID}`);
     }
   }
 
@@ -93,12 +113,12 @@ export class PEManager {
    * throws exception if the PresentationDefinition is not valid
    * returns null if no property named "presentation_definition" is found
    * returns a PresentationDefinition if a valid instance found
-   * @param requestPayload
+   * @param obj: object that can have a presentation_definition inside
    */
-  public findValidPresentationDefinition(requestPayload: SIOP.AuthenticationRequestPayload) {
-    const optionalPD = extractDataFromPath(requestPayload, '$..presentation_definition');
+  public static findValidPresentationDefinition(obj: unknown) {
+    const optionalPD = extractDataFromPath(obj, '$..presentation_definition');
     if (optionalPD && optionalPD.length) {
-      this.validatePresentationDefinition(optionalPD[0].value);
+      PEManager.validatePresentationDefinition(optionalPD[0].value);
       return optionalPD[0].value;
     }
     return null;

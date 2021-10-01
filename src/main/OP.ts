@@ -1,4 +1,4 @@
-import { Presentation, SelectResults, VerifiableCredential, VP } from '@sphereon/pe-js';
+import { VerifiablePresentation } from '@sphereon/pe-js';
 import Ajv from 'ajv';
 import fetch from 'cross-fetch';
 
@@ -11,12 +11,12 @@ import { postAuthenticationResponse, postAuthenticationResponseJwt } from './fun
 import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
 import { SIOP, SIOPErrors } from './types';
 import {
-  AuthenticationRequestPayload,
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
+  PresentationExchangeContext,
   ResponseMode,
   ResponseRegistrationOpts,
   UrlEncodingFormat,
@@ -32,7 +32,6 @@ const validate = ajv.compile(AuthenticationResponseOptsSchema);
 export class OP {
   private readonly authResponseOpts: AuthenticationResponseOpts;
   private readonly verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
-  private peManager: PEManager = new PEManager();
 
   public constructor(opts: {
     builder?: OPBuilder;
@@ -75,8 +74,14 @@ export class OP {
       state?: string;
       // audience: string;
       verification?: InternalVerification | ExternalVerification;
+      vp?: VerifiablePresentation;
     }
   ): Promise<AuthenticationResponseWithJWT> {
+    if (verifiedJwt.payload.peContext === PresentationExchangeContext.PE) {
+      throw new Error(`${SIOPErrors.WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_PD}`);
+    } else if (responseOpts && responseOpts.vp) {
+      throw new Error(`${SIOPErrors.WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_VCS}`);
+    }
     return AuthenticationResponse.createJWTFromVerifiedRequest(
       verifiedJwt,
       this.newAuthenticationResponseOpts(responseOpts)
@@ -121,34 +126,24 @@ export class OP {
     };
   }
 
-  public async newAuthenticationResponseWithSelected(
+  public async createAuthenticationResponseFromVerifiedRequestForVP(
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
     responseOpts?: {
       nonce?: string;
       state?: string;
       // audience: string;
       verification?: InternalVerification | ExternalVerification;
-      verifiableCredentials?: VerifiableCredential[];
-      holderDID?: string;
+      vp: VerifiablePresentation;
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    const pd = this.peManager.findValidPresentationDefinition(verifiedJwt.payload);
-    if (pd) {
-      if (!responseOpts.verifiableCredentials || !responseOpts.verifiableCredentials.length || responseOpts.holderDID) {
-        throw new Error(`${SIOPErrors.RESPONSE_OPTS_MUST_CONTAIN_VERIFIABLE_CREDENTIALS_AND_HOLDER_DID}`);
-      }
-      const ps = await this.peManager.submissionFrom(verifiedJwt.payload, responseOpts.verifiableCredentials);
-      responseOpts['vp'] = new VP(
-        new Presentation(
-          null,
-          ps,
-          ['VerifiableCredential'],
-          responseOpts.verifiableCredentials,
-          responseOpts.holderDID,
-          null
-        )
-      );
+    if (verifiedJwt.payload.peContext === PresentationExchangeContext.NO_PE) {
+      throw Error(`${SIOPErrors.WRONG_FUNCTION_CALL_ENDPOINT_IS_FOR_PD_ONLY}`);
     }
+    const pd = PEManager.findValidPresentationDefinition(verifiedJwt.payload);
+    if (!pd) {
+      throw new Error(`${SIOPErrors.RESPONSE_OPTS_MUST_CONTAIN_VERIFIABLE_CREDENTIALS_AND_HOLDER_DID}`);
+    }
+    PEManager.validatePresentationSubmission(responseOpts.vp.getPresentationSubmission());
     return AuthenticationResponse.createJWTFromVerifiedRequest(
       verifiedJwt,
       this.newAuthenticationResponseOpts(responseOpts)
@@ -174,18 +169,6 @@ export class OP {
       nonce: opts?.nonce || this.verifyAuthRequestOpts.nonce,
       verification: opts?.verification || this.verifyAuthRequestOpts.verification,
     };
-  }
-
-  public async selectVerifiableCredentialsForSubmission(
-    authenticationRequestPayload: AuthenticationRequestPayload,
-    verifiableCredentials: VerifiableCredential[],
-    holderDid: string
-  ): Promise<SelectResults> {
-    return this.peManager.selectVerifiableCredentialsForSubmission(
-      authenticationRequestPayload,
-      verifiableCredentials,
-      holderDid
-    );
   }
 
   public static fromOpts(responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts): OP {

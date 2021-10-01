@@ -214,7 +214,6 @@ function assertValidResponseOpts(opts: SIOP.AuthenticationResponseOpts) {
   } else if (!(SIOP.isInternalSignature(opts.signatureType) || SIOP.isExternalSignature(opts.signatureType))) {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
-  // if (opts.vp && )
 }
 
 function assertValidVerifyOpts(opts: SIOP.VerifyAuthenticationResponseOpts) {
