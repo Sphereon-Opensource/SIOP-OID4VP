@@ -1,5 +1,6 @@
 enum SIOPErrors {
   AUTH_REQUEST_EXPECTS_VP = 'authentication request expects a verifiable presentation in the response',
+  AUTH_REQUEST_DOESNT_EXPECT_VP = "authentication request doesn't expect a verifiable presentation in the response",
   BAD_INTERNAL_VERIFICATION_PARAMS = 'Error: One of the either didUrlResolver or both registry and rpcUrl must be set',
   BAD_NONCE = 'The nonce in the payload does not match the supplied nonce',
   BAD_PARAMS = 'Wrong parameters provided.',

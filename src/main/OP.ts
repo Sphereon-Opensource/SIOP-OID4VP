@@ -84,6 +84,9 @@ export class OP {
       new PEManager().evaluate(pd, responseOpts.vp);
       PEManager.validatePresentationSubmission(responseOpts.vp.getPresentationSubmission());
     }
+    if (!pd && responseOpts && responseOpts.vp) {
+      throw new Error(`${SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP}`);
+    }
     return AuthenticationResponse.createJWTFromVerifiedRequest(
       verifiedJwt,
       this.newAuthenticationResponseOpts(responseOpts)
