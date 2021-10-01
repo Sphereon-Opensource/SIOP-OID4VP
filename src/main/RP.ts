@@ -22,7 +22,6 @@ const ajv = new Ajv();
 const validate = ajv.compile(AuthenticationRequestOptsSchema);
 
 export class RP {
-
   private readonly _authRequestOpts: AuthenticationRequestOpts;
   private readonly _verifyAuthResponseOpts: Partial<VerifyAuthenticationResponseOpts>;
 
