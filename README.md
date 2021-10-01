@@ -368,6 +368,7 @@ Now that we have the final selection of VCs, the Presentation Exchange class wil
 **NOTE**
 
 We do not support signed selective disclosure yet. The VP will only contain attributes that are requested if the Presentation Definition wanted to limit disclosure. You need BBS+ signatures for instance to sign a VP with selective disclosure. Unsigned selective disclosure is possible, where the RP relies on the Authentication Response being signed as long as the VP subject DIDs match the OP DID.  
+
 ---
 
 ````typescript
