@@ -43,23 +43,15 @@ export class PEManager {
    */
   public async submissionFrom(
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
-    selectedCredentials: VerifiableCredential[]
+    selectedCredentials: VerifiableCredential[],
+    holderDid: string
   ): Promise<VerifiablePresentation> {
     const presentationDefinition = PEManager.findValidPresentationDefinition(verifiedJwt);
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
     const ps: PresentationSubmission = this.pejs.submissionFrom(presentationDefinition, selectedCredentials);
-    return new VP(
-      new Presentation(
-        null,
-        ps,
-        ['verifiableCredential'],
-        selectedCredentials,
-        verifiedJwt.didResolutionResult.didDocument.id,
-        null
-      )
-    );
+    return new VP(new Presentation(null, ps, ['verifiableCredential'], selectedCredentials, holderDid, null));
   }
 
   /**
@@ -75,19 +67,15 @@ export class PEManager {
    */
   public async selectVerifiableCredentialsForSubmission(
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
-    credentials: VerifiableCredential[]
+    credentials: VerifiableCredential[],
+    holderDid: string
   ): Promise<SelectResults> {
     const presentationDefinition = PEManager.findValidPresentationDefinition(verifiedJwt.payload);
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
     this.pejs = new PEJS();
-    //TODO: I'm not sure about the correct reference to holderDid
-    const selectResults: SelectResults = this.pejs.selectFrom(
-      presentationDefinition,
-      credentials,
-      verifiedJwt.didResolutionResult.didDocument.id
-    );
+    const selectResults: SelectResults = this.pejs.selectFrom(presentationDefinition, credentials, holderDid);
     if (selectResults.errors.length) {
       throw new Error(
         `message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(selectResults.errors)}`
