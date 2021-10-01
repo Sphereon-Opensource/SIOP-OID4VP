@@ -333,7 +333,9 @@ The selectVerifiableCredentialsForSubmission method returns the filtered VCs. Th
 
 ---
 **NOTE**
+
 You can have multiple VCs that match the definition. That can be because the OP uses a definition that wants to receive multiple different VCs as part of the Verifiable Presentation, but it can also be that you have multiple VCs that match a single constraint. You always have to do a final manual selection of VCs from your application (outside of the scope of this library).
+
 ---
 
 ````typescript
@@ -364,6 +366,7 @@ Now that we have the final selection of VCs, the Presentation Exchange class wil
 
 ---
 **NOTE**
+
 We do not support signed selective disclosure yet. The VP will only contain attributes that are requested if the Presentation Definition wanted to limit disclosure. You need BBS+ signatures for instance to sign a VP with selective disclosure. Unsigned selective disclosure is possible, where the RP relies on the Authentication Response being signed as long as the VP subject DIDs match the OP DID.  
 ---
 
