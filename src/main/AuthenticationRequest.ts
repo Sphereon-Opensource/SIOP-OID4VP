@@ -5,7 +5,7 @@ import { PEManager } from './PEManager';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
 import { JWT, SIOP, SIOPErrors } from './types';
-import { AuthenticationRequestPayload, PresentationExchangeContext } from './types/SIOP.types';
+import { AuthenticationRequestPayload } from './types/SIOP.types';
 
 export default class AuthenticationRequest {
   /**
@@ -199,7 +199,6 @@ function createInitialRequestPayload(opts: SIOP.AuthenticationRequestOpts): SIOP
     iss: opts.signatureType.did,
     response_mode: opts.responseMode || SIOP.ResponseMode.POST,
     response_context: opts.responseContext || SIOP.ResponseContext.RP,
-    peContext: PresentationExchangeContext.NO_PE,
     nonce: State.getNonce(state, opts.nonce),
     state,
     ...registration.requestRegistrationPayload,

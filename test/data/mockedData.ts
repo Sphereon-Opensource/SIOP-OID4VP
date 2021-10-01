@@ -3,7 +3,6 @@ import { DIDDocument } from 'did-resolver';
 import { JWTHeader, SIOP } from '../../src/main';
 import {
   CredentialFormat,
-  PresentationExchangeContext,
   ResponseContext,
   ResponseMode,
   SubjectIdentifierType
@@ -25,7 +24,6 @@ export const DIDAUTH_REQUEST_PAYLOAD: SIOP.AuthenticationRequestPayload = {
   client_id: "http://app.example/demo",
   nonce: "n-0S6_WzA2M", // MUST be a random string from a high-entropy source
   state: "af0ifjsldkj",
-  peContext: PresentationExchangeContext.NO_PE,
   registration: {
     did_methods_supported: ['did:ethr:'],
     subject_identifiers_supported: SubjectIdentifierType.DID,

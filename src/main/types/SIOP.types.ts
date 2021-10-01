@@ -33,7 +33,6 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   // iss: string;
   response_mode: ResponseMode;
   response_context: ResponseContext;
-  peContext: PresentationExchangeContext;
 
   request?: string; // TODO Request Object value, as specified in Section 6.1. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
   request_uri?: string; //URL where Request Object value can be retrieved from, as specified in Section 6.2.
@@ -196,11 +195,6 @@ export enum PassBy {
 export enum ResponseContext {
   RP = 'rp',
   OP = 'op',
-}
-
-export enum PresentationExchangeContext {
-  PE = 'pe',
-  NO_PE = 'no-pe',
 }
 
 export interface InternalSignature {

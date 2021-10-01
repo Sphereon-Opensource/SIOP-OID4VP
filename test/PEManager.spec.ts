@@ -7,7 +7,6 @@ import { SIOPErrors } from '../src/main/types';
 import {
   AuthenticationRequestPayload,
   CredentialFormat,
-  PresentationExchangeContext,
   ResponseContext,
   ResponseMode,
   SubjectIdentifierType
@@ -28,7 +27,6 @@ async function getPayload() {
     redirect_uri: '',
     scope: SIOP.Scope.OPENID,
     response_type: SIOP.ResponseType.ID_TOKEN,
-    peContext: PresentationExchangeContext.PE,
     client_id: 'http://localhost:8080/test',
     state,
     nonce: State.getNonce(state),

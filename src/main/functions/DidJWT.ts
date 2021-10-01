@@ -12,7 +12,6 @@ import {
   verifyJWT,
 } from '../../did-jwt-fork/JWT';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
-import { PEManager } from '../index';
 import { JWT, SIOP, SIOPErrors } from '../types';
 import {
   AuthenticationRequestOpts,
@@ -25,7 +24,6 @@ import {
   isResponseOpts,
   isResponsePayload,
   KeyAlgo,
-  PresentationExchangeContext,
   ResponseIss,
   SignatureResponse,
 } from '../types/SIOP.types';
@@ -222,12 +220,6 @@ export function parseJWT(jwt: string): JWTDecoded {
   const { payload, header } = decodedJWT;
   if (!payload || !header) {
     throw new Error(SIOPErrors.NO_ISS_DID);
-  }
-  // Here we have to fetch the presentation_definition part of the decoded jwt
-  if (PEManager.findValidPresentationDefinition(payload)) {
-    payload['peContext'] = PresentationExchangeContext.PE;
-  } else {
-    payload['peContext'] = PresentationExchangeContext.NO_PE;
   }
   return decodedJWT;
 }

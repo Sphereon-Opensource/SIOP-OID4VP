@@ -16,7 +16,6 @@ import {
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
-  PresentationExchangeContext,
   ResponseMode,
   ResponseRegistrationOpts,
   UrlEncodingFormat,
@@ -77,7 +76,7 @@ export class OP {
       vp?: VerifiablePresentation;
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    if (verifiedJwt.payload.peContext === PresentationExchangeContext.PE) {
+    if (verifiedJwt.payload.peContext === PEManager.findValidPresentationDefinition(verifiedJwt.payload)) {
       throw new Error(`${SIOPErrors.WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_PD}`);
     } else if (responseOpts && responseOpts.vp) {
       throw new Error(`${SIOPErrors.WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_VCS}`);
@@ -136,7 +135,7 @@ export class OP {
       vp: VerifiablePresentation;
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    if (verifiedJwt.payload.peContext === PresentationExchangeContext.NO_PE) {
+    if (verifiedJwt.payload.peContext === PEManager.findValidPresentationDefinition(verifiedJwt.payload)) {
       throw Error(`${SIOPErrors.WRONG_FUNCTION_CALL_ENDPOINT_IS_FOR_PD_ONLY}`);
     }
     const pd = PEManager.findValidPresentationDefinition(verifiedJwt.payload);
