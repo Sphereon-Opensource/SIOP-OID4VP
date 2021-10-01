@@ -24,7 +24,10 @@ export class PEManager {
     if (!verifiedJwt.presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
-    const evaluationResults: EvaluationResults = this.pejs.evaluate(verifiedJwt.presentationDefinition, verifiablePresentation);
+    const evaluationResults: EvaluationResults = this.pejs.evaluate(
+      verifiedJwt.presentationDefinition,
+      verifiablePresentation
+    );
     if (evaluationResults.errors.length) {
       throw new Error(
         `message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(evaluationResults.errors)}`

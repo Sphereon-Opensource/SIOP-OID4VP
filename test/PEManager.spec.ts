@@ -102,10 +102,17 @@ describe('presentation exchange manager tests', () => {
   it('evaluate: should throw error if provided VP doesn\'t match the PD', async function() {
     const peManager: PEManager = new PEManager();
     const payload: AuthenticationRequestPayload = await getPayload();
+    const pd: PresentationDefinition = PEManager.findValidPresentationDefinition(payload);
     const vcs = await getVCs();
     vcs[0].issuer = { 'id': 'did:example:totallyDifferentIssuer' };
+    const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
+      didResolutionResult: undefined, issuer: '', jwt: '', signer: undefined,
+      payload: payload,
+      presentationDefinition: pd,
+      verifyOpts: null
+    };
     try {
-      await peManager.evaluate(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
+      await peManager.evaluate(verifiedJwt, new VP(new Presentation(null, null, null, vcs, null, null)));
     } catch (e) {
       expect(e.message).toContain(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
@@ -115,7 +122,14 @@ describe('presentation exchange manager tests', () => {
     const peManager: PEManager = new PEManager();
     const payload: AuthenticationRequestPayload = await getPayload();
     const vcs = await getVCs();
-    const result = await peManager.evaluate(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
+    const pd: PresentationDefinition = PEManager.findValidPresentationDefinition(payload);
+    const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
+      didResolutionResult: undefined, issuer: '', jwt: '', signer: undefined,
+      payload: payload,
+      presentationDefinition: pd,
+      verifyOpts: null
+    };
+    const result = await peManager.evaluate(verifiedJwt, new VP(new Presentation(null, null, null, vcs, null, null)));
     console.log(JSON.stringify(result));
     expect(result.errors.length).toBe(0);
     expect(result.value.definition_id).toBe('Insurance Plans');
