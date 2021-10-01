@@ -1,7 +1,7 @@
 import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
-import { PEManager } from './PEManager';
+import { PresentationExchange } from './PresentationExchange';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
 import { JWT, SIOP, SIOPErrors } from './types';
@@ -28,6 +28,7 @@ export default class AuthenticationRequest {
    * @param uri
    */
   static parseURI(uri: string): AuthenticationRequestPayload {
+    // We strip the uri scheme before passing it to the decode function
     return decodeUriAsJson(uri.replace(/^.*:\/\/\??/, '')) as AuthenticationRequestPayload;
   }
 
@@ -42,7 +43,7 @@ export default class AuthenticationRequest {
    * If you do use this method, you can call the wrapInUri afterwards to get the URI
    */
   static async createJWT(opts: SIOP.AuthenticationRequestOpts): Promise<SIOP.AuthenticationRequestWithJWT> {
-    const siopRequestPayload = createInitialRequestPayload(opts);
+    const siopRequestPayload = createAuthenticationRequestPayload(opts);
     const { nonce, state } = siopRequestPayload;
     const jwt = await DIDJwt.signDidJwtPayload(siopRequestPayload, opts);
 
@@ -77,20 +78,8 @@ export default class AuthenticationRequest {
     const { header, payload } = DIDJwt.parseJWT(jwt);
     assertValidRequestJWT(header, payload);
 
-    // const issuerDid = DIDJwt.getIssuerDidFromPayload(payload);
-    // const issuerDidDoc = await DIDres.resolveDidDocument(issuerDid, opts.verification.resolveOpts);
-
-    /*
-            // Determine the verification method from the RP's DIDres Document that matches the kid of the SIOP Request.
-            const verificationMethod = Keys.getVerificationMethod(header.kid, issuerDidDoc);
-            if (!verificationMethod) {
-              throw new Error(`${SIOPErrors.VERIFICATION_METHOD_NO_MATCH} kid: ${header.kid}, issuer: ${issuerDid}`);
-            }
-        */
-    // as audience is set in payload as a DID it is required to be set as options
     const options = {
       audience: DIDJwt.getAudience(jwt),
-      /*proofPurpose: verificationMethod.type as ProofPurposeTypes,*/
     };
 
     const verifiedJWT = await DIDJwt.verifyDidJWT(jwt, DIDres.getResolver(opts.verification.resolveOpts), options);
@@ -106,11 +95,11 @@ export default class AuthenticationRequest {
     ) {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
-    const pd = PEManager.findValidPresentationDefinition(payload);
+    const presentationDefinition = PresentationExchange.findValidPresentationDefinition(payload);
     return {
       ...verifiedJWT,
       verifyOpts: opts,
-      presentationDefinition: pd,
+      presentationDefinition,
       payload: verifiedJWT.payload as AuthenticationRequestPayload,
     };
   }
@@ -136,7 +125,7 @@ function createURIFromJWT(
   jwt: string
 ): SIOP.AuthenticationRequestURI {
   const schema = 'openid://';
-  PEManager.findValidPresentationDefinition(requestPayload);
+  PresentationExchange.findValidPresentationDefinition(requestPayload);
   const query = Encodings.encodeJsonAsURI(requestPayload);
 
   switch (requestOpts.requestBy?.type) {
@@ -188,7 +177,7 @@ function assertValidRequestOpts(opts: SIOP.AuthenticationRequestOpts) {
   assertValidRequestRegistrationOpts(opts.registration);
 }
 
-function createInitialRequestPayload(opts: SIOP.AuthenticationRequestOpts): SIOP.AuthenticationRequestPayload {
+function createAuthenticationRequestPayload(opts: SIOP.AuthenticationRequestOpts): SIOP.AuthenticationRequestPayload {
   assertValidRequestOpts(opts);
   const state = State.getState(opts.state);
   const registration = createRequestRegistration(opts.registration);

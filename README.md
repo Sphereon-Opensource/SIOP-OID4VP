@@ -1,5 +1,5 @@
 <h1 style="text-align: center; vertical-align: middle">
-  <center><a href="https://www.gimly.io/"><img src="https://images.squarespace-cdn.com/content/v1/5eb2942c4ac101328fe42dc2/1588768338657-JXDRVS09OBP3CUROD2ML/Gimly+Logo_Wit_Transparant_geen+text.png?format=1500w" alt="Gimly" height="80" style="vertical-align: middle" > &nbsp;Gimly</a> &nbsp;and &nbsp; <a href="https://www.sphereon.com"><img src="https://sphereon.com/content/themes/sphereon/assets/img/logo.svg" alt="Sphereon" width="280" style="vertical-align: middle" ></a></center>
+  <center><a href="https://www.gimly.io/"><img src="https://avatars.githubusercontent.com/u/64525639?s=200&v=4" alt="Gimly" width="120" style="vertical-align: middle"></a> &nbsp;and &nbsp; <a href="https://www.sphereon.com"><img src="https://sphereon.com/content/themes/sphereon/assets/img/logo.svg" alt="Sphereon" width="320" style="vertical-align: middle" ></a></center>
 
 Self Issued OpenID Provider v2 (SIOP)  
 </h1>
@@ -34,7 +34,7 @@ The DID Auth SIOP v2 library consists of a group of services and classes to:
 
 Flow diagram:
 
-![Flow diagram](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/Sphereon-Opensource/did-auth-siop/develop/docs/auth-flow-diagram.txt)
+![Flow diagram](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/Sphereon-Opensource/did-auth-siop/develop/docs/auth-flow.puml)
 
 
 1. Client (OP) initiates an Auth request by POST-ing to an endpoint, like for instance `/did-siop/v1/authentications` or clicking a Login button and scanning a QR code
@@ -272,50 +272,134 @@ console.log(parsedReqURI.jwt);
 
 ````
 
-#### Optional: OP Authentication Request JWT verification access
+#### OP Authentication Request verification
 
-Once the JWT is extracted from the URI, either manually or as part of the Authentication Response creation, the JWT needs to be verified. The verifyAuthenticationRequest method of the OP class takes care of this. As input it expects the JWT string together with optional verify options. The options can contain an optional nonce, which means the request will be checked against the supplied nonce, otherwise the supplied nonce is only checked for presence. Normally the OP doesn't know. the nonce beforehand so this option can be left out.
+The Authentication Request from the RP in the form of a URI or JWT string needs to be verified. The verifyAuthenticationRequest method of the OP class takes care of this. As input it expects either the URI or the JWT string together with optional verify options. IF a JWT is supplied it will use the JWT directly, if a URI is provided it will internally parse the URI and extract/resolve the jwt. The options can contain an optional nonce, which means the request will be checked against the supplied nonce, otherwise the supplied nonce is only checked for presence. Normally the OP doesn't know. the nonce beforehand so this option can be left out.
 
 The verified authentication request object returned again contains the Authentication Request payload, the DID resolution result, including DID document of the RP, the issuer (DID of RP) and the signer (the DID verification method that signed). The verification method will throw an error if something is of with the JWT, or if the JWT has not been signed by the DID of the RP.
+
 
 ---
 **NOTE**
 
-Please note that JWT verification automatically happens when calling the createAuthenticationResponse. This method allows for manual intervention in the different steps.
+In the below example we directly access requestURI.encodedUri, in a real world scenario the RP and OP don't have access to shared objects. Normally you would have received the openid:// URI as a string, which you can also directly pass into the verifyAuthenticationRequest or parse methods of the OP class. The method accepts both a JWT or an openid:// URI as input
 
 ---
+
 ````typescript
-const verifiedReq = op.verifyAuthenticationRequest(parsedReqURI.jwt);
+const verifiedReq = op.verifyAuthenticationRequest(reqURI.encodedUri);  // When an HTTP endpoint is used this would be the uri found in the body
+// const verifiedReq = op.verifyAuthenticationRequest(parsedReqURI.jwt); // If we have parsed the URI using the above optional parsing
 
 console.log(`RP DID: ${verifiedReq.issuer}`);
 // RP DID: did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98
 
 ````
 
+### OP Presentation Exchange
+The Verified Request object created in the previous step contains a presentationDefinition property in case the OP wants to receive a Verifiable Presentation according to the [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html) specification. If this is the case we need to select credentials and create a Verifiable Presentation. If the OP doesn't need to receive a Verifiable Presentation, meaning the presentationDefinition property is undefined, you can continue to the next chapter and create the Authentication Response immediately.
 
-### OP creates the Authentication Response using the Request
+See the below sub flow for Presentation Exchange to explain the process:
 
-The above 2 steps were optional and are handled automatically if you provide the string jwt or URI to the createAuthenticationResponse method. If you do want to use the above 2 methods, then there is also a createJWTFromVerifiedRequest method which accepts the output of the verifyAuthenticationRequest method as input.
+![PE Flow diagram](https://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/Sphereon-Opensource/did-auth-siop/develop/docs/presentation-exchange.puml)
+
+
+#### Create PresentationExchange object
+If the presentationDefinition property is present it means the op.verifyAuthenticationRequest already has established that the Presentation Definition itself was valid and present. It has populated the presentationDefinition object. If the definition was not valid, the verify method would have thrown an error, which means you should never continue the authentication flow.
+
+Now we have to create a PresentationExchange object and pass in both the available Verifiable Credentials (typically from your wallet) and the holder DID.
 
 ---
 **NOTE**
 
-In the below example we directly access requestURI.jwt, in a real world scenario the RP and OP don't have access to shared objects. Normally you would have received the openid:// URI as a string, which you can also directly pass into the createAuthenticationResponse method of the OP class. The method accepts both a JWT or an openid:// URI as input
+The verifiable credentials you pass in to the PresentationExchange methods do not get sent to the RP. Only the submissionFrom method creates a VP, which you should manually add as an option to the createAuthenticationResponse method.
 
 ---
 
+````typescript
+import {PresentationExchange} from "./PresentationExchange";
+
+const verifiableCredentials : VerifiableCredential[] = [VC1, VC2, VC3]; // This typically comes from your wallet
+const presentationDef = verifiedReq.presentationDefinition;
+
+if (presentationDef) {
+   const pex = new PresentationExchange({did: op.authResponseOpts.did, allVerifiableCredentials: verifiableCredentials});
+}
+````
+
+#### Filter Credentials that match the Presentation Definition
+Now we need to filter the VCs from all the available VCs to an array that matches the Presentation Definition from the RP. If the OP, or rather the PresentationExchange instance doesn't have all credentials to satisfy the Presentation Definition from the OP, the method will throw an error. Do not try to authenticate in that case!
+
+The selectVerifiableCredentialsForSubmission method returns the filtered VCs. These VCs can satisfy the submission requirements from the Presentation Definition. You have to do a manual selection yourself (see note below).
+
+---
+**NOTE**
+You can have multiple VCs that match the definition. That can be because the OP uses a definition that wants to receive multiple different VCs as part of the Verifiable Presentation, but it can also be that you have multiple VCs that match a single constraint. You always have to do a final manual selection of VCs from your application (outside of the scope of this library).
+---
+
+````typescript
+const checked = await pex.selectVerifiableCredentialsForSubmission(presentationDef);
+// Has errors if the Presentation Definition has requirements we cannot satisfy.
+if (checked.errors) {
+    // error handling here
+} 
+const matches : SubmissionRequirementMatch = checked.matches;
+
+// Returns the filtered credentials that do match
+````
+
+#### Application specific selection and approval
+The previous step has filtered the VCs for you into the matches constant. But the user really has to acknowledge that he/she will be sending in a VP containing the VCs. As mentioned above the selected VCs might still need more filtering by the user. This part is out of the scope of this library as it is application specific. For more info also see the [PE-JS library](https://github.com/Sphereon-Opensource/pe-js).
+
+In the code examples we will use 'userSelectedCredentials' as variable for the outcome of this process.
+
+````typescript
+// Your application process here, resulting in:
+import {VerifiableCredential} from "@sphereon/pe-js";
+
+const userSelectedCredentials: VerifiableCredential[] // Your selected credentials
+````
+
+#### Create the Verifiable Presentation from the user selected VCs
+Now that we have the final selection of VCs, the Presentation Exchange class will create the Verifiable Presentation for you. You can optionally sign the Verifiable Presentation, which is out of the scope of this library. As long as the VP contains VCs which as subject has the same DID as the OP, the RP can know that the VPs are valid, simply by the fact that signature of the resulting authentication response is signed by the private key belonging to the OP and the VP. 
+
+---
+**NOTE**
+We do not support signed selective disclosure yet. The VP will only contain attributes that are requested if the Presentation Definition wanted to limit disclosure. You need BBS+ signatures for instance to sign a VP with selective disclosure. Unsigned selective disclosure is possible, where the RP relies on the Authentication Response being signed as long as the VP subject DIDs match the OP DID.  
+---
+
+````typescript
+const verifiablePresentation = await pex.submissionFrom(presentationDef, userSelectedCredentials);
+
+// Optionally sign the verifiable presentation here (outside of SIOP library scope)
+````
+#### End of Presentation Exchange
+Once the VP is returned it means we have gone through the Presentation Exchange process as defined in  [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html). We can now continue to the regular flow of creating the Authentication Response below, all we have to do is pass the VP in as an option.
+
+
+### OP creates the Authentication Response using the Verified Request
+
+Using the Verified Request object we got back from the op.verifyAuthenticationRequest method, we can now start to create the Authentication Response. If we were in the Presentation Exchange flow because the request contained a Presentation Definition we now need to pass in the Verifiable Presentation using the vp option. If there was no Presentation Definition, do not supply a Verifiable Presentation! The method will check for these constraints.
 
 
 ````typescript
-// The create method also calls the verify and parse methods, so no need to do it manually
-const authRespWithJWT = await op.createAuthenticationResponse(requestURI.jwt);
+// Example with Verifiable Presentation
+const authRespWithJWT = await op.createAuthenticationResponse(verifiedReq, {vp: verifiablePresentation});
 
-// The below call would be equivilent if the optional steps above would have been used
-//const authRespWithJWT = await op.createAuthenticationResponseFromVerifiedRequest(verifiedReq);
+// Without Verifiable Presentation
+// const authRespWithJWT = await op.createAuthenticationResponse(verifiedReq);
 ````
 
-### RP verifies the Authentication Response
+### OP submits the Authentication Response to the RP
 
+We are now ready to submit the Authentication Response to the RP. The OP class has the submitAuthenticationResponse method which accepts the response object. It will automatically submit to the correct location as specified by the RP in its request. It expects a response in the 200 range. You get access to the HTTP response from the fetch API.
+
+````typescript
+// Example with Verifiable Presentation
+const response = await op.submitAuthenticationResponse(authRespWithJWT);
+````
+
+
+### RP verifies the Authentication Response
 
 
 ````typescript

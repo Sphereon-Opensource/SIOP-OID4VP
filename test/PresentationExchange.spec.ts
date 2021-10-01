@@ -1,7 +1,7 @@
 import { Presentation, VP } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 
-import { PEManager, SIOP } from '../src/main';
+import { PresentationExchange, SIOP } from '../src/main';
 import { State } from '../src/main/functions';
 import { SIOPErrors } from '../src/main/types';
 import {
@@ -99,9 +99,9 @@ async function getVCs() {
 }
 
 describe('presentation exchange manager tests', () => {
-  it('evaluate: should throw error if provided VP doesn\'t match the PD', async function() {
+  it('verifyVPAgainstPresentationDefinition: should throw error if provided VP doesn\'t match the PD', async function() {
     const payload: AuthenticationRequestPayload = await getPayload();
-    const pd: PresentationDefinition = PEManager.findValidPresentationDefinition(payload);
+    const pd: PresentationDefinition = PresentationExchange.findValidPresentationDefinition(payload);
     const vcs = await getVCs();
     vcs[0].issuer = { 'id': 'did:example:totallyDifferentIssuer' };
     const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
@@ -111,42 +111,42 @@ describe('presentation exchange manager tests', () => {
       verifyOpts: null
     };
     try {
-      await PEManager.evaluate(verifiedJwt, new VP(new Presentation(null, null, null, vcs, null, null)));
+      await PresentationExchange.verifyVPAgainstPresentationDefinition(verifiedJwt.presentationDefinition, new VP(new Presentation(null, null, null, vcs, null, null)));
     } catch (e) {
       expect(e.message).toContain(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
   });
 
-  it('evaluate: should pass if provided VP match the PD', async function() {
+  it('verifyVPAgainstPresentationDefinition: should pass if provided VP match the PD', async function() {
     const payload: AuthenticationRequestPayload = await getPayload();
     const vcs = await getVCs();
-    const pd: PresentationDefinition = PEManager.findValidPresentationDefinition(payload);
+    const pd: PresentationDefinition = PresentationExchange.findValidPresentationDefinition(payload);
     const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
       didResolutionResult: undefined, issuer: '', jwt: '', signer: undefined,
       payload: payload,
       presentationDefinition: pd,
       verifyOpts: null
     };
-    const result = await PEManager.evaluate(verifiedJwt, new VP(new Presentation(null, null, null, vcs, null, null)));
+    const result = await PresentationExchange.verifyVPAgainstPresentationDefinition(verifiedJwt.presentationDefinition, new VP(new Presentation(null, null, null, vcs, null, null)));
     console.log(JSON.stringify(result));
     expect(result.errors.length).toBe(0);
     expect(result.value.definition_id).toBe('Insurance Plans');
   });
 
   /*it('submissionFrom: should fail if can\'t create a valid presentationSubmission object', async function() {
-    const peManager: PEManager = new PEManager();
+    const peManager: PresentationExchange = new PresentationExchange();
     const payload: AuthenticationRequestPayload = await getPayload();
     const vcs = await getVCs();
-    await peManager.evaluate(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
+    await peManager.verifyVPAgainstPresentationDefinition(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
     delete payload.claims['id_token'];
     await expect(peManager.submissionFrom(payload, vcs)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
   });*/
 
   /*it('submissionFrom: should pass if a valid presentationSubmission object created', async function() {
-    const peManager: PEManager = new PEManager();
+    const peManager: PresentationExchange = new PresentationExchange();
     const payload: AuthenticationRequestPayload = await getPayload();
     const vcs = await getVCs();
-    await peManager.evaluate(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
+    await peManager.verifyVPAgainstPresentationDefinition(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
     const result = await peManager.submissionFrom(payload, vcs);
     expect(result.definition_id).toBe('Insurance Plans');
     expect(result.descriptor_map.length).toBe(1);
@@ -158,7 +158,7 @@ describe('presentation exchange manager tests', () => {
   });*/
 
   /*it('selectVerifiableCredentialsForSubmission: should fail if selectResults object contains error', async function() {
-    const peManager: PEManager = new PEManager();
+    const peManager: PresentationExchange = new PresentationExchange();
     const payload: AuthenticationRequestPayload = await getPayload();
     const vcs = await getVCs();
     vcs[0].issuer = undefined;
@@ -170,7 +170,7 @@ describe('presentation exchange manager tests', () => {
   });*/
 
   /*it('selectVerifiableCredentialsForSubmission: should pass if a valid selectResults object created', async function() {
-    const peManager: PEManager = new PEManager();
+    const peManager: PresentationExchange = new PresentationExchange();
     const payload: AuthenticationRequestPayload = await getPayload();
     const vcs = await getVCs();
     const result = await peManager.selectVerifiableCredentialsForSubmission(payload, vcs, HOLDER_DID);
@@ -183,13 +183,13 @@ describe('presentation exchange manager tests', () => {
   it('pass if no PresentationDefinition is found', async () => {
     const payload: AuthenticationRequestPayload = await getPayload();
     payload.claims = undefined;
-    const pd: PresentationDefinition = await PEManager.findValidPresentationDefinition(payload);
+    const pd: PresentationDefinition = await PresentationExchange.findValidPresentationDefinition(payload);
     expect(pd).toBeNull();
   });
 
   it('pass if findValidPresentationDefinition finds a valid presentation_definition', async () => {
     const payload: AuthenticationRequestPayload = await getPayload();
-    const pd = await PEManager.findValidPresentationDefinition(payload);
+    const pd = await PresentationExchange.findValidPresentationDefinition(payload);
     expect(pd['id']).toBe('Insurance Plans');
     expect(pd['input_descriptors'][0].schema.length).toBe(2);
   });

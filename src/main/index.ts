@@ -3,7 +3,7 @@ import * as RPRegistrationMetadata from './AuthenticationRequestRegistration';
 import AuthenticationResponse from './AuthenticationResponse';
 import { OP } from './OP';
 import OPBuilder from './OPBuilder';
-import { PEManager } from './PEManager';
+import { PresentationExchange } from './PresentationExchange';
 import { RP } from './RP';
 import RPBuilder from './RPBuilder';
 import { Encodings as DidAuthHexUtils, Keys as DidAuthKeyUtils } from './functions';
@@ -17,7 +17,7 @@ export {
   DidAuthKeyUtils,
   OP,
   OPBuilder,
-  PEManager,
+  PresentationExchange,
   RP,
   RPBuilder,
   RPRegistrationMetadata,

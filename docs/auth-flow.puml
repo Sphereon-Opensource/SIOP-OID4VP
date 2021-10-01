@@ -22,9 +22,10 @@ WEB -> CLIENT: 302: Redirect <Auth Request> (can include VC request), optionally
 deactivate WEB
 
 activate CLIENT
-CLIENT-> OP: createAuthResponse\n(Auth Request,Response Opts, Verify Opts)
+CLIENT-> OP: create Auth Response Process\n(Auth Request,Response Opts, Verify Opts)
 activate OP
 OP -> OP: verifyAuthRequest\n(Auth Request, Verify Opts)
+OP -> OP: Presentation Exchange process (see below)
 OP -> OP: createAuthResponse\n(Auth Request, Response Opts)
 OP-> CLIENT: Return\n<Auth Response>
 deactivate OP

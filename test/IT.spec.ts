@@ -42,7 +42,8 @@ describe("RP and OP interaction should", () => {
     nock("https://rp.acme.com/siop/jwts").get(/.*/).reply( 200, requestURI.jwt);
 
     // The create method also calls the verifyRequest method, so no need to do it manually
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(requestURI.encodedUri);
+    const verifiedRequest = await op.verifyAuthenticationRequest(requestURI.encodedUri);
+    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedRequest);
 
     nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, {"result": "ok"});
     const response = await op.submitAuthenticationResponse(authenticationResponseWithJWT);
@@ -94,7 +95,7 @@ describe("RP and OP interaction should", () => {
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
-    const authenticationResponseWithJWT = await op.createAuthenticationResponseFromVerifiedRequest(verifiedAuthReqWithJWT);
+    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT);
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
 
