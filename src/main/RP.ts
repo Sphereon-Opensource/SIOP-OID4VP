@@ -22,16 +22,25 @@ const ajv = new Ajv();
 const validate = ajv.compile(AuthenticationRequestOptsSchema);
 
 export class RP {
-  private readonly authRequestOpts: AuthenticationRequestOpts;
-  private readonly verifyAuthResponseOpts: Partial<VerifyAuthenticationResponseOpts>;
+
+  private readonly _authRequestOpts: AuthenticationRequestOpts;
+  private readonly _verifyAuthResponseOpts: Partial<VerifyAuthenticationResponseOpts>;
 
   public constructor(opts: {
     builder?: RPBuilder;
     requestOpts?: AuthenticationRequestOpts;
     verifyOpts?: VerifyAuthenticationResponseOpts;
   }) {
-    this.authRequestOpts = { ...createRequestOptsFromBuilderOrExistingOpts(opts) };
-    this.verifyAuthResponseOpts = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
+    this._authRequestOpts = { ...createRequestOptsFromBuilderOrExistingOpts(opts) };
+    this._verifyAuthResponseOpts = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
+  }
+
+  get authRequestOpts(): AuthenticationRequestOpts {
+    return this._authRequestOpts;
+  }
+
+  get verifyAuthResponseOpts(): Partial<VerifyAuthenticationResponseOpts> {
+    return this._verifyAuthResponseOpts;
   }
 
   public createAuthenticationRequest(opts?: { nonce?: string; state?: string }): Promise<AuthenticationRequestURI> {
@@ -54,7 +63,7 @@ export class RP {
     const state = opts?.state || State.getState(opts?.state);
     const nonce = opts?.nonce || State.getNonce(state, opts?.nonce);
     return {
-      ...this.authRequestOpts,
+      ...this._authRequestOpts,
       state,
       nonce,
     };
@@ -67,12 +76,12 @@ export class RP {
     audience: string;
   }): VerifyAuthenticationResponseOpts {
     return {
-      ...this.verifyAuthResponseOpts,
+      ...this._verifyAuthResponseOpts,
       audience: opts.audience,
-      state: opts?.state || this.verifyAuthResponseOpts.state,
-      nonce: opts?.nonce || this.verifyAuthResponseOpts.nonce,
+      state: opts?.state || this._verifyAuthResponseOpts.state,
+      nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
 
-      verification: opts?.verification || this.verifyAuthResponseOpts.verification,
+      verification: opts?.verification || this._verifyAuthResponseOpts.verification,
     };
   }
 

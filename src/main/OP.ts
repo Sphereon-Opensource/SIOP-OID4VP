@@ -29,16 +29,23 @@ const ajv = new Ajv();
 const validate = ajv.compile(AuthenticationResponseOptsSchema);
 
 export class OP {
-  private readonly authResponseOpts: AuthenticationResponseOpts;
-  private readonly verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
-
+  private readonly _authResponseOpts: AuthenticationResponseOpts;
+  private readonly _verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
   public constructor(opts: {
     builder?: OPBuilder;
     responseOpts?: AuthenticationResponseOpts;
     verifyOpts?: VerifyAuthenticationRequestOpts;
   }) {
-    this.authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
-    this.verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
+    this._authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
+    this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
+  }
+
+  get authResponseOpts(): AuthenticationResponseOpts {
+    return this._authResponseOpts;
+  }
+
+  get verifyAuthRequestOpts(): Partial<VerifyAuthenticationRequestOpts> {
+    return this._verifyAuthRequestOpts;
   }
 
   public async postAuthenticationResponse(authenticationResponse: AuthenticationResponseWithJWT): Promise<Response> {
@@ -133,7 +140,7 @@ export class OP {
     const state = opts?.state;
     const nonce = opts?.nonce;
     return {
-      ...this.authResponseOpts,
+      ...this._authResponseOpts,
       nonce,
       state,
     };
@@ -144,9 +151,9 @@ export class OP {
     verification?: InternalVerification | ExternalVerification;
   }): VerifyAuthenticationRequestOpts {
     return {
-      ...this.verifyAuthRequestOpts,
-      nonce: opts?.nonce || this.verifyAuthRequestOpts.nonce,
-      verification: opts?.verification || this.verifyAuthRequestOpts.verification,
+      ...this._verifyAuthRequestOpts,
+      nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
+      verification: opts?.verification || this._verifyAuthRequestOpts.verification,
     };
   }
 
