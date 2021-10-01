@@ -100,7 +100,6 @@ async function getVCs() {
 
 describe('presentation exchange manager tests', () => {
   it('evaluate: should throw error if provided VP doesn\'t match the PD', async function() {
-    const peManager: PEManager = new PEManager();
     const payload: AuthenticationRequestPayload = await getPayload();
     const pd: PresentationDefinition = PEManager.findValidPresentationDefinition(payload);
     const vcs = await getVCs();
@@ -112,14 +111,13 @@ describe('presentation exchange manager tests', () => {
       verifyOpts: null
     };
     try {
-      await peManager.evaluate(verifiedJwt, new VP(new Presentation(null, null, null, vcs, null, null)));
+      await PEManager.evaluate(verifiedJwt, new VP(new Presentation(null, null, null, vcs, null, null)));
     } catch (e) {
       expect(e.message).toContain(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
   });
 
   it('evaluate: should pass if provided VP match the PD', async function() {
-    const peManager: PEManager = new PEManager();
     const payload: AuthenticationRequestPayload = await getPayload();
     const vcs = await getVCs();
     const pd: PresentationDefinition = PEManager.findValidPresentationDefinition(payload);
@@ -129,7 +127,7 @@ describe('presentation exchange manager tests', () => {
       presentationDefinition: pd,
       verifyOpts: null
     };
-    const result = await peManager.evaluate(verifiedJwt, new VP(new Presentation(null, null, null, vcs, null, null)));
+    const result = await PEManager.evaluate(verifiedJwt, new VP(new Presentation(null, null, null, vcs, null, null)));
     console.log(JSON.stringify(result));
     expect(result.errors.length).toBe(0);
     expect(result.value.definition_id).toBe('Insurance Plans');

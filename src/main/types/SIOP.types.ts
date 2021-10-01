@@ -51,7 +51,7 @@ export interface RequestRegistrationPayload {
 
 export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
   payload: AuthenticationRequestPayload; // The unsigned Authentication Request payload
-  presentationDefinition?: PresentationDefinition; // The presentation definition object that RP requests
+  presentationDefinition?: PresentationDefinition; // The optional presentation definition object that the RP requests
   verifyOpts: VerifyAuthenticationRequestOpts; // The verification options for the authentication request
 }
 

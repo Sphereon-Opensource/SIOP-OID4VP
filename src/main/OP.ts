@@ -73,7 +73,7 @@ export class OP {
     );
   }
 
-  public createAuthenticationResponseFromVerifiedRequest(
+  public async createAuthenticationResponseFromVerifiedRequest(
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
     responseOpts?: {
       nonce?: string;
@@ -87,7 +87,7 @@ export class OP {
       if (!responseOpts && !responseOpts.vp) {
         throw new Error(`${SIOPErrors.AUTH_REQUEST_EXPECTS_VP}`);
       }
-      new PEManager().evaluate(verifiedJwt, responseOpts.vp);
+      await PEManager.evaluate(verifiedJwt, responseOpts.vp);
       PEManager.validatePresentationSubmission(responseOpts.vp.getPresentationSubmission());
     } else if (responseOpts && responseOpts.vp) {
       throw new Error(`${SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP}`);
@@ -98,7 +98,7 @@ export class OP {
     );
   }
 
-  public submitAuthenticationResponse(verifiedJwt: SIOP.AuthenticationResponseWithJWT): Promise<Response> {
+  public async submitAuthenticationResponse(verifiedJwt: SIOP.AuthenticationResponseWithJWT): Promise<Response> {
     if (
       !verifiedJwt ||
       (verifiedJwt.responseOpts.responseMode &&
@@ -112,11 +112,13 @@ export class OP {
     return postAuthenticationResponseJwt(verifiedJwt.payload.aud, verifiedJwt.jwt);
   }
 
-  public verifyAuthenticationRequest(
-    requestJwt: string,
-    opts?: { /*audience?: string;*/ nonce?: string; verification?: InternalVerification | ExternalVerification }
+  public async verifyAuthenticationRequest(
+    requestJwtorUri: string,
+    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
-    return AuthenticationRequest.verifyJWT(requestJwt, this.newVerifyAuthenticationRequestOpts(opts));
+    const jwt = requestJwtorUri.startsWith('ey') ? requestJwtorUri : (await parseAndResolveUri(requestJwtorUri)).jwt;
+    const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts(opts));
+    return verifiedJwt;
   }
 
   /**

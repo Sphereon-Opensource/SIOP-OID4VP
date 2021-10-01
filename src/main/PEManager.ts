@@ -6,6 +6,7 @@ import { extractDataFromPath } from './functions/ObjectUtils';
 import { SIOP, SIOPErrors } from './types';
 
 export class PEManager {
+  // todo ensure we set the VCs only once and not reinitialize pejs every time
   pejs: PEJS = new PEJS();
 
   //TODO: from a procedural pov, RP already has the requestPayload object (containing the PD)
@@ -16,15 +17,14 @@ export class PEManager {
    * @param verifiedJwt: object containing PD
    * @param verifiablePresentation:
    */
-  public async evaluate(
+  public static async evaluate(
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
     verifiablePresentation: VerifiablePresentation
   ): Promise<EvaluationResults> {
-    this.pejs = new PEJS();
-    if (!verifiedJwt.presentationDefinition) {
+    if (!verifiedJwt || !verifiedJwt.presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
-    const evaluationResults: EvaluationResults = this.pejs.evaluate(
+    const evaluationResults: EvaluationResults = new PEJS().evaluate(
       verifiedJwt.presentationDefinition,
       verifiablePresentation
     );
