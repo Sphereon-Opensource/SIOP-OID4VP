@@ -1,4 +1,5 @@
 enum SIOPErrors {
+  AUTH_REQUEST_EXPECTS_VP = 'authentication request expects a verifiable presentation in the response',
   BAD_INTERNAL_VERIFICATION_PARAMS = 'Error: One of the either didUrlResolver or both registry and rpcUrl must be set',
   BAD_NONCE = 'The nonce in the payload does not match the supplied nonce',
   BAD_PARAMS = 'Wrong parameters provided.',
@@ -43,9 +44,6 @@ enum SIOPErrors {
   VERIFY_BAD_PARAMS = 'Verify bad parameters',
   VERIFICATION_METHOD_NOT_SUPPORTED = 'Verification method not supported',
   VERIFICATION_METHOD_NO_MATCH = "The verification method from the RP's DID Document does NOT match the kid of the SIOP Request",
-  WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_PD = 'This endpoint is only for authentication requests without presentation_definition',
-  WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_VCS = 'This endpoint is only for response opts without verifiable credentials',
-  WRONG_FUNCTION_CALL_ENDPOINT_IS_FOR_PD_ONLY = 'This endpoint is only for authentication requests with presentation_definition',
 }
 
 export default SIOPErrors;

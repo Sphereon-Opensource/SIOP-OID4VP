@@ -76,10 +76,13 @@ export class OP {
       vp?: VerifiablePresentation;
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    if (verifiedJwt.payload.peContext === PEManager.findValidPresentationDefinition(verifiedJwt.payload)) {
-      throw new Error(`${SIOPErrors.WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_PD}`);
-    } else if (responseOpts && responseOpts.vp) {
-      throw new Error(`${SIOPErrors.WRONG_FUNCTION_CALL_ENDPOINT_DOESNT_ACCEPT_VCS}`);
+    const pd = PEManager.findValidPresentationDefinition(verifiedJwt.payload);
+    if (pd) {
+      if (!responseOpts && !responseOpts.vp) {
+        throw new Error(`${SIOPErrors.AUTH_REQUEST_EXPECTS_VP}`);
+      }
+      new PEManager().evaluate(pd, responseOpts.vp);
+      PEManager.validatePresentationSubmission(responseOpts.vp.getPresentationSubmission());
     }
     return AuthenticationResponse.createJWTFromVerifiedRequest(
       verifiedJwt,
@@ -123,30 +126,6 @@ export class OP {
       requestPayload,
       registration,
     };
-  }
-
-  public async createAuthenticationResponseFromVerifiedRequestForVP(
-    verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
-    responseOpts?: {
-      nonce?: string;
-      state?: string;
-      // audience: string;
-      verification?: InternalVerification | ExternalVerification;
-      vp: VerifiablePresentation;
-    }
-  ): Promise<AuthenticationResponseWithJWT> {
-    if (verifiedJwt.payload.peContext === PEManager.findValidPresentationDefinition(verifiedJwt.payload)) {
-      throw Error(`${SIOPErrors.WRONG_FUNCTION_CALL_ENDPOINT_IS_FOR_PD_ONLY}`);
-    }
-    const pd = PEManager.findValidPresentationDefinition(verifiedJwt.payload);
-    if (!pd) {
-      throw new Error(`${SIOPErrors.RESPONSE_OPTS_MUST_CONTAIN_VERIFIABLE_CREDENTIALS_AND_HOLDER_DID}`);
-    }
-    PEManager.validatePresentationSubmission(responseOpts.vp.getPresentationSubmission());
-    return AuthenticationResponse.createJWTFromVerifiedRequest(
-      verifiedJwt,
-      this.newAuthenticationResponseOpts(responseOpts)
-    );
   }
 
   public newAuthenticationResponseOpts(opts?: { nonce?: string; state?: string }): AuthenticationResponseOpts {
