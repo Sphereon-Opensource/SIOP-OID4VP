@@ -1,9 +1,11 @@
+import { VerifiablePresentation } from '@sphereon/pe-js';
 import Ajv from 'ajv';
 import fetch from 'cross-fetch';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
+import { PEManager } from './PEManager';
 import { getResolver } from './functions/DIDResolution';
 import { postAuthenticationResponse, postAuthenticationResponseJwt } from './functions/HttpUtils';
 import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
@@ -23,6 +25,7 @@ import {
 } from './types/SIOP.types';
 
 const ajv = new Ajv();
+
 const validate = ajv.compile(AuthenticationResponseOptsSchema);
 
 export class OP {
@@ -70,8 +73,18 @@ export class OP {
       state?: string;
       // audience: string;
       verification?: InternalVerification | ExternalVerification;
+      vp?: VerifiablePresentation;
     }
   ): Promise<AuthenticationResponseWithJWT> {
+    if (verifiedJwt.presentationDefinition) {
+      if (!responseOpts && !responseOpts.vp) {
+        throw new Error(`${SIOPErrors.AUTH_REQUEST_EXPECTS_VP}`);
+      }
+      new PEManager().evaluate(verifiedJwt, responseOpts.vp);
+      PEManager.validatePresentationSubmission(responseOpts.vp.getPresentationSubmission());
+    } else if (responseOpts && responseOpts.vp) {
+      throw new Error(`${SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP}`);
+    }
     return AuthenticationResponse.createJWTFromVerifiedRequest(
       verifiedJwt,
       this.newAuthenticationResponseOpts(responseOpts)

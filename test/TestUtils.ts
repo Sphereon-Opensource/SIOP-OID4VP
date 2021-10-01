@@ -30,239 +30,239 @@ import {
 import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
 
 export interface TESTKEY {
-    key: JWK;
-    did: string;
-    didDoc?: DIDDocument;
+  key: JWK;
+  did: string;
+  didDoc?: DIDDocument;
 }
 
 export async function generateTestKey(kty: string): Promise<TESTKEY> {
-    if (kty !== SIOP.KeyType.EC)
-        throw new Error(SIOPErrors.NO_ALG_SUPPORTED);
-    const key = crypto.generateKeyPairSync("ec", {
-        namedCurve: SIOP.KeyCurve.SECP256k1,
-    });
-    const privateJwk = await fromKeyLike(key.privateKey);
+  if (kty !== SIOP.KeyType.EC)
+    throw new Error(SIOPErrors.NO_ALG_SUPPORTED);
+  const key = crypto.generateKeyPairSync("ec", {
+    namedCurve: SIOP.KeyCurve.SECP256k1,
+  });
+  const privateJwk = await fromKeyLike(key.privateKey);
 
-    const did = getDIDFromKey(privateJwk);
+  const did = getDIDFromKey(privateJwk);
 
-    return {
-        key: privateJwk,
-        did,
-    };
+  return {
+    key: privateJwk,
+    did,
+  };
 }
 
 function getDIDFromKey(key: JWK): string {
-    return `did:ethr:${getEthAddress(key)}`;
+  return `did:ethr:${getEthAddress(key)}`;
 }
 
 function getEthAddress(key: JWK): string {
-    return getEthWallet(key).address;
+  return getEthWallet(key).address;
 }
 
 function getEthWallet(key: JWK): ethers.Wallet {
-    return new ethers.Wallet(prefixWith0x(base64ToHexString(key.d)));
+  return new ethers.Wallet(prefixWith0x(base64ToHexString(key.d)));
 }
 
 export const prefixWith0x = (key: string): string =>
-    key.startsWith("0x") ? key : `0x${key}`;
+  key.startsWith("0x") ? key : `0x${key}`;
 
 
 export interface IEnterpriseAuthZToken extends JWTPayload {
-    sub?: string;
-    did: string;
-    aud: string;
-    nonce: string;
+  sub?: string;
+  did: string;
+  aud: string;
+  nonce: string;
 }
 
 export interface LegalEntityTestAuthN {
-    iss: string; // legal entity name identifier
-    aud: string; // RP Application Name.
-    iat: number;
-    exp: number;
-    nonce: string;
-    callbackUrl?: string; // Entity url to send notifications
-    image?: string; // base64 encoded image data
-    icon?: string; // base64 encoded image icon data
+  iss: string; // legal entity name identifier
+  aud: string; // RP Application Name.
+  iat: number;
+  exp: number;
+  nonce: string;
+  callbackUrl?: string; // Entity url to send notifications
+  image?: string; // base64 encoded image data
+  icon?: string; // base64 encoded image icon data
 }
 
 
 export const mockedKeyAndDid = async (): Promise<{
-    hexPrivateKey: string;
-    did: string;
-    jwk: JWK;
-    hexPublicKey: string;
+  hexPrivateKey: string;
+  did: string;
+  jwk: JWK;
+  hexPublicKey: string;
 }> => {
-    // generate a new keypair
-    const key = crypto.generateKeyPairSync("ec", {
-        namedCurve: SIOP.KeyCurve.SECP256k1,
-    });
-    const privateJwk = await fromKeyLike(key.privateKey);
-    const hexPrivateKey = base64ToHexString(privateJwk.d);
-    const wallet: ethers.Wallet = new ethers.Wallet(prefixWith0x(hexPrivateKey));
-    const did = `did:ethr:${wallet.address}`;
-    const hexPublicKey = wallet.publicKey;
+  // generate a new keypair
+  const key = crypto.generateKeyPairSync("ec", {
+    namedCurve: SIOP.KeyCurve.SECP256k1,
+  });
+  const privateJwk = await fromKeyLike(key.privateKey);
+  const hexPrivateKey = base64ToHexString(privateJwk.d);
+  const wallet: ethers.Wallet = new ethers.Wallet(prefixWith0x(hexPrivateKey));
+  const did = `did:ethr:${wallet.address}`;
+  const hexPublicKey = wallet.publicKey;
 
-    return {
-        hexPrivateKey,
-        did,
-        jwk: privateJwk,
-        hexPublicKey,
-    };
+  return {
+    hexPrivateKey,
+    did,
+    jwk: privateJwk,
+    hexPublicKey,
+  };
 };
 
 
 const mockedEntityAuthNToken = async (
-    enterpiseName?: string
+  enterpiseName?: string
 ): Promise<{
-    jwt: string;
-    jwk: JWK;
-    did: string;
-    hexPrivateKey: string;
-    hexPublicKey: string;
+  jwt: string;
+  jwk: JWK;
+  did: string;
+  hexPrivateKey: string;
+  hexPublicKey: string;
 }> => {
-    // generate a new keypair
-    const {did, jwk, hexPrivateKey, hexPublicKey} = await mockedKeyAndDid();
+  // generate a new keypair
+  const {did, jwk, hexPrivateKey, hexPublicKey} = await mockedKeyAndDid();
 
-    const payload: LegalEntityTestAuthN = {
-        iss: enterpiseName || "Test Entity",
-        aud: "test",
-        iat: moment().unix(),
-        exp: moment().add(15, "minutes").unix(),
-        nonce: uuidv4(),
-    };
+  const payload: LegalEntityTestAuthN = {
+    iss: enterpiseName || "Test Entity",
+    aud: "test",
+    iat: moment().unix(),
+    exp: moment().add(15, "minutes").unix(),
+    nonce: uuidv4(),
+  };
 
-    const privateKey = await parseJwk(
-        jwk,
-        SIOP.KeyAlgo.ES256K
-    );
-    const jwt = await new SignJWT((payload as unknown) as JWTPayload)
-        .setProtectedHeader({
-            alg: "ES256K",
-            typ: "JWT",
-        })
-        .sign(privateKey);
-    return {jwt, jwk, did, hexPrivateKey, hexPublicKey};
+  const privateKey = await parseJwk(
+    jwk,
+    SIOP.KeyAlgo.ES256K
+  );
+  const jwt = await new SignJWT((payload as unknown) as JWTPayload)
+    .setProtectedHeader({
+      alg: "ES256K",
+      typ: "JWT",
+    })
+    .sign(privateKey);
+  return {jwt, jwk, did, hexPrivateKey, hexPublicKey};
 };
 
 
 export async function mockedGetEnterpriseAuthToken(
-    enterpriseName?: string
+  enterpriseName?: string
 ): Promise<{
-    jwt: string;
-    did: string;
-    jwk: JWK;
-    hexPrivateKey: string;
-    hexPublicKey: string;
+  jwt: string;
+  did: string;
+  jwk: JWK;
+  hexPrivateKey: string;
+  hexPublicKey: string;
 }> {
-    const testAuth = await mockedEntityAuthNToken(enterpriseName);
-    const payload = jwt_decode(testAuth.jwt);
+  const testAuth = await mockedEntityAuthNToken(enterpriseName);
+  const payload = jwt_decode(testAuth.jwt);
 
-    const inputPayload: IEnterpriseAuthZToken = {
-        did: testAuth.did,
+  const inputPayload: IEnterpriseAuthZToken = {
+    did: testAuth.did,
 
-        aud: (payload as JWTPayload)?.iss
-            ? (payload as JWTPayload).iss
-            : "Test Entity",
-        nonce: (payload as IEnterpriseAuthZToken).nonce,
-    };
+    aud: (payload as JWTPayload)?.iss
+      ? (payload as JWTPayload).iss
+      : "Test Entity",
+    nonce: (payload as IEnterpriseAuthZToken).nonce,
+  };
 
-    const testApiPayload = {
-        ...inputPayload,
-        ...{
-            sub: (payload as JWTPayload).iss, // Should be the id of the app that is requesting the token
-            iat: moment().unix(),
-            exp: moment().add(15, "minutes").unix(),
-            aud: "test",
-        },
-    };
+  const testApiPayload = {
+    ...inputPayload,
+    ...{
+      sub: (payload as JWTPayload).iss, // Should be the id of the app that is requesting the token
+      iat: moment().unix(),
+      exp: moment().add(15, "minutes").unix(),
+      aud: "test",
+    },
+  };
 
-    const privateKey = await parseJwk(
-        testAuth.jwk,
-        SIOP.KeyAlgo.ES256K
-    );
-    const jwt = await new SignJWT(testApiPayload)
-        .setProtectedHeader({
-            alg: "ES256K",
-            typ: "JWT",
-        })
-        .sign(privateKey);
+  const privateKey = await parseJwk(
+    testAuth.jwk,
+    SIOP.KeyAlgo.ES256K
+  );
+  const jwt = await new SignJWT(testApiPayload)
+    .setProtectedHeader({
+      alg: "ES256K",
+      typ: "JWT",
+    })
+    .sign(privateKey);
 
-    return {
-        jwt,
-        did: testAuth.did,
-        jwk: testAuth.jwk,
-        hexPrivateKey: testAuth.hexPrivateKey,
-        hexPublicKey: testAuth.hexPublicKey,
-    };
+  return {
+    jwt,
+    did: testAuth.did,
+    jwk: testAuth.jwk,
+    hexPrivateKey: testAuth.hexPrivateKey,
+    hexPublicKey: testAuth.hexPublicKey,
+  };
 }
 
 
 export interface DidKey {
-    did: string;
-    publicKeyHex?: string;
-    jwk?: JWK;
+  did: string;
+  publicKeyHex?: string;
+  jwk?: JWK;
 }
 
 interface FixJwk extends JWK {
-    kty: string;
+  kty: string;
 }
 
 export const getParsedDidDocument = (didKey: DidKey): DIDDocument => {
-    if (didKey.publicKeyHex) {
-        const didDocB58 = DID_DOCUMENT_PUBKEY_B58;
-        didDocB58.id = didKey.did;
-        didDocB58.controller = didKey.did;
-        didDocB58.verificationMethod[0].id = `${didKey.did}#keys-1`;
-        didDocB58.verificationMethod[0].controller = didKey.did;
-        didDocB58.verificationMethod[0].publicKeyBase58 = base58.encode(
-            Buffer.from(didKey.publicKeyHex.replace("0x", ""), "hex")
-        );
-        return didDocB58;
-    }
-    // then didKey jws public key
-    const didDocJwk = DID_DOCUMENT_PUBKEY_JWK;
-    const {jwk} = didKey;
-    jwk.kty = didKey.jwk.kty || "EC";
-    didDocJwk.id = didKey.did;
-    didDocJwk.controller = didKey.did;
-    didDocJwk.verificationMethod[0].id = `${didKey.did}#keys-1`;
-    didDocJwk.verificationMethod[0].controller = didKey.did;
-    didDocJwk.verificationMethod[0].publicKeyJwk = jwk as FixJwk;
-    return didDocJwk;
+  if (didKey.publicKeyHex) {
+    const didDocB58 = DID_DOCUMENT_PUBKEY_B58;
+    didDocB58.id = didKey.did;
+    didDocB58.controller = didKey.did;
+    didDocB58.verificationMethod[0].id = `${didKey.did}#keys-1`;
+    didDocB58.verificationMethod[0].controller = didKey.did;
+    didDocB58.verificationMethod[0].publicKeyBase58 = base58.encode(
+      Buffer.from(didKey.publicKeyHex.replace("0x", ""), "hex")
+    );
+    return didDocB58;
+  }
+  // then didKey jws public key
+  const didDocJwk = DID_DOCUMENT_PUBKEY_JWK;
+  const {jwk} = didKey;
+  jwk.kty = didKey.jwk.kty || "EC";
+  didDocJwk.id = didKey.did;
+  didDocJwk.controller = didKey.did;
+  didDocJwk.verificationMethod[0].id = `${didKey.did}#keys-1`;
+  didDocJwk.verificationMethod[0].controller = didKey.did;
+  didDocJwk.verificationMethod[0].publicKeyJwk = jwk as FixJwk;
+  return didDocJwk;
 };
 
 export const resolveDidKey = async (
-    did: string
+  did: string
 ): Promise<DIDResolutionResult> => {
-    return (await didKeyResolve(did, {
-        accept: 'application/did+ld+json'
-    })) as DIDResolutionResult;
+  return (await didKeyResolve(did, {
+    accept: 'application/did+ld+json'
+  })) as DIDResolutionResult;
 };
 
 export const metadata = {
-    opMetadata: {
-        credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
-        issuer: ResponseIss.SELF_ISSUED_V2,
-        authorization_endpoint: 'http://test.com',
-        credential_claims_supported: ['test'],
-        credential_endpoint: 'http://test.com',
-        credential_name: 'test',
-        credential_supported: true,
-        did_methods_supported: ['did:web'],
-        dids_supported: true,
-        id_token_signing_alg_values_supported: undefined,
-        request_object_signing_alg_values_supported: SigningAlgo.EDDSA,
-        response_types_supported: ResponseType.ID_TOKEN,
-        scopes_supported: Scope.OPENID_DIDAUTHN,
-        subject_types_supported: SubjectType.PAIRWISE
-    },
-    rpMetadata: {
-        subject_identifiers_supported: SubjectIdentifierType.DID,
-        did_methods_supported: ['did:web', 'did:key'],
-        credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD]
-    },
-    verify() {
-        return assertValidMetadata(this.opMetadata, this.rpMetadata);
-    }
+  opMetadata: {
+    credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
+    issuer: ResponseIss.SELF_ISSUED_V2,
+    authorization_endpoint: 'http://test.com',
+    credential_claims_supported: ['test'],
+    credential_endpoint: 'http://test.com',
+    credential_name: 'test',
+    credential_supported: true,
+    did_methods_supported: ['did:web'],
+    dids_supported: true,
+    id_token_signing_alg_values_supported: undefined,
+    request_object_signing_alg_values_supported: SigningAlgo.EDDSA,
+    response_types_supported: ResponseType.ID_TOKEN,
+    scopes_supported: Scope.OPENID_DIDAUTHN,
+    subject_types_supported: SubjectType.PAIRWISE
+  },
+  rpMetadata: {
+    subject_identifiers_supported: SubjectIdentifierType.DID,
+    did_methods_supported: ['did:web', 'did:key'],
+    credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD]
+  },
+  verify() {
+    return assertValidMetadata(this.opMetadata, this.rpMetadata);
+  }
 }
 

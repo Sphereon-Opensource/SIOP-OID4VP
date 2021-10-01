@@ -1,6 +1,7 @@
 import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
+import { PEManager } from './PEManager';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
 import { JWT, SIOP, SIOPErrors } from './types';
@@ -105,9 +106,11 @@ export default class AuthenticationRequest {
     ) {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
+    const pd = PEManager.findValidPresentationDefinition(payload);
     return {
       ...verifiedJWT,
       verifyOpts: opts,
+      presentationDefinition: pd,
       payload: verifiedJWT.payload as AuthenticationRequestPayload,
     };
   }
@@ -133,6 +136,7 @@ function createURIFromJWT(
   jwt: string
 ): SIOP.AuthenticationRequestURI {
   const schema = 'openid://';
+  PEManager.findValidPresentationDefinition(requestPayload);
   const query = Encodings.encodeJsonAsURI(requestPayload);
 
   switch (requestOpts.requestBy?.type) {

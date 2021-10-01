@@ -41,7 +41,6 @@ export default class AuthenticationResponse {
   ): Promise<SIOP.AuthenticationResponseWithJWT> {
     const payload = await createSIOPResponsePayload(verifiedJwt, responseOpts);
     const jwt = await signDidJwtPayload(payload, responseOpts);
-
     return {
       jwt,
       state: payload.state,

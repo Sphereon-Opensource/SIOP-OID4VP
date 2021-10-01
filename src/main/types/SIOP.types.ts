@@ -1,8 +1,10 @@
+import { VerifiablePresentation } from '@sphereon/pe-js';
+import { PresentationDefinition } from '@sphereon/pe-models';
 import { DIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
 
 import { JWTPayload, VerifiedJWT } from './JWT.types';
-import { OidcClaim, ResolveOpts, VerifiablePresentation } from './SSI.types';
+import { OidcClaim, ResolveOpts } from './SSI.types';
 
 export const expirationTime = 10 * 60;
 
@@ -49,6 +51,7 @@ export interface RequestRegistrationPayload {
 
 export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
   payload: AuthenticationRequestPayload; // The unsigned Authentication Request payload
+  presentationDefinition?: PresentationDefinition; // The presentation definition object that RP requests
   verifyOpts: VerifyAuthenticationRequestOpts; // The verification options for the authentication request
 }
 
