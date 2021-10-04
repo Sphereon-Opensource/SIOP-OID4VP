@@ -1,6 +1,7 @@
-import { Presentation, VP } from '@sphereon/pe-js';
+import { Presentation, VerifiablePresentation, VP } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 
+import { VerifiablePresentationWrapper } from '../dist/main/types/SIOP.types';
 import { PresentationExchange, SIOP } from '../src/main';
 import { State } from '../src/main/functions';
 import { SIOPErrors } from '../src/main/types';
@@ -9,7 +10,8 @@ import {
   CredentialFormat,
   ResponseContext,
   ResponseMode,
-  SubjectIdentifierType
+  SubjectIdentifierType,
+  VerifiablePresentationTypeFormat
 } from '../src/main/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
@@ -190,5 +192,33 @@ describe('presentation exchange manager tests', () => {
     const pd = await PresentationExchange.findValidPresentationDefinition(payload);
     expect(pd['id']).toBe('Insurance Plans');
     expect(pd['input_descriptors'][0].schema.length).toBe(2);
+  });
+
+  it('should validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
+    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
+    const payload: AuthenticationRequestPayload = await getPayload();
+    const pd: PresentationDefinition = await PresentationExchange.findValidPresentationDefinition(payload);
+    const vcs = await getVCs();
+    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: vcs });
+    await pex.selectVerifiableCredentialsForSubmission(pd);
+    const vp: VerifiablePresentation = await pex.submissionFrom(pd, vcs);
+    const vpw: VerifiablePresentationWrapper = { presentation: vp, format: VerifiablePresentationTypeFormat.LDP_VP };
+    try {
+      await PresentationExchange.validateVPWrappersAgainstPDs([pd], [vpw]);
+    } catch (e) {
+      console.log(e)
+    }
+  });
+
+  it('should not validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
+    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
+    const payload: AuthenticationRequestPayload = await getPayload();
+    const pd: PresentationDefinition = await PresentationExchange.findValidPresentationDefinition(payload);
+    const vcs = await getVCs();
+    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: vcs });
+    await pex.selectVerifiableCredentialsForSubmission(pd);
+    const vp: VerifiablePresentation = await pex.submissionFrom(pd, vcs);
+    const vpw: VerifiablePresentationWrapper = { presentation: vp, format: VerifiablePresentationTypeFormat.JWT_VP };
+    await expect(PresentationExchange.validateVPWrappersAgainstPDs([pd], [vpw])).rejects.toThrow(Error("This type of verifiable presentation isn't supported in this version"));
   });
 });

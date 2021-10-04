@@ -72,7 +72,7 @@ export class RP {
     } else if (!pd && vpws) {
       throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
     } else if (pd && vpws) {
-      await PresentationExchange.validateVerifiablePresentationWrappersAgainstPresentationDefinitions([pd], vpws);
+      await PresentationExchange.validateVPWrappersAgainstPDs([pd], vpws);
     }
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
   }
