@@ -133,52 +133,50 @@ describe('presentation exchange manager tests', () => {
     expect(result.value.definition_id).toBe('Insurance Plans');
   });
 
-  /*it('submissionFrom: should fail if can\'t create a valid presentationSubmission object', async function() {
-    const peManager: PresentationExchange = new PresentationExchange();
+  it('submissionFrom: should pass if a valid presentationSubmission object created', async function() {
+    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
+    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: await getVCs() });
     const payload: AuthenticationRequestPayload = await getPayload();
     const vcs = await getVCs();
-    await peManager.verifyVPAgainstPresentationDefinition(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
-    delete payload.claims['id_token'];
-    await expect(peManager.submissionFrom(payload, vcs)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-  });*/
-
-  /*it('submissionFrom: should pass if a valid presentationSubmission object created', async function() {
-    const peManager: PresentationExchange = new PresentationExchange();
-    const payload: AuthenticationRequestPayload = await getPayload();
-    const vcs = await getVCs();
-    await peManager.verifyVPAgainstPresentationDefinition(payload, new VP(new Presentation(null, null, null, vcs, null, null)));
-    const result = await peManager.submissionFrom(payload, vcs);
-    expect(result.definition_id).toBe('Insurance Plans');
-    expect(result.descriptor_map.length).toBe(1);
-    expect(result.descriptor_map[0]).toStrictEqual({
+    const pd: PresentationDefinition = PresentationExchange.findValidPresentationDefinition(payload);
+    await PresentationExchange.verifyVPAgainstPresentationDefinition(pd, new VP(new Presentation(null, null, null, vcs, null, null)));
+    await pex.selectVerifiableCredentialsForSubmission(pd);
+    const result = await pex.submissionFrom(pd, vcs);
+    expect(result.getPresentationSubmission().definition_id).toBe('Insurance Plans');
+    expect(result.getPresentationSubmission().descriptor_map.length).toBe(1);
+    expect(result.getPresentationSubmission().descriptor_map[0]).toStrictEqual({
       'id': 'Ontario Health Insurance Plan',
       'format': 'ldp_vc',
       'path': '$.verifiableCredential[0]'
     });
-  });*/
+  });
 
-  /*it('selectVerifiableCredentialsForSubmission: should fail if selectResults object contains error', async function() {
-    const peManager: PresentationExchange = new PresentationExchange();
+  it('selectVerifiableCredentialsForSubmission: should fail if selectResults object contains error', async function() {
+    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
     const payload: AuthenticationRequestPayload = await getPayload();
+    const pd: PresentationDefinition = await PresentationExchange.findValidPresentationDefinition(payload);
     const vcs = await getVCs();
     vcs[0].issuer = undefined;
+    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: vcs });
     try {
-      await expect(peManager.selectVerifiableCredentialsForSubmission(payload, vcs, HOLDER_DID)).rejects.toThrow();
+      await expect(pex.selectVerifiableCredentialsForSubmission(pd)).rejects.toThrow();
     } catch (e) {
       expect(e.message).toContain(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
-  });*/
+  });
 
-  /*it('selectVerifiableCredentialsForSubmission: should pass if a valid selectResults object created', async function() {
-    const peManager: PresentationExchange = new PresentationExchange();
-    const payload: AuthenticationRequestPayload = await getPayload();
+  it('selectVerifiableCredentialsForSubmission: should pass if a valid selectResults object created', async function() {
+    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
     const vcs = await getVCs();
-    const result = await peManager.selectVerifiableCredentialsForSubmission(payload, vcs, HOLDER_DID);
+    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: vcs });
+    const payload: AuthenticationRequestPayload = await getPayload();
+    const pd: PresentationDefinition = await PresentationExchange.findValidPresentationDefinition(payload);
+    const result = await pex.selectVerifiableCredentialsForSubmission(pd);
     expect(result.errors.length).toBe(0);
     expect(result.matches.length).toBe(1);
     expect(result.matches[0].matches.length).toBe(1);
     expect(result.matches[0].matches[0]).toBe('$.verifiableCredential[0]');
-  });*/
+  });
 
   it('pass if no PresentationDefinition is found', async () => {
     const payload: AuthenticationRequestPayload = await getPayload();

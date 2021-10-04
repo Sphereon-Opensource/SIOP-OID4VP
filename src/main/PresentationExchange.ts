@@ -4,7 +4,7 @@ import { PresentationDefinition, PresentationSubmission } from '@sphereon/pe-mod
 
 import { extractDataFromPath } from './functions/ObjectUtils';
 import { SIOPErrors } from './types';
-import { VerifiablePresentationTypeFormat, VerifiablePresentationWrapper } from './types/SIOP.types';
+import { VerifiablePresentationWrapper } from './types/SIOP.types';
 
 export class PresentationExchange {
   readonly pejs: PEJS = new PEJS();
@@ -117,48 +117,20 @@ export class PresentationExchange {
     pds: PresentationDefinition[],
     vpws: VerifiablePresentationWrapper[]
   ) {
-    const idToPresentationDefinition: Map<string, PresentationDefinition> =
-      PresentationExchange.toPresentationDefinitionMap(pds);
-    const idToPresentation: Map<string, VerifiablePresentation> = PresentationExchange.toPresentationMap(vpws);
-    if (idToPresentationDefinition.size !== idToPresentation.size) {
+    if (pds.length !== vpws.length) {
       throw new Error(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
-    for (const [id, pd] of idToPresentationDefinition.entries()) {
-      if (!idToPresentation.has(id)) {
-        throw new Error(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
-      }
-      const presentation: VerifiablePresentation = idToPresentation.get(id);
-      await PresentationExchange.verifyVPAgainstPresentationDefinition(pd, presentation);
-      await PresentationExchange.assertValidPresentationSubmission(presentation.getPresentationSubmission());
-    }
-  }
 
-  private static toPresentationDefinitionMap(pds: PresentationDefinition[]): Map<string, PresentationDefinition> {
-    const idToPresentationDefinition: Map<string, PresentationDefinition> = new Map<string, PresentationDefinition>();
-    if (pds.length) {
-      for (let i = 0; i < pds.length; i++) {
-        idToPresentationDefinition.set(pds[i].id, pds[i]);
+    pds.map(async (pd) => {
+      const fiVpws: VerifiablePresentationWrapper[] = vpws.filter(
+        (vpw) => (vpw.presentation as VerifiablePresentation).getPresentationSubmission().definition_id === pd.id
+      );
+      if (!fiVpws.length || fiVpws.length != 1) {
+        throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}`);
       }
-    }
-    return idToPresentationDefinition;
-  }
-
-  private static toPresentationMap(vpws: VerifiablePresentationWrapper[]) {
-    const idToPresentation: Map<string, VerifiablePresentation> = new Map<string, VerifiablePresentation>();
-    if (vpws.length) {
-      for (let i = 0; i < vpws.length; i++) {
-        if (vpws[i].format === VerifiablePresentationTypeFormat.JWT_VP) {
-          if (typeof vpws[i].presentation != 'string') {
-            throw new Error(SIOPErrors.CANT_UNMARSHAL_JWT_VP);
-          } else {
-            throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED);
-          }
-        } else if (vpws[i].format === VerifiablePresentationTypeFormat.LDP_VP) {
-          const presentation: VerifiablePresentation = vpws[i].presentation as VerifiablePresentation;
-          idToPresentation.set(presentation.getPresentationSubmission().definition_id, presentation);
-        }
-      }
-    }
-    return idToPresentation;
+      const vp = fiVpws[0].presentation as VerifiablePresentation;
+      PresentationExchange.assertValidPresentationSubmission(vp.getPresentationSubmission());
+      await PresentationExchange.verifyVPAgainstPresentationDefinition(pd, vp);
+    });
   }
 }
