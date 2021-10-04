@@ -1,18 +1,21 @@
+import { PresentationDefinition } from '@sphereon/pe-models';
 import Ajv from 'ajv';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
+import { PresentationExchange } from './PresentationExchange';
 import RPBuilder from './RPBuilder';
 import { State } from './functions';
 import { getResolver } from './functions/DIDResolution';
 import { AuthenticationRequestOptsSchema } from './schemas/AuthenticationRequestOpts.schema';
-import { SIOP } from './types';
+import { SIOP, SIOPErrors } from './types';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
   ExternalVerification,
   InternalVerification,
   RequestRegistrationOpts,
+  VerifiablePresentationWrapper,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
   VerifyAuthenticationResponseOpts,
@@ -46,7 +49,7 @@ export class RP {
     return AuthenticationRequest.createURI(this.newAuthenticationRequestOpts(opts));
   }
 
-  public verifyAuthenticationResponseJwt(
+  public async verifyAuthenticationResponseJwt(
     jwt: string,
     opts?: {
       audience: string;
@@ -55,6 +58,22 @@ export class RP {
       verification?: InternalVerification | ExternalVerification;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
+    const verifiedAuthResponseWithJWT: VerifiedAuthenticationResponseWithJWT = await AuthenticationResponse.verifyJWT(
+      jwt,
+      this.newVerifyAuthenticationResponseOpts(opts)
+    );
+    //TODO: we will have a list of PresentationDefinition inside claims
+    const pd: PresentationDefinition = PresentationExchange.findValidPresentationDefinition(
+      verifiedAuthResponseWithJWT.payload
+    );
+    const vpws: VerifiablePresentationWrapper[] = verifiedAuthResponseWithJWT.payload.verifiable_presentations;
+    if (pd && !vpws) {
+      throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
+    } else if (!pd && vpws) {
+      throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
+    } else if (pd && vpws) {
+      await PresentationExchange.validateVerifiablePresentationWrappersAgainstPresentationDefinitions([pd], vpws);
+    }
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
   }
 

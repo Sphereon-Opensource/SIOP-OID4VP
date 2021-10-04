@@ -4,6 +4,7 @@ import { PresentationDefinition, PresentationSubmission } from '@sphereon/pe-mod
 
 import { extractDataFromPath } from './functions/ObjectUtils';
 import { SIOPErrors } from './types';
+import { VerifiablePresentationTypeFormat, VerifiablePresentationWrapper } from './types/SIOP.types';
 
 export class PresentationExchange {
   readonly pejs: PEJS = new PEJS();
@@ -110,5 +111,54 @@ export class PresentationExchange {
     if (validationResult[0].message != 'ok') {
       throw new Error(`${SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID}`);
     }
+  }
+
+  static async validateVerifiablePresentationWrappersAgainstPresentationDefinitions(
+    pds: PresentationDefinition[],
+    vpws: VerifiablePresentationWrapper[]
+  ) {
+    const idToPresentationDefinition: Map<string, PresentationDefinition> =
+      PresentationExchange.toPresentationDefinitionMap(pds);
+    const idToPresentation: Map<string, VerifiablePresentation> = PresentationExchange.toPresentationMap(vpws);
+    if (idToPresentationDefinition.size !== idToPresentation.size) {
+      throw new Error(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
+    }
+    for (const [id, pd] of idToPresentationDefinition.entries()) {
+      if (!idToPresentation.has(id)) {
+        throw new Error(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
+      }
+      const presentation: VerifiablePresentation = idToPresentation.get(id);
+      await PresentationExchange.verifyVPAgainstPresentationDefinition(pd, presentation);
+      await PresentationExchange.assertValidPresentationSubmission(presentation.getPresentationSubmission());
+    }
+  }
+
+  private static toPresentationDefinitionMap(pds: PresentationDefinition[]): Map<string, PresentationDefinition> {
+    const idToPresentationDefinition: Map<string, PresentationDefinition> = new Map<string, PresentationDefinition>();
+    if (pds.length) {
+      for (let i = 0; i < pds.length; i++) {
+        idToPresentationDefinition.set(pds[i].id, pds[i]);
+      }
+    }
+    return idToPresentationDefinition;
+  }
+
+  private static toPresentationMap(vpws: VerifiablePresentationWrapper[]) {
+    const idToPresentation: Map<string, VerifiablePresentation> = new Map<string, VerifiablePresentation>();
+    if (vpws.length) {
+      for (let i = 0; i < vpws.length; i++) {
+        if (vpws[i].format === VerifiablePresentationTypeFormat.JWT_VP) {
+          if (typeof vpws[i].presentation != 'string') {
+            throw new Error(SIOPErrors.CANT_UNMARSHAL_JWT_VP);
+          } else {
+            throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED);
+          }
+        } else if (vpws[i].format === VerifiablePresentationTypeFormat.LDP_VP) {
+          const presentation: VerifiablePresentation = vpws[i].presentation as VerifiablePresentation;
+          idToPresentation.set(presentation.getPresentationSubmission().definition_id, presentation);
+        }
+      }
+    }
+    return idToPresentation;
   }
 }

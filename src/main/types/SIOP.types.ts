@@ -91,10 +91,18 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   did: string;
   registration?: DiscoveryMetadataPayload;
   registration_uri?: string;
-  vp?: VerifiablePresentation;
+  verifiable_presentations?: VerifiablePresentationWrapper[];
   claims?: ResponseClaims;
 }
 
+/**
+ * A wrapper for verifiablePresentation
+ *
+ */
+export interface VerifiablePresentationWrapper {
+  format: VerifiablePresentationTypeFormat;
+  presentation: VerifiablePresentation | string;
+}
 /**
  *
  */
@@ -179,6 +187,11 @@ export type ObjectBy = {
 export interface RegistrationType extends ObjectBy {
   id_token_encrypted_response_alg?: EncKeyAlgorithm;
   id_token_encrypted_response_enc?: EncSymmetricAlgorithmCode;
+}
+
+export enum VerifiablePresentationTypeFormat {
+  JWT_VP = 'jwt_vp',
+  LDP_VP = 'ldp_vp',
 }
 
 export enum EncSymmetricAlgorithmCode {

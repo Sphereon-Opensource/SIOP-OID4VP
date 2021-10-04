@@ -5,6 +5,7 @@ enum SIOPErrors {
   BAD_NONCE = 'The nonce in the payload does not match the supplied nonce',
   BAD_PARAMS = 'Wrong parameters provided.',
   BAD_SIGNATURE_PARAMS = 'Signature parameters should be internal signature with hexPrivateKey, did, and an optional kid, or external signature parameters with signatureUri, did, and optionals parameters authZToken, hexPublicKey, and kid',
+  CANT_UNMARSHAL_JWT_VP = "can't unmarshal the presentation object",
   CREDENTIAL_FORMATS_NOT_SUPPORTED = 'CREDENTIAL_FORMATS_NOT_SUPPORTED',
   COULD_NOT_FIND_VCS_MATCHING_PD = 'Could not find VerifiableCredentials matching presentationDefinition object in the provided VC list',
   DIDAUTH_REQUEST_PAYLOAD_NOT_CREATED = 'DidAuthRequestPayload not created',
@@ -42,9 +43,10 @@ enum SIOPErrors {
   REGISTRATION_OBJECT_TYPE_NOT_SET = 'Registration object type is not set.',
   SIGNATURE_OBJECT_TYPE_NOT_SET = 'Signature object type is not set.',
   SUB_JWK_NOT_FOUND_OR_NOT_KID = 'Response Token does not contains sub_jwk claim or sub_jwk does not contain kid attribute.',
-  VERIFY_BAD_PARAMS = 'Verify bad parameters',
+  VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED = "This type of verifiable presentation isn't supported in this version",
   VERIFICATION_METHOD_NOT_SUPPORTED = 'Verification method not supported',
   VERIFICATION_METHOD_NO_MATCH = "The verification method from the RP's DID Document does NOT match the kid of the SIOP Request",
+  VERIFY_BAD_PARAMS = 'Verify bad parameters',
 }
 
 export default SIOPErrors;
