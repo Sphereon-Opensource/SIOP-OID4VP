@@ -98,10 +98,12 @@ export class PresentationExchange {
    * @param obj: object that can have a presentation_definition inside
    */
   public static findValidPresentationDefinition(obj: unknown): PresentationDefinition {
-    const optionalPD = extractDataFromPath(obj, '$..presentation_definition');
-    if (optionalPD && optionalPD.length) {
-      PresentationExchange.assertValidPresentationDefinition(optionalPD[0].value);
-      return optionalPD[0].value as PresentationDefinition;
+    if (obj) {
+      const optionalPD = extractDataFromPath(obj, '$..presentation_definition');
+      if (optionalPD && optionalPD.length) {
+        PresentationExchange.assertValidPresentationDefinition(optionalPD[0].value);
+        return optionalPD[0].value as PresentationDefinition;
+      }
     }
     return null;
   }
@@ -113,11 +115,12 @@ export class PresentationExchange {
     }
   }
 
-  static async validateVPWrappersAgainstPDs(pds: PresentationDefinition[], vpws: VerifiablePresentationWrapper[]) {
-    if (pds.length !== vpws.length) {
+  static async validateVPWrappersAgainstPD(pd: PresentationDefinition, vpws: VerifiablePresentationWrapper[]) {
+    //TODO: based on current spec we're assuming that vpws has only one member
+    if (!pd || !vpws || !vpws.length || vpws.length !== 1) {
       throw new Error(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
-    await Promise.all(pds.map(async (pd) => PresentationExchange.verifyPresentationAgainstDefinitions(pd, vpws)));
+    await PresentationExchange.verifyPresentationAgainstDefinitions(pd, vpws);
   }
 
   private static async verifyPresentationAgainstDefinitions(
@@ -128,16 +131,17 @@ export class PresentationExchange {
       if (vpw.format !== VerifiablePresentationTypeFormat.LDP_VP) {
         throw new Error(`${SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED}`);
       }
-      return (<VerifiablePresentation>vpw.presentation).getPresentationSubmission().definition_id === pd.id;
+      const vp: VerifiablePresentation = new VP(<Presentation>vpw.presentation);
+
+      return vp.getPresentationSubmission().definition_id === pd.id;
     });
-    console.log('fiVpws:', fiVpws);
     if (!fiVpws.length || fiVpws.length != 1) {
       throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}`);
     } else if (fiVpws[0].format !== VerifiablePresentationTypeFormat.LDP_VP) {
       throw new Error(`${SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED}`);
     }
-    const vp = <VerifiablePresentation>fiVpws[0].presentation;
+    const vp: VerifiablePresentation = new VP(<Presentation>fiVpws[0].presentation);
     PresentationExchange.assertValidPresentationSubmission(vp.getPresentationSubmission());
-    PresentationExchange.verifyVPAgainstPresentationDefinition(pd, vp);
+    await PresentationExchange.verifyVPAgainstPresentationDefinition(pd, vp);
   }
 }

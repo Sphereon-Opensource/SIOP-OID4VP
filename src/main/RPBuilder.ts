@@ -1,4 +1,5 @@
 import { getResolver as getUniResolver } from '@sphereon/did-uni-client/dist/resolver/Resolver';
+import { PresentationDefinition } from '@sphereon/pe-models';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
@@ -85,6 +86,16 @@ export default class RPBuilder {
 
   internalSignature(hexPrivateKey: string, did: string, kid?: string): RPBuilder {
     this.signature({ hexPrivateKey, did, kid });
+    return this;
+  }
+
+  requestClaim(presentationDefinition: PresentationDefinition): RPBuilder {
+    if (!this.claims) {
+      this.claims = {};
+    }
+    this.claims['vp_token'] = {
+      presentation_definition: presentationDefinition,
+    };
     return this;
   }
 

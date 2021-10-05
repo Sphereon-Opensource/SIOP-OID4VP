@@ -62,17 +62,18 @@ export class RP {
       jwt,
       this.newVerifyAuthenticationResponseOpts(opts)
     );
-    //TODO: we will have a list of PresentationDefinition inside claims
+    console.log('verifiedAuthResponseWithJWT: ', JSON.stringify(verifiedAuthResponseWithJWT));
     const pd: PresentationDefinition = PresentationExchange.findValidPresentationDefinition(
-      verifiedAuthResponseWithJWT.payload
+      this._authRequestOpts.claims
     );
-    const vpws: VerifiablePresentationWrapper[] = verifiedAuthResponseWithJWT.payload.verifiable_presentations;
+    console.log('pd:', pd);
+    const vpws: VerifiablePresentationWrapper[] = verifiedAuthResponseWithJWT.payload.vp_token;
     if (pd && !vpws) {
       throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
     } else if (!pd && vpws) {
       throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
     } else if (pd && vpws) {
-      await PresentationExchange.validateVPWrappersAgainstPDs([pd], vpws);
+      await PresentationExchange.validateVPWrappersAgainstPD(pd, vpws);
     }
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
   }
@@ -124,6 +125,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: {
         signatureType: opts.builder.signatureType,
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
+        claims: opts.builder.claims,
       }
     : opts.requestOpts;
 

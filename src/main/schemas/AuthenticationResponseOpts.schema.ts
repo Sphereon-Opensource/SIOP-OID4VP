@@ -30,8 +30,11 @@ export const AuthenticationResponseOptsSchema = {
         "did": {
           "type": "string"
         },
-        "vp": {
-          "$ref": "#/definitions/VerifiablePresentation"
+        "vp_token": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VerifiablePresentationWrapper"
+          }
         },
         "expiresIn": {
           "type": "number"
@@ -288,10 +291,27 @@ export const AuthenticationResponseOptsSchema = {
         "query"
       ]
     },
-    "VerifiablePresentation": {
+    "VerifiablePresentationWrapper": {
       "type": "object",
+      "properties": {
+        "format": {
+          "$ref": "#/definitions/VerifiablePresentationTypeFormat"
+        },
+        "presentation": {}
+      },
+      "required": [
+        "format",
+        "presentation"
+      ],
       "additionalProperties": false,
-      "description": "This is the object that will be sent as data in the presentation request."
+      "description": "A wrapper for verifiablePresentation"
+    },
+    "VerifiablePresentationTypeFormat": {
+      "type": "string",
+      "enum": [
+        "jwt_vp",
+        "ldp_vp"
+      ]
     }
   }
 };

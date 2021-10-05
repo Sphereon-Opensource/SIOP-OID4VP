@@ -16,7 +16,7 @@ import {
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
-// const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
+const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
 
 async function getPayload() {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
@@ -39,39 +39,39 @@ async function getPayload() {
     },
     claims: {
       'id_token': {
-        'acr': null,
-        'verifiable_presentations': {
-          'presentation_definition': {
-            'id': 'Insurance Plans',
-            'input_descriptors': [
-              {
-                'id': 'Ontario Health Insurance Plan',
-                'schema': [
-                  {
-                    'uri': 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan'
-                  },
-                  {
-                    'uri': 'https://www.w3.org/2018/credentials/v1'
-                  }
-                ],
-                constraints: {
-                  'limit_disclosure': 'required',
-                  'fields': [
-                    {
-                      'path': [
-                        '$.issuer.id'
-                      ],
-                      'purpose': 'We can only verify bank accounts if they are attested by a source.',
-                      'filter': {
-                        'type': 'string',
-                        'pattern': 'did:example:issuer'
-                      }
-                    }
-                  ]
+        'acr': null
+      },
+      'vp_token': {
+        'presentation_definition': {
+          'id': 'Insurance Plans',
+          'input_descriptors': [
+            {
+              'id': 'Ontario Health Insurance Plan',
+              'schema': [
+                {
+                  'uri': 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan'
+                },
+                {
+                  'uri': 'https://www.w3.org/2018/credentials/v1'
                 }
+              ],
+              constraints: {
+                'limit_disclosure': 'required',
+                'fields': [
+                  {
+                    'path': [
+                      '$.issuer.id'
+                    ],
+                    'purpose': 'We can only verify bank accounts if they are attested by a source.',
+                    'filter': {
+                      'type': 'string',
+                      'pattern': 'did:example:issuer'
+                    }
+                  }
+                ]
               }
-            ]
-          }
+            }
+          ]
         }
       }
     }
@@ -136,8 +136,7 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('submissionFrom: should pass if a valid presentationSubmission object created', async function() {
-    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
-    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: await getVCs() });
+    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: await getVCs() });
     const payload: AuthenticationRequestPayload = await getPayload();
     const vcs = await getVCs();
     const pd: PresentationDefinition = PresentationExchange.findValidPresentationDefinition(payload);
@@ -154,12 +153,11 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('selectVerifiableCredentialsForSubmission: should fail if selectResults object contains error', async function() {
-    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
     const payload: AuthenticationRequestPayload = await getPayload();
     const pd: PresentationDefinition = await PresentationExchange.findValidPresentationDefinition(payload);
     const vcs = await getVCs();
     vcs[0].issuer = undefined;
-    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: vcs });
+    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     try {
       await expect(pex.selectVerifiableCredentialsForSubmission(pd)).rejects.toThrow();
     } catch (e) {
@@ -168,9 +166,8 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('selectVerifiableCredentialsForSubmission: should pass if a valid selectResults object created', async function() {
-    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
     const vcs = await getVCs();
-    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: vcs });
+    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     const payload: AuthenticationRequestPayload = await getPayload();
     const pd: PresentationDefinition = await PresentationExchange.findValidPresentationDefinition(payload);
     const result = await pex.selectVerifiableCredentialsForSubmission(pd);
@@ -195,30 +192,28 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('should validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
-    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
     const payload: AuthenticationRequestPayload = await getPayload();
     const pd: PresentationDefinition = await PresentationExchange.findValidPresentationDefinition(payload);
     const vcs = await getVCs();
-    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: vcs });
+    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd);
     const vp: VerifiablePresentation = await pex.submissionFrom(pd, vcs);
-    const vpw: VerifiablePresentationWrapper = { presentation: vp, format: VerifiablePresentationTypeFormat.LDP_VP };
+    const vpw: VerifiablePresentationWrapper = { presentation: vp.getRoot(), format: VerifiablePresentationTypeFormat.LDP_VP };
     try {
-      await PresentationExchange.validateVPWrappersAgainstPDs([pd], [vpw]);
+      await PresentationExchange.validateVPWrappersAgainstPD(pd, [vpw]);
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   });
 
   it('should not validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
-    const holderDid = 'did:key:z6MkqNJSEiVgztATfHBfE2bamdCxsmLm52tB2j8QfyE5Ssu1';
     const payload: AuthenticationRequestPayload = await getPayload();
     const pd: PresentationDefinition = await PresentationExchange.findValidPresentationDefinition(payload);
     const vcs = await getVCs();
-    const pex = new PresentationExchange({ did: holderDid, allVerifiableCredentials: vcs });
+    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd);
     const vp: VerifiablePresentation = await pex.submissionFrom(pd, vcs);
-    const vpw: VerifiablePresentationWrapper = { presentation: vp, format: VerifiablePresentationTypeFormat.JWT_VP };
-    await expect(PresentationExchange.validateVPWrappersAgainstPDs([pd], [vpw])).rejects.toThrow(Error("This type of verifiable presentation isn't supported in this version"));
+    const vpw: VerifiablePresentationWrapper = { presentation: vp.getRoot(), format: VerifiablePresentationTypeFormat.JWT_VP };
+    await expect(PresentationExchange.validateVPWrappersAgainstPD(pd, [vpw])).rejects.toThrow(Error('This type of verifiable presentation isn\'t supported in this version'));
   });
 });

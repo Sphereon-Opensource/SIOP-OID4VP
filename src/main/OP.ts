@@ -19,6 +19,7 @@ import {
   ResponseMode,
   ResponseRegistrationOpts,
   UrlEncodingFormat,
+  VerifiablePresentationTypeFormat,
   VerificationMode,
   VerifiedAuthenticationRequestWithJWT,
   VerifyAuthenticationRequestOpts,
@@ -72,7 +73,7 @@ export class OP {
     }
   ): Promise<AuthenticationResponseWithJWT> {
     if (verifiedJwt.presentationDefinition) {
-      if (!responseOpts && !responseOpts.vp) {
+      if (!responseOpts || !responseOpts.vp) {
         throw new Error(`${SIOPErrors.AUTH_REQUEST_EXPECTS_VP}`);
       }
       await PresentationExchange.verifyVPAgainstPresentationDefinition(
@@ -120,13 +121,28 @@ export class OP {
     };
   }
 
-  public newAuthenticationResponseOpts(opts?: { nonce?: string; state?: string }): AuthenticationResponseOpts {
+  public newAuthenticationResponseOpts(opts?: {
+    nonce?: string;
+    state?: string;
+    vp?: VerifiablePresentation;
+  }): AuthenticationResponseOpts {
     const state = opts?.state;
     const nonce = opts?.nonce;
+    const vp = opts?.vp;
+    let vp_token = undefined;
+    if (vp) {
+      vp_token = [
+        {
+          format: VerifiablePresentationTypeFormat.LDP_VP,
+          presentation: vp.getRoot(),
+        },
+      ];
+    }
     return {
       ...this._authResponseOpts,
       nonce,
       state,
+      vp_token,
     };
   }
 

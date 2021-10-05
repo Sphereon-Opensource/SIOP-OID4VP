@@ -192,6 +192,7 @@ async function createSIOPResponsePayload(
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
   const nonce = resOpts.nonce || State.getNonce(state, resOpts.nonce);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
+  const vp_token = resOpts?.vp_token;
   return {
     iss: SIOP.ResponseIss.SELF_ISSUED_V2,
     sub: isDidSupported && resOpts.did ? resOpts.did : thumbprint,
@@ -204,7 +205,7 @@ async function createSIOPResponsePayload(
     iat: Date.now() / 1000,
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
-    vp: resOpts.vp,
+    vp_token,
   };
 }
 

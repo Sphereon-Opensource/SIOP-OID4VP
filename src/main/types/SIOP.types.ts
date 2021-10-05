@@ -1,4 +1,3 @@
-import { VerifiablePresentation } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 import { DIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
@@ -74,7 +73,7 @@ export interface AuthenticationResponseOpts {
   registration: ResponseRegistrationOpts;
   responseMode?: ResponseMode;
   did: string;
-  vp?: VerifiablePresentation;
+  vp_token?: VerifiablePresentationWrapper[];
   expiresIn?: number;
 }
 
@@ -91,7 +90,7 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   did: string;
   registration?: DiscoveryMetadataPayload;
   registration_uri?: string;
-  verifiable_presentations?: VerifiablePresentationWrapper[];
+  vp_token?: VerifiablePresentationWrapper[];
   claims?: ResponseClaims;
 }
 
@@ -101,7 +100,7 @@ export interface AuthenticationResponsePayload extends JWTPayload {
  */
 export interface VerifiablePresentationWrapper {
   format: VerifiablePresentationTypeFormat;
-  presentation: VerifiablePresentation | string;
+  presentation: unknown;
 }
 /**
  *

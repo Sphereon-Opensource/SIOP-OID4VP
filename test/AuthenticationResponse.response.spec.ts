@@ -3,13 +3,14 @@ import { VP } from '@sphereon/pe-js';
 import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 import {
-    AuthenticationResponseOpts,
-    CredentialFormat,
-    PassBy,
-    ResponseMode,
-    SubjectIdentifierType,
-    VerificationMode,
-    VerifyAuthenticationRequestOpts
+  AuthenticationResponseOpts,
+  CredentialFormat,
+  PassBy,
+  ResponseMode,
+  SubjectIdentifierType,
+  VerifiablePresentationTypeFormat,
+  VerificationMode,
+  VerifyAuthenticationRequestOpts
 } from '../src/main/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
@@ -141,39 +142,39 @@ describe('create JWT from Request JWT should', () => {
       },
       claims: {
         'id_token': {
-          'acr': null,
-          'verifiable_presentations': {
-            'presentation_definition': {
-              'id': 'Credentials',
-              'input_descriptors': [
-                {
-                  'id': 'ID Card Credential',
-                  'schema': [
-                    {
-                      'uri': 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential'
-                    },
-                    {
-                      'uri': 'https://www.w3.org/2018/credentials/examples/v1'
-                    }
-                  ],
-                  'constraints': {
-                    'limit_disclosure': 'required',
-                    'fields': [
-                      {
-                        "path": [
-                          "$.issuer.id"
-                        ],
-                        "purpose": "We can only verify bank accounts if they are attested by a source.",
-                        "filter": {
-                          "type": "string",
-                          "pattern": "did:example:issuer"
-                        }
-                      }
-                    ]
+          'acr': null
+        },
+        'vp_token': {
+          'presentation_definition': {
+            'id': 'Credentials',
+            'input_descriptors': [
+              {
+                'id': 'ID Card Credential',
+                'schema': [
+                  {
+                    'uri': 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential'
+                  },
+                  {
+                    'uri': 'https://www.w3.org/2018/credentials/examples/v1'
                   }
+                ],
+                'constraints': {
+                  'limit_disclosure': 'required',
+                  'fields': [
+                    {
+                      'path': [
+                        '$.issuer.id'
+                      ],
+                      'purpose': 'We can only verify bank accounts if they are attested by a source.',
+                      'filter': {
+                        'type': 'string',
+                        'pattern': 'did:example:issuer'
+                      }
+                    }
+                  ]
                 }
-              ]
-            }
+              }
+            ]
           }
         }
       }
@@ -210,21 +211,24 @@ describe('create JWT from Request JWT should', () => {
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`
       },
-      vp,
+      vp_token: [{
+        format: VerifiablePresentationTypeFormat.LDP_VP,
+        presentation: vp.getRoot()
+      }],
       did: mockResEntity.did,   // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST
     };
-    responseOpts.vp['id'] = 'ebc6f1c2';
-    responseOpts.vp['type'] = ['VerifiablePresentation'];
-    responseOpts.vp['holder'] = 'did:example:holder';
-    responseOpts.vp.getVerifiableCredentials()[0]['@context'] = [
+    vp['id'] = 'ebc6f1c2';
+    vp['type'] = ['VerifiablePresentation'];
+    vp['holder'] = 'did:example:holder';
+    vp.getVerifiableCredentials()[0]['@context'] = [
       'https://www.w3.org/2018/credentials/v1',
       'https://www.w3.org/2018/credentials/examples/v1'
     ];
-    responseOpts.vp.getVerifiableCredentials()[0]['issuer'] = {
+    vp.getVerifiableCredentials()[0]['issuer'] = {
       'id': 'did:example:issuer'
     };
-    responseOpts.vp.getVerifiableCredentials()[0]['issuanceDate'] = '2010-01-01T19:23:24Z';
+    vp.getVerifiableCredentials()[0]['issuanceDate'] = '2010-01-01T19:23:24Z';
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
     console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
     await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
