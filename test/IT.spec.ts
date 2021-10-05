@@ -57,7 +57,7 @@ describe("RP and OP interaction should", () => {
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.state).toMatch("b32f0087fc9816eb813fd11f");
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch("qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg");
-  });
+  }, 10000);
 
   it("succeed when calling optional steps in the full flow", async () => {
     // expect.assertions(1);
