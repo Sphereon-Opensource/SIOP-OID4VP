@@ -1,8 +1,8 @@
-import { parse } from 'querystring';
+import {parse} from 'querystring';
 
-import { AuthenticationRequest, SIOP } from '../src/main';
+import {AuthenticationRequest, SIOP} from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
-import { CredentialFormat, SubjectIdentifierType } from '../src/main/types/SIOP.types';
+import {CredentialFormat, PresentationLocation, SubjectIdentifierType} from '../src/main/types/SIOP.types';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -381,24 +381,24 @@ describe('create Request JWT should', () => {
         }
       },
       claims: {
-        'id_token': {
-          'acr': null
-        },
-        'vp_token': {
-          'presentation_definition': {
-            'id': 'Insurance Plans',
-            'input_descriptors': [
-              {
-                'id': 'Ontario Health Insurance Plan',
-                'schema': [
-                  {
-                    'uri': 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan'
-                  }
-                ]
-              }
-            ]
+        presentationDefinitions: [
+          {
+            location: PresentationLocation.VP_TOKEN,
+            definition: {
+              'id': 'Insurance Plans',
+              'input_descriptors': [
+                {
+                  'id': 'Ontario Health Insurance Plan',
+                  'schema': [
+                    {
+                      'uri': 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan'
+                    }
+                  ]
+                }
+              ]
+            }
           }
-        }
+        ]
       }
     };
 
@@ -429,23 +429,25 @@ describe('create Request JWT should', () => {
         }
       },
       claims: {
-        'id_token': {
-          'acr': null
-        },
-        'vp_token': {
-          'presentation_definition': {
-            'input_descriptors': [
-              {
-                'id': 'Ontario Health Insurance Plan',
-                'schema': [
-                  {
-                    'uri': 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan'
-                  }
-                ]
-              }
-            ]
+
+        presentationDefinitions: [
+          {
+            location: PresentationLocation.VP_TOKEN,
+            definition: {
+              id: 'my id',
+              'input_descriptors': [
+                {
+                  'id': 'Ontario Health Insurance Plan',
+                  'schema': [
+                    {
+                      'uri': 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan'
+                    }
+                  ]
+                }
+              ]
+            }
           }
-        }
+        ]
       }
     };
     await expect(AuthenticationRequest.createURI(opts))

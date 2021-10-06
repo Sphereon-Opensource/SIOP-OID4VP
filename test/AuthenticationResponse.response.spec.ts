@@ -1,6 +1,7 @@
-import { VP } from '@sphereon/pe-js';
+import {VP} from '@sphereon/pe-js';
 
-import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
+import {AuthenticationRequestOpts, PresentationLocation} from "../dist/main/types/SIOP.types";
+import {AuthenticationRequest, AuthenticationResponse} from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 import {
   AuthenticationResponseOpts,
@@ -13,7 +14,7 @@ import {
   VerifyAuthenticationRequestOpts
 } from '../src/main/types/SIOP.types';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import {mockedGetEnterpriseAuthToken} from './TestUtils';
 
 // const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -126,7 +127,7 @@ describe('create JWT from Request JWT should', () => {
 
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-    const requestOpts = {
+    const requestOpts : AuthenticationRequestOpts = {
       redirectUri: 'https://acme.com/hello',
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -141,42 +142,43 @@ describe('create JWT from Request JWT should', () => {
         registrationBy: { type: PassBy.VALUE }
       },
       claims: {
-        'id_token': {
-          'acr': null
-        },
-        'vp_token': {
-          'presentation_definition': {
-            'id': 'Credentials',
-            'input_descriptors': [
-              {
-                'id': 'ID Card Credential',
-                'schema': [
-                  {
-                    'uri': 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential'
-                  },
-                  {
-                    'uri': 'https://www.w3.org/2018/credentials/examples/v1'
-                  }
-                ],
-                'constraints': {
-                  'limit_disclosure': 'required',
-                  'fields': [
+        presentationDefinitions : [
+          {
+            location: PresentationLocation.VP_TOKEN,
+            definition: {
+              id: 'Credentials',
+              input_descriptors: [
+                {
+                  id: 'ID Card Credential',
+                  schema: [
                     {
-                      'path': [
-                        '$.issuer.id'
-                      ],
-                      'purpose': 'We can only verify bank accounts if they are attested by a source.',
-                      'filter': {
-                        'type': 'string',
-                        'pattern': 'did:example:issuer'
-                      }
+                      uri: 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential'
+                    },
+                    {
+                      uri: 'https://www.w3.org/2018/credentials/examples/v1'
                     }
-                  ]
+                  ],
+                  constraints: {
+                    limit_disclosure: 'required',
+                    fields: [
+                      {
+                        path: [
+                          '$.issuer.id'
+                        ],
+                        purpose: 'We can only verify bank accounts if they are attested by a source.',
+                        filter: {
+                          type: 'string',
+                          pattern: 'did:example:issuer'
+                        }
+                      }
+                    ]
+                  }
                 }
-              }
-            ]
+              ]
+            }
           }
-        }
+
+        ]
       }
     };
     const vp: VP = new VP({
@@ -211,7 +213,8 @@ describe('create JWT from Request JWT should', () => {
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`
       },
-      vp_token: [{
+      vp: [{
+        location: PresentationLocation.VP_TOKEN,
         format: VerifiablePresentationTypeFormat.LDP_VP,
         presentation: vp.getRoot()
       }],

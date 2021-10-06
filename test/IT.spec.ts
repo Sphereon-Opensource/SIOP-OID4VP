@@ -1,12 +1,17 @@
-import { VerifiableCredential, VerifiablePresentation } from '@sphereon/pe-js';
-import { PresentationDefinition } from '@sphereon/pe-models';
+import {VerifiableCredential, VerifiablePresentation} from '@sphereon/pe-js';
+import {PresentationDefinition} from '@sphereon/pe-models';
 import nock from 'nock';
 
-import { PresentationExchange } from '../src/main';
-import { OP, RP } from '../src/main';
-import { CredentialFormat, PassBy } from '../src/main/types/SIOP.types';
+import {PresentationDefinitionWithLocation} from "../dist/main/types/SIOP.types";
+import {OP, PresentationExchange, RP} from '../src/main';
+import {
+  CredentialFormat,
+  PassBy,
+  PresentationLocation,
+  VerifiablePresentationTypeFormat
+} from '../src/main/types/SIOP.types';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import {mockedGetEnterpriseAuthToken} from './TestUtils';
 
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
@@ -194,7 +199,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
       .registrationBy(PassBy.VALUE)
-      .requestClaim(getPresentationDefinition())
+      .addPresentationDefinitionClaim({ definition: getPresentationDefinition(), location: PresentationLocation.VP_TOKEN})
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
@@ -241,7 +246,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
       .registrationBy(PassBy.VALUE)
-      .requestClaim(getPresentationDefinition())
+      .addPresentationDefinitionClaim({ definition: getPresentationDefinition(), location: PresentationLocation.VP_TOKEN})
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
@@ -266,11 +271,11 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinition = PresentationExchange.findValidPresentationDefinition(parsedAuthReqURI.requestPayload);
-    await pex.selectVerifiableCredentialsForSubmission(pd);
-    const vp: VerifiablePresentation = await pex.submissionFrom(pd, getVCs());
+    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
+    const vp: VerifiablePresentation = await pex.submissionFrom(pd[0].definition, getVCs());
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-      vp
+      vp : [{presentation : vp, format: VerifiablePresentationTypeFormat.LDP_VP, location: PresentationLocation.VP_TOKEN}]
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 

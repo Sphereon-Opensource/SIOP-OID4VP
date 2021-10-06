@@ -5,7 +5,13 @@ import { PresentationExchange } from './PresentationExchange';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
 import { JWT, SIOP, SIOPErrors } from './types';
-import { AuthenticationRequestPayload } from './types/SIOP.types';
+import {
+  AuthenticationRequestPayload,
+  ClaimPayload,
+  IdTokenClaimPayload,
+  PresentationLocation,
+  VpTokenClaimPayload,
+} from './types/SIOP.types';
 
 export default class AuthenticationRequest {
   /**
@@ -95,11 +101,11 @@ export default class AuthenticationRequest {
     ) {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
-    const presentationDefinition = PresentationExchange.findValidPresentationDefinition(payload);
+    const presentationDefinitions = PresentationExchange.findValidPresentationDefinitions(payload);
     return {
       ...verifiedJWT,
       verifyOpts: opts,
-      presentationDefinition,
+      presentationDefinitions,
       payload: verifiedJWT.payload as AuthenticationRequestPayload,
     };
   }
@@ -125,7 +131,9 @@ function createURIFromJWT(
   jwt: string
 ): SIOP.AuthenticationRequestURI {
   const schema = 'openid://';
-  PresentationExchange.findValidPresentationDefinition(requestPayload);
+  // Only used to validate if it contains a definition
+  PresentationExchange.findValidPresentationDefinitions(requestPayload);
+
   const query = Encodings.encodeJsonAsURI(requestPayload);
 
   switch (requestOpts.requestBy?.type) {
@@ -151,7 +159,7 @@ function createURIFromJWT(
 
 function assertValidRequestJWT(_header: JWTHeader, _payload: JWT.JWTPayload) {
   /*console.log(_header);
-  console.log(_payload);*/
+    console.log(_payload);*/
 }
 
 function assertValidVerifyOpts(opts: SIOP.VerifyAuthenticationRequestOpts) {
@@ -177,10 +185,48 @@ function assertValidRequestOpts(opts: SIOP.AuthenticationRequestOpts) {
   assertValidRequestRegistrationOpts(opts.registration);
 }
 
+function createClaimsPayload(opts: SIOP.ClaimOpts): ClaimPayload {
+  if (!opts || !opts.presentationDefinitions || opts.presentationDefinitions.length == 0) {
+    return undefined;
+  }
+  let vp_token: VpTokenClaimPayload;
+  let id_token: IdTokenClaimPayload;
+
+  opts.presentationDefinitions.forEach((def) => {
+    switch (def.location) {
+      case PresentationLocation.ID_TOKEN: {
+        if (!id_token || !id_token.verifiable_presentations) {
+          id_token = { verifiable_presentations: [def.definition] };
+        } else {
+          id_token.verifiable_presentations.push(def.definition);
+        }
+        return;
+      }
+      case PresentationLocation.VP_TOKEN: {
+        if (vp_token) {
+          if (vp_token.verifiable_presentation) {
+            throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+          }
+          vp_token.verifiable_presentation = def.definition;
+        } else {
+          vp_token = { verifiable_presentation: def.definition };
+        }
+        return;
+      }
+    }
+  });
+  const payload: ClaimPayload = {
+    id_token,
+    vp_token,
+  };
+  return payload;
+}
+
 function createAuthenticationRequestPayload(opts: SIOP.AuthenticationRequestOpts): SIOP.AuthenticationRequestPayload {
   assertValidRequestOpts(opts);
   const state = State.getState(opts.state);
   const registration = createRequestRegistration(opts.registration);
+  const claims = createClaimsPayload(opts.claims);
 
   return {
     response_type: SIOP.ResponseType.ID_TOKEN,
@@ -193,6 +239,6 @@ function createAuthenticationRequestPayload(opts: SIOP.AuthenticationRequestOpts
     nonce: State.getNonce(state, opts.nonce),
     state,
     ...registration.requestRegistrationPayload,
-    claims: opts.claims,
+    claims,
   };
 }

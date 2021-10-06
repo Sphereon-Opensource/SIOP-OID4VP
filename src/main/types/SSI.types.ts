@@ -52,28 +52,12 @@ export interface Presentation {
 export interface VerifiablePresentation extends Presentation {
   proof: Proof;
 }
-
-export interface OidcClaimJson {
-  essential?: boolean;
-  value?: string;
-  values?: string[];
-}
-
-export interface OidcClaimRequest {
-  [x: string]: null | OidcClaimJson;
-}
-
-export interface OidcClaim {
-  vc?: OidcClaimRequest;
-  [x: string]: unknown;
-}
 export interface DIDDocument extends DIFDIDDocument {
   owner?: string;
   created?: string;
   updated?: string;
   proof?: LinkedDataProof;
 }
-
 /*export interface PublicKey {
     id: string;
     type: string;

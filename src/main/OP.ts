@@ -1,11 +1,9 @@
-import { VerifiablePresentation } from '@sphereon/pe-js';
 import Ajv from 'ajv';
 import fetch from 'cross-fetch';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { PresentationExchange } from './PresentationExchange';
 import { getResolver } from './functions/DIDResolution';
 import { postAuthenticationResponse, postAuthenticationResponseJwt } from './functions/HttpUtils';
 import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
@@ -19,7 +17,7 @@ import {
   ResponseMode,
   ResponseRegistrationOpts,
   UrlEncodingFormat,
-  VerifiablePresentationTypeFormat,
+  VerifiablePresentationResponseOpts,
   VerificationMode,
   VerifiedAuthenticationRequestWithJWT,
   VerifyAuthenticationRequestOpts,
@@ -32,6 +30,7 @@ const validate = ajv.compile(AuthenticationResponseOptsSchema);
 export class OP {
   private readonly _authResponseOpts: AuthenticationResponseOpts;
   private readonly _verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
+
   public constructor(opts: {
     builder?: OPBuilder;
     responseOpts?: AuthenticationResponseOpts;
@@ -69,21 +68,9 @@ export class OP {
       state?: string;
       // audience: string;
       verification?: InternalVerification | ExternalVerification;
-      vp?: VerifiablePresentation;
+      vp?: VerifiablePresentationResponseOpts[];
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    if (verifiedJwt.presentationDefinition) {
-      if (!responseOpts || !responseOpts.vp) {
-        throw new Error(`${SIOPErrors.AUTH_REQUEST_EXPECTS_VP}`);
-      }
-      await PresentationExchange.verifyVPAgainstPresentationDefinition(
-        verifiedJwt.presentationDefinition,
-        responseOpts.vp
-      );
-      PresentationExchange.assertValidPresentationSubmission(responseOpts.vp.getPresentationSubmission());
-    } else if (responseOpts && responseOpts.vp) {
-      throw new Error(`${SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP}`);
-    }
     return AuthenticationResponse.createJWTFromVerifiedRequest(
       verifiedJwt,
       this.newAuthenticationResponseOpts(responseOpts)
@@ -124,25 +111,16 @@ export class OP {
   public newAuthenticationResponseOpts(opts?: {
     nonce?: string;
     state?: string;
-    vp?: VerifiablePresentation;
+    vp?: VerifiablePresentationResponseOpts[];
   }): AuthenticationResponseOpts {
     const state = opts?.state;
     const nonce = opts?.nonce;
     const vp = opts?.vp;
-    let vp_token = undefined;
-    if (vp) {
-      vp_token = [
-        {
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          presentation: vp.getRoot(),
-        },
-      ];
-    }
     return {
       ...this._authResponseOpts,
       nonce,
       state,
-      vp_token,
+      vp,
     };
   }
 

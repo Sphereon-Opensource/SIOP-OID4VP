@@ -1,21 +1,19 @@
-import { PresentationDefinition } from '@sphereon/pe-models';
 import Ajv from 'ajv';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
-import { PresentationExchange } from './PresentationExchange';
 import RPBuilder from './RPBuilder';
 import { State } from './functions';
 import { getResolver } from './functions/DIDResolution';
 import { AuthenticationRequestOptsSchema } from './schemas/AuthenticationRequestOpts.schema';
-import { SIOP, SIOPErrors } from './types';
+import { SIOP } from './types';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
+  ClaimOpts,
   ExternalVerification,
   InternalVerification,
   RequestRegistrationOpts,
-  VerifiablePresentationWrapper,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
   VerifyAuthenticationResponseOpts,
@@ -33,8 +31,9 @@ export class RP {
     requestOpts?: AuthenticationRequestOpts;
     verifyOpts?: VerifyAuthenticationResponseOpts;
   }) {
-    this._authRequestOpts = { ...createRequestOptsFromBuilderOrExistingOpts(opts) };
-    this._verifyAuthResponseOpts = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
+    const claims = opts.builder?.claims;
+    this._authRequestOpts = { claims, ...createRequestOptsFromBuilderOrExistingOpts(opts) };
+    this._verifyAuthResponseOpts = { claims, ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
   }
 
   get authRequestOpts(): AuthenticationRequestOpts {
@@ -56,25 +55,9 @@ export class RP {
       state?: string;
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
+      claims?: ClaimOpts;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
-    const verifiedAuthResponseWithJWT: VerifiedAuthenticationResponseWithJWT = await AuthenticationResponse.verifyJWT(
-      jwt,
-      this.newVerifyAuthenticationResponseOpts(opts)
-    );
-    console.log('verifiedAuthResponseWithJWT: ', JSON.stringify(verifiedAuthResponseWithJWT));
-    const pd: PresentationDefinition = PresentationExchange.findValidPresentationDefinition(
-      this._authRequestOpts.claims
-    );
-    console.log('pd:', pd);
-    const vpws: VerifiablePresentationWrapper[] = verifiedAuthResponseWithJWT.payload.vp_token;
-    if (pd && !vpws) {
-      throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
-    } else if (!pd && vpws) {
-      throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
-    } else if (pd && vpws) {
-      await PresentationExchange.validateVPWrappersAgainstPD(pd, vpws);
-    }
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
   }
 
@@ -92,6 +75,7 @@ export class RP {
     state?: string;
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
+    claims?: ClaimOpts;
     audience: string;
   }): VerifyAuthenticationResponseOpts {
     return {
@@ -99,7 +83,7 @@ export class RP {
       audience: opts.audience,
       state: opts?.state || this._verifyAuthResponseOpts.state,
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
-
+      claims: opts.claims,
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
     };
   }

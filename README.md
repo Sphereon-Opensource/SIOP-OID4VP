@@ -296,7 +296,7 @@ console.log(`RP DID: ${verifiedReq.issuer}`);
 ````
 
 ### OP Presentation Exchange
-The Verified Request object created in the previous step contains a presentationDefinition property in case the OP wants to receive a Verifiable Presentation according to the [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html) specification. If this is the case we need to select credentials and create a Verifiable Presentation. If the OP doesn't need to receive a Verifiable Presentation, meaning the presentationDefinition property is undefined, you can continue to the next chapter and create the Authentication Response immediately.
+The Verified Request object created in the previous step contains a presentationDefinitions property in case the OP wants to receive a Verifiable Presentation according to the [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html) specification. If this is the case we need to select credentials and create a Verifiable Presentation. If the OP doesn't need to receive a Verifiable Presentation, meaning the presentationDefinitions property is undefined, you can continue to the next chapter and create the Authentication Response immediately.
 
 See the below sub flow for Presentation Exchange to explain the process:
 
@@ -304,7 +304,7 @@ See the below sub flow for Presentation Exchange to explain the process:
 
 
 #### Create PresentationExchange object
-If the presentationDefinition property is present it means the op.verifyAuthenticationRequest already has established that the Presentation Definition itself was valid and present. It has populated the presentationDefinition object. If the definition was not valid, the verify method would have thrown an error, which means you should never continue the authentication flow.
+If the presentationDefinitions property is present it means the op.verifyAuthenticationRequest already has established that the Presentation Definition itself was valid and present. It has populated the presentationDefinitions object. If the definition was not valid, the verify method would have thrown an error, which means you should never continue the authentication flow.
 
 Now we have to create a PresentationExchange object and pass in both the available Verifiable Credentials (typically from your wallet) and the holder DID.
 
@@ -319,7 +319,7 @@ The verifiable credentials you pass in to the PresentationExchange methods do no
 import {PresentationExchange} from "./PresentationExchange";
 
 const verifiableCredentials : VerifiableCredential[] = [VC1, VC2, VC3]; // This typically comes from your wallet
-const presentationDef = verifiedReq.presentationDefinition;
+const presentationDef = verifiedReq.presentationDefinitions;
 
 if (presentationDef) {
    const pex = new PresentationExchange({did: op.authResponseOpts.did, allVerifiableCredentials: verifiableCredentials});
@@ -444,7 +444,7 @@ export interface AuthenticationRequestOpts {
    signatureType: InternalSignature | ExternalSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication)
    responseMode?: ResponseMode;        // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
    responseContext?: ResponseContext;  // Defines the context of these opts. Either RP side or OP side
-   claims?: OidcClaim;                 // The claims
+   claims?: ClaimPayload;                 // The claims
    registration: RequestRegistrationOpts; // Registration metadata options
    nonce?: string;                     // An optional nonce, will be generated if not provided
    state?: string;                     // An optional state, will be generated if not provided

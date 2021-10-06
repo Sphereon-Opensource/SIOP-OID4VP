@@ -30,10 +30,10 @@ export const AuthenticationResponseOptsSchema = {
         "did": {
           "type": "string"
         },
-        "vp_token": {
+        "vp": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/VerifiablePresentationWrapper"
+            "$ref": "#/definitions/VerifiablePresentationResponseOpts"
           }
         },
         "expiresIn": {
@@ -291,26 +291,36 @@ export const AuthenticationResponseOptsSchema = {
         "query"
       ]
     },
-    "VerifiablePresentationWrapper": {
+    "VerifiablePresentationResponseOpts": {
       "type": "object",
       "properties": {
         "format": {
           "$ref": "#/definitions/VerifiablePresentationTypeFormat"
         },
-        "presentation": {}
+        "presentation": {},
+        "location": {
+          "$ref": "#/definitions/PresentationLocation"
+        }
       },
       "required": [
         "format",
+        "location",
         "presentation"
       ],
-      "additionalProperties": false,
-      "description": "A wrapper for verifiablePresentation"
+      "additionalProperties": false
     },
     "VerifiablePresentationTypeFormat": {
       "type": "string",
       "enum": [
         "jwt_vp",
         "ldp_vp"
+      ]
+    },
+    "PresentationLocation": {
+      "type": "string",
+      "enum": [
+        "vp_token",
+        "id_token"
       ]
     }
   }

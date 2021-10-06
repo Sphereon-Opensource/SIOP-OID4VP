@@ -1,22 +1,22 @@
 import { getResolver as getUniResolver } from '@sphereon/did-uni-client/dist/resolver/Resolver';
-import { PresentationDefinition } from '@sphereon/pe-models';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
 import { DIDJwt } from './functions';
 import {
+  ClaimOpts,
   CredentialFormat,
   ExternalSignature,
   InternalSignature,
   NoSignature,
   ObjectBy,
   PassBy,
+  PresentationDefinitionWithLocation,
   RequestRegistrationOpts,
   ResponseContext,
   ResponseMode,
   SubjectIdentifierType,
 } from './types/SIOP.types';
-import { OidcClaim } from './types/SSI.types';
 
 export default class RPBuilder {
   subjectIdentifierTypes: SubjectIdentifierType = SubjectIdentifierType.DID;
@@ -29,7 +29,9 @@ export default class RPBuilder {
   signatureType: InternalSignature | ExternalSignature | NoSignature;
   responseMode?: ResponseMode;
   responseContext?: ResponseContext.RP;
-  claims?: OidcClaim;
+  claims?: ClaimOpts;
+
+  // claims?: ClaimPayload;
 
   addCredentialFormat(credentialType: CredentialFormat): RPBuilder {
     this.credentialFormats.push(credentialType);
@@ -73,8 +75,8 @@ export default class RPBuilder {
       },
     };
     /*if (refUri) {
-      this.requestRegistration.registrationBy.referenceUri = refUri;
-    }*/
+          this.requestRegistration.registrationBy.referenceUri = refUri;
+        }*/
     return this;
   }
 
@@ -89,13 +91,14 @@ export default class RPBuilder {
     return this;
   }
 
-  requestClaim(presentationDefinition: PresentationDefinition): RPBuilder {
-    if (!this.claims) {
-      this.claims = {};
+  addPresentationDefinitionClaim(definitionOpt: PresentationDefinitionWithLocation): RPBuilder {
+    if (!this.claims || !this.claims.presentationDefinitions) {
+      this.claims = {
+        presentationDefinitions: [definitionOpt],
+      };
+    } else {
+      this.claims.presentationDefinitions.push(definitionOpt);
     }
-    this.claims['vp_token'] = {
-      presentation_definition: presentationDefinition,
-    };
     return this;
   }
 
