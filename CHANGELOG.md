@@ -1,4 +1,13 @@
 # Release Notes
+## v0.2.0 - 2021-10-06
+
+This is the third Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
+
+- Added:
+  * Presentation Exchange support [OpenID Connect for Verifiable Presentations(https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html)
+  
+- Fixed:
+  * Many bug fixes (see git history)
 
 ## v0.1.1 - 2021-09-29
 This is the second Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
