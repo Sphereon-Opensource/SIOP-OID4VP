@@ -1,8 +1,8 @@
 import { VP } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 
-import { PresentationExchange } from '../dist/main';
 import { AuthenticationRequestOpts } from '../dist/main/types/SIOP.types';
+import { PresentationExchange } from '../src/main';
 import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 import {
@@ -222,7 +222,7 @@ describe('create JWT from Request JWT should', () => {
       allVerifiableCredentials: vp.getVerifiableCredentials(),
     });
     await pex.selectVerifiableCredentialsForSubmission(definition);
-    const result = await pex.submissionFrom(definition, vp.getVerifiableCredentials());
+    const result: VP = await pex.submissionFrom(definition, vp.getVerifiableCredentials());
     const responseOpts: AuthenticationResponseOpts = {
       registration: {
         registrationBy: {

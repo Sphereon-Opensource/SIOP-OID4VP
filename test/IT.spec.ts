@@ -2,8 +2,8 @@ import { VerifiableCredential } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 import nock from 'nock';
 
-import { PresentationDefinitionWithLocation } from '../dist/main/types/SIOP.types';
 import { OP, PresentationExchange, RP } from '../src/main';
+import { PresentationDefinitionWithLocation } from '../src/main/types/SIOP.types';
 import {
   CredentialFormat,
   PassBy,
