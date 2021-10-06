@@ -30,7 +30,7 @@ export class PresentationExchange {
   public async submissionFrom(
     presentationDefinition: PresentationDefinition,
     selectedCredentials: VerifiableCredential[]
-  ): Promise<VerifiablePresentation> {
+  ): Promise<VP> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
@@ -53,6 +53,8 @@ export class PresentationExchange {
   ): Promise<SelectResults> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+    } else if (!this.allVerifiableCredentials || this.allVerifiableCredentials.length == 0) {
+      throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, no VCs were provided`);
     }
     const selectResults: SelectResults = this.pejs.selectFrom(
       presentationDefinition,
@@ -92,7 +94,11 @@ export class PresentationExchange {
   public static assertValidPresentationSubmission(presentationSubmission: PresentationSubmission) {
     const validationResult = new PEJS().validateSubmission(presentationSubmission);
     if (validationResult[0].message != 'ok') {
-      throw new Error(`${SIOPErrors.RESPONSE_OPTS_PRESENTATIONS_SUBMISSION_IS_NOT_VALID}`);
+      throw new Error(
+        `${SIOPErrors.RESPONSE_OPTS_PRESENTATIONS_SUBMISSION_IS_NOT_VALID}, details ${JSON.stringify(
+          validationResult[0]
+        )}`
+      );
     }
   }
 
@@ -104,25 +110,43 @@ export class PresentationExchange {
    * @param obj: object that can have a presentation_definition inside
    */
   public static findValidPresentationDefinitions(obj: JWTPayload): PresentationDefinitionWithLocation[] {
-    if (obj) {
-      const definitions = extractDataFromPath(obj, "$..['presentation_definition','presentation_definitions']");
+    let allDefinitions: PresentationDefinitionWithLocation[];
+
+    function extractPDFromVPToken() {
+      const vpTokens = extractDataFromPath(obj, '$..vp_token.presentation_definition');
+
+      if (vpTokens) {
+        if (vpTokens.length == 1) {
+          PresentationExchange.assertValidPresentationDefinition(vpTokens[0].value);
+          allDefinitions = [{ definition: vpTokens[0].value, location: PresentationLocation.VP_TOKEN }];
+        } else if (vpTokens.length > 1) throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+      }
+    }
+
+    function extractPDFromOtherTokens() {
+      const definitions = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition');
       if (definitions && definitions.length) {
-        return definitions.map((definition) => {
+        definitions.forEach((definition) => {
           PresentationExchange.assertValidPresentationDefinition(definition.value);
-          let location;
           if (definition.path.includes(PresentationLocation.ID_TOKEN)) {
-            location = PresentationLocation.ID_TOKEN;
-          } else if (definition.path.includes(PresentationLocation.VP_TOKEN)) {
-            location = PresentationLocation.VP_TOKEN;
+            const defWithLocation = { definition: definition.value, location: PresentationLocation.ID_TOKEN };
+            if (!allDefinitions) {
+              allDefinitions = [defWithLocation];
+            } else {
+              allDefinitions.push(defWithLocation);
+            }
           } else {
             throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
           }
-          const result: PresentationDefinitionWithLocation = { definition, location };
-          return result;
         });
       }
     }
-    return null;
+
+    if (obj) {
+      extractPDFromVPToken();
+      extractPDFromOtherTokens();
+    }
+    return allDefinitions;
   }
 
   public static assertValidPresentationDefintionWithLocations(
@@ -158,7 +182,9 @@ export class PresentationExchange {
       throw new Error(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
     await Promise.all(
-      definitions.map(async (pd) => PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads))
+      definitions.map(
+        async (pd) => await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads)
+      )
     );
   }
 
@@ -166,20 +192,33 @@ export class PresentationExchange {
     definition: PresentationDefinition,
     vpPayloads: VerifiablePresentationPayload[]
   ) {
-    const fiVpws: VerifiablePresentationPayload[] = vpPayloads.filter((vpw) => {
+    /*function getVP(presentation: unknown): VP {
+      if (isPresentation(presentation)) {
+        return new VP(presentation as Presentation);
+      } else if (isVP(presentation)) {
+        return presentation;
+      }
+      throw Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
+    }*/
+
+    const checkedPresentations: VerifiablePresentationPayload[] = vpPayloads.filter((vpw) => {
       if (vpw.format !== VerifiablePresentationTypeFormat.LDP_VP) {
         throw new Error(`${SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED}`);
       }
-      const vp: VerifiablePresentation = new VP(<Presentation>vpw.presentation);
 
-      return vp.getPresentationSubmission().definition_id === definition.id;
+      const vp = new VP(vpw.presentation);
+      const submission = vp.getPresentationSubmission();
+      if (!vp || !submission) {
+        throw new Error(SIOPErrors.NO_PRESENTATION_SUBMISSION);
+      }
+      return submission && submission.definition_id === definition.id;
     });
-    if (!fiVpws.length || fiVpws.length != 1) {
+    if (!checkedPresentations.length || checkedPresentations.length != 1) {
       throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}`);
-    } else if (fiVpws[0].format !== VerifiablePresentationTypeFormat.LDP_VP) {
+    } else if (checkedPresentations[0].format !== VerifiablePresentationTypeFormat.LDP_VP) {
       throw new Error(`${SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED}`);
     }
-    const vp: VerifiablePresentation = new VP(<Presentation>fiVpws[0].presentation);
+    const vp: VerifiablePresentation = new VP(checkedPresentations[0].presentation);
     PresentationExchange.assertValidPresentationSubmission(vp.getPresentationSubmission());
     await PresentationExchange.validatePresentationAgainstDefinition(definition, vp);
   }

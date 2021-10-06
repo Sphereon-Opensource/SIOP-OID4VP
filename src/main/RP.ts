@@ -83,7 +83,7 @@ export class RP {
       audience: opts.audience,
       state: opts?.state || this._verifyAuthResponseOpts.state,
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
-      claims: opts.claims,
+      claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
     };
   }

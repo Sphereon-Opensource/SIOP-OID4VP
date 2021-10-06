@@ -1,4 +1,4 @@
-import { VerifiableCredential, VerifiablePresentation } from '@sphereon/pe-js';
+import { VerifiableCredential } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 import nock from 'nock';
 
@@ -270,10 +270,14 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.requestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp: VerifiablePresentation = await pex.submissionFrom(pd[0].definition, getVCs());
+    const vp = await pex.submissionFrom(pd[0].definition, getVCs());
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
       vp: [
-        { presentation: vp, format: VerifiablePresentationTypeFormat.LDP_VP, location: PresentationLocation.VP_TOKEN },
+        {
+          presentation: vp.getRoot(),
+          format: VerifiablePresentationTypeFormat.LDP_VP,
+          location: PresentationLocation.VP_TOKEN,
+        },
       ],
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();

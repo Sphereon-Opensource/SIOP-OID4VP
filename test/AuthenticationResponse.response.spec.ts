@@ -1,12 +1,15 @@
 import { VP } from '@sphereon/pe-js';
+import { PresentationDefinition } from '@sphereon/pe-models';
 
-import { AuthenticationRequestOpts, PresentationLocation } from '../dist/main/types/SIOP.types';
+import { PresentationExchange } from '../dist/main';
+import { AuthenticationRequestOpts } from '../dist/main/types/SIOP.types';
 import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 import {
   AuthenticationResponseOpts,
   CredentialFormat,
   PassBy,
+  PresentationLocation,
   ResponseMode,
   SubjectIdentifierType,
   VerifiablePresentationTypeFormat,
@@ -134,6 +137,32 @@ describe('create JWT from Request JWT should', () => {
 
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
+    const definition: PresentationDefinition = {
+      id: 'Credentials',
+      input_descriptors: [
+        {
+          id: 'ID Card Credential',
+          schema: [
+            {
+              uri: 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential',
+            },
+          ],
+          constraints: {
+            limit_disclosure: 'required',
+            fields: [
+              {
+                path: ['$.issuer.id'],
+                purpose: 'We can only verify bank accounts if they are attested by a source.',
+                filter: {
+                  type: 'string',
+                  pattern: 'did:example:issuer',
+                },
+              },
+            ],
+          },
+        },
+      ],
+    };
     const requestOpts: AuthenticationRequestOpts = {
       redirectUri: 'https://acme.com/hello',
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
@@ -152,35 +181,7 @@ describe('create JWT from Request JWT should', () => {
         presentationDefinitions: [
           {
             location: PresentationLocation.VP_TOKEN,
-            definition: {
-              id: 'Credentials',
-              input_descriptors: [
-                {
-                  id: 'ID Card Credential',
-                  schema: [
-                    {
-                      uri: 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential',
-                    },
-                    {
-                      uri: 'https://www.w3.org/2018/credentials/examples/v1',
-                    },
-                  ],
-                  constraints: {
-                    limit_disclosure: 'required',
-                    fields: [
-                      {
-                        path: ['$.issuer.id'],
-                        purpose: 'We can only verify bank accounts if they are attested by a source.',
-                        filter: {
-                          type: 'string',
-                          pattern: 'did:example:issuer',
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
+            definition: definition,
           },
         ],
       },
@@ -202,6 +203,26 @@ describe('create JWT from Request JWT should', () => {
       ],
       proof: undefined,
     });
+
+    // fixme: This is probably here because the VC interface in the pe-js is not correct
+    vp['id'] = 'ebc6f1c2';
+    vp['type'] = ['VerifiablePresentation'];
+    vp['holder'] = 'did:example:holder';
+    vp.getVerifiableCredentials()[0]['@context'] = [
+      'https://www.w3.org/2018/credentials/v1',
+      'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential',
+    ];
+    vp.getVerifiableCredentials()[0]['issuer'] = {
+      id: 'did:example:issuer',
+    };
+    vp.getVerifiableCredentials()[0]['issuanceDate'] = '2010-01-01T19:23:24Z';
+
+    const pex = new PresentationExchange({
+      did: 'did:example:holder',
+      allVerifiableCredentials: vp.getVerifiableCredentials(),
+    });
+    await pex.selectVerifiableCredentialsForSubmission(definition);
+    const result = await pex.submissionFrom(definition, vp.getVerifiableCredentials());
     const responseOpts: AuthenticationResponseOpts = {
       registration: {
         registrationBy: {
@@ -218,27 +239,17 @@ describe('create JWT from Request JWT should', () => {
         {
           location: PresentationLocation.VP_TOKEN,
           format: VerifiablePresentationTypeFormat.LDP_VP,
-          presentation: vp.getRoot(),
+          presentation: result.getRoot(),
         },
       ],
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
     };
-    vp['id'] = 'ebc6f1c2';
-    vp['type'] = ['VerifiablePresentation'];
-    vp['holder'] = 'did:example:holder';
-    vp.getVerifiableCredentials()[0]['@context'] = [
-      'https://www.w3.org/2018/credentials/v1',
-      'https://www.w3.org/2018/credentials/examples/v1',
-    ];
-    vp.getVerifiableCredentials()[0]['issuer'] = {
-      id: 'did:example:issuer',
-    };
-    vp.getVerifiableCredentials()[0]['issuanceDate'] = '2010-01-01T19:23:24Z';
+
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-    console.log(
+    /* console.log(
       JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
-    );
+    );*/
     await expect(
       AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)
     ).resolves.toBeDefined();

@@ -1,3 +1,4 @@
+import { Presentation as PEPresentation, VerifiablePresentation as PEVerifiablePresentation } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
@@ -95,6 +96,7 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   vp_token?: VerifiablePresentationPayload;
   claims?: ResponseClaims;
 }
+
 /*
 
 export interface OidcClaimJson {
@@ -107,12 +109,19 @@ export interface OidcClaimRequest {
   [x: string]: null | OidcClaimJson;
 }*/
 
+export interface VerifiablePresentationsPayload {
+  presentation_definition: PresentationDefinition;
+}
+
 export interface IdTokenClaimPayload {
-  verifiable_presentations?: PresentationDefinition[];
+  verifiable_presentations?: VerifiablePresentationsPayload[];
+
   [x: string]: unknown;
 }
+
 export interface VpTokenClaimPayload {
-  verifiable_presentation?: PresentationDefinition;
+  presentation_definition: PresentationDefinition;
+
   [x: string]: unknown;
 }
 
@@ -123,8 +132,10 @@ export interface ClaimOpts {
 export interface ClaimPayload {
   id_token?: IdTokenClaimPayload;
   vp_token?: VpTokenClaimPayload;
+
   [x: string]: unknown;
 }
+
 export interface DIDDocument extends DIFDIDDocument {
   owner?: string;
   created?: string;
@@ -152,8 +163,9 @@ export enum PresentationLocation {
  */
 export interface VerifiablePresentationPayload {
   format: VerifiablePresentationTypeFormat;
-  presentation: unknown;
+  presentation: PEPresentation;
 }
+
 /**
  *
  */
@@ -165,6 +177,7 @@ export interface AuthenticationResponseWithJWT {
   verifyOpts?: VerifyAuthenticationRequestOpts;
   responseOpts: AuthenticationResponseOpts;
 }
+
 export interface RequestRegistrationOpts extends RPRegistrationMetadataOpts {
   registrationBy: RegistrationType;
 
@@ -291,7 +304,7 @@ export enum VerificationMode {
 export interface InternalVerification {
   mode: VerificationMode;
   /*registry?: string;
-    rpcUrl?: string;*/
+      rpcUrl?: string;*/
   resolveOpts: ResolveOpts;
 }
 
@@ -463,3 +476,8 @@ export const isExternalVerification = (
   object: InternalVerification | ExternalVerification
 ): object is ExternalVerification =>
   object.mode === VerificationMode.EXTERNAL; /*&& 'verifyUri' in object || 'authZToken' in object*/
+
+export const isVP = (object: PEVerifiablePresentation | PEPresentation): object is PEVerifiablePresentation =>
+  'presentation' in object;
+export const isPresentation = (object: PEVerifiablePresentation | PEPresentation): object is PEPresentation =>
+  'presentation_submission' in object;

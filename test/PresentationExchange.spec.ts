@@ -1,4 +1,4 @@
-import { Presentation, VerifiablePresentation, VP } from '@sphereon/pe-js';
+import { Presentation, VP } from '@sphereon/pe-js';
 
 import { PresentationExchange, SIOP } from '../src/main';
 import { State } from '../src/main/functions';
@@ -18,7 +18,7 @@ import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
 const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
 
-async function getPayload() {
+async function getPayload(): Promise<AuthenticationRequestPayload> {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
   const state = State.getState();
   return {
@@ -190,7 +190,7 @@ describe('presentation exchange manager tests', () => {
     const payload: AuthenticationRequestPayload = await getPayload();
     payload.claims = undefined;
     const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
-    expect(pd).toBeNull();
+    expect(pd).toBeUndefined();
   });
 
   it('pass if findValidPresentationDefinitions finds a valid presentation_definition', async () => {
@@ -206,7 +206,7 @@ describe('presentation exchange manager tests', () => {
     const vcs = await getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp: VerifiablePresentation = await pex.submissionFrom(pd[0].definition, vcs);
+    const vp: VP = await pex.submissionFrom(pd[0].definition, vcs);
     const vpw: VerifiablePresentationPayload = {
       presentation: vp.getRoot(),
       format: VerifiablePresentationTypeFormat.LDP_VP,
@@ -224,7 +224,7 @@ describe('presentation exchange manager tests', () => {
     const vcs = await getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp: VerifiablePresentation = await pex.submissionFrom(pd[0].definition, vcs);
+    const vp = await pex.submissionFrom(pd[0].definition, vcs);
     const vpw: VerifiablePresentationPayload = {
       presentation: vp.getRoot(),
       format: VerifiablePresentationTypeFormat.JWT_VP,

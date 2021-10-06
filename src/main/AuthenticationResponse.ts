@@ -182,7 +182,7 @@ async function createThumbprintAndJWK(
 }
 
 function extractPresentations(resOpts: SIOP.AuthenticationResponseOpts) {
-  const verifiable_presentations =
+  const presentationPayloads =
     resOpts.vp && resOpts.vp.length > 0
       ? resOpts.vp
           .filter((vp) => vp.location === PresentationLocation.ID_TOKEN)
@@ -191,7 +191,7 @@ function extractPresentations(resOpts: SIOP.AuthenticationResponseOpts) {
   const vp_tokens =
     resOpts.vp && resOpts.vp.length > 0
       ? resOpts.vp
-          .filter((vp) => vp.location === PresentationLocation.ID_TOKEN)
+          .filter((vp) => vp.location === PresentationLocation.VP_TOKEN)
           .map<VerifiablePresentationPayload>((vp) => vp as VerifiablePresentationPayload)
       : undefined;
   let vp_token;
@@ -202,7 +202,12 @@ function extractPresentations(resOpts: SIOP.AuthenticationResponseOpts) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
   }
-  return { verifiable_presentations, vp_token };
+  const verifiable_presentations =
+    presentationPayloads && presentationPayloads.length > 0 ? presentationPayloads : undefined;
+  return {
+    verifiable_presentations,
+    vp_token,
+  };
 }
 
 async function createSIOPResponsePayload(
@@ -285,8 +290,8 @@ async function assertValidVerifiablePresentations(
     }
   }
 
-  console.log('pd:', definitions);
-  console.log('vps:', presentationPayloads);
+  console.log('pd:', JSON.stringify(definitions));
+  console.log('vps:', JSON.stringify(presentationPayloads));
   if (definitions && !presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
   } else if (!definitions && presentationPayloads) {

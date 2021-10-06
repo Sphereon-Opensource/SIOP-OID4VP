@@ -6,6 +6,7 @@ enum SIOPErrors {
   BAD_PARAMS = 'Wrong parameters provided.',
   BAD_SIGNATURE_PARAMS = 'Signature parameters should be internal signature with hexPrivateKey, did, and an optional kid, or external signature parameters with signatureUri, did, and optionals parameters authZToken, hexPublicKey, and kid',
   CANT_UNMARSHAL_JWT_VP = "can't unmarshal the presentation object",
+  NO_PRESENTATION_SUBMISSION = 'The VP did not contain a presentation submission. Did you forget to call PresentationExchange.checkSubmissionFrom?',
   CREDENTIAL_FORMATS_NOT_SUPPORTED = 'CREDENTIAL_FORMATS_NOT_SUPPORTED',
   COULD_NOT_FIND_VCS_MATCHING_PD = 'Could not find VerifiableCredentials matching presentationDefinition object in the provided VC list',
   DIDAUTH_REQUEST_PAYLOAD_NOT_CREATED = 'DidAuthRequestPayload not created',

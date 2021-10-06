@@ -196,20 +196,18 @@ function createClaimsPayload(opts: SIOP.ClaimOpts): ClaimPayload {
     switch (def.location) {
       case PresentationLocation.ID_TOKEN: {
         if (!id_token || !id_token.verifiable_presentations) {
-          id_token = { verifiable_presentations: [def.definition] };
+          id_token = { verifiable_presentations: [{ presentation_definition: def.definition }] };
         } else {
-          id_token.verifiable_presentations.push(def.definition);
+          id_token.verifiable_presentations.push({ presentation_definition: def.definition });
         }
         return;
       }
       case PresentationLocation.VP_TOKEN: {
         if (vp_token) {
-          if (vp_token.verifiable_presentation) {
-            throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-          }
-          vp_token.verifiable_presentation = def.definition;
+          // There can only be one definition in the vp_token according to the spec
+          throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
         } else {
-          vp_token = { verifiable_presentation: def.definition };
+          vp_token = { presentation_definition: def.definition };
         }
         return;
       }

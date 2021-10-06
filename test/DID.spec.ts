@@ -10,12 +10,12 @@ describe('Ethr DID should', () => {
     const keypair = EthrDID.createKeyPair();
     const ethrDid = new EthrDID({ ...keypair, chainNameOrId: network });
 
-    console.log(
+    /*  console.log(
       `private key (hex): ${keypair.privateKey.replace('0x', '')}\n` +
         `public key (hex): ${keypair.publicKey.replace('0x', '')}\n` +
         `DID: ${ethrDid.did}`
     );
-
+*/
     const uniResolver = new Resolver();
     await expect(uniResolver.resolve(ethrDid.did)).resolves.toMatchObject({
       didDocument: {},

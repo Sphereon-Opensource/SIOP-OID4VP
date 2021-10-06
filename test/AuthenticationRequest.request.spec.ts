@@ -1,5 +1,7 @@
 import { parse } from 'querystring';
 
+import { PresentationDefinition } from '@sphereon/pe-models';
+
 import { AuthenticationRequest, SIOP } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 import { CredentialFormat, PresentationLocation, SubjectIdentifierType } from '../src/main/types/SIOP.types';
@@ -415,7 +417,6 @@ describe('create Request JWT should', () => {
           {
             location: PresentationLocation.VP_TOKEN,
             definition: {
-              id: 'my id',
               input_descriptors: [
                 {
                   id: 'Ontario Health Insurance Plan',
@@ -426,7 +427,7 @@ describe('create Request JWT should', () => {
                   ],
                 },
               ],
-            },
+            } as PresentationDefinition,
           },
         ],
       },

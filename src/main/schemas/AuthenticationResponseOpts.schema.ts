@@ -297,7 +297,9 @@ export const AuthenticationResponseOptsSchema = {
         "format": {
           "$ref": "#/definitions/VerifiablePresentationTypeFormat"
         },
-        "presentation": {},
+        "presentation": {
+          "$ref": "#/definitions/Presentation"
+        },
         "location": {
           "$ref": "#/definitions/PresentationLocation"
         }
@@ -315,6 +317,120 @@ export const AuthenticationResponseOptsSchema = {
         "jwt_vp",
         "ldp_vp"
       ]
+    },
+    "Presentation": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "presentation_submission": {
+          "$ref": "#/definitions/PresentationSubmission"
+        },
+        "type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verifiableCredential": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VerifiableCredential"
+          }
+        },
+        "holder": {
+          "type": "string"
+        },
+        "proof": {}
+      },
+      "required": [
+        "context",
+        "presentation_submission",
+        "type",
+        "verifiableCredential",
+        "proof"
+      ],
+      "additionalProperties": false,
+      "description": "* Verifiable presentation - generic"
+    },
+    "PresentationSubmission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "definition_id": {
+          "type": "string"
+        },
+        "descriptor_map": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Descriptor"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "definition_id",
+        "descriptor_map"
+      ],
+      "additionalProperties": false
+    },
+    "Descriptor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "path_nested": {
+          "$ref": "#/definitions/Descriptor"
+        },
+        "format": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "format"
+      ],
+      "additionalProperties": false
+    },
+    "VerifiableCredential": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "credentialSubject": {},
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "credentialSubject",
+        "type"
+      ],
+      "additionalProperties": false,
+      "description": "* Verifiable credentials: are the individual credentials issued by issuing authority e.g. DrivingLicence, CollegeDegree etc."
     },
     "PresentationLocation": {
       "type": "string",
