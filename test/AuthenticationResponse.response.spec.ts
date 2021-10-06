@@ -1,10 +1,10 @@
 import { VP } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 
-import { AuthenticationRequestOpts } from '../src/main/types/SIOP.types';
 import { PresentationExchange } from '../src/main';
 import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
+import { AuthenticationRequestOpts } from '../src/main/types/SIOP.types';
 import {
   AuthenticationResponseOpts,
   CredentialFormat,
