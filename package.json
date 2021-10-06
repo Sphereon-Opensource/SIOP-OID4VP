@@ -9,11 +9,11 @@
     "build:main": "tsc -p tsconfig.build.json",
     "build:schemaGenerator": "node generator/schemaGenerator.ts",
     "fix": "run-s fix:*",
-    "fix:prettier": "prettier \"{src, test}/**/*.ts\" --write",
+    "fix:prettier": "prettier \"{src,test}/**/*.ts\" --write",
     "fix:lint": "eslint . --ext .ts --fix",
     "test": "run-s build test:*",
     "test:lint": "eslint . --ext .ts",
-    "test:prettier": "prettier \"{src, test}/**/*.ts\" --list-different",
+    "test:prettier": "prettier \"{src,test}/**/*.ts\" --list-different",
     "test:cov": "jest --ci --coverage && codecov"
   },
   "engines": {
