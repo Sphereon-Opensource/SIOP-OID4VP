@@ -192,15 +192,6 @@ export class PresentationExchange {
     definition: PresentationDefinition,
     vpPayloads: VerifiablePresentationPayload[]
   ) {
-    /*function getVP(presentation: unknown): VP {
-      if (isPresentation(presentation)) {
-        return new VP(presentation as Presentation);
-      } else if (isVP(presentation)) {
-        return presentation;
-      }
-      throw Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
-    }*/
-
     const checkedPresentations: VerifiablePresentationPayload[] = vpPayloads.filter((vpw) => {
       if (vpw.format !== VerifiablePresentationTypeFormat.LDP_VP) {
         throw new Error(`${SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED}`);

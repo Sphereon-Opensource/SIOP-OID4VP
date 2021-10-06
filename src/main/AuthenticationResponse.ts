@@ -271,7 +271,7 @@ async function assertValidVerifiablePresentations(
   definitions: PresentationDefinitionWithLocation[],
   verPayload: AuthenticationResponsePayload
 ) {
-  if ((definitions == null || !definitions) && !verPayload) {
+  if ((!definitions || definitions.length == 0) && !verPayload) {
     return;
   }
 
@@ -290,8 +290,8 @@ async function assertValidVerifiablePresentations(
     }
   }
 
-  console.log('pd:', JSON.stringify(definitions));
-  console.log('vps:', JSON.stringify(presentationPayloads));
+  /*console.log('pd:', JSON.stringify(definitions));
+  console.log('vps:', JSON.stringify(presentationPayloads));*/
   if (definitions && !presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
   } else if (!definitions && presentationPayloads) {
