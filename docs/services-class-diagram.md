@@ -28,7 +28,7 @@ class AuthenticationRequestOpts {
   requestBy: ObjectBy;
   signatureType: InternalSignature | ExternalSignature | NoSignature;
   responseMode?: ResponseMode;
-  claims?: OidcClaim;
+  claims?: ClaimPayload;
   registration: RequestRegistrationOpts;
   nonce?: string;
   state?: string;

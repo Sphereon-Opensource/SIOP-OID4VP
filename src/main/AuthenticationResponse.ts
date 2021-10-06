@@ -3,13 +3,17 @@ import { JWK } from 'jose/types';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
+import { PresentationExchange } from './PresentationExchange';
 import { DIDJwt, DIDres, State } from './functions';
 import { signDidJwtPayload, verifyDidJWT } from './functions/DidJWT';
 import { getPublicJWKFromHexPrivateKey, getThumbprint } from './functions/Keys';
 import { JWT, SIOP, SIOPErrors } from './types';
 import {
   AuthenticationResponsePayload,
+  PresentationDefinitionWithLocation,
+  PresentationLocation,
   SubjectIdentifierType,
+  VerifiablePresentationPayload,
   VerifiedAuthenticationResponseWithJWT,
   VerifyAuthenticationResponseOpts,
 } from './types/SIOP.types';
@@ -40,6 +44,7 @@ export default class AuthenticationResponse {
     responseOpts: SIOP.AuthenticationResponseOpts
   ): Promise<SIOP.AuthenticationResponseWithJWT> {
     const payload = await createSIOPResponsePayload(verifiedJwt, responseOpts);
+    await assertValidVerifiablePresentations(verifiedJwt.presentationDefinitions, payload);
     const jwt = await signDidJwtPayload(payload, responseOpts);
     return {
       jwt,
@@ -52,32 +57,32 @@ export default class AuthenticationResponse {
     // todo add uri generation support in separate method, like in the AuthRequest class
 
     /*if (isInternalSignature(responseOpts.signatureType)) {
-                                            return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
-                                        } else if (isExternalSignature(responseOpts.signatureType)) {
-                                            return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
-                                        } else {
-                                            throw new Error("INVALID_SIGNATURE_TYPE");
-                                        }*/
+                                                    return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
+                                                } else if (isExternalSignature(responseOpts.signatureType)) {
+                                                    return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
+                                                } else {
+                                                    throw new Error("INVALID_SIGNATURE_TYPE");
+                                                }*/
     /*const params = `id_token=${JWT}`;
-                                        const uriResponse = {
-                                            encodedUri: "",
-                                            bodyEncoded: "",
-                                            encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
-                                            responseMode: didAuthResponseCall.responseMode
-                                                ? didAuthResponseCall.responseMode
-                                                : SIOP.ResponseMode.FRAGMENT, // FRAGMENT is the default
-                                        };
+                                                const uriResponse = {
+                                                    encodedUri: "",
+                                                    bodyEncoded: "",
+                                                    encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
+                                                    responseMode: didAuthResponseCall.responseMode
+                                                        ? didAuthResponseCall.responseMode
+                                                        : SIOP.ResponseMode.FRAGMENT, // FRAGMENT is the default
+                                                };
 
-                                        if (didAuthResponseCall.responseMode === SIOP.ResponseMode.FORM_POST) {
-                                            uriResponse.encodedUri = encodeURI(didAuthResponseCall.redirectUri);
-                                            uriResponse.bodyEncoded = encodeURI(params);
-                                        } else if (didAuthResponseCall.responseMode === SIOP.ResponseMode.QUERY) {
-                                            uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
-                                        } else {
-                                            uriResponse.responseMode = SIOP.ResponseMode.FRAGMENT;
-                                            uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
-                                        }
-                                        return uriResponse;*/
+                                                if (didAuthResponseCall.responseMode === SIOP.ResponseMode.FORM_POST) {
+                                                    uriResponse.encodedUri = encodeURI(didAuthResponseCall.redirectUri);
+                                                    uriResponse.bodyEncoded = encodeURI(params);
+                                                } else if (didAuthResponseCall.responseMode === SIOP.ResponseMode.QUERY) {
+                                                    uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
+                                                } else {
+                                                    uriResponse.responseMode = SIOP.ResponseMode.FRAGMENT;
+                                                    uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
+                                                }
+                                                return uriResponse;*/
   }
 
   /**
@@ -105,6 +110,7 @@ export default class AuthenticationResponse {
     const issuerDid = DIDJwt.getIssuerDidFromPayload(payload);
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
+    await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
 
     return {
       signer: verifiedJWT.signer,
@@ -144,7 +150,7 @@ function assertValidResponseJWT(opts: {
     } else if (!opts.verPayload.exp || opts.verPayload.exp < Date.now() / 1000) {
       throw Error(SIOPErrors.EXPIRED);
       /*} else if (!opts.verPayload.iat || opts.verPayload.iat > (Date.now() / 1000)) {
-      throw Error(SIOPErrors.EXPIRED);*/
+                  throw Error(SIOPErrors.EXPIRED);*/
       // todo: Add iat check
     }
   }
@@ -163,16 +169,45 @@ async function createThumbprintAndJWK(
       resOpts.did
     );
     /*  } else if (SIOP.isExternalSignature(resOpts.signatureType)) {
-            const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
-            if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
-              throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
-            }
-            thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
-            subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
+                    const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
+                    if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
+                      throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
+                    }
+                    thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
+                    subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
   } else {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
   return { thumbprint, subJwk };
+}
+
+function extractPresentations(resOpts: SIOP.AuthenticationResponseOpts) {
+  const presentationPayloads =
+    resOpts.vp && resOpts.vp.length > 0
+      ? resOpts.vp
+          .filter((vp) => vp.location === PresentationLocation.ID_TOKEN)
+          .map<VerifiablePresentationPayload>((vp) => vp as VerifiablePresentationPayload)
+      : undefined;
+  const vp_tokens =
+    resOpts.vp && resOpts.vp.length > 0
+      ? resOpts.vp
+          .filter((vp) => vp.location === PresentationLocation.VP_TOKEN)
+          .map<VerifiablePresentationPayload>((vp) => vp as VerifiablePresentationPayload)
+      : undefined;
+  let vp_token;
+  if (vp_tokens) {
+    if (vp_tokens.length == 1) {
+      vp_token = vp_tokens[0];
+    } else if (vp_tokens.length > 1) {
+      throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+    }
+  }
+  const verifiable_presentations =
+    presentationPayloads && presentationPayloads.length > 0 ? presentationPayloads : undefined;
+  return {
+    verifiable_presentations,
+    vp_token,
+  };
 }
 
 async function createSIOPResponsePayload(
@@ -186,12 +221,17 @@ async function createSIOPResponsePayload(
   const isDidSupported = verifiedJwt.payload.registration?.subject_identifiers_supported?.includes(
     SubjectIdentifierType.DID
   );
-  // todo did method check against supported did registration value here
 
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
   const nonce = resOpts.nonce || State.getNonce(state, resOpts.nonce);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
+
+  // *********************************************************************************
+  // todo We are missing a wrapper object. Actually the current object is the id_token
+  // *********************************************************************************
+
+  const { verifiable_presentations, vp_token } = extractPresentations(resOpts);
   return {
     iss: SIOP.ResponseIss.SELF_ISSUED_V2,
     sub: isDidSupported && resOpts.did ? resOpts.did : thumbprint,
@@ -204,7 +244,8 @@ async function createSIOPResponsePayload(
     iat: Date.now() / 1000,
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
-    vp: resOpts.vp,
+    vp_token,
+    verifiable_presentations,
   };
 }
 
@@ -223,5 +264,41 @@ function assertValidVerifyOpts(opts: SIOP.VerifyAuthenticationResponseOpts) {
     (!SIOP.isExternalVerification(opts.verification) && !SIOP.isInternalVerification(opts.verification))
   ) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
+  }
+}
+
+async function assertValidVerifiablePresentations(
+  definitions: PresentationDefinitionWithLocation[],
+  verPayload: AuthenticationResponsePayload
+) {
+  if ((!definitions || definitions.length == 0) && !verPayload) {
+    return;
+  }
+
+  // const definitions: PresentationDefinitionWithLocation[] = verifyOpts?.claims?.presentationDefinitions;
+  PresentationExchange.assertValidPresentationDefintionWithLocations(definitions);
+  let presentationPayloads: VerifiablePresentationPayload[];
+
+  if (verPayload.verifiable_presentations && verPayload.verifiable_presentations.length > 0) {
+    presentationPayloads = verPayload.verifiable_presentations;
+  }
+  if (verPayload.vp_token) {
+    if (!presentationPayloads) {
+      presentationPayloads = [verPayload.vp_token];
+    } else {
+      presentationPayloads.push(verPayload.vp_token);
+    }
+  }
+
+  /*console.log('pd:', JSON.stringify(definitions));
+  console.log('vps:', JSON.stringify(presentationPayloads));*/
+  if (definitions && !presentationPayloads) {
+    throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
+  } else if (!definitions && presentationPayloads) {
+    throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
+  } else if (definitions && presentationPayloads && definitions.length != presentationPayloads.length) {
+    throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
+  } else if (definitions && presentationPayloads) {
+    await PresentationExchange.validatePayloadsAgainstDefinitions(definitions, presentationPayloads);
   }
 }

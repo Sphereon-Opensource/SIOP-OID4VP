@@ -1,10 +1,10 @@
-import { VerifiablePresentation } from '@sphereon/pe-js';
+import { Presentation as PEPresentation, VerifiablePresentation as PEVerifiablePresentation } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
-import { DIDDocument, VerificationMethod } from 'did-resolver';
+import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
 
 import { JWTPayload, VerifiedJWT } from './JWT.types';
-import { OidcClaim, ResolveOpts } from './SSI.types';
+import { LinkedDataProof, ResolveOpts } from './SSI.types';
 
 export const expirationTime = 10 * 60;
 
@@ -15,7 +15,7 @@ export interface AuthenticationRequestOpts {
   signatureType: InternalSignature | ExternalSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication)
   responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
   responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
-  claims?: OidcClaim; // The claims
+  claims?: ClaimOpts; // The claims
   registration: RequestRegistrationOpts; // Registration metadata options
   nonce?: string; // An optional nonce, will be generated if not provided
   state?: string; // An optional state, will be generated if not provided
@@ -41,7 +41,7 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   state?: string;
   nonce: string;
   did_doc?: DIDDocument;
-  claims?: OidcClaim; // claims parameter value, as specified in Section 5.5.
+  claims?: ClaimPayload; // claims parameter value, as specified in Section 5.5.
 }
 
 export interface RequestRegistrationPayload {
@@ -51,7 +51,7 @@ export interface RequestRegistrationPayload {
 
 export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
   payload: AuthenticationRequestPayload; // The unsigned Authentication Request payload
-  presentationDefinition?: PresentationDefinition; // The optional presentation definition object that the RP requests
+  presentationDefinitions?: PresentationDefinitionWithLocation[]; // The optional presentation definition objects that the RP requests
   verifyOpts: VerifyAuthenticationRequestOpts; // The verification options for the authentication request
 }
 
@@ -74,7 +74,7 @@ export interface AuthenticationResponseOpts {
   registration: ResponseRegistrationOpts;
   responseMode?: ResponseMode;
   did: string;
-  vp?: VerifiablePresentation;
+  vp?: VerifiablePresentationResponseOpts[];
   expiresIn?: number;
 }
 
@@ -91,8 +91,79 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   did: string;
   registration?: DiscoveryMetadataPayload;
   registration_uri?: string;
-  vp?: VerifiablePresentation;
+  verifiable_presentations?: VerifiablePresentationPayload[];
+  // fixme All of the above is the id token. We need to create a new interface of the above and reference that here as id_token
+  vp_token?: VerifiablePresentationPayload;
   claims?: ResponseClaims;
+}
+
+/*
+
+export interface OidcClaimJson {
+  essential?: boolean;
+  value?: string;
+  values?: string[];
+}
+
+export interface OidcClaimRequest {
+  [x: string]: null | OidcClaimJson;
+}*/
+
+export interface VerifiablePresentationsPayload {
+  presentation_definition: PresentationDefinition;
+}
+
+export interface IdTokenClaimPayload {
+  verifiable_presentations?: VerifiablePresentationsPayload[];
+
+  [x: string]: unknown;
+}
+
+export interface VpTokenClaimPayload {
+  presentation_definition: PresentationDefinition;
+
+  [x: string]: unknown;
+}
+
+export interface ClaimOpts {
+  presentationDefinitions?: PresentationDefinitionWithLocation[];
+}
+
+export interface ClaimPayload {
+  id_token?: IdTokenClaimPayload;
+  vp_token?: VpTokenClaimPayload;
+
+  [x: string]: unknown;
+}
+
+export interface DIDDocument extends DIFDIDDocument {
+  owner?: string;
+  created?: string;
+  updated?: string;
+  proof?: LinkedDataProof;
+}
+
+export interface PresentationDefinitionWithLocation {
+  location: PresentationLocation;
+  definition: PresentationDefinition;
+}
+
+export interface VerifiablePresentationResponseOpts extends VerifiablePresentationPayload {
+  location: PresentationLocation;
+}
+
+export enum PresentationLocation {
+  VP_TOKEN = 'vp_token',
+  ID_TOKEN = 'id_token',
+}
+
+/**
+ * A wrapper for verifiablePresentation
+ *
+ */
+export interface VerifiablePresentationPayload {
+  format: VerifiablePresentationTypeFormat;
+  presentation: PEPresentation;
 }
 
 /**
@@ -106,6 +177,7 @@ export interface AuthenticationResponseWithJWT {
   verifyOpts?: VerifyAuthenticationRequestOpts;
   responseOpts: AuthenticationResponseOpts;
 }
+
 export interface RequestRegistrationOpts extends RPRegistrationMetadataOpts {
   registrationBy: RegistrationType;
 
@@ -181,6 +253,11 @@ export interface RegistrationType extends ObjectBy {
   id_token_encrypted_response_enc?: EncSymmetricAlgorithmCode;
 }
 
+export enum VerifiablePresentationTypeFormat {
+  JWT_VP = 'jwt_vp',
+  LDP_VP = 'ldp_vp',
+}
+
 export enum EncSymmetricAlgorithmCode {
   XC20P = 'XC20P', // default
 }
@@ -227,7 +304,7 @@ export enum VerificationMode {
 export interface InternalVerification {
   mode: VerificationMode;
   /*registry?: string;
-    rpcUrl?: string;*/
+      rpcUrl?: string;*/
   resolveOpts: ResolveOpts;
 }
 
@@ -250,6 +327,7 @@ export interface VerifyAuthenticationResponseOpts {
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // mandatory?
   state?: string; // mandatory?
+  claims?: ClaimOpts;
   audience: string;
 }
 
@@ -398,3 +476,8 @@ export const isExternalVerification = (
   object: InternalVerification | ExternalVerification
 ): object is ExternalVerification =>
   object.mode === VerificationMode.EXTERNAL; /*&& 'verifyUri' in object || 'authZToken' in object*/
+
+export const isVP = (object: PEVerifiablePresentation | PEPresentation): object is PEVerifiablePresentation =>
+  'presentation' in object;
+export const isPresentation = (object: PEVerifiablePresentation | PEPresentation): object is PEPresentation =>
+  'presentation_submission' in object;

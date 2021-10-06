@@ -31,7 +31,10 @@ export const AuthenticationResponseOptsSchema = {
           "type": "string"
         },
         "vp": {
-          "$ref": "#/definitions/VerifiablePresentation"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VerifiablePresentationResponseOpts"
+          }
         },
         "expiresIn": {
           "type": "number"
@@ -288,10 +291,153 @@ export const AuthenticationResponseOptsSchema = {
         "query"
       ]
     },
-    "VerifiablePresentation": {
+    "VerifiablePresentationResponseOpts": {
       "type": "object",
+      "properties": {
+        "format": {
+          "$ref": "#/definitions/VerifiablePresentationTypeFormat"
+        },
+        "presentation": {
+          "$ref": "#/definitions/Presentation"
+        },
+        "location": {
+          "$ref": "#/definitions/PresentationLocation"
+        }
+      },
+      "required": [
+        "format",
+        "location",
+        "presentation"
+      ],
+      "additionalProperties": false
+    },
+    "VerifiablePresentationTypeFormat": {
+      "type": "string",
+      "enum": [
+        "jwt_vp",
+        "ldp_vp"
+      ]
+    },
+    "Presentation": {
+      "type": "object",
+      "properties": {
+        "context": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "presentation_submission": {
+          "$ref": "#/definitions/PresentationSubmission"
+        },
+        "type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "verifiableCredential": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VerifiableCredential"
+          }
+        },
+        "holder": {
+          "type": "string"
+        },
+        "proof": {}
+      },
+      "required": [
+        "context",
+        "presentation_submission",
+        "type",
+        "verifiableCredential",
+        "proof"
+      ],
       "additionalProperties": false,
-      "description": "This is the object that will be sent as data in the presentation request."
+      "description": "* Verifiable presentation - generic"
+    },
+    "PresentationSubmission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "definition_id": {
+          "type": "string"
+        },
+        "descriptor_map": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Descriptor"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "definition_id",
+        "descriptor_map"
+      ],
+      "additionalProperties": false
+    },
+    "Descriptor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "path_nested": {
+          "$ref": "#/definitions/Descriptor"
+        },
+        "format": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "format"
+      ],
+      "additionalProperties": false
+    },
+    "VerifiableCredential": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "credentialSubject": {},
+        "type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "credentialSubject",
+        "type"
+      ],
+      "additionalProperties": false,
+      "description": "* Verifiable credentials: are the individual credentials issued by issuing authority e.g. DrivingLicence, CollegeDegree etc."
+    },
+    "PresentationLocation": {
+      "type": "string",
+      "enum": [
+        "vp_token",
+        "id_token"
+      ]
     }
   }
 };

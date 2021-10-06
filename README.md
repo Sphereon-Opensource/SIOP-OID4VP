@@ -38,56 +38,115 @@ Flow diagram:
 
 
 1. Client (OP) initiates an Auth request by POST-ing to an endpoint, like for instance `/did-siop/v1/authentications` or clicking a Login button and scanning a QR code
-2. Web (RP) receives the request and access the RP object which creates the authentication request as JWT, signs it and returns the response as an OpenID Connect URI 
-   1. JWT example:
-    ```json
-    // JWT Header
-    {
-      "alg": "ES256K",
-      "kid": "did:ethr:0xcBe71d18b5F1259faA9fEE8f9a5FAbe2372BE8c9#controller",
-      "typ": "JWT"
-    }
+   1. Web (RP) receives the request and access the RP object which creates the authentication request as JWT, signs it and returns the response as an OpenID Connect URI 
+      1. JWT example:
+       ```json
+       // JWT Header
+       {
+         "alg": "ES256K",
+         "kid": "did:ethr:0xcBe71d18b5F1259faA9fEE8f9a5FAbe2372BE8c9#controller",
+         "typ": "JWT"
+       }
      
-    // JWT Payload
-   {
-      "iat": 1632336634,
-      "exp": 1632337234,
-      "response_type": "id_token",
-      "scope": "openid",
-      "client_id": "did:ethr:0xcBe71d18b5F1259faA9fEE8f9a5FAbe2372BE8c9",
-      "redirect_uri": "https://acme.com/siop/v1/sessions",
-      "iss": "did:ethr:0xcBe71d18b5F1259faA9fEE8f9a5FAbe2372BE8c9",
-      "response_mode": "post",
-      "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
-      "state": "b32f0087fc9816eb813fd11f",
-      "registration": {
-         "did_methods_supported": [
-          "did:ethr:",
-          "did:eosio:"
-         ],
-         "subject_identifiers_supported": "did"
+       // JWT Payload
+      {
+         "iat": 1632336634,
+         "exp": 1632337234,
+         "response_type": "id_token",
+         "scope": "openid",
+         "client_id": "did:ethr:0xcBe71d18b5F1259faA9fEE8f9a5FAbe2372BE8c9",
+         "redirect_uri": "https://acme.com/siop/v1/sessions",
+         "iss": "did:ethr:0xcBe71d18b5F1259faA9fEE8f9a5FAbe2372BE8c9",
+         "response_mode": "post",
+         "claims": ...,
+         "nonce": "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
+         "state": "b32f0087fc9816eb813fd11f",
+         "registration": {
+            "did_methods_supported": [
+             "did:ethr:",
+             "did:eosio:"
+            ],
+            "subject_identifiers_supported": "did"
+         }
       }
-   }
-    ```
+       ```
    
-   2. The Signed JWT, called the JWS follows the following scheme (JWS Compact Serialization, https://datatracker.ietf.org/doc/html/rfc7515#section-7.1): 
+      2. The Signed JWT, called the JWS follows the following scheme (JWS Compact Serialization, https://datatracker.ietf.org/doc/html/rfc7515#section-7.1): 
    
-   `BASE64URL(UTF8(JWT Protected Header)) || '.' ||
-   BASE64URL(JWT Payload) || '.' ||
-   BASE64URL(JWS Signature)`
+      `BASE64URL(UTF8(JWT Protected Header)) || '.' ||
+      BASE64URL(JWT Payload) || '.' ||
+      BASE64URL(JWS Signature)`
 
-   3. Create the URI containing the JWS: 
-   ```
-   openid://?response_type=id_token 
-      &scope=openid
-      &client_id=did%3Aethr%3A0xBC9484414c1DcA4Aa85BadBBd8a36E3973934444
-      &redirect_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts
-      &iss=did%3Aethr%3A0xBC9484414c1DcA4Aa85BadBBd8a36E3973934444
-      &response_mode=post
-      &nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f
-      &registration=%5Bobject%20Object%5D
-      &request=<JWS here>
-   ```
+      3. Create the URI containing the JWS: 
+      ```
+      openid://?response_type=id_token 
+         &scope=openid
+         &client_id=did%3Aethr%3A0xBC9484414c1DcA4Aa85BadBBd8a36E3973934444
+         &redirect_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts
+         &iss=did%3Aethr%3A0xBC9484414c1DcA4Aa85BadBBd8a36E3973934444
+         &response_mode=post
+         &claims=...
+         &state=af0ifjsldkj
+         &nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f
+         &registration=%5Bobject%20Object%5D
+         &request=<JWS here>
+      ```
+      4. `claims` param can be either a `vp_token` or an `id_token`:
+      ````json
+         // vp_token example
+         {
+           "id_token": {
+           "email": null
+         },
+         "vp_token": {
+           "presentation_definition": {
+             "input_descriptors": [
+               {
+                 "schema": [
+                   {
+                     "uri": "https://www.w3.org/2018/credentials/examples/v1/IDCardCredential"
+                   }
+                ],
+                "constraints": {
+                  "limit_disclosure": "required",
+                  "fields": [
+                    {
+                      "path": [
+                        "$.vc.credentialSubject.given_name"
+                      ]
+                    }
+                  ]
+                }
+               }
+             ]
+           }
+         }
+       }
+         // id_token example
+         {
+           "userinfo": {
+             "verifiable_presentations": [
+               "presentation_definition": {
+                 "input_descriptors": [
+                   {
+                     "schema": [
+                       {
+                         "uri": "https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan"
+                       }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "id_token": {
+            "auth_time": {
+              "essential": true
+            }
+          }
+      }
+      ````
+
 3. Web receives the Auth Request URI Object from RP
 4. Web sends the Auth Request URI in the response body to the client
 5. Client accesses OP object to create an Authentication response
@@ -145,12 +204,12 @@ Flow diagram:
    BASE64URL(JWS Payload) || '.' ||
    BASE64URL(JWS Signature)`
 
-8. OP returns the Auth response and jwt object to the client
-9. Client does an HTTP POST to redirect_uri from the request (and the aud in the response): https://acme.com/siop/v1/sessions using "application/x-www-form-urlencoded"
-10. Web receives the ID token (auth response) and uses the RP's object verify method 
-11. RP performs the validation of the token, including signature validation, expiration and Verifiable Presentations if any. It returns the Verified Auth Response to WEB
-12. WEB returns a 200 response to Client with a redirect to another page (logged in or confirmation of VP receipt etc).
-13. From that moment on Client can use the Auth Response as bearer token as long as it is valid
+7. OP returns the Auth response and jwt object to the client
+8. Client does an HTTP POST to redirect_uri from the request (and the aud in the response): https://acme.com/siop/v1/sessions using "application/x-www-form-urlencoded"
+9. Web receives the ID token (auth response) and uses the RP's object verify method 
+10. RP performs the validation of the token, including signature validation, expiration and Verifiable Presentations if any. It returns the Verified Auth Response to WEB
+11. WEB returns a 200 response to Client with a redirect to another page (logged in or confirmation of VP receipt etc).
+12. From that moment on Client can use the Auth Response as bearer token as long as it is valid
 
 
 
@@ -183,7 +242,7 @@ registration metadata will be sent as part of the AuthRequest since we pass them
 we would have to host the data at the reference URL. The redirect URL means that the OP will need to deliver the
 authentication response at the URL specified by the RP. Lastly we have enabled the 'ethr' DID method on the RP side for
 doing Authentication Response checks with Ethereum DIDs in them. Please note that you can add multiple DID methods, and
-they have no influence on the DIDs being used to sign, the internal signature.
+they have no influence on the DIDs being used to sign, the internal signature. We also populated the RP with a `PresentationDefinition` object. you can also pass your own option for where you expect this presentation_definition to end up via the `location` property.
 
 ````typescript
 
@@ -199,6 +258,20 @@ const rp = RP.builder()
     .internalSignature(rpKeys.hexPrivateKey, rpKeys.did, rpKeys.didKey)
     .addDidMethod("ethr")
     .registrationBy(PassBy.VALUE)
+    .addPresentationDefinitionClaim({
+      definition: {
+        "input_descriptors": [
+          {
+            "schema": [
+              {
+                "uri": "https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan"
+              }
+            ]
+          }
+        ]
+      },
+      location: PresentationLocation.VP_TOKEN, //This also can be ID_TOKEN
+    })
     .build();
 ````
 
@@ -296,7 +369,7 @@ console.log(`RP DID: ${verifiedReq.issuer}`);
 ````
 
 ### OP Presentation Exchange
-The Verified Request object created in the previous step contains a presentationDefinition property in case the OP wants to receive a Verifiable Presentation according to the [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html) specification. If this is the case we need to select credentials and create a Verifiable Presentation. If the OP doesn't need to receive a Verifiable Presentation, meaning the presentationDefinition property is undefined, you can continue to the next chapter and create the Authentication Response immediately.
+The Verified Request object created in the previous step contains a presentationDefinitions property in case the OP wants to receive a Verifiable Presentation according to the [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html) specification. If this is the case we need to select credentials and create a Verifiable Presentation. If the OP doesn't need to receive a Verifiable Presentation, meaning the presentationDefinitions property is undefined, you can continue to the next chapter and create the Authentication Response immediately.
 
 See the below sub flow for Presentation Exchange to explain the process:
 
@@ -304,7 +377,7 @@ See the below sub flow for Presentation Exchange to explain the process:
 
 
 #### Create PresentationExchange object
-If the presentationDefinition property is present it means the op.verifyAuthenticationRequest already has established that the Presentation Definition itself was valid and present. It has populated the presentationDefinition object. If the definition was not valid, the verify method would have thrown an error, which means you should never continue the authentication flow.
+If the presentationDefinitions property is present it means the op.verifyAuthenticationRequest already has established that the Presentation Definition itself was valid and present. It has populated the presentationDefinitions object. If the definition was not valid, the verify method would have thrown an error, which means you should never continue the authentication flow.
 
 Now we have to create a PresentationExchange object and pass in both the available Verifiable Credentials (typically from your wallet) and the holder DID.
 
@@ -319,7 +392,7 @@ The verifiable credentials you pass in to the PresentationExchange methods do no
 import {PresentationExchange} from "./PresentationExchange";
 
 const verifiableCredentials : VerifiableCredential[] = [VC1, VC2, VC3]; // This typically comes from your wallet
-const presentationDef = verifiedReq.presentationDefinition;
+const presentationDef = verifiedReq.presentationDefinitions;
 
 if (presentationDef) {
    const pex = new PresentationExchange({did: op.authResponseOpts.did, allVerifiableCredentials: verifiableCredentials});
@@ -444,7 +517,7 @@ export interface AuthenticationRequestOpts {
    signatureType: InternalSignature | ExternalSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication)
    responseMode?: ResponseMode;        // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
    responseContext?: ResponseContext;  // Defines the context of these opts. Either RP side or OP side
-   claims?: OidcClaim;                 // The claims
+   claims?: ClaimOpts;                 // The claims
    registration: RequestRegistrationOpts; // Registration metadata options
    nonce?: string;                     // An optional nonce, will be generated if not provided
    state?: string;                     // An optional state, will be generated if not provided
@@ -512,6 +585,7 @@ Verifies a SIOP Authentication Request JWT. Throws an error if the verifation fa
 ```typescript
 export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
    payload: AuthenticationRequestPayload;       // The unsigned Authentication Request payload
+   presentationDefinitions?: PresentationDefinitionWithLocation[]; // The optional presentation definition objects that the RP requests 
    verifyOpts: VerifyAuthenticationRequestOpts; // The verification options for the authentication request
 }
 
@@ -590,8 +664,17 @@ export interface AuthenticationResponseOpts {
    registration: ResponseRegistrationOpts;      // Registration options
    responseMode?: ResponseMode;                 // Response mode should be form in case a mobile device is being used together with a browser
    did: string;                                 // The DID of the OP
-   vp?: VerifiablePresentation;                 // Verifiable Presentation
+   vp?: VerifiablePresentationResponseOpts[];                 // Verifiable Presentation
    expiresIn?: number;                          // Expiration
+}
+
+export interface VerifiablePresentationResponseOpts extends VerifiablePresentationPayload {
+  location: PresentationLocation;
+}
+
+export enum PresentationLocation {
+  VP_TOKEN = 'vp_token',
+  ID_TOKEN = 'id_token',
 }
 
 export interface VerifyAuthenticationRequestOpts {
@@ -600,20 +683,21 @@ export interface VerifyAuthenticationRequestOpts {
 }
 
 export interface AuthenticationResponsePayload extends JWTPayload {
-   iss: ResponseIss.SELF_ISSUED_V2 | string;    // The SIOP V2 spec mentions this is required
-   sub: string;                                 // did (or thumbprint of sub_jwk key when type is jkt)
-   aud: string;                                 // redirect_uri from request
-   exp?: number;                                // expiration time
-   iat?: number;                                // issued at
-   state: string;                               // The state which should match the AuthRequest state
-   nonce: string;                               // The nonce which should match the AuthRequest nonce
-   did: string;                                 // The DID of the OP
-   registration?: DiscoveryMetadataPayload;     // The registration metadata from the OP
-   registration_uri?: string;                   // The URI of the registration metadata if it is returned by reference/URL
-   vp?: VerifiablePresentation;                 // Verifiable Presentations
-   claims?: ResponseClaims;                     // Response claim
-   sub_type: SubjectIdentifierType;             // Whether subject is a DID or a jkt
-   sub_jwk: JWK;                                // JWK containing DID key if subtype is did, or thumbprint if it is JKT
+   iss: ResponseIss.SELF_ISSUED_V2 | string;                      // The SIOP V2 spec mentions this is required
+   sub: string;                                                   // did (or thumbprint of sub_jwk key when type is jkt)
+   aud: string;                                                   // redirect_uri from request
+   exp?: number;                                                  // expiration time
+   iat?: number;                                                  // issued at
+   state: string;                                                 // The state which should match the AuthRequest state
+   nonce: string;                                                 // The nonce which should match the AuthRequest nonce
+   did: string;                                                   // The DID of the OP
+   registration?: DiscoveryMetadataPayload;                       // The registration metadata from the OP
+   registration_uri?: string;                                     // The URI of the registration metadata if it is returned by reference/URL
+   verifiable_presentations?: VerifiablePresentationPayload[];    // Verifiable Presentations
+   vp_token?: VerifiablePresentationPayload; 
+   claims?: ResponseClaims;                                       // Response claim
+   sub_type: SubjectIdentifierType;                               // Whether subject is a DID or a jkt
+   sub_jwk: JWK;                                                  // JWK containing DID key if subtype is did, or thumbprint if it is JKT
 }
 
 export interface AuthenticationResponseWithJWT {

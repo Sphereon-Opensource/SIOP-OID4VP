@@ -10,6 +10,7 @@ import { SIOP } from './types';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
+  ClaimOpts,
   ExternalVerification,
   InternalVerification,
   RequestRegistrationOpts,
@@ -30,8 +31,9 @@ export class RP {
     requestOpts?: AuthenticationRequestOpts;
     verifyOpts?: VerifyAuthenticationResponseOpts;
   }) {
-    this._authRequestOpts = { ...createRequestOptsFromBuilderOrExistingOpts(opts) };
-    this._verifyAuthResponseOpts = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
+    const claims = opts.builder?.claims;
+    this._authRequestOpts = { claims, ...createRequestOptsFromBuilderOrExistingOpts(opts) };
+    this._verifyAuthResponseOpts = { claims, ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
   }
 
   get authRequestOpts(): AuthenticationRequestOpts {
@@ -46,13 +48,14 @@ export class RP {
     return AuthenticationRequest.createURI(this.newAuthenticationRequestOpts(opts));
   }
 
-  public verifyAuthenticationResponseJwt(
+  public async verifyAuthenticationResponseJwt(
     jwt: string,
     opts?: {
       audience: string;
       state?: string;
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
+      claims?: ClaimOpts;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
@@ -72,6 +75,7 @@ export class RP {
     state?: string;
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
+    claims?: ClaimOpts;
     audience: string;
   }): VerifyAuthenticationResponseOpts {
     return {
@@ -79,7 +83,7 @@ export class RP {
       audience: opts.audience,
       state: opts?.state || this._verifyAuthResponseOpts.state,
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
-
+      claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
     };
   }
@@ -105,6 +109,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: {
         signatureType: opts.builder.signatureType,
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
+        claims: opts.builder.claims,
       }
     : opts.requestOpts;
 

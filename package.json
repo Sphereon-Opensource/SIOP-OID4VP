@@ -9,11 +9,11 @@
     "build:main": "tsc -p tsconfig.build.json",
     "build:schemaGenerator": "node generator/schemaGenerator.ts",
     "fix": "run-s fix:*",
-    "fix:prettier": "prettier \"{src, test}/**/*.ts\" --write",
+    "fix:prettier": "prettier \"{src,test}/**/*.ts\" --write",
     "fix:lint": "eslint . --ext .ts --fix",
     "test": "run-s build test:*",
     "test:lint": "eslint . --ext .ts",
-    "test:prettier": "prettier \"{src, test}/**/*.ts\" --list-different",
+    "test:prettier": "prettier \"{src,test}/**/*.ts\" --list-different",
     "test:cov": "jest --ci --coverage && codecov"
   },
   "engines": {
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@sphereon/did-uni-client": "^0.2.0",
-    "@sphereon/pe-js": "^0.2.3",
+    "@sphereon/pe-js": "^0.2.4",
     "@sphereon/pe-models": "^0.0.5",
     "@transmute/did-key-ed25519": "^0.2.1-unstable.42",
     "bs58": "^4.0.1",

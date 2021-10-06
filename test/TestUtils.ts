@@ -12,19 +12,18 @@ import jwt_decode from 'jwt-decode';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
-
 import { SIOP } from '../src/main';
 import { assertValidMetadata } from '../src/main/functions/DidSiopMetadata';
 import { base64ToHexString } from '../src/main/functions/Encodings';
 import SIOPErrors from '../src/main/types/Errors';
 import {
-    CredentialFormat,
-    ResponseIss,
-    ResponseType,
-    Scope,
-    SigningAlgo,
-    SubjectIdentifierType,
-    SubjectType
+  CredentialFormat,
+  ResponseIss,
+  ResponseType,
+  Scope,
+  SigningAlgo,
+  SubjectIdentifierType,
+  SubjectType,
 } from '../src/main/types/SIOP.types';
 
 import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
@@ -36,9 +35,8 @@ export interface TESTKEY {
 }
 
 export async function generateTestKey(kty: string): Promise<TESTKEY> {
-  if (kty !== SIOP.KeyType.EC)
-    throw new Error(SIOPErrors.NO_ALG_SUPPORTED);
-  const key = crypto.generateKeyPairSync("ec", {
+  if (kty !== SIOP.KeyType.EC) throw new Error(SIOPErrors.NO_ALG_SUPPORTED);
+  const key = crypto.generateKeyPairSync('ec', {
     namedCurve: SIOP.KeyCurve.SECP256k1,
   });
   const privateJwk = await fromKeyLike(key.privateKey);
@@ -63,9 +61,7 @@ function getEthWallet(key: JWK): ethers.Wallet {
   return new ethers.Wallet(prefixWith0x(base64ToHexString(key.d)));
 }
 
-export const prefixWith0x = (key: string): string =>
-  key.startsWith("0x") ? key : `0x${key}`;
-
+export const prefixWith0x = (key: string): string => (key.startsWith('0x') ? key : `0x${key}`);
 
 export interface IEnterpriseAuthZToken extends JWTPayload {
   sub?: string;
@@ -85,7 +81,6 @@ export interface LegalEntityTestAuthN {
   icon?: string; // base64 encoded image icon data
 }
 
-
 export const mockedKeyAndDid = async (): Promise<{
   hexPrivateKey: string;
   did: string;
@@ -93,7 +88,7 @@ export const mockedKeyAndDid = async (): Promise<{
   hexPublicKey: string;
 }> => {
   // generate a new keypair
-  const key = crypto.generateKeyPairSync("ec", {
+  const key = crypto.generateKeyPairSync('ec', {
     namedCurve: SIOP.KeyCurve.SECP256k1,
   });
   const privateJwk = await fromKeyLike(key.privateKey);
@@ -110,7 +105,6 @@ export const mockedKeyAndDid = async (): Promise<{
   };
 };
 
-
 const mockedEntityAuthNToken = async (
   enterpiseName?: string
 ): Promise<{
@@ -121,33 +115,27 @@ const mockedEntityAuthNToken = async (
   hexPublicKey: string;
 }> => {
   // generate a new keypair
-  const {did, jwk, hexPrivateKey, hexPublicKey} = await mockedKeyAndDid();
+  const { did, jwk, hexPrivateKey, hexPublicKey } = await mockedKeyAndDid();
 
   const payload: LegalEntityTestAuthN = {
-    iss: enterpiseName || "Test Entity",
-    aud: "test",
+    iss: enterpiseName || 'Test Entity',
+    aud: 'test',
     iat: moment().unix(),
-    exp: moment().add(15, "minutes").unix(),
+    exp: moment().add(15, 'minutes').unix(),
     nonce: uuidv4(),
   };
 
-  const privateKey = await parseJwk(
-    jwk,
-    SIOP.KeyAlgo.ES256K
-  );
-  const jwt = await new SignJWT((payload as unknown) as JWTPayload)
+  const privateKey = await parseJwk(jwk, SIOP.KeyAlgo.ES256K);
+  const jwt = await new SignJWT(payload as unknown as JWTPayload)
     .setProtectedHeader({
-      alg: "ES256K",
-      typ: "JWT",
+      alg: 'ES256K',
+      typ: 'JWT',
     })
     .sign(privateKey);
-  return {jwt, jwk, did, hexPrivateKey, hexPublicKey};
+  return { jwt, jwk, did, hexPrivateKey, hexPublicKey };
 };
 
-
-export async function mockedGetEnterpriseAuthToken(
-  enterpriseName?: string
-): Promise<{
+export async function mockedGetEnterpriseAuthToken(enterpriseName?: string): Promise<{
   jwt: string;
   did: string;
   jwk: JWK;
@@ -160,9 +148,7 @@ export async function mockedGetEnterpriseAuthToken(
   const inputPayload: IEnterpriseAuthZToken = {
     did: testAuth.did,
 
-    aud: (payload as JWTPayload)?.iss
-      ? (payload as JWTPayload).iss
-      : "Test Entity",
+    aud: (payload as JWTPayload)?.iss ? (payload as JWTPayload).iss : 'Test Entity',
     nonce: (payload as IEnterpriseAuthZToken).nonce,
   };
 
@@ -171,19 +157,16 @@ export async function mockedGetEnterpriseAuthToken(
     ...{
       sub: (payload as JWTPayload).iss, // Should be the id of the app that is requesting the token
       iat: moment().unix(),
-      exp: moment().add(15, "minutes").unix(),
-      aud: "test",
+      exp: moment().add(15, 'minutes').unix(),
+      aud: 'test',
     },
   };
 
-  const privateKey = await parseJwk(
-    testAuth.jwk,
-    SIOP.KeyAlgo.ES256K
-  );
+  const privateKey = await parseJwk(testAuth.jwk, SIOP.KeyAlgo.ES256K);
   const jwt = await new SignJWT(testApiPayload)
     .setProtectedHeader({
-      alg: "ES256K",
-      typ: "JWT",
+      alg: 'ES256K',
+      typ: 'JWT',
     })
     .sign(privateKey);
 
@@ -195,7 +178,6 @@ export async function mockedGetEnterpriseAuthToken(
     hexPublicKey: testAuth.hexPublicKey,
   };
 }
-
 
 export interface DidKey {
   did: string;
@@ -215,14 +197,14 @@ export const getParsedDidDocument = (didKey: DidKey): DIDDocument => {
     didDocB58.verificationMethod[0].id = `${didKey.did}#keys-1`;
     didDocB58.verificationMethod[0].controller = didKey.did;
     didDocB58.verificationMethod[0].publicKeyBase58 = base58.encode(
-      Buffer.from(didKey.publicKeyHex.replace("0x", ""), "hex")
+      Buffer.from(didKey.publicKeyHex.replace('0x', ''), 'hex')
     );
     return didDocB58;
   }
   // then didKey jws public key
   const didDocJwk = DID_DOCUMENT_PUBKEY_JWK;
-  const {jwk} = didKey;
-  jwk.kty = didKey.jwk.kty || "EC";
+  const { jwk } = didKey;
+  jwk.kty = didKey.jwk.kty || 'EC';
   didDocJwk.id = didKey.did;
   didDocJwk.controller = didKey.did;
   didDocJwk.verificationMethod[0].id = `${didKey.did}#keys-1`;
@@ -231,11 +213,9 @@ export const getParsedDidDocument = (didKey: DidKey): DIDDocument => {
   return didDocJwk;
 };
 
-export const resolveDidKey = async (
-  did: string
-): Promise<DIDResolutionResult> => {
+export const resolveDidKey = async (did: string): Promise<DIDResolutionResult> => {
   return (await didKeyResolve(did, {
-    accept: 'application/did+ld+json'
+    accept: 'application/did+ld+json',
   })) as DIDResolutionResult;
 };
 
@@ -254,15 +234,14 @@ export const metadata = {
     request_object_signing_alg_values_supported: SigningAlgo.EDDSA,
     response_types_supported: ResponseType.ID_TOKEN,
     scopes_supported: Scope.OPENID_DIDAUTHN,
-    subject_types_supported: SubjectType.PAIRWISE
+    subject_types_supported: SubjectType.PAIRWISE,
   },
   rpMetadata: {
     subject_identifiers_supported: SubjectIdentifierType.DID,
     did_methods_supported: ['did:web', 'did:key'],
-    credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD]
+    credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
   },
   verify() {
     return assertValidMetadata(this.opMetadata, this.rpMetadata);
-  }
-}
-
+  },
+};
