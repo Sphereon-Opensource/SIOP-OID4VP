@@ -84,17 +84,17 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   sub_type: SubjectIdentifierType;
   sub_jwk: JWK;
   aud: string; // redirect_uri from request
-  exp: number;
-  iat: number;
-  state: string;
-  nonce: string;
-  did: string;
-  registration?: DiscoveryMetadataPayload;
-  registration_uri?: string;
-  verifiable_presentations?: VerifiablePresentationPayload[];
+  exp: number; // Expiration time
+  iat: number; // Issued at time
+  state: string; // State value
+  nonce: string; // Nonce
+  did: string; // DID of the OP
+  registration?: DiscoveryMetadataPayload; // Registration metadata
+  registration_uri?: string; // Registration URI if metadata is hosted by the OP
+  verifiable_presentations?: VerifiablePresentationPayload[]; // Verifiable Presentations as part of the id token
   // fixme All of the above is the id token. We need to create a new interface of the above and reference that here as id_token
-  vp_token?: VerifiablePresentationPayload;
-  claims?: ResponseClaims;
+  vp_token?: VerifiablePresentationPayload; // Verifiable Presentation (the vp_token)
+  // claims?: ResponseClaims;
 }
 
 /*
@@ -304,7 +304,7 @@ export enum VerificationMode {
 export interface InternalVerification {
   mode: VerificationMode;
   /*registry?: string;
-      rpcUrl?: string;*/
+        rpcUrl?: string;*/
   resolveOpts: ResolveOpts;
 }
 
@@ -325,10 +325,10 @@ export interface VerifyAuthenticationRequestOpts {
 export interface VerifyAuthenticationResponseOpts {
   verification: InternalVerification | ExternalVerification;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
-  nonce?: string; // mandatory?
-  state?: string; // mandatory?
-  claims?: ClaimOpts;
-  audience: string;
+  nonce?: string; // mandatory? // To verify the response against the supplied nonce
+  state?: string; // mandatory? // To verify the response against the supplied state
+  audience: string; // The audience/redirect_uri
+  claims?: ClaimOpts; // The claims, typically the same values used during request creation
 }
 
 export interface ResponseClaims {
