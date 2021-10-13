@@ -35,7 +35,7 @@ identifiers and claims. This is a trust model different from that of the rest of
 third party who issues ID Tokens on behalf of the End-user to the Relying Party upon the End-user's consent. This means
 the End-User is in control about his/her data instead of the 3rd party OP.
 
-Demo: https://youtu.be/cqoKuQWPj-s
+Demo: https://vimeo.com/630104529 and a more stripped down demo: https://youtu.be/cqoKuQWPj-s
 
 ## Active Development
 
