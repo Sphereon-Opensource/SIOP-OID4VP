@@ -66,14 +66,14 @@ export class OP {
     responseOpts?: {
       nonce?: string;
       state?: string;
-      // audience: string;
+      audience?: string;
       verification?: InternalVerification | ExternalVerification;
       vp?: VerifiablePresentationResponseOpts[];
     }
   ): Promise<AuthenticationResponseWithJWT> {
     return AuthenticationResponse.createJWTFromVerifiedRequest(
       verifiedJwt,
-      this.newAuthenticationResponseOpts(verifiedJwt.payload.redirect_uri, responseOpts)
+      this.newAuthenticationResponseOpts(responseOpts)
     );
   }
 
@@ -108,19 +108,18 @@ export class OP {
     };
   }
 
-  public newAuthenticationResponseOpts(
-    redirectUri?: string,
-    opts?: {
-      nonce?: string;
-      state?: string;
-      vp?: VerifiablePresentationResponseOpts[];
-    }
-  ): AuthenticationResponseOpts {
+  public newAuthenticationResponseOpts(opts?: {
+    nonce?: string;
+    state?: string;
+    audience?: string;
+    vp?: VerifiablePresentationResponseOpts[];
+  }): AuthenticationResponseOpts {
     const state = opts?.state;
     const nonce = opts?.nonce;
     const vp = opts?.vp;
+    const audience = opts?.audience;
     return {
-      redirectUri,
+      redirectUri: audience,
       ...this._authResponseOpts,
       nonce,
       state,
