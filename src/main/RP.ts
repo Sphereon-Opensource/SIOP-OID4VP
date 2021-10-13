@@ -61,7 +61,7 @@ export class RP {
     return AuthenticationResponse.verifyJWT(
       jwt,
       this.newVerifyAuthenticationResponseOpts(opts),
-      this.authRequestOpts.redirectUri
+      this._authRequestOpts.redirectUri
     );
   }
 

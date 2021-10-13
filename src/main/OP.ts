@@ -109,7 +109,7 @@ export class OP {
   }
 
   public newAuthenticationResponseOpts(
-    redirect_uri?: string,
+    redirectUri?: string,
     opts?: {
       nonce?: string;
       state?: string;
@@ -119,7 +119,6 @@ export class OP {
     const state = opts?.state;
     const nonce = opts?.nonce;
     const vp = opts?.vp;
-    const redirectUri = redirect_uri;
     return {
       redirectUri,
       ...this._authResponseOpts,

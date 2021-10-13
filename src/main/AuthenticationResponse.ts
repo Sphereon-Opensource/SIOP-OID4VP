@@ -94,7 +94,7 @@ export default class AuthenticationResponse {
   static async verifyJWT(
     jwt: string,
     verifyOpts: VerifyAuthenticationResponseOpts,
-    reqRedirectUri?: string
+    authReqRedirectUri?: string
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
@@ -110,8 +110,7 @@ export default class AuthenticationResponse {
 
     const issuerDid = DIDJwt.getIssuerDidFromPayload(payload);
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
-    assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
-    assertRedirectUri(reqRedirectUri, verPayload.redirectUri);
+    assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience }, authReqRedirectUri);
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
 
     return {
@@ -127,20 +126,15 @@ export default class AuthenticationResponse {
   }
 }
 
-function assertRedirectUri(resRedirectUri?: string, reqRedirectUri?: string) {
-  if ((resRedirectUri && !reqRedirectUri) || (!resRedirectUri && reqRedirectUri)) {
-    throw Error(SIOPErrors.BAD_PARAMS);
-  } else if (resRedirectUri && reqRedirectUri && resRedirectUri !== reqRedirectUri) {
-    throw Error(SIOPErrors.RESPONSE_AUD_MISMATCH_REDIRECT_URI);
-  }
-}
-
-function assertValidResponseJWT(opts: {
-  header: JWTHeader;
-  payload?: JWT.JWTPayload;
-  verPayload?: AuthenticationResponsePayload;
-  audience?: string;
-}) {
+function assertValidResponseJWT(
+  opts: {
+    header: JWTHeader;
+    payload?: JWT.JWTPayload;
+    verPayload?: AuthenticationResponsePayload;
+    audience?: string;
+  },
+  authRedirectUri?: string
+) {
   if (!opts.header) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
@@ -162,6 +156,11 @@ function assertValidResponseJWT(opts: {
       /*} else if (!opts.verPayload.iat || opts.verPayload.iat > (Date.now() / 1000)) {
                   throw Error(SIOPErrors.EXPIRED);*/
       // todo: Add iat check
+    }
+    if ((opts.verPayload.aud && !authRedirectUri) || (!opts.verPayload.aud && authRedirectUri)) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    } else if (opts.verPayload.aud && authRedirectUri && opts.verPayload.aud !== authRedirectUri) {
+      throw Error(SIOPErrors.RESPONSE_AUD_MISMATCH_REDIRECT_URI);
     }
   }
 }
@@ -235,7 +234,6 @@ async function createSIOPResponsePayload(
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
   const nonce = resOpts.nonce || State.getNonce(state, resOpts.nonce);
-  const redirectUri = resOpts.redirectUri;
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
 
   // *********************************************************************************
@@ -255,7 +253,6 @@ async function createSIOPResponsePayload(
     iat: Date.now() / 1000,
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
-    redirectUri,
     vp_token,
     verifiable_presentations,
   };

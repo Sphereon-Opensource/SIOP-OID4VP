@@ -91,7 +91,6 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   did: string; // DID of the OP
   registration?: DiscoveryMetadataPayload; // Registration metadata
   registration_uri?: string; // Registration URI if metadata is hosted by the OP
-  redirect_uri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
   verifiable_presentations?: VerifiablePresentationPayload[]; // Verifiable Presentations as part of the id token
   // fixme All of the above is the id token. We need to create a new interface of the above and reference that here as id_token
   vp_token?: VerifiablePresentationPayload; // Verifiable Presentation (the vp_token)
