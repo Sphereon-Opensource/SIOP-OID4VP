@@ -58,11 +58,7 @@ export class RP {
       claims?: ClaimOpts;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
-    return AuthenticationResponse.verifyJWT(
-      jwt,
-      this.newVerifyAuthenticationResponseOpts(opts),
-      this._authRequestOpts.redirectUri
-    );
+    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {

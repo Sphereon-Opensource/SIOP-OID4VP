@@ -93,8 +93,7 @@ export default class AuthenticationResponse {
    */
   static async verifyJWT(
     jwt: string,
-    verifyOpts: VerifyAuthenticationResponseOpts,
-    authReqRedirectUri?: string
+    verifyOpts: VerifyAuthenticationResponseOpts
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
@@ -110,7 +109,7 @@ export default class AuthenticationResponse {
 
     const issuerDid = DIDJwt.getIssuerDidFromPayload(payload);
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
-    assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience }, authReqRedirectUri);
+    assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
 
     return {
@@ -126,15 +125,12 @@ export default class AuthenticationResponse {
   }
 }
 
-function assertValidResponseJWT(
-  opts: {
-    header: JWTHeader;
-    payload?: JWT.JWTPayload;
-    verPayload?: AuthenticationResponsePayload;
-    audience?: string;
-  },
-  authRedirectUri?: string
-) {
+function assertValidResponseJWT(opts: {
+  header: JWTHeader;
+  payload?: JWT.JWTPayload;
+  verPayload?: AuthenticationResponsePayload;
+  audience?: string;
+}) {
   if (!opts.header) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
@@ -157,10 +153,10 @@ function assertValidResponseJWT(
                   throw Error(SIOPErrors.EXPIRED);*/
       // todo: Add iat check
     }
-    if ((opts.verPayload.aud && !authRedirectUri) || (!opts.verPayload.aud && authRedirectUri)) {
+    if ((opts.verPayload.aud && !opts.audience) || (!opts.verPayload.aud && opts.audience)) {
       throw Error(SIOPErrors.BAD_PARAMS);
-    } else if (opts.verPayload.aud && authRedirectUri && opts.verPayload.aud !== authRedirectUri) {
-      throw Error(SIOPErrors.RESPONSE_AUD_MISMATCH_REDIRECT_URI);
+    } else if (opts.audience && opts.audience != opts.verPayload.aud) {
+      throw Error(SIOPErrors.INVALID_AUDIENCE);
     }
   }
 }
