@@ -41,6 +41,7 @@ describe('OP Builder should', () => {
 
 describe('OP should', () => {
   const responseOpts: AuthenticationResponseOpts = {
+    redirectUri: EXAMPLE_REDIRECT_URL,
     signatureType: {
       hexPrivateKey: HEX_KEY,
       did: DID,

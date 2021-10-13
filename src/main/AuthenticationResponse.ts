@@ -93,7 +93,8 @@ export default class AuthenticationResponse {
    */
   static async verifyJWT(
     jwt: string,
-    verifyOpts: VerifyAuthenticationResponseOpts
+    verifyOpts: VerifyAuthenticationResponseOpts,
+    reqRedirectUri?: string
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
@@ -110,6 +111,7 @@ export default class AuthenticationResponse {
     const issuerDid = DIDJwt.getIssuerDidFromPayload(payload);
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
+    assertRedirectUri(reqRedirectUri, verPayload.redirectUri);
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
 
     return {
@@ -122,6 +124,14 @@ export default class AuthenticationResponse {
         ...verPayload,
       },
     };
+  }
+}
+
+function assertRedirectUri(resRedirectUri?: string, reqRedirectUri?: string) {
+  if ((resRedirectUri && !reqRedirectUri) || (!resRedirectUri && reqRedirectUri)) {
+    throw Error(SIOPErrors.BAD_PARAMS);
+  } else if (resRedirectUri && reqRedirectUri && resRedirectUri !== reqRedirectUri) {
+    throw Error(SIOPErrors.RESPONSE_AUD_MISMATCH_REDIRECT_URI);
   }
 }
 
@@ -225,6 +235,7 @@ async function createSIOPResponsePayload(
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
   const nonce = resOpts.nonce || State.getNonce(state, resOpts.nonce);
+  const redirectUri = resOpts.redirectUri;
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
 
   // *********************************************************************************
@@ -244,6 +255,7 @@ async function createSIOPResponsePayload(
     iat: Date.now() / 1000,
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
+    redirectUri,
     vp_token,
     verifiable_presentations,
   };

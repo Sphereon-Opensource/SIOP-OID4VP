@@ -334,7 +334,7 @@ export async function verifyJWT(
             : payload.iss, // <=SPHEREON CHANGE
         proofPurpose
     )
-    const signer: VerificationMethod = await verifyJWSDecoded({ header, data, signature } as JWSDecoded, authenticators)
+    const signer: VerificationMethod = await verifyJWSDecoded({ header, data, signature } as JWSDecoded, authenticators);
     const now: number = Math.floor(Date.now() / 1000)
     const skewTime = typeof options.skewTime !== 'undefined' && options.skewTime >= 0 ? options.skewTime : NBF_SKEW
     if (signer) {

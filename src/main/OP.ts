@@ -73,7 +73,7 @@ export class OP {
   ): Promise<AuthenticationResponseWithJWT> {
     return AuthenticationResponse.createJWTFromVerifiedRequest(
       verifiedJwt,
-      this.newAuthenticationResponseOpts(responseOpts)
+      this.newAuthenticationResponseOpts(verifiedJwt.payload.redirect_uri, responseOpts)
     );
   }
 
@@ -108,15 +108,20 @@ export class OP {
     };
   }
 
-  public newAuthenticationResponseOpts(opts?: {
-    nonce?: string;
-    state?: string;
-    vp?: VerifiablePresentationResponseOpts[];
-  }): AuthenticationResponseOpts {
+  public newAuthenticationResponseOpts(
+    redirect_uri?: string,
+    opts?: {
+      nonce?: string;
+      state?: string;
+      vp?: VerifiablePresentationResponseOpts[];
+    }
+  ): AuthenticationResponseOpts {
     const state = opts?.state;
     const nonce = opts?.nonce;
     const vp = opts?.vp;
+    const redirectUri = redirect_uri;
     return {
+      redirectUri,
       ...this._authResponseOpts,
       nonce,
       state,

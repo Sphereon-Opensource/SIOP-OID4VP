@@ -32,6 +32,7 @@ const validButExpiredJWT =
 
 describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthenticationResponseOpts = {
+    redirectUri: 'https://acme.com/hello',
     registration: {
       didsSupported: true,
       didMethodsSupported: ['did:web'],
@@ -109,6 +110,7 @@ describe('create JWT from Request JWT should', () => {
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
+      redirectUri: 'https://acme.com/hello',
       registration: {
         registrationBy: {
           type: PassBy.REFERENCE,
@@ -224,6 +226,7 @@ describe('create JWT from Request JWT should', () => {
     await pex.selectVerifiableCredentialsForSubmission(definition);
     const result: VP = await pex.submissionFrom(definition, vp.getVerifiableCredentials());
     const responseOpts: AuthenticationResponseOpts = {
+      redirectUri: 'https://acme.com/hello',
       registration: {
         registrationBy: {
           type: PassBy.REFERENCE,
