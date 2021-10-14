@@ -66,7 +66,7 @@ export class OP {
     responseOpts?: {
       nonce?: string;
       state?: string;
-      // audience: string;
+      audience?: string;
       verification?: InternalVerification | ExternalVerification;
       vp?: VerifiablePresentationResponseOpts[];
     }
@@ -111,12 +111,15 @@ export class OP {
   public newAuthenticationResponseOpts(opts?: {
     nonce?: string;
     state?: string;
+    audience?: string;
     vp?: VerifiablePresentationResponseOpts[];
   }): AuthenticationResponseOpts {
     const state = opts?.state;
     const nonce = opts?.nonce;
     const vp = opts?.vp;
+    const audience = opts?.audience;
     return {
+      redirectUri: audience,
       ...this._authResponseOpts,
       nonce,
       state,

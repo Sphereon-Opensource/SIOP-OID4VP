@@ -5,6 +5,9 @@ export const AuthenticationResponseOptsSchema = {
     "AuthenticationResponseOpts": {
       "type": "object",
       "properties": {
+        "redirectUri": {
+          "type": "string"
+        },
         "signatureType": {
           "anyOf": [
             {

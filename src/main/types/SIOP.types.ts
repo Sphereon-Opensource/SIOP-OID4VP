@@ -67,7 +67,7 @@ export interface AuthenticationRequestWithJWT {
 }
 
 export interface AuthenticationResponseOpts {
-  // redirectUri: string;
+  redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
   signatureType: InternalSignature | ExternalSignature;
   nonce?: string;
   state?: string;

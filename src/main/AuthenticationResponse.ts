@@ -145,13 +145,16 @@ function assertValidResponseJWT(opts: {
       throw Error(SIOPErrors.NO_NONCE);
     } else if (!opts.verPayload.sub_type) {
       throw Error(SIOPErrors.NO_SUB_TYPE);
-    } else if (opts.audience && opts.audience != opts.verPayload.aud) {
-      throw Error(SIOPErrors.INVALID_AUDIENCE);
     } else if (!opts.verPayload.exp || opts.verPayload.exp < Date.now() / 1000) {
       throw Error(SIOPErrors.EXPIRED);
       /*} else if (!opts.verPayload.iat || opts.verPayload.iat > (Date.now() / 1000)) {
                   throw Error(SIOPErrors.EXPIRED);*/
       // todo: Add iat check
+    }
+    if ((opts.verPayload.aud && !opts.audience) || (!opts.verPayload.aud && opts.audience)) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    } else if (opts.audience && opts.audience != opts.verPayload.aud) {
+      throw Error(SIOPErrors.INVALID_AUDIENCE);
     }
   }
 }
