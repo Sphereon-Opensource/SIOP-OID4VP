@@ -1,4 +1,12 @@
 # Release Notes
+## v0.2.1 - 2021-11-28
+
+This is the fourth Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
+
+- Updated:
+  * Presentation Exchange updated to latest pe-js version. The evential Presentation is not a VP yet (will be in next release)
+  * Update Uni Resolver client to latest version
+
 ## v0.2.0 - 2021-10-06
 
 This is the third Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.

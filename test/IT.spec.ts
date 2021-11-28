@@ -33,7 +33,7 @@ function getPresentationDefinition(): PresentationDefinition {
           },
         ],
         constraints: {
-          limit_disclosure: 'required',
+          limit_disclosure: 'preferred',
           fields: [
             {
               path: ['$.issuer.id'],
@@ -53,12 +53,41 @@ function getPresentationDefinition(): PresentationDefinition {
 function getVCs(): VerifiableCredential[] {
   const vcs: VerifiableCredential[] = [
     {
-      id: 'https://example.com/credentials/1872',
-      type: ['VerifiableCredential', 'IDCardCredential'],
+      identifier: '83627465',
+      name: 'Permanent Resident Card',
+      type: ['PermanentResidentCard', 'verifiableCredential'],
+      id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
       credentialSubject: {
-        given_name: 'Fredrik',
-        family_name: 'Stremberg',
-        birthdate: '1949-01-22',
+        birthCountry: 'Bahamas',
+        id: 'did:example:b34ca6cd37bbf23',
+        type: ['PermanentResident', 'Person'],
+        gender: 'Female',
+        familyName: 'SMITH',
+        givenName: 'JANE',
+        residentSince: '2015-01-01',
+        lprNumber: '999-999-999',
+        birthDate: '1958-07-17',
+        commuterClassification: 'C1',
+        lprCategory: 'C09',
+        image: 'data:image/png;base64,iVBORw0KGgokJggg==',
+      },
+      expirationDate: '2029-12-03T12:19:52Z',
+      description: 'Government of Example Permanent Resident Card.',
+      issuanceDate: '2019-12-03T12:19:52Z',
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+        'https://w3id.org/citizenship/v1',
+        'https://w3id.org/security/suites/ed25519-2020/v1',
+      ],
+      issuer: 'did:key:z6MkhfRoL9n7ko9d6LnB5jLB4aejd3ir2q6E2xkuzKUYESig',
+      proof: {
+        type: 'BbsBlsSignatureProof2020',
+        created: '2020-04-25',
+        verificationMethod: 'did:example:489398593#test',
+        proofPurpose: 'assertionMethod',
+        proofValue:
+          'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
+        nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
       },
     },
   ];
@@ -274,7 +303,7 @@ describe('RP and OP interaction should', () => {
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
       vp: [
         {
-          presentation: vp.getRoot(),
+          presentation: vp,
           format: VerifiablePresentationTypeFormat.LDP_VP,
           location: PresentationLocation.VP_TOKEN,
         },

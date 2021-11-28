@@ -1,6 +1,6 @@
 {
   "name": "@sphereon/did-auth-siop",
-  "version": "0.2.1-UNSTABLE",
+  "version": "0.2.1",
   "main": "dist/main/index.js",
   "types": "dist/main/index.d.ts",
   "license": "Apache-2.0",
@@ -20,14 +20,14 @@
     "node": ">=10"
   },
   "dependencies": {
-    "@sphereon/did-uni-client": "^0.2.0",
-    "@sphereon/pe-js": "^0.2.4",
+    "@sphereon/did-uni-client": "^0.3.3",
+    "@sphereon/pe-js": "^0.5.0-unstable.2",
     "@sphereon/pe-models": "^0.0.5",
     "@transmute/did-key-ed25519": "^0.2.1-unstable.42",
     "bs58": "^4.0.1",
     "cross-fetch": "^3.1.4",
-    "did-jwt": "^5.7.0",
-    "did-resolver": "^3.1.0",
+    "did-jwt": "^5.12.0",
+    "did-resolver": "^3.1.3",
     "eth-crypto": "^2.0.0",
     "jose": "^3.17.0",
     "js-base64": "^3.7.1",

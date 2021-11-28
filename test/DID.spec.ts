@@ -1,4 +1,4 @@
-import { Resolver } from '@sphereon/did-uni-client/dist/resolver/Resolver';
+import { UniResolver } from '@sphereon/did-uni-client';
 import base58 from 'bs58';
 import { EthrDID } from 'ethr-did';
 
@@ -16,7 +16,7 @@ describe('Ethr DID should', () => {
         `DID: ${ethrDid.did}`
     );
 */
-    const uniResolver = new Resolver();
+    const uniResolver = new UniResolver();
     await expect(uniResolver.resolve(ethrDid.did)).resolves.toMatchObject({
       didDocument: {},
     });

@@ -1,4 +1,4 @@
-import { VP } from '@sphereon/pe-js';
+import { Credential, VerifiableCredential, VerifiablePresentation } from '@sphereon/pe-js';
 import { PresentationDefinition } from '@sphereon/pe-models';
 
 import { PresentationExchange } from '../src/main';
@@ -188,29 +188,37 @@ describe('create JWT from Request JWT should', () => {
         ],
       },
     };
-    const vp: VP = new VP({
-      context: [],
-      presentation_submission: undefined,
-      type: ['verifiableCredential'],
-      verifiableCredential: [
-        {
-          id: 'https://example.com/credentials/1872',
-          type: ['VerifiableCredential', 'IDCardCredential'],
-          credentialSubject: {
-            given_name: 'Fredrik',
-            family_name: 'Stremberg',
-            birthdate: '1949-01-22',
-          },
-        },
+    const vc: Credential = {
+      id: 'https://example.com/credentials/1872',
+      type: ['VerifiableCredential', 'IDCardCredential'],
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+        'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential',
       ],
+      issuer: {
+        id: 'did:example:issuer',
+      },
+      issuanceDate: '2010-01-01T19:23:24Z',
+      credentialSubject: {
+        given_name: 'Fredrik',
+        family_name: 'Stremberg',
+        birthdate: '1949-01-22',
+      },
+    };
+    const vp: VerifiablePresentation = {
+      '@context': ['https://www.w3.org/2018/credentials/v1'],
+      presentation_submission: undefined,
+      type: ['verifiablePresentation'],
+      holder: 'did:example:holder',
+      verifiableCredential: [vc as VerifiableCredential],
       proof: undefined,
-    });
+    };
 
     // fixme: This is probably here because the VC interface in the pe-js is not correct
-    vp['id'] = 'ebc6f1c2';
+    /*vp['id'] = 'ebc6f1c2';
     vp['type'] = ['VerifiablePresentation'];
-    vp['holder'] = 'did:example:holder';
-    vp.getVerifiableCredentials()[0]['@context'] = [
+    vp['holder'] = 'did:example:holder';*/
+    /*  vp.getVerifiableCredentials()[0]['@context'] = [
       'https://www.w3.org/2018/credentials/v1',
       'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential',
     ];
@@ -218,13 +226,13 @@ describe('create JWT from Request JWT should', () => {
       id: 'did:example:issuer',
     };
     vp.getVerifiableCredentials()[0]['issuanceDate'] = '2010-01-01T19:23:24Z';
-
+*/
     const pex = new PresentationExchange({
       did: 'did:example:holder',
-      allVerifiableCredentials: vp.getVerifiableCredentials(),
+      allVerifiableCredentials: vp.verifiableCredential,
     });
     await pex.selectVerifiableCredentialsForSubmission(definition);
-    const result: VP = await pex.submissionFrom(definition, vp.getVerifiableCredentials());
+    const result: VerifiablePresentation = await pex.submissionFrom(definition, vp.verifiableCredential);
     const responseOpts: AuthenticationResponseOpts = {
       redirectUri: 'https://acme.com/hello',
       registration: {
@@ -242,7 +250,7 @@ describe('create JWT from Request JWT should', () => {
         {
           location: PresentationLocation.VP_TOKEN,
           format: VerifiablePresentationTypeFormat.LDP_VP,
-          presentation: result.getRoot(),
+          presentation: result,
         },
       ],
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?

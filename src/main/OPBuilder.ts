@@ -1,4 +1,4 @@
-import { getResolver as getUniResolver } from '@sphereon/did-uni-client/dist/resolver/Resolver';
+import { getUniResolver } from '@sphereon/did-uni-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';

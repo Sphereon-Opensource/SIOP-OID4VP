@@ -324,14 +324,11 @@ export const AuthenticationResponseOptsSchema = {
     "Presentation": {
       "type": "object",
       "properties": {
-        "context": {
+        "@context": {
           "type": "array",
           "items": {
             "type": "string"
           }
-        },
-        "presentation_submission": {
-          "$ref": "#/definitions/PresentationSubmission"
         },
         "type": {
           "type": "array",
@@ -345,20 +342,223 @@ export const AuthenticationResponseOptsSchema = {
             "$ref": "#/definitions/VerifiableCredential"
           }
         },
+        "presentation_submission": {
+          "$ref": "#/definitions/PresentationSubmission"
+        },
         "holder": {
           "type": "string"
-        },
-        "proof": {}
+        }
       },
       "required": [
-        "context",
-        "presentation_submission",
+        "@context",
         "type",
-        "verifiableCredential",
-        "proof"
+        "verifiableCredential"
       ],
-      "additionalProperties": false,
-      "description": "* Verifiable presentation - generic"
+      "additionalProperties": false
+    },
+    "VerifiableCredential": {
+      "type": "object",
+      "properties": {
+        "@context": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "credentialSubject": {
+          "$ref": "#/definitions/CredentialSubject"
+        },
+        "issuer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/Issuer"
+            }
+          ]
+        },
+        "issuanceDate": {
+          "type": "string"
+        },
+        "expirationDate": {
+          "type": "string"
+        },
+        "credentialStatus": {
+          "$ref": "#/definitions/CredentialStatus"
+        },
+        "vc": {
+          "$ref": "#/definitions/VerifiableCredential"
+        },
+        "proof": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Proof"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Proof"
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "@context",
+        "credentialSubject",
+        "id",
+        "issuanceDate",
+        "issuer",
+        "proof",
+        "type"
+      ]
+    },
+    "CredentialSubject": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "Issuer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": {}
+    },
+    "CredentialStatus": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "Proof": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ProofType"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "created": {
+          "type": "string"
+        },
+        "proofPurpose": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ProofPurpose"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "verificationMethod": {
+          "type": "string"
+        },
+        "challenge": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "proofValue": {
+          "type": "string"
+        },
+        "jws": {
+          "type": "string"
+        },
+        "nonce": {
+          "type": "string"
+        },
+        "requiredRevealStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "created",
+        "proofPurpose",
+        "verificationMethod"
+      ],
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          {
+            "not": {}
+          }
+        ]
+      }
+    },
+    "ProofType": {
+      "type": "string",
+      "enum": [
+        "Ed25519Signature2018",
+        "Ed25519Signature2020",
+        "EcdsaSecp256k1Signature2019",
+        "EcdsaSecp256k1RecoverySignature2020",
+        "JsonWebSignature2020",
+        "RsaSignature2018",
+        "GpgSignature2020",
+        "JcsEd25519Signature2020",
+        "BbsBlsSignatureProof2020",
+        "BbsBlsBoundSignatureProof2020"
+      ]
+    },
+    "ProofPurpose": {
+      "type": "string",
+      "enum": [
+        "assertionMethod",
+        "authentication",
+        "keyAgreement",
+        "contactAgreement",
+        "capabilityInvocation",
+        "capabilityDelegation"
+      ]
     },
     "PresentationSubmission": {
       "type": "object",
@@ -405,35 +605,6 @@ export const AuthenticationResponseOptsSchema = {
         "format"
       ],
       "additionalProperties": false
-    },
-    "VerifiableCredential": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "credentialSubject": {},
-        "type": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          ]
-        }
-      },
-      "required": [
-        "id",
-        "credentialSubject",
-        "type"
-      ],
-      "additionalProperties": false,
-      "description": "* Verifiable credentials: are the individual credentials issued by issuing authority e.g. DrivingLicence, CollegeDegree etc."
     },
     "PresentationLocation": {
       "type": "string",
