@@ -1,20 +1,9 @@
 import { SIOP, SIOPErrors } from '../types';
-import {
-  CommonSupportedMetadata,
-  DiscoveryMetadataPayload,
-  RPRegistrationMetadataPayload,
-  SubjectIdentifierType,
-} from '../types/SIOP.types';
+import { CommonSupportedMetadata, DiscoveryMetadataPayload, RPRegistrationMetadataPayload, SubjectIdentifierType } from '../types/SIOP.types';
 
-export function assertValidMetadata(
-  opMetadata: DiscoveryMetadataPayload,
-  rpMetadata: RPRegistrationMetadataPayload
-): CommonSupportedMetadata {
+export function assertValidMetadata(opMetadata: DiscoveryMetadataPayload, rpMetadata: RPRegistrationMetadataPayload): CommonSupportedMetadata {
   let methods = [];
-  const credentials = supportedCredentialsFormats(
-    rpMetadata.credential_formats_supported,
-    opMetadata.credential_formats_supported
-  );
+  const credentials = supportedCredentialsFormats(rpMetadata.credential_formats_supported, opMetadata.credential_formats_supported);
   const isDid = verifySubjectIdentifiers(rpMetadata.subject_identifiers_supported);
   if (isDid && rpMetadata.did_methods_supported) {
     methods = supportedDidMethods(rpMetadata.did_methods_supported, opMetadata.did_methods_supported);
@@ -60,10 +49,7 @@ function supportedDidMethods(rpMethods: string[] | string, opMethods: string[] |
   return supportedDidMethods;
 }
 
-function supportedCredentialsFormats(
-  rpCredentials: string[] | string,
-  opCredentials: string[] | string
-): Array<string> {
+function supportedCredentialsFormats(rpCredentials: string[] | string, opCredentials: string[] | string): Array<string> {
   const supportedCredentials = getIntersection(rpCredentials, opCredentials);
   if (!supportedCredentials.length) {
     throw new Error(SIOPErrors.CREDENTIAL_FORMATS_NOT_SUPPORTED);

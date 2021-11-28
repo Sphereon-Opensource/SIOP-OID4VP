@@ -93,9 +93,7 @@ export function getThumbprintFromJwk(jwk: JWK, did: string): string {
 
 export function getThumbprint(hexPrivateKey: string, did: string): string {
   return getThumbprintFromJwk(
-    isEd25519DidKeyMethod(did)
-      ? getPublicED25519JWKFromHexPrivateKey(hexPrivateKey)
-      : getPublicJWKFromHexPrivateKey(hexPrivateKey),
+    isEd25519DidKeyMethod(did) ? getPublicED25519JWKFromHexPrivateKey(hexPrivateKey) : getPublicJWKFromHexPrivateKey(hexPrivateKey),
     did
   );
 }

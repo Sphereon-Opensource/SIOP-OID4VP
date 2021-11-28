@@ -1,25 +1,9 @@
-import {
-  Credential,
-  CredentialStatus,
-  CredentialSubject,
-  Presentation,
-  Proof,
-  VerifiableCredential,
-  VerifiablePresentation,
-} from '@sphereon/pe-js';
+import { Credential, CredentialStatus, CredentialSubject, Presentation, Proof, VerifiableCredential, VerifiablePresentation } from '@sphereon/pe-js';
 import { DIDDocument as DIFDIDDocument, Resolvable } from 'did-resolver';
 import { JWK } from 'jose/types';
 
 // Here because we previously had these interfaces in this file
-export {
-  Proof,
-  CredentialSubject,
-  CredentialStatus,
-  Credential,
-  VerifiableCredential,
-  Presentation,
-  VerifiablePresentation,
-};
+export { Proof, CredentialSubject, CredentialStatus, Credential, VerifiableCredential, Presentation, VerifiablePresentation };
 
 export interface ResolveOpts {
   resolver?: Resolvable;

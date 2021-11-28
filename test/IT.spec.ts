@@ -4,12 +4,7 @@ import nock from 'nock';
 
 import { OP, PresentationExchange, RP } from '../src/main';
 import { PresentationDefinitionWithLocation } from '../src/main/types/SIOP.types';
-import {
-  CredentialFormat,
-  PassBy,
-  PresentationLocation,
-  VerifiablePresentationTypeFormat,
-} from '../src/main/types/SIOP.types';
+import { CredentialFormat, PassBy, PresentationLocation, VerifiablePresentationTypeFormat } from '../src/main/types/SIOP.types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
@@ -74,11 +69,7 @@ function getVCs(): VerifiableCredential[] {
       expirationDate: '2029-12-03T12:19:52Z',
       description: 'Government of Example Permanent Resident Card.',
       issuanceDate: '2019-12-03T12:19:52Z',
-      '@context': [
-        'https://www.w3.org/2018/credentials/v1',
-        'https://w3id.org/citizenship/v1',
-        'https://w3id.org/security/suites/ed25519-2020/v1',
-      ],
+      '@context': ['https://www.w3.org/2018/credentials/v1', 'https://w3id.org/citizenship/v1', 'https://w3id.org/security/suites/ed25519-2020/v1'],
       issuer: 'did:key:z6MkhfRoL9n7ko9d6LnB5jLB4aejd3ir2q6E2xkuzKUYESig',
       proof: {
         type: 'BbsBlsSignatureProof2020',
@@ -295,9 +286,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.requestPayload
-    );
+    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = await pex.submissionFrom(pd[0].definition, getVCs());
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {

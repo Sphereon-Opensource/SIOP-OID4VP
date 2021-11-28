@@ -91,10 +91,7 @@ export default class AuthenticationResponse {
    * @param jwt ID token to be validated
    * @param verifyOpts
    */
-  static async verifyJWT(
-    jwt: string,
-    verifyOpts: VerifyAuthenticationResponseOpts
-  ): Promise<VerifiedAuthenticationResponseWithJWT> {
+  static async verifyJWT(jwt: string, verifyOpts: VerifyAuthenticationResponseOpts): Promise<VerifiedAuthenticationResponseWithJWT> {
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
     }
@@ -159,9 +156,7 @@ function assertValidResponseJWT(opts: {
   }
 }
 
-async function createThumbprintAndJWK(
-  resOpts: SIOP.AuthenticationResponseOpts
-): Promise<{ thumbprint: string; subJwk: JWK }> {
+async function createThumbprintAndJWK(resOpts: SIOP.AuthenticationResponseOpts): Promise<{ thumbprint: string; subJwk: JWK }> {
   let thumbprint;
   let subJwk;
   if (SIOP.isInternalSignature(resOpts.signatureType)) {
@@ -205,8 +200,7 @@ function extractPresentations(resOpts: SIOP.AuthenticationResponseOpts) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
   }
-  const verifiable_presentations =
-    presentationPayloads && presentationPayloads.length > 0 ? presentationPayloads : undefined;
+  const verifiable_presentations = presentationPayloads && presentationPayloads.length > 0 ? presentationPayloads : undefined;
   return {
     verifiable_presentations,
     vp_token,
@@ -221,9 +215,7 @@ async function createSIOPResponsePayload(
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
-  const isDidSupported = verifiedJwt.payload.registration?.subject_identifiers_supported?.includes(
-    SubjectIdentifierType.DID
-  );
+  const isDidSupported = verifiedJwt.payload.registration?.subject_identifiers_supported?.includes(SubjectIdentifierType.DID);
 
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
@@ -261,19 +253,12 @@ function assertValidResponseOpts(opts: SIOP.AuthenticationResponseOpts) {
 }
 
 function assertValidVerifyOpts(opts: SIOP.VerifyAuthenticationResponseOpts) {
-  if (
-    !opts ||
-    !opts.verification ||
-    (!SIOP.isExternalVerification(opts.verification) && !SIOP.isInternalVerification(opts.verification))
-  ) {
+  if (!opts || !opts.verification || (!SIOP.isExternalVerification(opts.verification) && !SIOP.isInternalVerification(opts.verification))) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
 }
 
-async function assertValidVerifiablePresentations(
-  definitions: PresentationDefinitionWithLocation[],
-  verPayload: AuthenticationResponsePayload
-) {
+async function assertValidVerifiablePresentations(definitions: PresentationDefinitionWithLocation[], verPayload: AuthenticationResponsePayload) {
   if ((!definitions || definitions.length == 0) && !verPayload) {
     return;
   }

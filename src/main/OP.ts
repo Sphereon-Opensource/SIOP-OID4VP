@@ -31,11 +31,7 @@ export class OP {
   private readonly _authResponseOpts: AuthenticationResponseOpts;
   private readonly _verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
 
-  public constructor(opts: {
-    builder?: OPBuilder;
-    responseOpts?: AuthenticationResponseOpts;
-    verifyOpts?: VerifyAuthenticationRequestOpts;
-  }) {
+  public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts; verifyOpts?: VerifyAuthenticationRequestOpts }) {
     this._authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
   }
@@ -71,20 +67,14 @@ export class OP {
       vp?: VerifiablePresentationResponseOpts[];
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    return AuthenticationResponse.createJWTFromVerifiedRequest(
-      verifiedJwt,
-      this.newAuthenticationResponseOpts(responseOpts)
-    );
+    return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
   }
 
   public async submitAuthenticationResponse(verifiedJwt: SIOP.AuthenticationResponseWithJWT): Promise<Response> {
     if (
       !verifiedJwt ||
       (verifiedJwt.responseOpts.responseMode &&
-        !(
-          verifiedJwt.responseOpts.responseMode == ResponseMode.POST ||
-          verifiedJwt.responseOpts.responseMode == ResponseMode.FORM_POST
-        ))
+        !(verifiedJwt.responseOpts.responseMode == ResponseMode.POST || verifiedJwt.responseOpts.responseMode == ResponseMode.FORM_POST))
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
@@ -154,10 +144,7 @@ async function parseAndResolveUri(encodedUri: string) {
   return { requestPayload, jwt, registration };
 }
 
-function createResponseOptsFromBuilderOrExistingOpts(opts: {
-  builder?: OPBuilder;
-  responseOpts?: AuthenticationResponseOpts;
-}) {
+function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {
   const responseOpts: AuthenticationResponseOpts = opts.builder
     ? {
         registration: opts.builder.responseRegistration as ResponseRegistrationOpts,
@@ -175,10 +162,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: {
   return responseOpts;
 }
 
-function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
-  builder?: OPBuilder;
-  verifyOpts?: Partial<VerifyAuthenticationRequestOpts>;
-}) {
+function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; verifyOpts?: Partial<VerifyAuthenticationRequestOpts> }) {
   return opts.builder
     ? {
         verification: {

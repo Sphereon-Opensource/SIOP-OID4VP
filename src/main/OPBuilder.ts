@@ -3,14 +3,7 @@ import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';
 import { DIDJwt } from './functions';
-import {
-  CredentialFormat,
-  ExternalSignature,
-  InternalSignature,
-  PassBy,
-  ResponseMode,
-  ResponseRegistrationOpts,
-} from './types/SIOP.types';
+import { CredentialFormat, ExternalSignature, InternalSignature, PassBy, ResponseMode, ResponseRegistrationOpts } from './types/SIOP.types';
 
 export default class OPBuilder {
   didMethods: string[] = [];

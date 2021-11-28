@@ -5,13 +5,7 @@ import { PresentationExchange } from './PresentationExchange';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
 import { JWT, SIOP, SIOPErrors } from './types';
-import {
-  AuthenticationRequestPayload,
-  ClaimPayload,
-  IdTokenClaimPayload,
-  PresentationLocation,
-  VpTokenClaimPayload,
-} from './types/SIOP.types';
+import { AuthenticationRequestPayload, ClaimPayload, IdTokenClaimPayload, PresentationLocation, VpTokenClaimPayload } from './types/SIOP.types';
 
 export default class AuthenticationRequest {
   /**
@@ -72,10 +66,7 @@ export default class AuthenticationRequest {
    * @param jwt
    * @param opts
    */
-  static async verifyJWT(
-    jwt: string,
-    opts: SIOP.VerifyAuthenticationRequestOpts
-  ): Promise<SIOP.VerifiedAuthenticationRequestWithJWT> {
+  static async verifyJWT(jwt: string, opts: SIOP.VerifyAuthenticationRequestOpts): Promise<SIOP.VerifiedAuthenticationRequestWithJWT> {
     assertValidVerifyOpts(opts);
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
@@ -95,10 +86,7 @@ export default class AuthenticationRequest {
     const verPayload = verifiedJWT.payload as AuthenticationRequestPayload;
     if (opts.nonce && verPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${verifiedJWT.payload.nonce}, supplied: ${opts.nonce}`);
-    } else if (
-      verPayload.registration?.subject_identifiers_supported &&
-      verPayload.registration.subject_identifiers_supported.length == 0
-    ) {
+    } else if (verPayload.registration?.subject_identifiers_supported && verPayload.registration.subject_identifiers_supported.length == 0) {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
     const presentationDefinitions = PresentationExchange.findValidPresentationDefinitions(payload);
@@ -163,11 +151,7 @@ function assertValidRequestJWT(_header: JWTHeader, _payload: JWT.JWTPayload) {
 }
 
 function assertValidVerifyOpts(opts: SIOP.VerifyAuthenticationRequestOpts) {
-  if (
-    !opts ||
-    !opts.verification ||
-    (!SIOP.isExternalVerification(opts.verification) && !SIOP.isInternalVerification(opts.verification))
-  ) {
+  if (!opts || !opts.verification || (!SIOP.isExternalVerification(opts.verification) && !SIOP.isInternalVerification(opts.verification))) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
 }

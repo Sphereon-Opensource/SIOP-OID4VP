@@ -1,9 +1,14 @@
 {
   "name": "@sphereon/did-auth-siop",
-  "version": "0.2.2.unstable.1",
+  "version": "0.2.2-unstable.1",
   "main": "dist/main/index.js",
   "types": "dist/main/index.d.ts",
   "license": "Apache-2.0",
+  "repository": {
+    "url": "https://github.com/Sphereon-Opensource/did-auth-siop.git"
+  },
+  "author": "Sphereon",
+  "description": "Self Issued OpenID Connect V2 and OpenID Connect 4 Verifiable Presentations",
   "scripts": {
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.build.json",
@@ -67,6 +72,16 @@
   ],
   "prettier": {
     "singleQuote": true,
-    "printWidth": 120
-  }
+    "printWidth": 150
+  },
+  "keywords": [
+    "Sphereon",
+    "SSI",
+    "Credentials",
+    "OpenID",
+    "SIOP",
+    "Self Issued OpenID Connect",
+    "SIOPv2",
+    "OIDC4VP"
+  ]
 }

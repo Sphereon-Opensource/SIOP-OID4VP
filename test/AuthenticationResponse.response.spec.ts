@@ -65,28 +65,26 @@ describe('create JWT from Request JWT should', () => {
 
   it('throw NO_JWT when no jwt is passed', async () => {
     expect.assertions(1);
-    await expect(
-      AuthenticationResponse.createJWTFromRequestJWT(undefined as never, responseOpts, verifyOpts)
-    ).rejects.toThrow(SIOPErrors.NO_JWT);
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(undefined as never, responseOpts, verifyOpts)).rejects.toThrow(SIOPErrors.NO_JWT);
   });
   it('throw BAD_PARAMS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(
-      AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, undefined as never, verifyOpts)
-    ).rejects.toThrow(SIOPErrors.BAD_PARAMS);
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, undefined as never, verifyOpts)).rejects.toThrow(
+      SIOPErrors.BAD_PARAMS
+    );
   });
   it('throw VERIFY_BAD_PARAMS when no verifyOpts is passed', async () => {
     expect.assertions(1);
-    await expect(
-      AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, responseOpts, undefined as never)
-    ).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, responseOpts, undefined as never)).rejects.toThrow(
+      SIOPErrors.VERIFY_BAD_PARAMS
+    );
   });
 
   it('throw JWT_ERROR when expired but valid JWT is passed in', async () => {
     expect.assertions(1);
-    await expect(
-      AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, responseOpts, verifyOpts)
-    ).rejects.toThrow(/invalid_jwt: JWT has expired: exp: 1632089753/);
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, responseOpts, verifyOpts)).rejects.toThrow(
+      /invalid_jwt: JWT has expired: exp: 1632089753/
+    );
   });
 
   it('succeed when valid JWT is passed in', async () => {
@@ -126,12 +124,8 @@ describe('create JWT from Request JWT should', () => {
       responseMode: ResponseMode.POST,
     };
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-    console.log(
-      JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
-    );
-    await expect(
-      AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)
-    ).resolves.toBeDefined();
+    console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 
   it('succeed when valid JWT with PD is passed in', async () => {
@@ -191,10 +185,7 @@ describe('create JWT from Request JWT should', () => {
     const vc: Credential = {
       id: 'https://example.com/credentials/1872',
       type: ['VerifiableCredential', 'IDCardCredential'],
-      '@context': [
-        'https://www.w3.org/2018/credentials/v1',
-        'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential',
-      ],
+      '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential'],
       issuer: {
         id: 'did:example:issuer',
       },
@@ -261,8 +252,6 @@ describe('create JWT from Request JWT should', () => {
     /* console.log(
       JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
     );*/
-    await expect(
-      AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)
-    ).resolves.toBeDefined();
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 });

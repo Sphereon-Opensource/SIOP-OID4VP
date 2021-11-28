@@ -15,12 +15,7 @@ export function getResolver(opts: ResolveOpts): Resolvable {
   }
 
   const uniResolvers: {
-    [p: string]: (
-      did: string,
-      _parsed: ParsedDID,
-      _didResolver: Resolver,
-      _options: DIDResolutionOptions
-    ) => Promise<DIDResolutionResult>;
+    [p: string]: (did: string, _parsed: ParsedDID, _didResolver: Resolver, _options: DIDResolutionOptions) => Promise<DIDResolutionResult>;
   }[] = [];
   for (const didMethod of opts.didMethods) {
     const uniResolver = getUniResolver(getMethodFromDid(didMethod), { resolveUrl: opts.resolveUrl });

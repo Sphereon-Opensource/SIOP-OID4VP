@@ -26,11 +26,7 @@ export class RP {
   private readonly _authRequestOpts: AuthenticationRequestOpts;
   private readonly _verifyAuthResponseOpts: Partial<VerifyAuthenticationResponseOpts>;
 
-  public constructor(opts: {
-    builder?: RPBuilder;
-    requestOpts?: AuthenticationRequestOpts;
-    verifyOpts?: VerifyAuthenticationResponseOpts;
-  }) {
+  public constructor(opts: { builder?: RPBuilder; requestOpts?: AuthenticationRequestOpts; verifyOpts?: VerifyAuthenticationResponseOpts }) {
     const claims = opts.builder?.claims;
     this._authRequestOpts = { claims, ...createRequestOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthResponseOpts = { claims, ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
@@ -97,10 +93,7 @@ export class RP {
   }
 }
 
-function createRequestOptsFromBuilderOrExistingOpts(opts: {
-  builder?: RPBuilder;
-  requestOpts?: AuthenticationRequestOpts;
-}) {
+function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; requestOpts?: AuthenticationRequestOpts }) {
   const requestOpts: AuthenticationRequestOpts = opts.builder
     ? {
         registration: opts.builder.requestRegistration as RequestRegistrationOpts,
@@ -120,10 +113,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: {
   return requestOpts;
 }
 
-function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: {
-  builder?: RPBuilder;
-  verifyOpts?: Partial<VerifyAuthenticationResponseOpts>;
-}) {
+function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: Partial<VerifyAuthenticationResponseOpts> }) {
   return opts.builder
     ? {
         verification: {

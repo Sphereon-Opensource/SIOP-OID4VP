@@ -40,9 +40,7 @@ describe('create Request Uri should', () => {
         type: 'other type',
       },
     };
-    await expect(AuthenticationRequest.createURI(opts as never)).rejects.toThrow(
-      SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET
-    );
+    await expect(AuthenticationRequest.createURI(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when responseOpts.requestBy type is REFERENCE and no referenceUri is passed', async () => {
@@ -184,9 +182,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createJWT(opts as never)).rejects.toThrow(
-      SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET
-    );
+    await expect(AuthenticationRequest.createJWT(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when no referenceUri is passed with REFERENCE requestBy type is set', async () => {
@@ -256,9 +252,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createJWT(opts as never)).rejects.toThrow(
-      SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET
-    );
+    await expect(AuthenticationRequest.createJWT(opts as never)).rejects.toThrow(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when registrationBy type is REFERENCE and no referenceUri is passed', async () => {
@@ -432,8 +426,6 @@ describe('create Request JWT should', () => {
         ],
       },
     };
-    await expect(AuthenticationRequest.createURI(opts)).rejects.toThrow(
-      SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID
-    );
+    await expect(AuthenticationRequest.createURI(opts)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
   });
 });

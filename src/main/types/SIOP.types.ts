@@ -442,42 +442,31 @@ export enum ResponseIss {
   SELF_ISSUED_V2 = 'https://self-issued.me/v2',
 }
 
-export const isInternalSignature = (
-  object: InternalSignature | ExternalSignature | NoSignature
-): object is InternalSignature => 'hexPrivateKey' in object && 'did' in object;
+export const isInternalSignature = (object: InternalSignature | ExternalSignature | NoSignature): object is InternalSignature =>
+  'hexPrivateKey' in object && 'did' in object;
 
-export const isExternalSignature = (
-  object: InternalSignature | ExternalSignature | NoSignature
-): object is ExternalSignature => 'signatureUri' in object && 'did' in object;
+export const isExternalSignature = (object: InternalSignature | ExternalSignature | NoSignature): object is ExternalSignature =>
+  'signatureUri' in object && 'did' in object;
 
 export const isNoSignature = (object: InternalSignature | ExternalSignature | NoSignature): object is NoSignature =>
   'hexPublicKey' in object && 'did' in object;
 
-export const isRequestOpts = (
-  object: AuthenticationRequestOpts | AuthenticationResponseOpts
-): object is AuthenticationRequestOpts => 'requestBy' in object;
+export const isRequestOpts = (object: AuthenticationRequestOpts | AuthenticationResponseOpts): object is AuthenticationRequestOpts =>
+  'requestBy' in object;
 
-export const isResponseOpts = (
-  object: AuthenticationRequestOpts | AuthenticationResponseOpts
-): object is AuthenticationResponseOpts => 'did' in object;
+export const isResponseOpts = (object: AuthenticationRequestOpts | AuthenticationResponseOpts): object is AuthenticationResponseOpts =>
+  'did' in object;
 
-export const isRequestPayload = (
-  object: AuthenticationRequestPayload | AuthenticationResponsePayload
-): object is AuthenticationRequestPayload => 'response_mode' in object && 'response_type' in object;
+export const isRequestPayload = (object: AuthenticationRequestPayload | AuthenticationResponsePayload): object is AuthenticationRequestPayload =>
+  'response_mode' in object && 'response_type' in object;
 
-export const isResponsePayload = (
-  object: AuthenticationRequestPayload | AuthenticationResponsePayload
-): object is AuthenticationResponsePayload => 'iss' in object && 'aud' in object;
+export const isResponsePayload = (object: AuthenticationRequestPayload | AuthenticationResponsePayload): object is AuthenticationResponsePayload =>
+  'iss' in object && 'aud' in object;
 
-export const isInternalVerification = (
-  object: InternalVerification | ExternalVerification
-): object is InternalVerification => object.mode === VerificationMode.INTERNAL; /* && !isExternalVerification(object)*/
-export const isExternalVerification = (
-  object: InternalVerification | ExternalVerification
-): object is ExternalVerification =>
+export const isInternalVerification = (object: InternalVerification | ExternalVerification): object is InternalVerification =>
+  object.mode === VerificationMode.INTERNAL; /* && !isExternalVerification(object)*/
+export const isExternalVerification = (object: InternalVerification | ExternalVerification): object is ExternalVerification =>
   object.mode === VerificationMode.EXTERNAL; /*&& 'verifyUri' in object || 'authZToken' in object*/
 
-export const isVP = (object: PEVerifiablePresentation | PEPresentation): object is PEVerifiablePresentation =>
-  'presentation' in object;
-export const isPresentation = (object: PEVerifiablePresentation | PEPresentation): object is PEPresentation =>
-  'presentation_submission' in object;
+export const isVP = (object: PEVerifiablePresentation | PEPresentation): object is PEVerifiablePresentation => 'presentation' in object;
+export const isPresentation = (object: PEVerifiablePresentation | PEPresentation): object is PEPresentation => 'presentation_submission' in object;

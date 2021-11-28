@@ -1,16 +1,7 @@
 import { EdDSASigner, ES256KSigner } from 'did-jwt';
 import { Resolvable } from 'did-resolver';
 
-import {
-  createJWT,
-  decodeJWT,
-  JWTDecoded,
-  JWTHeader,
-  JWTOptions,
-  JWTPayload,
-  JWTVerifyOptions,
-  verifyJWT,
-} from '../../did-jwt-fork/JWT';
+import { createJWT, decodeJWT, JWTDecoded, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT } from '../../did-jwt-fork/JWT';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
 import { JWT, SIOP, SIOPErrors } from '../types';
 import {
@@ -55,11 +46,7 @@ import { Keys } from './index';
  *  @param    {String}            options.callbackUrl   callback url in JWT
  *  @return   {Promise<Object, Error>}                  a promise which resolves with a response object or rejects with an error
  */
-export async function verifyDidJWT(
-  jwt: string,
-  resolver: Resolvable,
-  options: JWTVerifyOptions
-): Promise<JWT.VerifiedJWT> {
+export async function verifyDidJWT(jwt: string, resolver: Resolvable, options: JWTVerifyOptions): Promise<JWT.VerifiedJWT> {
   return verifyJWT(jwt, { resolver, ...options });
 }
 
@@ -99,19 +86,9 @@ export async function signDidJwtPayload(
     }
   }
   if (isInternalSignature(opts.signatureType)) {
-    return signDidJwtInternal(
-      payload,
-      isResponse ? payload.iss : opts.signatureType.did,
-      opts.signatureType.hexPrivateKey,
-      opts.signatureType.kid
-    );
+    return signDidJwtInternal(payload, isResponse ? payload.iss : opts.signatureType.did, opts.signatureType.hexPrivateKey, opts.signatureType.kid);
   } else if (isExternalSignature(opts.signatureType)) {
-    return signDidJwtExternal(
-      payload,
-      opts.signatureType.signatureUri,
-      opts.signatureType.authZToken,
-      opts.signatureType.kid
-    );
+    return signDidJwtExternal(payload, opts.signatureType.signatureUri, opts.signatureType.authZToken, opts.signatureType.kid);
   } else {
     throw new Error(SIOPErrors.BAD_SIGNATURE_PARAMS);
   }
@@ -123,10 +100,7 @@ async function signDidJwtInternal(
   hexPrivateKey: string,
   kid?: string
 ) {
-  const algo =
-    isEd25519DidKeyMethod(issuer) || isEd25519DidKeyMethod(payload.kid) || isEd25519JWK(payload.sub_jwk)
-      ? KeyAlgo.EDDSA
-      : KeyAlgo.ES256K;
+  const algo = isEd25519DidKeyMethod(issuer) || isEd25519DidKeyMethod(payload.kid) || isEd25519JWK(payload.sub_jwk) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
   // const request = !!payload.client_id;
   const signer =
     algo == KeyAlgo.EDDSA
@@ -152,8 +126,7 @@ async function signDidJwtExternal(
   authZToken: string,
   kid?: string
 ): Promise<string> {
-  const alg =
-    isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) ? SIOP.KeyAlgo.EDDSA : SIOP.KeyAlgo.ES256K;
+  const alg = isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) ? SIOP.KeyAlgo.EDDSA : SIOP.KeyAlgo.ES256K;
 
   const body = {
     issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.did,

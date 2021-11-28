@@ -14,9 +14,7 @@ export async function postWithBearerToken(url: string, body: JWTPayload, bearerT
       body: JSON.stringify(body),
     });
     if (!response || !response.status || (response.status !== 200 && response.status !== 201)) {
-      throw new Error(
-        `${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText}, ${await response.text()}`
-      );
+      throw new Error(`${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText}, ${await response.text()}`);
     }
     return response;
   } catch (error) {
@@ -38,9 +36,7 @@ export async function postAuthenticationResponseJwt(url: string, jwt: string): P
       body: `id_token=${jwt}`,
     });
     if (!response || !response.status || response.status < 200 || response.status >= 400) {
-      throw new Error(
-        `${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText}, ${await response.text()}`
-      );
+      throw new Error(`${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText}, ${await response.text()}`);
     }
     return response;
   } catch (error) {

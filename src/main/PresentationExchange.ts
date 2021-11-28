@@ -83,9 +83,7 @@ export class PresentationExchange {
    * returns the SelectResults object if successful
    * @param presentationDefinition: object received by the OP from the RP
    */
-  public async selectVerifiableCredentialsForSubmission(
-    presentationDefinition: PresentationDefinition
-  ): Promise<SelectResults> {
+  public async selectVerifiableCredentialsForSubmission(presentationDefinition: PresentationDefinition): Promise<SelectResults> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     } else if (!this.allVerifiableCredentials || this.allVerifiableCredentials.length == 0) {
@@ -99,9 +97,7 @@ export class PresentationExchange {
       []
     );
     if (selectResults.errors.length) {
-      throw new Error(
-        `message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(selectResults.errors)}`
-      );
+      throw new Error(`message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(selectResults.errors)}`);
     }
     return selectResults;
   }
@@ -119,14 +115,9 @@ export class PresentationExchange {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
-    const evaluationResults: EvaluationResults = new pejs().evaluatePresentation(
-      presentationDefinition,
-      verifiablePresentation
-    );
+    const evaluationResults: EvaluationResults = new pejs().evaluatePresentation(presentationDefinition, verifiablePresentation);
     if (evaluationResults.errors.length) {
-      throw new Error(
-        `message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(evaluationResults.errors)}`
-      );
+      throw new Error(`message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(evaluationResults.errors)}`);
     }
     return evaluationResults;
   }
@@ -134,11 +125,7 @@ export class PresentationExchange {
   public static assertValidPresentationSubmission(presentationSubmission: PresentationSubmission) {
     const validationResult = new pejs().validateSubmission(presentationSubmission);
     if (validationResult[0].message != 'ok') {
-      throw new Error(
-        `${SIOPErrors.RESPONSE_OPTS_PRESENTATIONS_SUBMISSION_IS_NOT_VALID}, details ${JSON.stringify(
-          validationResult[0]
-        )}`
-      );
+      throw new Error(`${SIOPErrors.RESPONSE_OPTS_PRESENTATIONS_SUBMISSION_IS_NOT_VALID}, details ${JSON.stringify(validationResult[0])}`);
     }
   }
 
@@ -189,9 +176,7 @@ export class PresentationExchange {
     return allDefinitions;
   }
 
-  public static assertValidPresentationDefintionWithLocations(
-    defintionWithLocations: PresentationDefinitionWithLocation[]
-  ) {
+  public static assertValidPresentationDefintionWithLocations(defintionWithLocations: PresentationDefinitionWithLocation[]) {
     if (defintionWithLocations && defintionWithLocations.length > 0) {
       defintionWithLocations.forEach((definitionWithLocation) =>
         PresentationExchange.assertValidPresentationDefinition(definitionWithLocation.definition)
@@ -199,9 +184,7 @@ export class PresentationExchange {
     }
   }
 
-  public static assertValidPresentationDefintionWithLocation(
-    defintionWithLocation: PresentationDefinitionWithLocation
-  ) {
+  public static assertValidPresentationDefintionWithLocation(defintionWithLocation: PresentationDefinitionWithLocation) {
     if (defintionWithLocation && defintionWithLocation.definition) {
       PresentationExchange.assertValidPresentationDefinition(defintionWithLocation.definition);
     }
@@ -214,24 +197,14 @@ export class PresentationExchange {
     }
   }
 
-  static async validatePayloadsAgainstDefinitions(
-    definitions: PresentationDefinitionWithLocation[],
-    vpPayloads: VerifiablePresentationPayload[]
-  ) {
+  static async validatePayloadsAgainstDefinitions(definitions: PresentationDefinitionWithLocation[], vpPayloads: VerifiablePresentationPayload[]) {
     if (!definitions || !vpPayloads || !definitions.length || definitions.length !== vpPayloads.length) {
       throw new Error(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
-    await Promise.all(
-      definitions.map(
-        async (pd) => await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads)
-      )
-    );
+    await Promise.all(definitions.map(async (pd) => await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads)));
   }
 
-  private static async validatePayloadAgainstDefinitions(
-    definition: PresentationDefinition,
-    vpPayloads: VerifiablePresentationPayload[]
-  ) {
+  private static async validatePayloadAgainstDefinitions(definition: PresentationDefinition, vpPayloads: VerifiablePresentationPayload[]) {
     function filterValidPresentations() {
       const checkedPresentations: VerifiablePresentationPayload[] = vpPayloads.filter((vpw) => {
         if (vpw.format !== VerifiablePresentationTypeFormat.LDP_VP) {

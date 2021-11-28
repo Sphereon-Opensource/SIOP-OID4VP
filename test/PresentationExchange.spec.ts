@@ -119,14 +119,11 @@ describe('presentation exchange manager tests', () => {
       verifyOpts: null,
     };
     try {
-      await PresentationExchange.validatePresentationAgainstDefinition(
-        verifiedJwt.presentationDefinitions[0].definition,
-        {
-          '@context': ['https://www.w3.org/2018/credentials/v1'],
-          type: ['VerifiablePresentation'],
-          verifiableCredential: vcs,
-        }
-      );
+      await PresentationExchange.validatePresentationAgainstDefinition(verifiedJwt.presentationDefinitions[0].definition, {
+        '@context': ['https://www.w3.org/2018/credentials/v1'],
+        type: ['VerifiablePresentation'],
+        verifiableCredential: vcs,
+      });
     } catch (e) {
       expect(e.message).toContain(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
@@ -145,14 +142,11 @@ describe('presentation exchange manager tests', () => {
       presentationDefinitions: pd,
       verifyOpts: null,
     };
-    const result = await PresentationExchange.validatePresentationAgainstDefinition(
-      verifiedJwt.presentationDefinitions[0].definition,
-      {
-        '@context': ['https://www.w3.org/2018/credentials/v1'],
-        type: ['VerifiablePresentation'],
-        verifiableCredential: vcs,
-      }
-    );
+    const result = await PresentationExchange.validatePresentationAgainstDefinition(verifiedJwt.presentationDefinitions[0].definition, {
+      '@context': ['https://www.w3.org/2018/credentials/v1'],
+      type: ['VerifiablePresentation'],
+      verifiableCredential: vcs,
+    });
     console.log(JSON.stringify(result));
     expect(result.errors.length).toBe(0);
     expect(result.value.definition_id).toBe('Insurance Plans');

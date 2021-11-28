@@ -81,23 +81,17 @@ describe('SIOP Request Validation', () => {
 describe('verifyJWT should', () => {
   it('throw VERIFY_BAD_PARAMETERS when no JWT is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT(undefined as never, undefined as never)).rejects.toThrow(
-      SIOPErrors.VERIFY_BAD_PARAMS
-    );
+    await expect(AuthenticationRequest.verifyJWT(undefined as never, undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT('a valid JWT', undefined as never)).rejects.toThrow(
-      SIOPErrors.VERIFY_BAD_PARAMS
-    );
+    await expect(AuthenticationRequest.verifyJWT('a valid JWT', undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts.verification is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT('a valid JWT', {} as never)).rejects.toThrow(
-      SIOPErrors.VERIFY_BAD_PARAMS
-    );
+    await expect(AuthenticationRequest.verifyJWT('a valid JWT', {} as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
   });
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {

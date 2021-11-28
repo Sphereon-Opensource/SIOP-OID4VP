@@ -16,15 +16,7 @@ import { SIOP } from '../src/main';
 import { assertValidMetadata } from '../src/main/functions/DidSiopMetadata';
 import { base64ToHexString } from '../src/main/functions/Encodings';
 import SIOPErrors from '../src/main/types/Errors';
-import {
-  CredentialFormat,
-  ResponseIss,
-  ResponseType,
-  Scope,
-  SigningAlgo,
-  SubjectIdentifierType,
-  SubjectType,
-} from '../src/main/types/SIOP.types';
+import { CredentialFormat, ResponseIss, ResponseType, Scope, SigningAlgo, SubjectIdentifierType, SubjectType } from '../src/main/types/SIOP.types';
 
 import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
 
@@ -196,9 +188,7 @@ export const getParsedDidDocument = (didKey: DidKey): DIDDocument => {
     didDocB58.controller = didKey.did;
     didDocB58.verificationMethod[0].id = `${didKey.did}#keys-1`;
     didDocB58.verificationMethod[0].controller = didKey.did;
-    didDocB58.verificationMethod[0].publicKeyBase58 = base58.encode(
-      Buffer.from(didKey.publicKeyHex.replace('0x', ''), 'hex')
-    );
+    didDocB58.verificationMethod[0].publicKeyBase58 = base58.encode(Buffer.from(didKey.publicKeyHex.replace('0x', ''), 'hex'));
     return didDocB58;
   }
   // then didKey jws public key
