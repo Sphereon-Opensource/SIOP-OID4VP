@@ -1,4 +1,11 @@
 # Release Notes
+## v0.2.2 - 2021-11-29
+
+This is an Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
+
+- Updated:
+  * Updated dependencies
+
 ## v0.2.1 - 2021-11-28
 
 This is the fourth Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
