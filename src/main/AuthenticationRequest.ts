@@ -79,15 +79,16 @@ export default class AuthenticationRequest {
       audience: DIDJwt.getAudience(jwt),
     };
 
+    const verPayload = payload as AuthenticationRequestPayload;
+    if (opts.nonce && verPayload.nonce !== opts.nonce) {
+      throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
+    } else if (verPayload.registration?.subject_identifiers_supported && verPayload.registration.subject_identifiers_supported.length == 0) {
+      throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
+    }
+
     const verifiedJWT = await DIDJwt.verifyDidJWT(jwt, DIDres.getResolver(opts.verification.resolveOpts), options);
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
-    }
-    const verPayload = verifiedJWT.payload as AuthenticationRequestPayload;
-    if (opts.nonce && verPayload.nonce !== opts.nonce) {
-      throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${verifiedJWT.payload.nonce}, supplied: ${opts.nonce}`);
-    } else if (verPayload.registration?.subject_identifiers_supported && verPayload.registration.subject_identifiers_supported.length == 0) {
-      throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
     const presentationDefinitions = PresentationExchange.findValidPresentationDefinitions(payload);
     return {
