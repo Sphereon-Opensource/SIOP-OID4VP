@@ -1568,10 +1568,10 @@
     cross-fetch "^3.1.4"
     did-resolver "^3.1.2"
 
-"@sphereon/pe-js@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@sphereon/pe-js/-/pe-js-0.5.0.tgz#5069824a4ea08b9c3a98098c79fd8c4e37338f17"
-  integrity sha512-4MzvHkT0pzuiozoAvI+3Xyk2HeJrAxux6NBsH0pYTeE5EglZlvzmh7W/SCd84iIrpYCTcw1u04cJ9g5er6cFdA==
+"@sphereon/pe-js@^0.5.1":
+  version "0.5.1"
+  resolved "https://registry.yarnpkg.com/@sphereon/pe-js/-/pe-js-0.5.1.tgz#37feef3cd29d3595319f1f9fe91d7b6e643a15d3"
+  integrity sha512-dFr5LJ5VjnHJBYuEmHNoCMs1dyzqisbwdUl9HW5avQO+G1KvzfPGwOPl5b30+eq/40USXimJZvVrRit34tSVXA==
   dependencies:
     "@sphereon/pe-models" "0.0.5"
     ajv "^8.6.3"

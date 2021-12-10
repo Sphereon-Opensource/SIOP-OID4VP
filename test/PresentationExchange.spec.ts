@@ -166,11 +166,10 @@ describe('presentation exchange manager tests', () => {
     const result = await pex.submissionFrom(pd[0].definition, vcs);
     expect(result.presentation_submission.definition_id).toBe('Insurance Plans');
     expect(result.presentation_submission.descriptor_map.length).toBe(1);
-    // fixme: should be path: '$.verifiableCredential[0]',  but is a bug in PE-JS currently
     expect(result.presentation_submission.descriptor_map[0]).toStrictEqual({
       id: 'Ontario Health Insurance Plan',
       format: 'ldp_vc',
-      path: '$[0]',
+      path: '$.verifiableCredential[0]',
     });
   });
 
@@ -195,10 +194,8 @@ describe('presentation exchange manager tests', () => {
     const result = await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     expect(result.errors.length).toBe(0);
     expect(result.matches.length).toBe(1);
-    expect(result.matches[0].matches.length).toBe(1);
-    // fixme: this is because of a bug in PE-JS. should be commented line
-    expect(result.matches[0].matches[0]).toBe('$[0]');
-    // expect(result.matches[0].matches[0]).toBe('$.verifiableCredential[0]');
+    expect(result.matches[0].vc_path.length).toBe(1);
+    expect(result.matches[0].vc_path[0]).toBe('$.verifiableCredential[0]');
   });
 
   it('pass if no PresentationDefinition is found', async () => {
