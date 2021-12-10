@@ -1,4 +1,15 @@
 # Release Notes
+## v0.2.3 - 2021-12-10
+
+This is an Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
+
+- Fixed:
+  - Check nonce and did support first before verifying JWT
+
+- Updated:
+  * Updated PE-JS dependency that fixed a JSON-path bug impacting us
+
+
 ## v0.2.2 - 2021-11-29
 
 This is an Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
