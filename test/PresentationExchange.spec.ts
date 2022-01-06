@@ -1,4 +1,5 @@
-import { VerifiableCredential, VerifiablePresentation } from '@sphereon/pe-js';
+import { IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
+import { PresentationDefinitionV1 } from '@sphereon/pex-models';
 
 import { PresentationExchange, SIOP } from '../src/main';
 import { State } from '../src/main/functions';
@@ -76,7 +77,7 @@ async function getPayload(): Promise<AuthenticationRequestPayload> {
   };
 }
 
-function getVCs(): VerifiableCredential[] {
+function getVCs(): IVerifiableCredential[] {
   return [
     {
       '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1'],
@@ -208,17 +209,18 @@ describe('presentation exchange manager tests', () => {
   it('pass if findValidPresentationDefinitions finds a valid presentation_definition', async () => {
     const payload: AuthenticationRequestPayload = await getPayload();
     const pd = PresentationExchange.findValidPresentationDefinitions(payload);
-    expect(pd[0]['definition']['id']).toBe('Insurance Plans');
-    expect(pd[0]['definition']['input_descriptors'][0].schema.length).toBe(2);
+    const definition = pd[0].definition as PresentationDefinitionV1;
+    expect(definition['id']).toBe('Insurance Plans');
+    expect(definition['input_descriptors'][0].schema.length).toBe(2);
   });
 
   it('should validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
     const payload: AuthenticationRequestPayload = await getPayload();
     const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
-    const vcs = await getVCs();
+    const vcs = getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp: VerifiablePresentation = await pex.submissionFrom(pd[0].definition, vcs);
+    const vp: IVerifiablePresentation = await pex.submissionFrom(pd[0].definition, vcs);
     const vpw: VerifiablePresentationPayload = {
       presentation: vp,
       format: VerifiablePresentationTypeFormat.LDP_VP,
@@ -233,7 +235,7 @@ describe('presentation exchange manager tests', () => {
   it('should not validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
     const payload: AuthenticationRequestPayload = await getPayload();
     const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
-    const vcs = await getVCs();
+    const vcs = getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = await pex.submissionFrom(pd[0].definition, vcs);

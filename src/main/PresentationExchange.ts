@@ -1,17 +1,18 @@
 import {
   EvaluationResults,
+  IPresentation,
+  IPresentationDefinition,
+  IVerifiableCredential,
+  IVerifiablePresentation,
   KeyEncoding,
-  pejs,
-  Presentation,
+  PEX,
   PresentationSignCallBackParams,
   PresentationSignOptions,
   ProofPurpose,
   ProofType,
   SelectResults,
-  VerifiableCredential,
-  VerifiablePresentation,
-} from '@sphereon/pe-js';
-import { PresentationDefinition, PresentationSubmission } from '@sphereon/pe-models';
+} from '@sphereon/pex';
+import { PresentationSubmission } from '@sphereon/pex-models';
 
 import { extractDataFromPath } from './functions/ObjectUtils';
 import { SIOPErrors } from './types';
@@ -24,11 +25,11 @@ import {
 } from './types/SIOP.types';
 
 export class PresentationExchange {
-  readonly pejs = new pejs();
-  readonly allVerifiableCredentials: VerifiableCredential[];
+  readonly pejs = new PEX();
+  readonly allVerifiableCredentials: IVerifiableCredential[];
   readonly did;
 
-  constructor(opts: { did: string; allVerifiableCredentials: VerifiableCredential[] }) {
+  constructor(opts: { did: string; allVerifiableCredentials: IVerifiableCredential[] }) {
     this.did = opts.did;
     this.allVerifiableCredentials = opts.allVerifiableCredentials;
   }
@@ -39,18 +40,18 @@ export class PresentationExchange {
    * @param selectedCredentials
    */
   public async submissionFrom(
-    presentationDefinition: PresentationDefinition,
-    selectedCredentials: VerifiableCredential[],
+    presentationDefinition: IPresentationDefinition,
+    selectedCredentials: IVerifiableCredential[],
     options?: { nonce?: string; domain?: string }
-  ): Promise<VerifiablePresentation> {
+  ): Promise<IVerifiablePresentation> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
 
-    function sign(params: PresentationSignCallBackParams): VerifiablePresentation {
+    function sign(params: PresentationSignCallBackParams): IVerifiablePresentation {
       console.log('##### SIGN CALLBACK IMPLEMENTATION NEEDED FOR VP');
       console.log(params);
-      return params.presentation as VerifiablePresentation;
+      return params.presentation as IVerifiablePresentation;
     }
 
     const challenge: string = options?.nonce;
@@ -83,7 +84,7 @@ export class PresentationExchange {
    * returns the SelectResults object if successful
    * @param presentationDefinition: object received by the OP from the RP
    */
-  public async selectVerifiableCredentialsForSubmission(presentationDefinition: PresentationDefinition): Promise<SelectResults> {
+  public async selectVerifiableCredentialsForSubmission(presentationDefinition: IPresentationDefinition): Promise<SelectResults> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     } else if (!this.allVerifiableCredentials || this.allVerifiableCredentials.length == 0) {
@@ -109,13 +110,13 @@ export class PresentationExchange {
    * @param verifiablePresentation:
    */
   public static async validatePresentationAgainstDefinition(
-    presentationDefinition: PresentationDefinition,
-    verifiablePresentation: Presentation
+    presentationDefinition: IPresentationDefinition,
+    verifiablePresentation: IPresentation
   ): Promise<EvaluationResults> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
-    const evaluationResults: EvaluationResults = new pejs().evaluatePresentation(presentationDefinition, verifiablePresentation);
+    const evaluationResults: EvaluationResults = new PEX().evaluatePresentation(presentationDefinition, verifiablePresentation);
     if (evaluationResults.errors.length) {
       throw new Error(`message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(evaluationResults.errors)}`);
     }
@@ -123,7 +124,7 @@ export class PresentationExchange {
   }
 
   public static assertValidPresentationSubmission(presentationSubmission: PresentationSubmission) {
-    const validationResult = new pejs().validateSubmission(presentationSubmission);
+    const validationResult = new PEX().validateSubmission(presentationSubmission);
     if (validationResult[0].message != 'ok') {
       throw new Error(`${SIOPErrors.RESPONSE_OPTS_PRESENTATIONS_SUBMISSION_IS_NOT_VALID}, details ${JSON.stringify(validationResult[0])}`);
     }
@@ -190,8 +191,8 @@ export class PresentationExchange {
     }
   }
 
-  private static assertValidPresentationDefinition(presentationDefinition: PresentationDefinition) {
-    const validationResult = new pejs().validateDefinition(presentationDefinition);
+  private static assertValidPresentationDefinition(presentationDefinition: IPresentationDefinition) {
+    const validationResult = new PEX().validateDefinition(presentationDefinition);
     if (validationResult[0].message != 'ok') {
       throw new Error(`${SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID}`);
     }
@@ -204,7 +205,7 @@ export class PresentationExchange {
     await Promise.all(definitions.map(async (pd) => await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads)));
   }
 
-  private static async validatePayloadAgainstDefinitions(definition: PresentationDefinition, vpPayloads: VerifiablePresentationPayload[]) {
+  private static async validatePayloadAgainstDefinitions(definition: IPresentationDefinition, vpPayloads: VerifiablePresentationPayload[]) {
     function filterValidPresentations() {
       const checkedPresentations: VerifiablePresentationPayload[] = vpPayloads.filter((vpw) => {
         if (vpw.format !== VerifiablePresentationTypeFormat.LDP_VP) {
@@ -213,7 +214,7 @@ export class PresentationExchange {
 
         const presentation = vpw.presentation;
         // fixme: Limited disclosure suites
-        const evaluationResults = new pejs().evaluatePresentation(definition, presentation, []);
+        const evaluationResults = new PEX().evaluatePresentation(definition, presentation, []);
         const submission = evaluationResults.value;
         if (!presentation || !submission) {
           throw new Error(SIOPErrors.NO_PRESENTATION_SUBMISSION);
@@ -230,9 +231,9 @@ export class PresentationExchange {
     } else if (checkedPresentations[0].format !== VerifiablePresentationTypeFormat.LDP_VP) {
       throw new Error(`${SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED}`);
     }
-    const presentation: Presentation = checkedPresentations[0].presentation;
+    const presentation: IPresentation = checkedPresentations[0].presentation;
     // fixme: Limited disclosure suites
-    const evaluationResults = new pejs().evaluatePresentation(definition, presentation, []);
+    const evaluationResults = new PEX().evaluatePresentation(definition, presentation, []);
     PresentationExchange.assertValidPresentationSubmission(evaluationResults.value);
     await PresentationExchange.validatePresentationAgainstDefinition(definition, presentation);
   }

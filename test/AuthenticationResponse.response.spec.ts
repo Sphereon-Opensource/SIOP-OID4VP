@@ -1,5 +1,4 @@
-import { Credential, VerifiableCredential, VerifiablePresentation } from '@sphereon/pe-js';
-import { PresentationDefinition } from '@sphereon/pe-models';
+import { ICredential, IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
 
 import { PresentationExchange } from '../src/main';
 import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
@@ -133,7 +132,7 @@ describe('create JWT from Request JWT should', () => {
 
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-    const definition: PresentationDefinition = {
+    const definition: IPresentationDefinition = {
       id: 'Credentials',
       input_descriptors: [
         {
@@ -182,7 +181,7 @@ describe('create JWT from Request JWT should', () => {
         ],
       },
     };
-    const vc: Credential = {
+    const vc: ICredential = {
       id: 'https://example.com/credentials/1872',
       type: ['VerifiableCredential', 'IDCardCredential'],
       '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential'],
@@ -196,12 +195,12 @@ describe('create JWT from Request JWT should', () => {
         birthdate: '1949-01-22',
       },
     };
-    const vp: VerifiablePresentation = {
+    const vp: IVerifiablePresentation = {
       '@context': ['https://www.w3.org/2018/credentials/v1'],
       presentation_submission: undefined,
       type: ['verifiablePresentation'],
       holder: 'did:example:holder',
-      verifiableCredential: [vc as VerifiableCredential],
+      verifiableCredential: [vc as IVerifiableCredential],
       proof: undefined,
     };
 
@@ -223,7 +222,7 @@ describe('create JWT from Request JWT should', () => {
       allVerifiableCredentials: vp.verifiableCredential,
     });
     await pex.selectVerifiableCredentialsForSubmission(definition);
-    const result: VerifiablePresentation = await pex.submissionFrom(definition, vp.verifiableCredential);
+    const result: IVerifiablePresentation = await pex.submissionFrom(definition, vp.verifiableCredential);
     const responseOpts: AuthenticationResponseOpts = {
       redirectUri: 'https://acme.com/hello',
       registration: {

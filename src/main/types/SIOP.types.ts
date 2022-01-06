@@ -1,5 +1,5 @@
-import { Presentation as PEPresentation, VerifiablePresentation as PEVerifiablePresentation } from '@sphereon/pe-js';
-import { PresentationDefinition } from '@sphereon/pe-models';
+import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation } from '@sphereon/pex';
+import { PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
 
@@ -110,7 +110,7 @@ export interface OidcClaimRequest {
 }*/
 
 export interface VerifiablePresentationsPayload {
-  presentation_definition: PresentationDefinition;
+  presentation_definition: PresentationDefinitionV1 | PresentationDefinitionV2;
 }
 
 export interface IdTokenClaimPayload {
@@ -120,7 +120,7 @@ export interface IdTokenClaimPayload {
 }
 
 export interface VpTokenClaimPayload {
-  presentation_definition: PresentationDefinition;
+  presentation_definition: PresentationDefinitionV1 | PresentationDefinitionV2;
 
   [x: string]: unknown;
 }
@@ -145,7 +145,7 @@ export interface DIDDocument extends DIFDIDDocument {
 
 export interface PresentationDefinitionWithLocation {
   location: PresentationLocation;
-  definition: PresentationDefinition;
+  definition: PresentationDefinitionV1 | PresentationDefinitionV2;
 }
 
 export interface VerifiablePresentationResponseOpts extends VerifiablePresentationPayload {

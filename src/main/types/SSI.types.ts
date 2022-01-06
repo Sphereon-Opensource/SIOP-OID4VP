@@ -1,61 +1,24 @@
-import { Credential, CredentialStatus, CredentialSubject, Presentation, Proof, VerifiableCredential, VerifiablePresentation } from '@sphereon/pe-js';
+import {
+  ICredential,
+  ICredentialStatus,
+  ICredentialSubject,
+  IPresentation,
+  IProof,
+  IVerifiableCredential,
+  IVerifiablePresentation,
+} from '@sphereon/pex';
 import { DIDDocument as DIFDIDDocument, Resolvable } from 'did-resolver';
 import { JWK } from 'jose/types';
 
 // Here because we previously had these interfaces in this file
-export { Proof, CredentialSubject, CredentialStatus, Credential, VerifiableCredential, Presentation, VerifiablePresentation };
+export { IProof, ICredentialSubject, ICredentialStatus, ICredential, IVerifiableCredential, IPresentation, IVerifiablePresentation };
 
 export interface ResolveOpts {
   resolver?: Resolvable;
   resolveUrl?: string;
   didMethods?: string[];
 }
-/*
-export interface CredentialSubject {
-  [x: string]: unknown;
-}
 
-export interface Proof {
-  type: string;
-  created: string;
-  proofPurpose: string;
-  verificationMethod: string;
-  jws: string;
-  [x: string]: string;
-}
-
-export interface CredentialStatus {
-  id: string;
-  type: string;
-}
-
-export interface Credential {
-  '@context': string[];
-  id: string;
-  type: string[];
-  credentialSubject: CredentialSubject;
-  issuer: string;
-  issuanceDate?: string;
-  expirationDate?: string;
-  credentialStatus?: CredentialStatus;
-  [x: string]: unknown;
-}
-
-export interface VerifiableCredential extends Credential {
-  issuer: string;
-  issuanceDate: string;
-  proof: Proof;
-}
-
-export interface Presentation {
-  '@context': string[];
-  type: string;
-  verifiableCredential: string[] | VerifiableCredential[];
-}
-
-export interface VerifiablePresentation extends Presentation {
-  proof: Proof;
-}*/
 export interface DIDDocument extends DIFDIDDocument {
   owner?: string;
   created?: string;

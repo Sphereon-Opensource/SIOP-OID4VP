@@ -168,7 +168,14 @@ export const AuthenticationRequestOptsSchema = {
           "$ref": "#/definitions/PresentationLocation"
         },
         "definition": {
-          "$ref": "#/definitions/PresentationDefinition"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PresentationDefinitionV1"
+            },
+            {
+              "$ref": "#/definitions/PresentationDefinitionV2"
+            }
+          ]
         }
       },
       "required": [
@@ -184,7 +191,7 @@ export const AuthenticationRequestOptsSchema = {
         "id_token"
       ]
     },
-    "PresentationDefinition": {
+    "PresentationDefinitionV1": {
       "type": "object",
       "properties": {
         "id": {
@@ -208,7 +215,7 @@ export const AuthenticationRequestOptsSchema = {
         "input_descriptors": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/InputDescriptor"
+            "$ref": "#/definitions/InputDescriptorV1"
           }
         }
       },
@@ -315,7 +322,7 @@ export const AuthenticationRequestOptsSchema = {
         "pick"
       ]
     },
-    "InputDescriptor": {
+    "InputDescriptorV1": {
       "type": "object",
       "properties": {
         "id": {
@@ -340,7 +347,7 @@ export const AuthenticationRequestOptsSchema = {
           }
         },
         "constraints": {
-          "$ref": "#/definitions/Constraints"
+          "$ref": "#/definitions/ConstraintsV1"
         }
       },
       "required": [
@@ -364,7 +371,7 @@ export const AuthenticationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "Constraints": {
+    "ConstraintsV1": {
       "type": "object",
       "properties": {
         "limit_disclosure": {
@@ -376,7 +383,7 @@ export const AuthenticationRequestOptsSchema = {
         "fields": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/Field"
+            "$ref": "#/definitions/FieldV1"
           }
         },
         "subject_is_issuer": {
@@ -436,7 +443,7 @@ export const AuthenticationRequestOptsSchema = {
         "disallowed"
       ]
     },
-    "Field": {
+    "FieldV1": {
       "type": "object",
       "properties": {
         "id": {
@@ -452,7 +459,7 @@ export const AuthenticationRequestOptsSchema = {
           "type": "string"
         },
         "filter": {
-          "$ref": "#/definitions/Filter"
+          "$ref": "#/definitions/FilterV1"
         },
         "predicate": {
           "$ref": "#/definitions/Optionality"
@@ -460,16 +467,40 @@ export const AuthenticationRequestOptsSchema = {
       },
       "additionalProperties": false
     },
-    "Filter": {
+    "FilterV1": {
       "type": "object",
       "properties": {
-        "type": {
-          "type": "string"
+        "_const": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "_enum": {
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "string"
+            ]
+          }
+        },
+        "exclusiveMinimum": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "exclusiveMaximum": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
         },
         "format": {
-          "type": "string"
-        },
-        "pattern": {
           "type": "string"
         },
         "minLength": {
@@ -479,28 +510,27 @@ export const AuthenticationRequestOptsSchema = {
           "type": "number"
         },
         "minimum": {
-          "type": "number"
-        },
-        "exclusiveMinimum": {
-          "type": "number"
-        },
-        "exclusiveMaximum": {
-          "type": "number"
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
         },
         "maximum": {
-          "type": "number"
-        },
-        "_const": {
-          "type": "number"
-        },
-        "_enum": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          }
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
         },
         "not": {
           "type": "object"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
         }
       },
       "required": [
@@ -524,6 +554,210 @@ export const AuthenticationRequestOptsSchema = {
       "required": [
         "field_id",
         "directive"
+      ],
+      "additionalProperties": false
+    },
+    "PresentationDefinitionV2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "format": {
+          "$ref": "#/definitions/Format"
+        },
+        "submission_requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubmissionRequirement"
+          }
+        },
+        "input_descriptors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InputDescriptorV2"
+          }
+        },
+        "frame": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "input_descriptors"
+      ],
+      "additionalProperties": false
+    },
+    "InputDescriptorV2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "group": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "constraints": {
+          "$ref": "#/definitions/ConstraintsV2"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "ConstraintsV2": {
+      "type": "object",
+      "properties": {
+        "limit_disclosure": {
+          "$ref": "#/definitions/Optionality"
+        },
+        "statuses": {
+          "$ref": "#/definitions/Statuses"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FieldV2"
+          }
+        },
+        "subject_is_issuer": {
+          "$ref": "#/definitions/Optionality"
+        },
+        "is_holder": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HolderSubject"
+          }
+        },
+        "same_subject": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HolderSubject"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "FieldV2": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "filter": {
+          "$ref": "#/definitions/FilterV2"
+        },
+        "predicate": {
+          "$ref": "#/definitions/Optionality"
+        }
+      },
+      "additionalProperties": false
+    },
+    "FilterV2": {
+      "type": "object",
+      "properties": {
+        "_const": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "_enum": {
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "string"
+            ]
+          }
+        },
+        "exclusiveMinimum": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "exclusiveMaximum": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "format": {
+          "type": "string"
+        },
+        "formatMaximum": {
+          "type": "string"
+        },
+        "formatMinimum": {
+          "type": "string"
+        },
+        "formatExclusiveMaximum": {
+          "type": "string"
+        },
+        "formatExclusiveMinimum": {
+          "type": "string"
+        },
+        "minLength": {
+          "type": "number"
+        },
+        "maxLength": {
+          "type": "number"
+        },
+        "minimum": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "maximum": {
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "not": {
+          "type": "object"
+        },
+        "pattern": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
       ],
       "additionalProperties": false
     },

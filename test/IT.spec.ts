@@ -1,5 +1,4 @@
-import { VerifiableCredential } from '@sphereon/pe-js';
-import { PresentationDefinition } from '@sphereon/pe-models';
+import { IPresentationDefinition, IVerifiableCredential } from '@sphereon/pex';
 import nock from 'nock';
 
 import { OP, PresentationExchange, RP } from '../src/main';
@@ -13,7 +12,7 @@ const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 
 const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
 
-function getPresentationDefinition(): PresentationDefinition {
+function getPresentationDefinition(): IPresentationDefinition {
   return {
     id: 'Insurance Plans',
     input_descriptors: [
@@ -45,8 +44,8 @@ function getPresentationDefinition(): PresentationDefinition {
   };
 }
 
-function getVCs(): VerifiableCredential[] {
-  const vcs: VerifiableCredential[] = [
+function getVCs(): IVerifiableCredential[] {
+  const vcs: IVerifiableCredential[] = [
     {
       identifier: '83627465',
       name: 'Permanent Resident Card',
