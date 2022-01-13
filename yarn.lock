@@ -1573,16 +1573,16 @@
   resolved "https://registry.yarnpkg.com/@sphereon/pex-models/-/pex-models-1.1.0.tgz#716898344fd07400bbffaa0c34a1f7ecdda14166"
   integrity sha512-kMslWspdqwuXGBFxOPXTAK8HlIHycBR/locYHMlYmyvdnau6bp40JXk2zviBRVOPfe8N3Dv2p5IPAjMk3pT77A==
 
-"@sphereon/pex@^0.6.3-unstable.1":
-  version "0.6.3-unstable.1"
-  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-0.6.3-unstable.1.tgz#bb5bdf978efb90a33406cdd5ddfde08e2f259e3f"
-  integrity sha512-WoBxY0Mwl7jKCay2DUbMIsdq1s/UkJNQhQ/CVf7fHwmWR+rDPCANMtAFNikLdnynkKHeNNJMcxd5X1JEVDey3w==
+"@sphereon/pex@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-1.0.1.tgz#735588fc3ae189d1c4851cab8213781796ee516e"
+  integrity sha512-4+ZBjYco3n5VlkMEBLZM9X3pSUr0qLZtEq42VttWMLIX65pbUHuNVdHmR0uwatSQPkt4dQv1Q7DW/0Chi8aDWw==
   dependencies:
     "@sphereon/pex-models" "^1.1.0"
     ajv "^8.8.2"
     ajv-formats "^2.1.1"
     jsonpath "^1.1.1"
-    nanoid "^3.1.30"
+    nanoid "^3.1.32"
 
 "@stablelib/aead@^1.0.1":
   version "1.0.1"
@@ -5891,10 +5891,10 @@ nan@^2.14.0:
   resolved "https://registry.yarnpkg.com/nan/-/nan-2.15.0.tgz#3f34a473ff18e15c1b5626b62903b5ad6e665fee"
   integrity sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==
 
-nanoid@^3.1.30:
-  version "3.1.30"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.30.tgz#63f93cc548d2a113dc5dfbc63bfa09e2b9b64362"
-  integrity sha512-zJpuPDwOv8D2zq2WRoMe1HsfZthVewpel9CAvTfc/2mBD1uUT/agc5f7GHGWXlYkFvi1mVxe4IjvP2HNrop7nQ==
+nanoid@^3.1.32:
+  version "3.1.32"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.32.tgz#8f96069e6239cc0a9ae8c0d3b41a3b4933a88c0a"
+  integrity sha512-F8mf7R3iT9bvThBoW4tGXhXFHCctyCiUUPrWF8WaTqa3h96d9QybkSeba43XVOOE3oiLfkVDe4bT8MeGmkrTxw==
 
 natural-compare@^1.4.0:
   version "1.4.0"

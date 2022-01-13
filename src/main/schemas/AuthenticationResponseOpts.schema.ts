@@ -386,7 +386,10 @@ export const AuthenticationResponseOptsSchema = {
           "type": "string"
         },
         "exp": {
-          "type": "string"
+          "type": [
+            "string",
+            "number"
+          ]
         },
         "iss": {
           "type": "string"
@@ -395,7 +398,10 @@ export const AuthenticationResponseOptsSchema = {
           "type": "string"
         },
         "nbf": {
-          "type": "string"
+          "type": [
+            "string",
+            "number"
+          ]
         },
         "sub": {
           "type": "string"
@@ -557,7 +563,16 @@ export const AuthenticationResponseOptsSchema = {
         "issuanceDate": {
           "type": "string"
         },
-        "issuer": {},
+        "issuer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/IIssuer"
+            }
+          ]
+        },
         "name": {
           "type": "string"
         },
@@ -624,6 +639,18 @@ export const AuthenticationResponseOptsSchema = {
       ],
       "additionalProperties": false
     },
+    "IIssuer": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": {}
+    },
     "IJsonLdVerifiableCredential": {
       "type": "object",
       "properties": {
@@ -684,7 +711,16 @@ export const AuthenticationResponseOptsSchema = {
         "issuanceDate": {
           "type": "string"
         },
-        "issuer": {},
+        "issuer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/IIssuer"
+            }
+          ]
+        },
         "name": {
           "type": "string"
         },

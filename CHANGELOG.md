@@ -1,4 +1,12 @@
 # Release Notes
+
+## v0.2.4 - 2022-01-13
+
+This is an Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
+
+- Updated:
+  - Update @sphereon/pex to latest stable version v1.0.1
+
 ## v0.2.3 - 2021-12-10
 
 This is an Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
