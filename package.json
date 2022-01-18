@@ -28,6 +28,7 @@
     "@sphereon/did-uni-client": "^0.4.0",
     "@sphereon/pex": "^1.0.1",
     "@sphereon/pex-models": "^1.1.0",
+    "@transmute/did-key-ed25519": "^0.2.1-unstable.42",
     "bs58": "^4.0.1",
     "cross-fetch": "^3.1.4",
     "did-jwt": "^5.12.1",
@@ -41,7 +42,6 @@
   },
   "devDependencies": {
     "@transmute/did-key.js": "^0.3.0-unstable.5",
-    "@transmute/did-key-ed25519": "^0.2.1-unstable.42",
     "@types/jest": "^27.0.3",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
