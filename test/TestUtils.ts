@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 
-import { resolve as didKeyResolve } from '@transmute/did-key.js';
+// import { DidKeyDriver } from '@digitalcredentials/did-method-key'
 import base58 from 'bs58';
-import { DIDDocument, DIDResolutionResult } from 'did-resolver';
+import { DIDDocument } from 'did-resolver';
 import { ethers } from 'ethers';
 import fromKeyLike from 'jose/jwk/from_key_like';
 import parseJwk from 'jose/jwk/parse';
@@ -203,11 +203,13 @@ export const getParsedDidDocument = (didKey: DidKey): DIDDocument => {
   return didDocJwk;
 };
 
+/*
 export const resolveDidKey = async (did: string): Promise<DIDResolutionResult> => {
-  return (await didKeyResolve(did, {
+  return (await DidKeyDriver.get(did, {
     accept: 'application/did+ld+json',
   })) as DIDResolutionResult;
 };
+*/
 
 export const metadata = {
   opMetadata: {

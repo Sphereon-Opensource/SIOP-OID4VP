@@ -1,8 +1,8 @@
-import { keyUtils as ed25519KeyUtils } from '@transmute/did-key-ed25519';
+// import { keyUtils as ed25519KeyUtils } from '@transmute/did-key-ed25519';
+import base64url from 'base64url';
 import * as bs58 from 'bs58';
 import { ec as EC } from 'elliptic';
 import { JWK } from 'jose/types';
-import Base64 from 'js-base64';
 import SHA from 'sha.js';
 
 import { SIOP } from '../types';
@@ -20,7 +20,7 @@ export function isEd25519JWK(jwk: JWK): boolean {
 }
 
 export function getBase58PrivateKeyFromHexPrivateKey(hexPrivateKey: string): string {
-  return ed25519KeyUtils.privateKeyBase58FromPrivateKeyHex(hexPrivateKey);
+  return bs58.encode(Buffer.from(hexPrivateKey, 'hex'));
 }
 
 export function getPublicED25519JWKFromHexPrivateKey(hexPrivateKey: string, kid?: string): JWK {
@@ -50,8 +50,8 @@ function toJWK(kid: string, crv: SIOP.KeyCurve, pubPoint: EC.BN) {
     kid,
     kty: SIOP.KeyType.EC,
     crv: crv,
-    x: Base64.fromUint8Array(pubPoint.getX().toArrayLike(Buffer), true),
-    y: Base64.fromUint8Array(pubPoint.getY().toArrayLike(Buffer), true),
+    x: base64url.toBase64(pubPoint.getX().toArrayLike(Buffer)),
+    y: base64url.toBase64(pubPoint.getY().toArrayLike(Buffer)),
   };
 }
 
@@ -72,7 +72,7 @@ function getThumbprintFromJwkImpl(jwk: JWK): string {
 function getThumbprintFromJwkDIDKeyImpl(jwk: JWK): string {
   // ed25519 cryptonyms are multicodec encoded values, specifically:
   // (multicodec ed25519-pub 0xed01 + key bytes)
-  const pubkeyBytes = bs58.decode(ed25519KeyUtils.publicKeyBase58FromPublicKeyJwk(jwk));
+  const pubkeyBytes = base64url.toBuffer(jwk.x);
   const buffer = new Uint8Array(2 + pubkeyBytes.length);
   buffer[0] = 0xed;
   buffer[1] = 0x01;
