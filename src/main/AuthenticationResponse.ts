@@ -217,7 +217,14 @@ async function createSIOPResponsePayload(
   }
   const isDidSupported = verifiedJwt.payload.registration?.subject_identifiers_supported?.includes(SubjectIdentifierType.DID);
 
-  const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
+  let thumbprint: string;
+  let subJwk: JWK;
+  if (SIOP.isInternalSignature(resOpts.signatureType)) {
+    const thumbprintAndJWK = await createThumbprintAndJWK(resOpts);
+    thumbprint = thumbprintAndJWK.thumbprint;
+    subJwk = thumbprintAndJWK.subJwk;
+  }
+
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
   const nonce = resOpts.nonce || State.getNonce(state, resOpts.nonce);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
@@ -247,7 +254,7 @@ async function createSIOPResponsePayload(
 function assertValidResponseOpts(opts: SIOP.AuthenticationResponseOpts) {
   if (!opts /*|| !opts.redirectUri*/ || !opts.signatureType /*|| !opts.nonce*/ || !opts.did) {
     throw new Error(SIOPErrors.BAD_PARAMS);
-  } else if (!(SIOP.isInternalSignature(opts.signatureType) || SIOP.isExternalSignature(opts.signatureType))) {
+  } else if (!(SIOP.isInternalSignature(opts.signatureType) || SIOP.isExternalSignature(opts.signatureType) || SIOP.isSuppliedSignature(opts.signatureType))) {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
 }

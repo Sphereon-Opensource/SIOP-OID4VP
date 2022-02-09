@@ -15,6 +15,9 @@ export const AuthenticationResponseOptsSchema = {
             },
             {
               "$ref": "#/definitions/ExternalSignature"
+            },
+            {
+              "$ref": "#/definitions/SuppliedSignature"
             }
           ]
         },
@@ -93,6 +96,22 @@ export const AuthenticationResponseOptsSchema = {
         "did"
       ],
       "additionalProperties": false
+    },
+    "SuppliedSignature": {
+      "type": "object",
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "did",
+        "kid"
+      ],
+      "additionalProperties": true
     },
     "ResponseRegistrationOpts": {
       "type": "object",

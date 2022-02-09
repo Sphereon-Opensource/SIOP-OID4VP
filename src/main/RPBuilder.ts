@@ -1,4 +1,5 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
+import { EcdsaSignature } from 'did-jwt/lib/util';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
@@ -16,6 +17,7 @@ import {
   ResponseContext,
   ResponseMode,
   SubjectIdentifierType,
+  SuppliedSignature,
 } from './types/SIOP.types';
 
 export default class RPBuilder {
@@ -26,7 +28,7 @@ export default class RPBuilder {
   requestRegistration: Partial<RequestRegistrationOpts> = {};
   redirectUri: string;
   requestObjectBy: ObjectBy;
-  signatureType: InternalSignature | ExternalSignature | NoSignature;
+  signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
   responseMode?: ResponseMode;
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
@@ -80,14 +82,19 @@ export default class RPBuilder {
     return this;
   }
 
-  // Only internal supported for now
-  signature(signatureType: InternalSignature): RPBuilder {
+  // Only internal | supplied supported for now
+  signature(signatureType: InternalSignature | SuppliedSignature): RPBuilder {
     this.signatureType = signatureType;
     return this;
   }
 
   internalSignature(hexPrivateKey: string, did: string, kid?: string): RPBuilder {
     this.signature({ hexPrivateKey, did, kid });
+    return this;
+  }
+
+  suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): RPBuilder {
+    this.signature({ signature, did, kid })
     return this;
   }
 
