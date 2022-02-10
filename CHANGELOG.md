@@ -1,8 +1,14 @@
 # Release Notes
+The DID Auth SIOP typescript library is still in an alpha state at this point. Please note that the interfaces might still change a bit as the software still is in active development.
+
+
+## v0.2.6 - 2022-02-10
+
+- Added:
+  - Supplied signature support. Allowing to integrate signature callbacks, next to supplying private keys or using external custodial signing with authn/authz
+
 
 ## v0.2.5 - 2022-01-26
-
-This is an Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
 
 - Updated:
   - Update @sphereon/pex to the latest stable version v1.0.2
@@ -11,14 +17,10 @@ This is an Alpha release of the DID Auth SIOP typescript library. Please note th
 
 ## v0.2.4 - 2022-01-13
 
-This is an Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
-
 - Updated:
   - Update @sphereon/pex to latest stable version v1.0.1
 
 ## v0.2.3 - 2021-12-10
-
-This is an Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
 
 - Fixed:
   - Check nonce and did support first before verifying JWT
@@ -29,22 +31,16 @@ This is an Alpha release of the DID Auth SIOP typescript library. Please note th
 
 ## v0.2.2 - 2021-11-29
 
-This is an Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
-
 - Updated:
   * Updated dependencies
 
 ## v0.2.1 - 2021-11-28
-
-This is the fourth Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
 
 - Updated:
   * Presentation Exchange updated to latest pe-js version 0.5.x. The eventual Presentation is not a VP yet (proof will be in next minor release)
   * Update Uni Resolver client to latest version 0.3.3
 
 ## v0.2.0 - 2021-10-06
-
-This is the third Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
 
 - Added:
   * Presentation Exchange support [OpenID Connect for Verifiable Presentations(https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html)
@@ -53,7 +49,6 @@ This is the third Alpha release of the DID Auth SIOP typescript library. Please 
   * Many bug fixes (see git history)
 
 ## v0.1.1 - 2021-09-29
-This is the second Alpha release of the DID Auth SIOP typescript library. Please note that the interfaces might still change a bit as the software still is in active development.
 
 - Fixed:
   * Packaging fix for the did-jwt fork we include for now
