@@ -1,5 +1,5 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
-import {EcdsaSignature} from 'did-jwt/lib/util';
+import { EcdsaSignature } from 'did-jwt/lib/util';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';

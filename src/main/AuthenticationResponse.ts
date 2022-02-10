@@ -173,6 +173,8 @@ async function createThumbprintAndJWK(resOpts: SIOP.AuthenticationResponseOpts):
                     }
                     thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
                     subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
+  } else if (SIOP.isSuppliedSignature(resOpts.signatureType)) {
+    return { thumbprint, subJwk };
   } else {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
@@ -216,15 +218,7 @@ async function createSIOPResponsePayload(
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
   const isDidSupported = verifiedJwt.payload.registration?.subject_identifiers_supported?.includes(SubjectIdentifierType.DID);
-
-  let thumbprint: string;
-  let subJwk: JWK;
-  if (SIOP.isInternalSignature(resOpts.signatureType)) {
-    const thumbprintAndJWK = await createThumbprintAndJWK(resOpts);
-    thumbprint = thumbprintAndJWK.thumbprint;
-    subJwk = thumbprintAndJWK.subJwk;
-  }
-
+  const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
   const nonce = resOpts.nonce || State.getNonce(state, resOpts.nonce);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
