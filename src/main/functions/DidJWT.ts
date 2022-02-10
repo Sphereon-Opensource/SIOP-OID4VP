@@ -2,16 +2,7 @@ import { EdDSASigner, ES256KSigner } from 'did-jwt';
 import { EcdsaSignature } from 'did-jwt/lib/util';
 import { Resolvable } from 'did-resolver';
 
-import {
-  createJWT,
-  decodeJWT,
-  JWTDecoded,
-  JWTHeader,
-  JWTOptions,
-  JWTPayload,
-  JWTVerifyOptions,
-  verifyJWT
-} from '../../did-jwt-fork/JWT';
+import { createJWT, decodeJWT, JWTDecoded, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT } from '../../did-jwt-fork/JWT';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
 import { JWT, SIOP, SIOPErrors } from '../types';
 import {
@@ -156,10 +147,10 @@ async function signDidJwtExternal(
 }
 
 async function signDidJwtSupplied(
-    payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
-    issuer: string,
-    signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
-    kid: string
+  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  issuer: string,
+  signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
+  kid: string
 ): Promise<string> {
   const algo = isEd25519DidKeyMethod(issuer) || isEd25519DidKeyMethod(payload.kid) || isEd25519JWK(payload.sub_jwk) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
   const header = {

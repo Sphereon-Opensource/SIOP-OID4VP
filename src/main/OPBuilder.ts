@@ -11,7 +11,7 @@ import {
   PassBy,
   ResponseMode,
   ResponseRegistrationOpts,
-  SuppliedSignature
+  SuppliedSignature,
 } from './types/SIOP.types';
 
 export default class OPBuilder {
@@ -87,7 +87,7 @@ export default class OPBuilder {
   }
 
   suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): OPBuilder {
-    this.signature({ signature, did, kid })
+    this.signature({ signature, did, kid });
     return this;
   }
 

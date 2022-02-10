@@ -248,7 +248,9 @@ async function createSIOPResponsePayload(
 function assertValidResponseOpts(opts: SIOP.AuthenticationResponseOpts) {
   if (!opts /*|| !opts.redirectUri*/ || !opts.signatureType /*|| !opts.nonce*/ || !opts.did) {
     throw new Error(SIOPErrors.BAD_PARAMS);
-  } else if (!(SIOP.isInternalSignature(opts.signatureType) || SIOP.isExternalSignature(opts.signatureType) || SIOP.isSuppliedSignature(opts.signatureType))) {
+  } else if (
+    !(SIOP.isInternalSignature(opts.signatureType) || SIOP.isExternalSignature(opts.signatureType) || SIOP.isSuppliedSignature(opts.signatureType))
+  ) {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
 }

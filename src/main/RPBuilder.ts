@@ -94,7 +94,7 @@ export default class RPBuilder {
   }
 
   suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): RPBuilder {
-    this.signature({ signature, did, kid })
+    this.signature({ signature, did, kid });
     return this;
   }
 
