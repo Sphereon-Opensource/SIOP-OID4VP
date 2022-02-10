@@ -4,7 +4,7 @@
     "target": "ES6",
     "outDir": "dist",
     "moduleResolution": "node",
-    "module": "ES6",
+    "module": "commonjs",
     "declaration": true,
     "inlineSourceMap": true,
     "esModuleInterop": true
@@ -30,9 +30,9 @@
     /* Print names of files part of the compilation. */,
     "pretty": true,
 
-    "lib": [
+    /*"lib": [
       "ES2017"
-    ],
+    ],*/
     "types": ["jest", "node"]
   },
   "include": [

@@ -4,7 +4,6 @@
   "main": "dist/main/index.js",
   "types": "dist/main/index.d.ts",
   "license": "Apache-2.0",
-  "type": "module",
   "repository": {
     "url": "https://github.com/Sphereon-Opensource/did-auth-siop.git"
   },
