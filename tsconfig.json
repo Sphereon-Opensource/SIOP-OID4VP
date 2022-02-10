@@ -4,7 +4,7 @@
     "target": "ES6",
     "outDir": "dist",
     "moduleResolution": "node",
-    "module": "commonjs",
+    "module": "ES6",
     "declaration": true,
     "inlineSourceMap": true,
     "esModuleInterop": true
@@ -39,7 +39,7 @@
     "index.ts",
     "src/**/*.ts",
     "test/**/*.ts",
-    "generator/**/*.ts",
+    "generator/**/*.ts"
   ],
   "exclude": [
     "node_modules/**",

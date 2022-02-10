@@ -1,7 +1,9 @@
+import { EcdsaSignature } from 'did-jwt/lib/util';
 import type { DIDResolutionResult, VerificationMethod } from 'did-resolver';
 // import type {JWK} from "jose/types";
 
-export type Signer = (data: string | Uint8Array) => Promise<string>;
+// Signer interface conforming to the DID-JWT module
+export type Signer = (data: string | Uint8Array) => Promise<EcdsaSignature | string>;
 
 export interface JWTPayload {
   iss?: string;

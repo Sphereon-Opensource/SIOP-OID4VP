@@ -1,4 +1,5 @@
 import { EdDSASigner, ES256KSigner } from 'did-jwt';
+import { EcdsaSignature } from 'did-jwt/lib/util';
 import { Resolvable } from 'did-resolver';
 
 import { createJWT, decodeJWT, JWTDecoded, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT } from '../../did-jwt-fork/JWT';
@@ -14,6 +15,7 @@ import {
   isInternalSignature,
   isResponseOpts,
   isResponsePayload,
+  isSuppliedSignature,
   KeyAlgo,
   ResponseIss,
   SignatureResponse,
@@ -89,6 +91,8 @@ export async function signDidJwtPayload(
     return signDidJwtInternal(payload, isResponse ? payload.iss : opts.signatureType.did, opts.signatureType.hexPrivateKey, opts.signatureType.kid);
   } else if (isExternalSignature(opts.signatureType)) {
     return signDidJwtExternal(payload, opts.signatureType.signatureUri, opts.signatureType.authZToken, opts.signatureType.kid);
+  } else if (isSuppliedSignature(opts.signatureType)) {
+    return signDidJwtSupplied(payload, isResponse ? payload.iss : opts.signatureType.did, opts.signatureType.signature, opts.signatureType.kid);
   } else {
     throw new Error(SIOPErrors.BAD_SIGNATURE_PARAMS);
   }
@@ -99,7 +103,7 @@ async function signDidJwtInternal(
   issuer: string,
   hexPrivateKey: string,
   kid?: string
-) {
+): Promise<string> {
   const algo = isEd25519DidKeyMethod(issuer) || isEd25519DidKeyMethod(payload.kid) || isEd25519JWK(payload.sub_jwk) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
   // const request = !!payload.client_id;
   const signer =
@@ -140,6 +144,26 @@ async function signDidJwtExternal(
 
   const response = await postWithBearerToken(signatureUri, body, authZToken);
   return ((await response.json()) as SignatureResponse).jws;
+}
+
+async function signDidJwtSupplied(
+  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  issuer: string,
+  signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
+  kid: string
+): Promise<string> {
+  const algo = isEd25519DidKeyMethod(issuer) || isEd25519DidKeyMethod(payload.kid) || isEd25519JWK(payload.sub_jwk) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
+  const header = {
+    alg: algo,
+    kid,
+  };
+  const options = {
+    issuer,
+    signer,
+    expiresIn: SIOP.expirationTime,
+  };
+
+  return await createDidJWT({ ...payload }, options, header);
 }
 
 export function getAudience(jwt: string) {

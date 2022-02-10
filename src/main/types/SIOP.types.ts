@@ -1,5 +1,6 @@
 import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation } from '@sphereon/pex';
 import { PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
+import { EcdsaSignature } from 'did-jwt/lib/util';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
 
@@ -12,7 +13,7 @@ export const expirationTime = 10 * 60;
 export interface AuthenticationRequestOpts {
   redirectUri: string; // The redirect URI
   requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
-  signatureType: InternalSignature | ExternalSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication)
+  signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication), or supplied (callback supplied)
   responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
   responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
   claims?: ClaimOpts; // The claims
@@ -68,7 +69,7 @@ export interface AuthenticationRequestWithJWT {
 
 export interface AuthenticationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
-  signatureType: InternalSignature | ExternalSignature;
+  signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   nonce?: string;
   state?: string;
   registration: ResponseRegistrationOpts;
@@ -282,6 +283,12 @@ export interface InternalSignature {
   kid?: string; // Optional: key identifier
 }
 
+export interface SuppliedSignature {
+  signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>;
+  did: string;
+  kid: string;
+}
+
 export interface NoSignature {
   hexPublicKey: string; // hex public key
   did: string;
@@ -442,11 +449,14 @@ export enum ResponseIss {
   SELF_ISSUED_V2 = 'https://self-issued.me/v2',
 }
 
-export const isInternalSignature = (object: InternalSignature | ExternalSignature | NoSignature): object is InternalSignature =>
+export const isInternalSignature = (object: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature): object is InternalSignature =>
   'hexPrivateKey' in object && 'did' in object;
 
-export const isExternalSignature = (object: InternalSignature | ExternalSignature | NoSignature): object is ExternalSignature =>
+export const isExternalSignature = (object: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature): object is ExternalSignature =>
   'signatureUri' in object && 'did' in object;
+
+export const isSuppliedSignature = (object: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature): object is SuppliedSignature =>
+  'signature' in object;
 
 export const isNoSignature = (object: InternalSignature | ExternalSignature | NoSignature): object is NoSignature =>
   'hexPublicKey' in object && 'did' in object;

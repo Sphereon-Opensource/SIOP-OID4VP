@@ -1,14 +1,23 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
+import { EcdsaSignature } from 'did-jwt/lib/util';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';
 import { DIDJwt } from './functions';
-import { CredentialFormat, ExternalSignature, InternalSignature, PassBy, ResponseMode, ResponseRegistrationOpts } from './types/SIOP.types';
+import {
+  CredentialFormat,
+  ExternalSignature,
+  InternalSignature,
+  PassBy,
+  ResponseMode,
+  ResponseRegistrationOpts,
+  SuppliedSignature,
+} from './types/SIOP.types';
 
 export default class OPBuilder {
   didMethods: string[] = [];
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-  signatureType: InternalSignature | ExternalSignature;
+  signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   credentialFormats: CredentialFormat[] = [];
   responseRegistration: ResponseRegistrationOpts;
   responseMode?: ResponseMode;
@@ -66,14 +75,19 @@ export default class OPBuilder {
   idTokenSigningAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
 */
-  // Only internal supported for now
-  signature(signatureType: InternalSignature): OPBuilder {
+  // Only internal | supplied supported for now
+  signature(signatureType: InternalSignature | SuppliedSignature): OPBuilder {
     this.signatureType = signatureType;
     return this;
   }
 
   internalSignature(hexPrivateKey: string, did: string, kid: string): OPBuilder {
     this.signature({ hexPrivateKey, did, kid });
+    return this;
+  }
+
+  suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): OPBuilder {
+    this.signature({ signature, did, kid });
     return this;
   }
 

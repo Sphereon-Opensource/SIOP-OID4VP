@@ -173,6 +173,8 @@ async function createThumbprintAndJWK(resOpts: SIOP.AuthenticationResponseOpts):
                     }
                     thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
                     subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
+  } else if (SIOP.isSuppliedSignature(resOpts.signatureType)) {
+    return { thumbprint, subJwk };
   } else {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
@@ -216,7 +218,6 @@ async function createSIOPResponsePayload(
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
   const isDidSupported = verifiedJwt.payload.registration?.subject_identifiers_supported?.includes(SubjectIdentifierType.DID);
-
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
   const nonce = resOpts.nonce || State.getNonce(state, resOpts.nonce);
@@ -247,7 +248,9 @@ async function createSIOPResponsePayload(
 function assertValidResponseOpts(opts: SIOP.AuthenticationResponseOpts) {
   if (!opts /*|| !opts.redirectUri*/ || !opts.signatureType /*|| !opts.nonce*/ || !opts.did) {
     throw new Error(SIOPErrors.BAD_PARAMS);
-  } else if (!(SIOP.isInternalSignature(opts.signatureType) || SIOP.isExternalSignature(opts.signatureType))) {
+  } else if (
+    !(SIOP.isInternalSignature(opts.signatureType) || SIOP.isExternalSignature(opts.signatureType) || SIOP.isSuppliedSignature(opts.signatureType))
+  ) {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
 }

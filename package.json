@@ -1,9 +1,10 @@
 {
   "name": "@sphereon/did-auth-siop",
-  "version": "0.2.6-unstable.0",
+  "version": "0.2.12-bram",
   "main": "dist/main/index.js",
   "types": "dist/main/index.d.ts",
   "license": "Apache-2.0",
+  "type": "module",
   "repository": {
     "url": "https://github.com/Sphereon-Opensource/did-auth-siop.git"
   },
@@ -12,7 +13,7 @@
   "scripts": {
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.build.json",
-    "build:schemaGenerator": "node generator/schemaGenerator.ts",
+    "build:schemaGenerator": "node --loader ts-node/esm generator/schemaGenerator.ts",
     "fix": "run-s fix:*",
     "fix:prettier": "prettier \"{src,test}/**/*.ts\" --write",
     "fix:lint": "eslint . --ext .ts --fix",

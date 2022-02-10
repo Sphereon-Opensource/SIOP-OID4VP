@@ -18,7 +18,7 @@ module.exports = {
         "!src/schemas/**",
         "!src/**/*.d.ts",
         "!**/node_modules/**",
-        "!jest.config.js",
+        "!jest.config.cjs",
         "!generator/**",
         "!index.ts",
 

@@ -20,6 +20,9 @@ export const AuthenticationRequestOptsSchema = {
               "$ref": "#/definitions/ExternalSignature"
             },
             {
+              "$ref": "#/definitions/SuppliedSignature"
+            },
+            {
               "$ref": "#/definitions/NoSignature"
             }
           ]
@@ -113,6 +116,22 @@ export const AuthenticationRequestOptsSchema = {
         "did"
       ],
       "additionalProperties": false
+    },
+    "SuppliedSignature": {
+      "type": "object",
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "did",
+        "kid"
+      ],
+      "additionalProperties": true
     },
     "NoSignature": {
       "type": "object",
