@@ -1,10 +1,11 @@
-import { EdDSASigner, ES256KSigner } from 'did-jwt';
-import { EcdsaSignature } from 'did-jwt/lib/util';
 import { Resolvable } from 'did-resolver';
 
 import { createJWT, decodeJWT, JWTDecoded, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT } from '../../did-jwt-fork/JWT';
+import { ES256KSigner } from '../../did-jwt-fork/signers/ES256KSigner';
+import { EdDSASigner } from '../../did-jwt-fork/signers/EdDSASigner';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
 import { JWT, SIOP, SIOPErrors } from '../types';
+import { EcdsaSignature } from '../types/JWT.types';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestPayload,

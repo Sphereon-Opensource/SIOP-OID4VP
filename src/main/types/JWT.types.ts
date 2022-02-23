@@ -1,6 +1,11 @@
-import { EcdsaSignature } from 'did-jwt/lib/util';
 import type { DIDResolutionResult, VerificationMethod } from 'did-resolver';
 // import type {JWK} from "jose/types";
+
+export interface EcdsaSignature {
+  r: string;
+  s: string;
+  recoveryParam?: number | null;
+}
 
 // Signer interface conforming to the DID-JWT module
 export type Signer = (data: string | Uint8Array) => Promise<EcdsaSignature | string>;

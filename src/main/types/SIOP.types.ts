@@ -1,10 +1,9 @@
 import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation } from '@sphereon/pex';
 import { PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
-import { EcdsaSignature } from 'did-jwt/lib/util';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
 
-import { JWTPayload, VerifiedJWT } from './JWT.types';
+import { EcdsaSignature, JWTPayload, VerifiedJWT } from './JWT.types';
 import { LinkedDataProof, ResolveOpts } from './SSI.types';
 
 export const expirationTime = 10 * 60;

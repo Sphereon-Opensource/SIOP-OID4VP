@@ -1,7 +1,7 @@
 # Release Notes
 The DID Auth SIOP typescript library is still in an alpha state at this point. Please note that the interfaces might still change a bit as the software still is in active development.
 
-## v0.2.8 - 2022-02-23
+## v0.2.9 - 2022-02-23
 
 - Fixed:
   - Remove did-jwt dependency, since we use an internal fork for the time being anyway

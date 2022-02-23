@@ -1,5 +1,6 @@
-import { JWTHeader } from 'did-jwt';
 import { JWK } from 'jose/types';
+
+import { JWTHeader } from '../did-jwt-fork/JWT';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';

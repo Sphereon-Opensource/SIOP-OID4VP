@@ -1,9 +1,9 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
-import { EcdsaSignature } from 'did-jwt/lib/util';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
 import { DIDJwt } from './functions';
+import { EcdsaSignature } from './types/JWT.types';
 import {
   ClaimOpts,
   CredentialFormat,
