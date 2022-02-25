@@ -120,7 +120,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
             didMethods: opts.builder.didMethods,
-            resolver: getResolver({ didMethods: opts.builder.didMethods }),
+            resolver: opts.builder.resolver ? getResolver({ resolver: opts.builder.resolver }) : getResolver({ didMethods: opts.builder.didMethods }),
           },
         },
       }

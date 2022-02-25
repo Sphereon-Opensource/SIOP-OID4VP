@@ -24,6 +24,7 @@ export default class RPBuilder {
   subjectIdentifierTypes: SubjectIdentifierType = SubjectIdentifierType.DID;
   didMethods: string[] = [];
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
+  resolver?: Resolvable;
   credentialFormats: CredentialFormat[] = [];
   requestRegistration: Partial<RequestRegistrationOpts> = {};
   redirectUri: string;
@@ -40,14 +41,19 @@ export default class RPBuilder {
     return this;
   }
 
+  defaultResolver(resolver: Resolvable): RPBuilder {
+    this.resolver = resolver;
+    return this;
+  }
+
   addResolver(didMethod: string, resolver: Resolvable): RPBuilder {
     this.didMethods.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
     this.resolvers.set(DIDJwt.getMethodFromDid(didMethod), resolver);
     return this;
   }
 
-  addDidMethod(didMethod: string): RPBuilder {
-    this.addResolver(didMethod, new Resolver(getUniResolver(DIDJwt.getMethodFromDid(didMethod))));
+  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): RPBuilder {
+    this.addResolver(didMethod, new Resolver(getUniResolver(DIDJwt.getMethodFromDid(didMethod), { ...opts })));
     return this;
   }
 
