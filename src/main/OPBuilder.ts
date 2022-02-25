@@ -24,9 +24,15 @@ export default class OPBuilder {
   // did: string;
   // vp?: VerifiablePresentation;
   expiresIn?: number;
+  resolver?: Resolvable;
 
   addCredentialFormat(credentialFormat: CredentialFormat): OPBuilder {
     this.credentialFormats.push(credentialFormat);
+    return this;
+  }
+
+  defaultResolver(resolver: Resolvable): OPBuilder {
+    this.resolver = resolver;
     return this;
   }
 
@@ -36,8 +42,8 @@ export default class OPBuilder {
     return this;
   }
 
-  addDidMethod(didMethod: string): OPBuilder {
-    this.addResolver(didMethod, new Resolver(getUniResolver(DIDJwt.getMethodFromDid(didMethod))));
+  addDidMethod(didMethod: string, opts?: {resolveUrl?: string, baseUrl?: string}): OPBuilder {
+    this.addResolver(didMethod, new Resolver(getUniResolver(DIDJwt.getMethodFromDid(didMethod), {...opts})));
     return this;
   }
 
