@@ -42,8 +42,8 @@ export default class OPBuilder {
     return this;
   }
 
-  addDidMethod(didMethod: string, opts?: {resolveUrl?: string, baseUrl?: string}): OPBuilder {
-    this.addResolver(didMethod, new Resolver(getUniResolver(DIDJwt.getMethodFromDid(didMethod), {...opts})));
+  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
+    this.addResolver(didMethod, new Resolver(getUniResolver(DIDJwt.getMethodFromDid(didMethod), { ...opts })));
     return this;
   }
 
