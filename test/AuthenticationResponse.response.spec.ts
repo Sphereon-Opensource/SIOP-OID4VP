@@ -1,4 +1,5 @@
-import { ICredential, IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
+import { IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
+import { ICredential } from '@sphereon/pex/dist/main/lib/types';
 
 import { PresentationExchange } from '../src/main';
 import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
@@ -204,7 +205,7 @@ describe('create JWT from Request JWT should', () => {
       proof: undefined,
     };
 
-    // fixme: This is probably here because the VC interface in the pe-js is not correct
+    // fixme: This is probably here because the VC interface in the PEX is not correct
     /*vp['id'] = 'ebc6f1c2';
     vp['type'] = ['VerifiablePresentation'];
     vp['holder'] = 'did:example:holder';*/

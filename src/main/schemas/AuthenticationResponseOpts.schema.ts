@@ -344,10 +344,17 @@ export const AuthenticationResponseOptsSchema = {
       "type": "object",
       "properties": {
         "@context": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ICredentialContextType"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ICredentialContextType"
+              }
+            }
+          ]
         },
         "type": {
           "type": "array",
@@ -375,17 +382,29 @@ export const AuthenticationResponseOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "IVerifiableCredential": {
+    "ICredentialContextType": {
       "anyOf": [
         {
-          "$ref": "#/definitions/IJwtVerifiableCredential"
+          "$ref": "#/definitions/ICredentialContext"
         },
         {
-          "$ref": "#/definitions/IJsonLdVerifiableCredential"
+          "type": "string"
         }
       ]
     },
-    "IJwtVerifiableCredential": {
+    "ICredentialContext": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "IVerifiableCredential": {
       "type": "object",
       "properties": {
         "proof": {
@@ -401,38 +420,78 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
-        "aud": {
+        "expirationDate": {
           "type": "string"
         },
-        "exp": {
-          "type": [
-            "string",
-            "number"
+        "issuer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/IIssuer"
+            }
           ]
         },
-        "iss": {
+        "issuanceDate": {
           "type": "string"
         },
-        "jti": {
+        "credentialSubject": {
+          "$ref": "#/definitions/ICredentialSubject"
+        },
+        "id": {
           "type": "string"
         },
-        "nbf": {
-          "type": [
-            "string",
-            "number"
+        "@context": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ICredentialContextType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ICredentialContextType"
+            }
           ]
         },
-        "sub": {
+        "credentialStatus": {
+          "$ref": "#/definitions/ICredentialStatus"
+        },
+        "credentialSchema": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ICredentialSchemaType"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ICredentialSchemaType"
+              }
+            }
+          ]
+        },
+        "description": {
           "type": "string"
         },
-        "vc": {
-          "$ref": "#/definitions/BaseCredential"
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
-        "iss",
+        "@context",
+        "credentialSubject",
+        "id",
+        "issuanceDate",
+        "issuer",
         "proof",
-        "vc"
+        "type"
       ]
     },
     "IProof": {
@@ -535,87 +594,26 @@ export const AuthenticationResponseOptsSchema = {
         "capabilityDelegation"
       ]
     },
-    "BaseCredential": {
+    "IIssuer": {
       "type": "object",
       "properties": {
-        "@context": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "credentialStatus": {
-          "$ref": "#/definitions/ICredentialStatus"
-        },
-        "credentialSubject": {
-          "$ref": "#/definitions/ICredentialSubject"
-        },
-        "credentialSchema": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/ICredentialSchema"
-            },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ICredentialSchema"
-              }
-            }
-          ]
-        },
-        "description": {
-          "type": "string"
-        },
-        "expirationDate": {
-          "type": "string"
-        },
         "id": {
           "type": "string"
-        },
-        "issuanceDate": {
-          "type": "string"
-        },
-        "issuer": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/definitions/IIssuer"
-            }
-          ]
-        },
-        "name": {
-          "type": "string"
-        },
-        "type": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "required": [
-        "@context",
-        "credentialSubject",
-        "id",
-        "issuanceDate",
-        "issuer",
-        "type"
+        "id"
       ],
-      "additionalProperties": {
-        "anyOf": [
-          {},
-          {}
-        ]
-      }
+      "additionalProperties": {}
+    },
+    "ICredentialSubject": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
     },
     "ICredentialStatus": {
       "type": "object",
@@ -633,14 +631,15 @@ export const AuthenticationResponseOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "ICredentialSubject": {
-      "type": "object",
-      "properties": {
-        "id": {
+    "ICredentialSchemaType": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ICredentialSchema"
+        },
+        {
           "type": "string"
         }
-      },
-      "additionalProperties": {}
+      ]
     },
     "ICredentialSchema": {
       "type": "object",
@@ -653,112 +652,9 @@ export const AuthenticationResponseOptsSchema = {
         }
       },
       "required": [
-        "id",
-        "type"
-      ],
-      "additionalProperties": false
-    },
-    "IIssuer": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      },
-      "required": [
         "id"
       ],
-      "additionalProperties": {}
-    },
-    "IJsonLdVerifiableCredential": {
-      "type": "object",
-      "properties": {
-        "proof": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/IProof"
-            },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/IProof"
-              }
-            }
-          ]
-        },
-        "@context": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "credentialStatus": {
-          "$ref": "#/definitions/ICredentialStatus"
-        },
-        "credentialSubject": {
-          "$ref": "#/definitions/ICredentialSubject"
-        },
-        "credentialSchema": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/ICredentialSchema"
-            },
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ICredentialSchema"
-              }
-            }
-          ]
-        },
-        "description": {
-          "type": "string"
-        },
-        "expirationDate": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
-        "issuanceDate": {
-          "type": "string"
-        },
-        "issuer": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/definitions/IIssuer"
-            }
-          ]
-        },
-        "name": {
-          "type": "string"
-        },
-        "type": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "@context",
-        "credentialSubject",
-        "id",
-        "issuanceDate",
-        "issuer",
-        "proof",
-        "type"
-      ]
+      "additionalProperties": false
     },
     "PresentationSubmission": {
       "type": "object",

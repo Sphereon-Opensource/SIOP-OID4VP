@@ -9,7 +9,7 @@ import RPBuilder from './RPBuilder';
 import { Encodings as DidAuthHexUtils, Keys as DidAuthKeyUtils } from './functions';
 import { SIOP } from './types';
 
-export { JWTHeader, JWTPayload, JWTOptions, JWTVerifyOptions } from '../did-jwt-fork/JWT';
+export { JWTHeader, JWTPayload, JWTOptions, JWTVerifyOptions } from 'did-jwt';
 export {
   AuthenticationRequest,
   AuthenticationResponse,

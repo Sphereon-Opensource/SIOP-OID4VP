@@ -1,4 +1,4 @@
-import { JWTHeader } from '../did-jwt-fork/JWT';
+import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
 import { PresentationExchange } from './PresentationExchange';

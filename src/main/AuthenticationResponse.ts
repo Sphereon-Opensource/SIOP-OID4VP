@@ -1,6 +1,5 @@
+import { JWTHeader } from 'did-jwt';
 import { JWK } from 'jose/types';
-
-import { JWTHeader } from '../did-jwt-fork/JWT';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
@@ -221,7 +220,7 @@ async function createSIOPResponsePayload(
   const isDidSupported = verifiedJwt.payload.registration?.subject_identifiers_supported?.includes(SubjectIdentifierType.DID);
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
-  const nonce = resOpts.nonce || State.getNonce(state, resOpts.nonce);
+  const nonce = verifiedJwt.payload.nonce || resOpts.nonce || State.getNonce(state);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
 
   // *********************************************************************************

@@ -1,8 +1,7 @@
+import { createJWT, decodeJWT, EdDSASigner, ES256KSigner, hexToBytes, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT } from 'did-jwt';
+import { JWTDecoded } from 'did-jwt/lib/JWT';
 import { Resolvable } from 'did-resolver';
 
-import { createJWT, decodeJWT, JWTDecoded, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT } from '../../did-jwt-fork/JWT';
-import { ES256KSigner } from '../../did-jwt-fork/signers/ES256KSigner';
-import { EdDSASigner } from '../../did-jwt-fork/signers/EdDSASigner';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
 import { JWT, SIOP, SIOPErrors } from '../types';
 import { EcdsaSignature } from '../types/JWT.types';
@@ -22,11 +21,8 @@ import {
   SignatureResponse,
 } from '../types/SIOP.types';
 
-import { base58ToBase64String } from './Encodings';
 import { postWithBearerToken } from './HttpUtils';
 import { isEd25519DidKeyMethod, isEd25519JWK } from './Keys';
-
-import { Keys } from './index';
 
 /**
  *  Verifies given JWT. If the JWT is valid, the promise returns an object including the JWT, the payload of the JWT,
@@ -107,10 +103,7 @@ async function signDidJwtInternal(
 ): Promise<string> {
   const algo = isEd25519DidKeyMethod(issuer) || isEd25519DidKeyMethod(payload.kid) || isEd25519JWK(payload.sub_jwk) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
   // const request = !!payload.client_id;
-  const signer =
-    algo == KeyAlgo.EDDSA
-      ? EdDSASigner(base58ToBase64String(Keys.getBase58PrivateKeyFromHexPrivateKey(hexPrivateKey)))
-      : ES256KSigner(hexPrivateKey.replace('0x', ''));
+  const signer = algo == KeyAlgo.EDDSA ? EdDSASigner(hexToBytes(hexPrivateKey)) : ES256KSigner(hexToBytes(hexPrivateKey.replace('0x', '')));
 
   const header = {
     alg: algo,

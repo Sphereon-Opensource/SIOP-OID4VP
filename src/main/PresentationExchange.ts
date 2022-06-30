@@ -11,6 +11,7 @@ import {
   ProofPurpose,
   ProofType,
   SelectResults,
+  Status,
 } from '@sphereon/pex';
 import { PresentationSubmission } from '@sphereon/pex-models';
 
@@ -25,7 +26,7 @@ import {
 } from './types/SIOP.types';
 
 export class PresentationExchange {
-  readonly pejs = new PEX();
+  readonly pex = new PEX();
   readonly allVerifiableCredentials: IVerifiableCredential[];
   readonly did;
 
@@ -48,10 +49,10 @@ export class PresentationExchange {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     }
 
-    function sign(params: PresentationSignCallBackParams): IVerifiablePresentation {
+    function sign(params: PresentationSignCallBackParams): Promise<IVerifiablePresentation> {
       console.log('##### SIGN CALLBACK IMPLEMENTATION NEEDED FOR VP');
       console.log(params);
-      return params.presentation as IVerifiablePresentation;
+      return Promise.resolve(params.presentation as IVerifiablePresentation);
     }
 
     const challenge: string = options?.nonce;
@@ -71,7 +72,7 @@ export class PresentationExchange {
       },
     };
 
-    return this.pejs.verifiablePresentationFrom(presentationDefinition, selectedCredentials, sign, signOptions);
+    return this.pex.verifiablePresentationFromAsync(presentationDefinition, selectedCredentials, sign, signOptions);
   }
 
   /**
@@ -80,7 +81,7 @@ export class PresentationExchange {
    * Finds a set of `VerifiableCredential`s from a list supplied to this class during construction,
    * matching presentationDefinition object found in the requestPayload
    * if requestPayload doesn't contain any valid presentationDefinition throws an error
-   * if PE-JS library returns any error in the process, throws the error
+   * if PEX library returns any error in the process, throws the error
    * returns the SelectResults object if successful
    * @param presentationDefinition: object received by the OP from the RP
    */
@@ -90,14 +91,14 @@ export class PresentationExchange {
     } else if (!this.allVerifiableCredentials || this.allVerifiableCredentials.length == 0) {
       throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, no VCs were provided`);
     }
-    const selectResults: SelectResults = this.pejs.selectFrom(
+    const selectResults: SelectResults = this.pex.selectFrom(
       presentationDefinition,
       // fixme holder dids and limited disclosure
       this.allVerifiableCredentials,
       [this.did],
       []
     );
-    if (selectResults.errors.length) {
+    if (selectResults.areRequiredCredentialsPresent == Status.ERROR) {
       throw new Error(`message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(selectResults.errors)}`);
     }
     return selectResults;

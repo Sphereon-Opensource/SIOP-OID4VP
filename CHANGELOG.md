@@ -1,6 +1,17 @@
 # Release Notes
 The DID Auth SIOP typescript library is still in an alpha state at this point. Please note that the interfaces might still change a bit as the software still is in active development.
 
+## v0.2.11 - 2022-07-01
+
+- Updated:
+  - Update to PEX 1.1.2
+  - Update several other deps
+- Fixed:
+  - Only throw a PEX error in case PEX itself has flagged the submission to be in error
+  - Use nonce from request in response if available
+  - Remove DID-JWT fork as the current version supports SIOPv2 iss values
+
+
 ## v0.2.10 - 2022-02-25
 
 - Added:
@@ -42,7 +53,7 @@ The DID Auth SIOP typescript library is still in an alpha state at this point. P
   - Check nonce and did support first before verifying JWT
 
 - Updated:
-  * Updated PE-JS dependency that fixed a JSON-path bug impacting us
+  * Updated PEX dependency that fixed a JSON-path bug impacting us
 
 
 ## v0.2.2 - 2021-11-29
@@ -53,7 +64,7 @@ The DID Auth SIOP typescript library is still in an alpha state at this point. P
 ## v0.2.1 - 2021-11-28
 
 - Updated:
-  * Presentation Exchange updated to latest pe-js version 0.5.x. The eventual Presentation is not a VP yet (proof will be in next minor release)
+  * Presentation Exchange updated to latest PEX version 0.5.x. The eventual Presentation is not a VP yet (proof will be in next minor release)
   * Update Uni Resolver client to latest version 0.3.3
 
 ## v0.2.0 - 2021-10-06

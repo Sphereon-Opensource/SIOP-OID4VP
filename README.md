@@ -21,7 +21,7 @@ it does not rely on any third parties and strictly happens peer 2 peer, but stil
 
 Next to the user acting as an OpenID Provider, this library also includes support for Verifiable Presentations using
 the [Presentation Exchange](https://identity.foundation/presentation-exchange/) support provided by
-our [pe-js](https://github.com/Sphereon-Opensource/pe-js) library. This means that the Relying Party can pose submission
+our [PEX](https://github.com/Sphereon-Opensource/pex) library. This means that the Relying Party can pose submission
 requirements on the Verifiable Credentials it would like to receive from the client/OP. The OP then checks whether it
 has the credentials to support the submission requirements. Only if that is the case it will send the relevant (parts of
 the) credentials as a Verifiable Presentation in the Authentication Response destined for the Webapp/Relying Party. The
@@ -39,7 +39,7 @@ Demo: https://vimeo.com/630104529 and a more stripped down demo: https://youtu.b
 
 ## Active Development
 
-_IMPORTANT: This software still is in early development stage. As such you should expect breaking changes in APIs, we
+_IMPORTANT: This software still is in **VERY** early development stage. As such you should expect breaking changes in APIs, we
 expect to keep that to a minimum though._
 
 ## Functionality
@@ -506,13 +506,13 @@ const matches: SubmissionRequirementMatch = checked.matches;
 The previous step has filtered the VCs for you into the matches constant. But the user really has to acknowledge that
 he/she will be sending in a VP containing the VCs. As mentioned above the selected VCs might still need more filtering
 by the user. This part is out of the scope of this library as it is application specific. For more info also see
-the [PE-JS library](https://github.com/Sphereon-Opensource/pe-js).
+the [PEX library](https://github.com/Sphereon-Opensource/pex).
 
 In the code examples we will use 'userSelectedCredentials' as variable for the outcome of this process.
 
 ````typescript
 // Your application process here, resulting in:
-import {VerifiableCredential} from "@sphereon/pe-js";
+import {IVerifiableCredential} from "@sphereon/pex";
 
 const userSelectedCredentials: VerifiableCredential[] // Your selected credentials
 ````

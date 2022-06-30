@@ -1,4 +1,5 @@
-import { JWTDecoded } from '../../src/did-jwt-fork/JWT';
+import { JWTDecoded } from 'did-jwt/lib/JWT';
+
 import {
   getIssuerDidFromJWT,
   getIssuerDidFromPayload,
