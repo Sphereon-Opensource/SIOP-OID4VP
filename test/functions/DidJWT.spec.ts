@@ -9,6 +9,7 @@ import {
   parseJWT,
   toSIOPRegistrationDidMethod,
 } from '../../src/main/functions/DidJWT';
+import { isEd25519DidKeyMethod } from '../../src/main/functions/Keys';
 import { SIOPErrors } from '../../src/main/types';
 
 const validJWT =
@@ -124,5 +125,10 @@ describe('DidJWT ', () => {
   it('toSIOPRegistrationDidMethod: should pass if', async function () {
     const result = toSIOPRegistrationDidMethod('did:ethr:0x226e2e2223333c2e4c65652e452d412d50611111');
     expect(result).toBe('did:ethr:');
+  });
+
+  it('is ED25519 Did key', async function () {
+    const result = isEd25519DidKeyMethod('did:key:z6MkwVRpJ1AHXrb3z1Ao59a87MB6NqvUiseQ9XnVDf7RFE3K');
+    expect(result).toBe(true);
   });
 });

@@ -101,7 +101,15 @@ async function signDidJwtInternal(
   hexPrivateKey: string,
   kid?: string
 ): Promise<string> {
-  const algo = isEd25519DidKeyMethod(issuer) || isEd25519DidKeyMethod(payload.kid) || isEd25519JWK(payload.sub_jwk) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
+  // todo: Create method. We are doing roughly the same multiple times
+  const algo =
+    isEd25519DidKeyMethod(issuer) ||
+    isEd25519DidKeyMethod(payload.kid) ||
+    isEd25519DidKeyMethod(kid) ||
+    isEd25519DidKeyMethod(payload.did) ||
+    isEd25519JWK(payload.sub_jwk)
+      ? KeyAlgo.EDDSA
+      : KeyAlgo.ES256K;
   // const request = !!payload.client_id;
   const signer = algo == KeyAlgo.EDDSA ? EdDSASigner(hexToBytes(hexPrivateKey)) : ES256KSigner(hexToBytes(hexPrivateKey.replace('0x', '')));
 
@@ -124,7 +132,9 @@ async function signDidJwtExternal(
   authZToken: string,
   kid?: string
 ): Promise<string> {
-  const alg = isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) ? SIOP.KeyAlgo.EDDSA : SIOP.KeyAlgo.ES256K;
+  // todo: Create method. We are doing roughly the same multiple times
+  const alg =
+    isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? SIOP.KeyAlgo.EDDSA : SIOP.KeyAlgo.ES256K;
 
   const body = {
     issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.did,
@@ -146,7 +156,15 @@ async function signDidJwtSupplied(
   signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
   kid: string
 ): Promise<string> {
-  const algo = isEd25519DidKeyMethod(issuer) || isEd25519DidKeyMethod(payload.kid) || isEd25519JWK(payload.sub_jwk) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
+  // todo: Create method. We are doing roughly the same multiple times
+  const algo =
+    isEd25519DidKeyMethod(issuer) ||
+    isEd25519DidKeyMethod(payload.kid) ||
+    isEd25519DidKeyMethod(kid) ||
+    isEd25519DidKeyMethod(payload.did) ||
+    isEd25519JWK(payload.sub_jwk)
+      ? KeyAlgo.EDDSA
+      : KeyAlgo.ES256K;
   const header = {
     alg: algo,
     kid,
