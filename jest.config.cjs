@@ -14,7 +14,6 @@ module.exports = {
     coverageDirectory: "./coverage/",
     collectCoverageFrom: [
         "src/**/*.{ts,tsx}",
-        "!src/did-jwt-fork/*.ts",
         "!src/schemas/**",
         "!src/**/*.d.ts",
         "!**/node_modules/**",

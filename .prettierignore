@@ -2,8 +2,5 @@
 dist
 coverage
 
-# Fork
-did-jwt-fork
-
 # Ignore all schema files:
 src/main/schemas
