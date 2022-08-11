@@ -1,4 +1,5 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
+import { Format } from '@sphereon/pex-models';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
@@ -6,7 +7,6 @@ import { DIDJwt } from './functions';
 import { EcdsaSignature } from './types/JWT.types';
 import {
   ClaimOpts,
-  CredentialFormat,
   ExternalSignature,
   InternalSignature,
   NoSignature,
@@ -15,17 +15,20 @@ import {
   PresentationDefinitionWithLocation,
   RequestRegistrationOpts,
   ResponseContext,
+  ResponseIss,
   ResponseMode,
-  SubjectIdentifierType,
+  ResponseType,
+  Scope,
+  SigningAlgo,
+  SubjectType,
   SuppliedSignature,
 } from './types/SIOP.types';
 
 export default class RPBuilder {
-  subjectIdentifierTypes: SubjectIdentifierType = SubjectIdentifierType.DID;
-  didMethods: string[] = [];
+  authorizationEndpoint: string;
+  issuer: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   resolver?: Resolvable;
-  credentialFormats: CredentialFormat[] = [];
   requestRegistration: Partial<RequestRegistrationOpts> = {};
   redirectUri: string;
   requestObjectBy: ObjectBy;
@@ -35,9 +38,21 @@ export default class RPBuilder {
   claims?: ClaimOpts;
 
   // claims?: ClaimPayload;
+  vpFormatsSupported: Format;
+  idTokenSigningAlgValuesSupported: SigningAlgo[];
+  subjectSyntaxTypesSupported: string[];
+  requestObjectSigningAlgValuesSupported: SigningAlgo[];
+  responseTypesSupported: ResponseType[];
+  scopesSupported: Scope[];
+  subjectTypesSupported: SubjectType[];
 
-  addCredentialFormat(credentialType: CredentialFormat): RPBuilder {
-    this.credentialFormats.push(credentialType);
+  addIssuer(issuer: ResponseIss): RPBuilder {
+    this.issuer = issuer;
+    return this;
+  }
+
+  addVpFormatsSupported(credentialType: Format): RPBuilder {
+    this.vpFormatsSupported = credentialType;
     return this;
   }
 
@@ -47,8 +62,76 @@ export default class RPBuilder {
   }
 
   addResolver(didMethod: string, resolver: Resolvable): RPBuilder {
-    this.didMethods.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
+    if (!this.subjectSyntaxTypesSupported || !this.subjectSyntaxTypesSupported.length) {
+      this.subjectSyntaxTypesSupported = [];
+    }
+    this.subjectSyntaxTypesSupported.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
     this.resolvers.set(DIDJwt.getMethodFromDid(didMethod), resolver);
+    return this;
+  }
+
+  addIdTokenSigningAlgValuesSupported(signingAlgo: SigningAlgo | SigningAlgo[]): RPBuilder {
+    if (!this.idTokenSigningAlgValuesSupported || !this.idTokenSigningAlgValuesSupported.length) {
+      this.idTokenSigningAlgValuesSupported = [];
+    }
+    if (Array.isArray(signingAlgo)) {
+      this.idTokenSigningAlgValuesSupported.push(...signingAlgo);
+    } else {
+      this.idTokenSigningAlgValuesSupported.push(signingAlgo);
+    }
+    return this;
+  }
+
+  addAuthorizationEndpoint(authorizationEndpoint: string): RPBuilder {
+    this.authorizationEndpoint = authorizationEndpoint;
+    return this;
+  }
+
+  addRequestObjectSigningAlgValuesSupported(signingAlgs: SigningAlgo | SigningAlgo[]) {
+    if (!this.requestObjectSigningAlgValuesSupported || !this.requestObjectSigningAlgValuesSupported.length) {
+      this.requestObjectSigningAlgValuesSupported = [];
+    }
+    if (Array.isArray(signingAlgs)) {
+      this.requestObjectSigningAlgValuesSupported.push(...signingAlgs);
+    } else {
+      this.requestObjectSigningAlgValuesSupported.push(signingAlgs);
+    }
+    return this;
+  }
+
+  addResponseTypesSupported(responseType: ResponseType | ResponseType[]) {
+    if (!this.responseTypesSupported || !this.responseTypesSupported.length) {
+      this.responseTypesSupported = [];
+    }
+    if (Array.isArray(responseType)) {
+      this.responseTypesSupported.push(...responseType);
+    } else {
+      this.responseTypesSupported.push(responseType);
+    }
+    return this;
+  }
+
+  addScopesSupported(scopes: Scope | Scope[]) {
+    if (!this.scopesSupported || !this.scopesSupported.length) {
+      this.scopesSupported = [];
+    }
+    if (Array.isArray(scopes)) {
+      this.scopesSupported.push(...scopes);
+    } else {
+      this.scopesSupported.push(scopes);
+    }
+    return this;
+  }
+
+  addSubjectTypesSupported(subjectTypes: SubjectType | SubjectType[]) {
+    if (!this.subjectTypesSupported || !this.subjectTypesSupported.length) {
+      this.subjectTypesSupported = [];
+    }
+    if (Array.isArray(subjectTypes)) {
+      this.subjectTypesSupported.push(...subjectTypes);
+    } else {
+      this.subjectTypesSupported.push(subjectTypes);
+    }
     return this;
   }
 
@@ -116,9 +199,14 @@ export default class RPBuilder {
   }
 
   build(): RP {
-    this.requestRegistration.didMethodsSupported = this.didMethods;
-    this.requestRegistration.subjectIdentifiersSupported = this.subjectIdentifierTypes;
-    this.requestRegistration.credentialFormatsSupported = this.credentialFormats;
+    this.requestRegistration.requestObjectSigningAlgValuesSupported = this.requestObjectSigningAlgValuesSupported;
+    this.requestRegistration.authorizationEndpoint = this.authorizationEndpoint;
+    this.requestRegistration.subjectSyntaxTypesSupported = this.subjectSyntaxTypesSupported;
+    this.requestRegistration.idTokenSigningAlgValuesSupported = this.idTokenSigningAlgValuesSupported;
+    this.requestRegistration.vpFormatsSupported = this.vpFormatsSupported;
+    this.requestRegistration.responseTypesSupported = this.responseTypesSupported;
+    this.requestRegistration.scopesSupported = this.scopesSupported;
+    this.requestRegistration.subjectTypesSupported = this.subjectTypesSupported;
     return new RP({ builder: this });
   }
 }

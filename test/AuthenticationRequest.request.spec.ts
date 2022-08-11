@@ -1,10 +1,18 @@
 import { parse } from 'querystring';
 
-import { IPresentationDefinition } from '@sphereon/pex';
+import { IPresentationDefinition, ProofType } from '@sphereon/pex';
 
 import { AuthenticationRequest, SIOP } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
-import { CredentialFormat, PresentationLocation, SubjectIdentifierType } from '../src/main/types/SIOP.types';
+import {
+  AuthenticationRequestOpts,
+  PresentationLocation,
+  ResponseType,
+  Scope,
+  SigningAlgo,
+  SubjectIdentifierType,
+  SubjectType,
+} from '../src/main/types/SIOP.types';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -57,6 +65,7 @@ describe('create Request Uri should', () => {
   it('return a reference url', async () => {
     expect.assertions(11);
     const opts: SIOP.AuthenticationRequestOpts = {
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: SIOP.PassBy.REFERENCE,
@@ -68,9 +77,17 @@ describe('create Request Uri should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: CredentialFormat.JSON_LD,
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -98,6 +115,7 @@ describe('create Request Uri should', () => {
   it('return a reference url when using did:key', async () => {
     expect.assertions(3);
     const opts: SIOP.AuthenticationRequestOpts = {
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: SIOP.PassBy.REFERENCE,
@@ -110,9 +128,17 @@ describe('create Request Uri should', () => {
         kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#keys-1',
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: CredentialFormat.JSON_LD,
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -131,6 +157,7 @@ describe('create Request Uri should', () => {
   it('return an url with an embedded token value', async () => {
     expect.assertions(2);
     const opts: SIOP.AuthenticationRequestOpts = {
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: SIOP.PassBy.VALUE,
@@ -141,9 +168,17 @@ describe('create Request Uri should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: CredentialFormat.JSON_LD,
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -174,9 +209,13 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JSON_LD],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -198,9 +237,13 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JSON_LD],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -219,9 +262,13 @@ describe('create Request JWT should', () => {
       },
       signatureType: {},
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JSON_LD],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -244,9 +291,13 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JSON_LD],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: 'FAILURE',
         },
@@ -269,9 +320,13 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JSON_LD],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.REFERENCE,
         },
@@ -282,7 +337,8 @@ describe('create Request JWT should', () => {
 
   it('succeed when all params are set', async () => {
     // expect.assertions(1);
-    const opts = {
+    const opts: AuthenticationRequestOpts = {
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: SIOP.PassBy.REFERENCE,
@@ -294,9 +350,17 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JSON_LD],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -313,23 +377,42 @@ describe('create Request JWT should', () => {
         response_mode: 'post',
         response_context: 'rp',
         registration: {
-          did_methods_supported: ['did:ethr:'],
-          subject_identifiers_supported: 'did',
-          credential_formats_supported: ['w3cvc-jsonld'],
+          authorization_endpoint: undefined,
+          id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          response_types_supported: [ResponseType.ID_TOKEN],
+          scopes_supported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+          subject_types_supported: [SubjectType.PAIRWISE],
+          subject_syntax_types_supported: ['did:ethr:', 'did'],
+          vp_formats: {
+            ldp_vc: {
+              proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+            },
+          },
         },
       },
       opts: {
         redirectUri: 'https://acme.com/hello',
-        requestBy: { type: 'REFERENCE', referenceUri: 'https://rp.acme.com/siop/jwts' },
+        requestBy: {
+          type: 'REFERENCE',
+          referenceUri: 'https://rp.acme.com/siop/jwts',
+        },
         signatureType: {
           hexPrivateKey: 'f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f',
           did: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0',
           kid: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1',
         },
         registration: {
-          didMethodsSupported: ['did:ethr:'],
-          subjectIdentifiersSupported: 'did',
-          registrationBy: { type: 'VALUE' },
+          idTokenSigningAlgValuesSupported: ['EdDSA', 'ES256'],
+          subjectSyntaxTypesSupported: ['did:ethr:', 'did'],
+          vpFormatsSupported: {
+            ldp_vc: {
+              proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+            },
+          },
+          registrationBy: {
+            type: 'VALUE',
+          },
         },
       },
     };
@@ -341,6 +424,7 @@ describe('create Request JWT should', () => {
   it('succeed when requesting with a valid PD', async () => {
     const opts: SIOP.AuthenticationRequestOpts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       requestBy: {
         type: SIOP.PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -351,9 +435,17 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JSON_LD],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -390,6 +482,7 @@ describe('create Request JWT should', () => {
   xit('should throw error if presentation definition object is not valid', async () => {
     const opts: SIOP.AuthenticationRequestOpts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       requestBy: {
         type: SIOP.PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -400,9 +493,17 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JSON_LD],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },

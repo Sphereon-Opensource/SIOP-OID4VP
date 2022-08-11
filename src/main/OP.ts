@@ -15,7 +15,6 @@ import {
   InternalVerification,
   ParsedAuthenticationRequestURI,
   ResponseMode,
-  ResponseRegistrationOpts,
   UrlEncodingFormat,
   VerifiablePresentationResponseOpts,
   VerificationMode,
@@ -27,6 +26,7 @@ const ajv = new Ajv();
 
 const validate = ajv.compile(AuthenticationResponseOptsSchema);
 
+// The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
 export class OP {
   private readonly _authResponseOpts: AuthenticationResponseOpts;
   private readonly _verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
@@ -147,7 +147,14 @@ async function parseAndResolveUri(encodedUri: string) {
 function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {
   const responseOpts: AuthenticationResponseOpts = opts.builder
     ? {
-        registration: opts.builder.responseRegistration as ResponseRegistrationOpts,
+        registration: {
+          issuer: opts.builder.issuer,
+          registrationBy: opts.builder.responseRegistration.registrationBy,
+          responseTypesSupported: opts.builder.responseTypesSupported,
+          subjectSyntaxTypesSupported: opts.builder.subjectSyntaxTypesSupported,
+          subjectTypesSupported: opts.builder.subjectTypesSupported,
+          vpFormats: opts.builder.vpFormats,
+        },
         did: opts.builder.signatureType.did,
         expiresIn: opts.builder.expiresIn,
         signatureType: opts.builder.signatureType,
@@ -168,8 +175,10 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
         verification: {
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
-            didMethods: opts.builder.didMethods,
-            resolver: opts.builder.resolver ? getResolver({ resolver: opts.builder.resolver }) : getResolver({ didMethods: opts.builder.didMethods }),
+            didMethods: opts.builder.subjectSyntaxTypesSupported,
+            resolver: opts.builder.resolver
+              ? getResolver({ resolver: opts.builder.resolver })
+              : getResolver({ subjectSyntaxTypesSupported: opts.builder.subjectSyntaxTypesSupported }),
           },
         },
       }

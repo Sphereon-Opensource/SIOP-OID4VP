@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 
 // import { DidKeyDriver } from '@digitalcredentials/did-method-key'
+import { ProofType } from '@sphereon/pex';
 import base58 from 'bs58';
 import { DIDDocument } from 'did-resolver';
 import { ethers } from 'ethers';
@@ -16,7 +17,16 @@ import { SIOP } from '../src/main';
 import { assertValidMetadata } from '../src/main/functions/DidSiopMetadata';
 import { base64ToHexString } from '../src/main/functions/Encodings';
 import SIOPErrors from '../src/main/types/Errors';
-import { CredentialFormat, ResponseIss, ResponseType, Scope, SigningAlgo, SubjectIdentifierType, SubjectType } from '../src/main/types/SIOP.types';
+import {
+  DiscoveryMetadataPayload,
+  ResponseIss,
+  ResponseType,
+  RPRegistrationMetadataPayload,
+  Scope,
+  SigningAlgo,
+  SubjectIdentifierType,
+  SubjectType,
+} from '../src/main/types/SIOP.types';
 
 import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
 
@@ -211,27 +221,45 @@ export const resolveDidKey = async (did: string): Promise<DIDResolutionResult> =
 };
 */
 
-export const metadata = {
+export const metadata: {
+  opMetadata: DiscoveryMetadataPayload;
+  rpMetadata: RPRegistrationMetadataPayload;
+  verify(): unknown;
+} = {
   opMetadata: {
-    credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
     issuer: ResponseIss.SELF_ISSUED_V2,
     authorization_endpoint: 'http://test.com',
-    credential_claims_supported: ['test'],
-    credential_endpoint: 'http://test.com',
-    credential_name: 'test',
-    credential_supported: true,
-    did_methods_supported: ['did:web'],
-    dids_supported: true,
+    subject_syntax_types_supported: ['did:web', SubjectIdentifierType.DID],
     id_token_signing_alg_values_supported: undefined,
-    request_object_signing_alg_values_supported: SigningAlgo.EDDSA,
+    request_object_signing_alg_values_supported: [SigningAlgo.EDDSA],
     response_types_supported: ResponseType.ID_TOKEN,
-    scopes_supported: Scope.OPENID_DIDAUTHN,
-    subject_types_supported: SubjectType.PAIRWISE,
+    scopes_supported: [Scope.OPENID_DIDAUTHN],
+    subject_types_supported: [SubjectType.PAIRWISE],
+    vp_formats: {
+      ldp_vc: {
+        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+      },
+      jwt_vc: {
+        alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
+      },
+    },
   },
   rpMetadata: {
-    subject_identifiers_supported: SubjectIdentifierType.DID,
-    did_methods_supported: ['did:web', 'did:key'],
-    credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
+    authorization_endpoint: 'http://test.com',
+    id_token_signing_alg_values_supported: [],
+    request_object_signing_alg_values_supported: [SigningAlgo.EDDSA],
+    response_types_supported: [ResponseType.ID_TOKEN],
+    scopes_supported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+    subject_syntax_types_supported: [SubjectIdentifierType.DID, 'did:web', 'did:key'],
+    subject_types_supported: [SubjectType.PAIRWISE],
+    vp_formats: {
+      ldp_vc: {
+        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+      },
+      jwt_vc: {
+        alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
+      },
+    },
   },
   verify() {
     return assertValidMetadata(this.opMetadata, this.rpMetadata);

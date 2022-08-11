@@ -1,33 +1,51 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
+import { Format } from '@sphereon/pex-models';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';
 import { DIDJwt } from './functions';
 import { EcdsaSignature } from './types/JWT.types';
 import {
-  CredentialFormat,
   ExternalSignature,
   InternalSignature,
   PassBy,
+  ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,
+  ResponseType,
+  SigningAlgo,
+  SubjectType,
   SuppliedSignature,
 } from './types/SIOP.types';
 
 export default class OPBuilder {
-  didMethods: string[] = [];
+  expiresIn?: number;
+  idTokenSigningAlgValuesSupported: SigningAlgo[];
+  issuer: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-  signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
-  credentialFormats: CredentialFormat[] = [];
-  responseRegistration: ResponseRegistrationOpts;
   responseMode?: ResponseMode;
+  responseRegistration: ResponseRegistrationOpts;
+  responseTypesSupported: ResponseType[] | ResponseType;
   // did: string;
   // vp?: VerifiablePresentation;
-  expiresIn?: number;
   resolver?: Resolvable;
+  signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
+  subjectSyntaxTypesSupported: string[] = [];
+  vpFormats: Format;
+  subjectTypesSupported: SubjectType[];
 
-  addCredentialFormat(credentialFormat: CredentialFormat): OPBuilder {
-    this.credentialFormats.push(credentialFormat);
+  addVpFormatsSupported(credentialType: Format): OPBuilder {
+    this.vpFormats = credentialType;
+    return this;
+  }
+
+  addResponseTypesSupported(responseTypesSupported: ResponseType[] | ResponseType): OPBuilder {
+    this.responseTypesSupported = responseTypesSupported;
+    return this;
+  }
+
+  addIssuer(issuer: ResponseIss): OPBuilder {
+    this.issuer = issuer;
     return this;
   }
 
@@ -37,7 +55,7 @@ export default class OPBuilder {
   }
 
   addResolver(didMethod: string, resolver: Resolvable): OPBuilder {
-    this.didMethods.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
+    this.subjectSyntaxTypesSupported.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
     this.resolvers.set(DIDJwt.getMethodFromDid(didMethod), resolver);
     return this;
   }
@@ -62,8 +80,13 @@ export default class OPBuilder {
     return this;
   }
 
+  //TODO: fill up with the actual values
   registrationBy(registrationBy: PassBy, refUri?: string): OPBuilder {
     this.responseRegistration = {
+      vpFormats: this.vpFormats,
+      issuer: undefined,
+      responseTypesSupported: undefined,
+      subjectSyntaxTypesSupported: [],
       registrationBy: {
         type: registrationBy,
       },

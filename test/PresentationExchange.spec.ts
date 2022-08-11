@@ -1,4 +1,4 @@
-import { IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
+import { IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphereon/pex';
 import { PresentationDefinitionV1 } from '@sphereon/pex-models';
 
 import { PresentationExchange, SIOP } from '../src/main';
@@ -6,11 +6,14 @@ import { State } from '../src/main/functions';
 import { SIOPErrors } from '../src/main/types';
 import {
   AuthenticationRequestPayload,
-  CredentialFormat,
+  IdTokenType,
   PresentationDefinitionWithLocation,
   ResponseContext,
   ResponseMode,
+  Scope,
+  SigningAlgo,
   SubjectIdentifierType,
+  SubjectType,
   VerifiablePresentationPayload,
   VerifiablePresentationTypeFormat,
 } from '../src/main/types/SIOP.types';
@@ -34,15 +37,30 @@ async function getPayload(): Promise<AuthenticationRequestPayload> {
     state,
     nonce: State.getNonce(state),
     registration: {
-      did_methods_supported: ['did:ethr:'],
-      subject_identifiers_supported: SubjectIdentifierType.DID,
-      credential_formats_supported: [CredentialFormat.JSON_LD, CredentialFormat.JWT],
+      authorization_endpoint: '',
+      id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+      id_token_types_supported: [IdTokenType.SUBJECT_SIGNED],
+      request_object_signing_alg_values_supported: [SigningAlgo.ES256K, SigningAlgo.ES256, SigningAlgo.EDDSA],
+      response_types_supported: ['id_token'],
+      scopes_supported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+      subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
+      subject_types_supported: [SubjectType.PAIRWISE],
+      vp_formats: {
+        ldp_vc: {
+          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        },
+        jwt_vc: {
+          alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
+        },
+      },
     },
     claims: {
       id_token: {
         acr: null,
       },
       vp_token: {
+        response_type: 'vp_token',
+        nonce: State.getNonce(state),
         presentation_definition: {
           id: 'Insurance Plans',
           input_descriptors: [

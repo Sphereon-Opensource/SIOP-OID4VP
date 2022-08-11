@@ -5,6 +5,9 @@ export const AuthenticationRequestOptsSchema = {
     "AuthenticationRequestOpts": {
       "type": "object",
       "properties": {
+        "authorizationEndpoint": {
+          "type": "string"
+        },
         "redirectUri": {
           "type": "string"
         },
@@ -33,6 +36,12 @@ export const AuthenticationRequestOptsSchema = {
         "responseContext": {
           "$ref": "#/definitions/ResponseContext"
         },
+        "responseTypesSupported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ResponseType"
+          }
+        },
         "claims": {
           "$ref": "#/definitions/ClaimOpts"
         },
@@ -44,6 +53,24 @@ export const AuthenticationRequestOptsSchema = {
         },
         "state": {
           "type": "string"
+        },
+        "scopesSupported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Scope"
+          }
+        },
+        "subjectTypesSupported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectType"
+          }
+        },
+        "requestObjectSigningAlgValuesSupported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SigningAlgo"
+          }
         }
       },
       "required": [
@@ -167,6 +194,10 @@ export const AuthenticationRequestOptsSchema = {
         "rp",
         "op"
       ]
+    },
+    "ResponseType": {
+      "type": "string",
+      "const": "id_token"
     },
     "ClaimOpts": {
       "type": "object",
@@ -783,68 +814,90 @@ export const AuthenticationRequestOptsSchema = {
     "RequestRegistrationOpts": {
       "type": "object",
       "properties": {
-        "subjectIdentifiersSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectIdentifierType"
-              }
-            },
-            {
-              "$ref": "#/definitions/SubjectIdentifierType"
-            }
-          ]
+        "authorizationEndpoint": {
+          "type": "string"
         },
-        "didMethodsSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "string"
-            }
-          ]
+        "requestObjectSigningAlgValuesSupported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SigningAlgo"
+          }
         },
-        "credentialFormatsSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/CredentialFormat"
-              }
-            },
-            {
-              "$ref": "#/definitions/CredentialFormat"
-            }
-          ]
+        "responseTypesSupported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "scopesSupported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Scope"
+          }
+        },
+        "subjectTypesSupported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubjectType"
+          }
+        },
+        "subjectSyntaxTypesSupported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "idTokenSigningAlgValuesSupported": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SigningAlgo"
+          }
+        },
+        "vpFormatsSupported": {
+          "$ref": "#/definitions/Format"
         },
         "registrationBy": {
           "$ref": "#/definitions/RegistrationType"
         }
       },
       "required": [
-        "credentialFormatsSupported",
+        "idTokenSigningAlgValuesSupported",
         "registrationBy",
-        "subjectIdentifiersSupported"
+        "requestObjectSigningAlgValuesSupported",
+        "responseTypesSupported",
+        "scopesSupported",
+        "subjectSyntaxTypesSupported",
+        "subjectTypesSupported",
+        "vpFormatsSupported"
       ],
       "additionalProperties": false
     },
-    "SubjectIdentifierType": {
+    "SigningAlgo": {
       "type": "string",
       "enum": [
-        "jkt",
-        "did"
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K",
+        "none"
       ]
     },
-    "CredentialFormat": {
+    "Scope": {
       "type": "string",
       "enum": [
-        "w3cvc-jsonld",
-        "jwt"
+        "openid",
+        "openid did_authn",
+        "profile",
+        "email",
+        "address",
+        "phone"
+      ]
+    },
+    "SubjectType": {
+      "type": "string",
+      "enum": [
+        "public",
+        "pairwise"
       ]
     },
     "RegistrationType": {

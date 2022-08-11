@@ -32,10 +32,16 @@ export function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): {
   };
 }
 
+//TODO: fill it with right values
 function createRPRegistrationMetadataPayload(opts: SIOP.RPRegistrationMetadataOpts): SIOP.RPRegistrationMetadataPayload {
   return {
-    did_methods_supported: opts.didMethodsSupported || ['did:eosio:', 'did:ethr:', 'did:factom:', 'did:lto:'],
-    subject_identifiers_supported: opts.subjectIdentifiersSupported || SIOP.SubjectIdentifierType.DID,
-    credential_formats_supported: opts.credentialFormatsSupported || [],
+    authorization_endpoint: opts.authorizationEndpoint,
+    id_token_signing_alg_values_supported: opts.idTokenSigningAlgValuesSupported,
+    request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported,
+    response_types_supported: opts.responseTypesSupported,
+    scopes_supported: opts.scopesSupported,
+    subject_types_supported: opts.subjectTypesSupported,
+    subject_syntax_types_supported: opts.subjectSyntaxTypesSupported || ['did:eosio:', 'did:ethr:', 'did:factom:', 'did:lto:'],
+    vp_formats: opts.vpFormatsSupported,
   };
 }

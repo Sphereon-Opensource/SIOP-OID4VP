@@ -14,7 +14,7 @@ describe('verify JWT from Request JWT should', () => {
     audience: DID,
     verification: {
       resolveOpts: {
-        didMethods: ['ethr'],
+        subjectSyntaxTypesSupported: ['ethr'],
       },
       mode: VerificationMode.INTERNAL,
     },

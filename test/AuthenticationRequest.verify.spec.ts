@@ -1,3 +1,4 @@
+import { ProofType } from '@sphereon/pex';
 import * as dotenv from 'dotenv';
 import parseJwk from 'jose/jwk/parse';
 import SignJWT from 'jose/jwt/sign';
@@ -6,11 +7,16 @@ import { AuthenticationRequest, SIOP } from '../src/main';
 import { State } from '../src/main/functions';
 import SIOPErrors from '../src/main/types/Errors';
 import {
-  CredentialFormat,
+  AuthenticationRequestOpts,
   PassBy,
   ResponseContext,
   ResponseMode,
+  ResponseType,
+  Schema,
+  Scope,
+  SigningAlgo,
   SubjectIdentifierType,
+  SubjectType,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
 } from '../src/main/types/SIOP.types';
@@ -46,16 +52,18 @@ describe('SIOP Request Validation', () => {
       state,
       nonce: State.getNonce(state),
       registration: {
-        did_methods_supported: ['did:ethr:'],
-        subject_identifiers_supported: SubjectIdentifierType.DID,
-        credential_formats_supported: [CredentialFormat.JSON_LD, CredentialFormat.JWT],
-        /*subject_types_supported: SubjectType.PAIRWISE,
-        scopes_supported: Scope.OPENID,
+        authorization_endpoint: Schema.OPENID,
+        id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        issuer: ResponseIss.SELF_ISSUED_V2,
-        response_types_supported: ResponseType.ID_TOKEN,
-        id_token_signing_alg_values_supported: [KeyAlgo.EDDSA, KeyAlgo.ES256K],
-        authorization_endpoint: Schema.OPENID*/
+        response_types_supported: [ResponseType.ID_TOKEN],
+        scopes_supported: [Scope.OPENID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
+        subject_types_supported: [SubjectType.PAIRWISE],
+        vp_formats: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
       },
       /*registration: {
           jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did}`,
@@ -70,7 +78,7 @@ describe('SIOP Request Validation', () => {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          didMethods: ['ethr'],
+          subjectSyntaxTypesSupported: ['ethr'],
         },
       },
     };
@@ -97,6 +105,7 @@ describe('verifyJWT should', () => {
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
     const requestOpts: SIOP.AuthenticationRequestOpts = {
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: SIOP.PassBy.REFERENCE,
@@ -110,9 +119,17 @@ describe('verifyJWT should', () => {
         kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
       },
       registration: {
-        didMethodsSupported: ['did:key:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JWT],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -125,7 +142,7 @@ describe('verifyJWT should', () => {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          didMethods: ['key'],
+          subjectSyntaxTypesSupported: ['key'],
         },
       },
       nonce: 'This nonce is different and should throw error',
@@ -142,7 +159,9 @@ describe('verifyJWT should', () => {
         kid: `${mockEntity.did}#controller`,
     };
     const state = State.getState();*/
-    const requestOpts = {
+    const requestOpts: AuthenticationRequestOpts = {
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+      authorizationEndpoint: '',
       redirectUri: 'https://acme.com/hello',
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -151,9 +170,17 @@ describe('verifyJWT should', () => {
         kid: `${mockEntity.did}#controller`,
       },
       registration: {
-        didMethodsSupported: 'did:ethr:',
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JWT],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+        subjectSyntaxTypesSupported: ['did:ethr:'],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: { type: PassBy.VALUE },
       },
     };
@@ -163,7 +190,7 @@ describe('verifyJWT should', () => {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          didMethods: ['ethr'],
+          subjectSyntaxTypesSupported: ['ethr'],
         },
       },
     };
@@ -177,36 +204,56 @@ describe('OP and RP communication should', () => {
   it('work if both support the same did methods', () => {
     metadata.verify();
     expect(metadata.verify()).toEqual({
-      credential_formats_supported: ['jwt', 'w3cvc-jsonld'],
-      did_methods_supported: ['did:web'],
+      vp_formats: {
+        jwt_vc: { alg: [SigningAlgo.ES256, SigningAlgo.ES256K] },
+        ldp_vc: {
+          proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+        },
+      },
+      subject_syntax_types_supported: [SubjectIdentifierType.DID, 'did:web'],
     });
   });
 
   it('work if RP supports any OP did methods', () => {
-    metadata.opMetadata.credential_formats_supported = [CredentialFormat.JSON_LD];
-    metadata.rpMetadata.subject_identifiers_supported = SubjectIdentifierType.DID;
-    metadata.rpMetadata.did_methods_supported = undefined;
+    metadata.opMetadata.vp_formats = {
+      ldp_vc: {
+        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+      },
+    };
+    metadata.rpMetadata.subject_syntax_types_supported = ['did:web', SubjectIdentifierType.DID];
     expect(metadata.verify()).toEqual({
-      credential_formats_supported: ['w3cvc-jsonld'],
-      did_methods_supported: ['did:web'],
+      subject_syntax_types_supported: ['did:web', SubjectIdentifierType.DID],
+      vp_formats: {
+        ldp_vc: {
+          proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+        },
+      },
     });
   });
 
   it('work if RP supports any OP credential formats', () => {
-    metadata.opMetadata.credential_formats_supported = [CredentialFormat.JSON_LD];
-    expect(metadata.verify()).toEqual({
-      credential_formats_supported: ['w3cvc-jsonld'],
-      did_methods_supported: ['did:web'],
+    metadata.opMetadata.vp_formats = {
+      ldp_vc: {
+        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+      },
+    };
+    const result = metadata.verify();
+    expect(result['subject_syntax_types_supported']).toContain(SubjectIdentifierType.DID);
+    expect(result['subject_syntax_types_supported']).toContain('did:web');
+    expect(result['vp_formats']).toStrictEqual({
+      ldp_vc: {
+        proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+      },
     });
   });
 
   it('not work if RP does not support any OP did method', () => {
-    metadata.rpMetadata.did_methods_supported = ['did:notsupported:'];
+    metadata.rpMetadata.subject_syntax_types_supported = ['did:notsupported:', SubjectIdentifierType.DID];
     expect(() => metadata.verify()).toThrowError(SIOPErrors.DID_METHODS_NOT_SUPORTED);
   });
 
   it('not work if RP does not support any OP credentials', () => {
-    metadata.rpMetadata.credential_formats_supported = undefined;
-    expect(() => metadata.verify()).toThrowError(SIOPErrors.CREDENTIAL_FORMATS_NOT_SUPPORTED);
+    metadata.rpMetadata.vp_formats = undefined;
+    expect(() => metadata.verify()).toThrowError(SIOPErrors.CREDENTIALS_FORMATS_NOT_PROVIDED);
   });
 });

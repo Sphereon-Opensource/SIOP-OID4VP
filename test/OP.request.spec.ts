@@ -1,11 +1,17 @@
+import { ProofType } from '@sphereon/pex';
+
 import { OP, OPBuilder, RP, SIOP } from '../src/main';
 import {
   AuthenticationRequestOpts,
   AuthenticationResponseOpts,
-  CredentialFormat,
   PassBy,
+  ResponseIss,
   ResponseMode,
+  ResponseType,
+  Scope,
+  SigningAlgo,
   SubjectIdentifierType,
+  SubjectType,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
 } from '../src/main/types/SIOP.types';
@@ -30,9 +36,16 @@ describe('OP Builder should', () => {
     expect(
       OP.builder()
         .addDidMethod('ethr')
+        .addResponseTypesSupported(ResponseType.ID_TOKEN)
+        .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .response(ResponseMode.POST)
         .registrationBy(PassBy.REFERENCE, 'https://registration.here')
         .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
+        .addVpFormatsSupported({
+          jwt_vc: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+        })
         .withExpiresIn(1000)
         .build()
     ).toBeInstanceOf(OP);
@@ -48,6 +61,15 @@ describe('OP should', () => {
       kid: KID,
     },
     registration: {
+      responseTypesSupported: [ResponseType.ID_TOKEN],
+      subjectSyntaxTypesSupported: ['did:web'],
+      vpFormats: {
+        ldp_vc: {
+          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        },
+      },
+      //TODO: fill it up with actual value
+      issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
         type: SIOP.PassBy.VALUE,
       },
@@ -61,7 +83,7 @@ describe('OP should', () => {
     verification: {
       mode: VerificationMode.INTERNAL,
       resolveOpts: {
-        didMethods: ['ethr'],
+        subjectSyntaxTypesSupported: ['ethr'],
       },
     },
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
@@ -92,9 +114,17 @@ describe('OP should', () => {
         kid: `${mockEntity.did}#controller`,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JWT],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          jwt_vc: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -126,6 +156,16 @@ describe('OP should', () => {
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
       .addDidMethod('ethr')
+      .addIdTokenSigningAlgValuesSupported(SigningAlgo.EDDSA)
+      .addRequestObjectSigningAlgValuesSupported([SigningAlgo.EDDSA, SigningAlgo.ES256])
+      .addResponseTypesSupported(ResponseType.ID_TOKEN)
+      .addScopesSupported([Scope.OPENID_DIDAUTHN, Scope.OPENID])
+      .addSubjectTypesSupported(SubjectType.PAIRWISE)
+      .addVpFormatsSupported({
+        ldp_vc: {
+          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        },
+      })
       .registrationBy(PassBy.VALUE)
       .build()
 
@@ -136,7 +176,14 @@ describe('OP should', () => {
 
     const verifiedRequest = await OP.builder()
       .withExpiresIn(1000)
+      .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')
+      .addResponseTypesSupported(ResponseType.ID_TOKEN)
+      .addVpFormatsSupported({
+        ldp_vc: {
+          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        },
+      })
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
       .registrationBy(PassBy.VALUE)
       .build()

@@ -96,10 +96,15 @@ export class RP {
 function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; requestOpts?: AuthenticationRequestOpts }) {
   const requestOpts: AuthenticationRequestOpts = opts.builder
     ? {
+        authorizationEndpoint: opts.builder.authorizationEndpoint,
         registration: opts.builder.requestRegistration as RequestRegistrationOpts,
         redirectUri: opts.builder.redirectUri,
         requestBy: opts.builder.requestObjectBy,
+        responseTypesSupported: opts.builder.responseTypesSupported,
+        scopesSupported: opts.builder.scopesSupported,
         signatureType: opts.builder.signatureType,
+        subjectTypesSupported: opts.builder.subjectTypesSupported,
+        requestObjectSigningAlgValuesSupported: opts.builder.requestObjectSigningAlgValuesSupported,
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
@@ -119,8 +124,10 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
         verification: {
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
-            didMethods: opts.builder.didMethods,
-            resolver: opts.builder.resolver ? getResolver({ resolver: opts.builder.resolver }) : getResolver({ didMethods: opts.builder.didMethods }),
+            didMethods: opts.builder.subjectSyntaxTypesSupported,
+            resolver: opts.builder.resolver
+              ? getResolver({ resolver: opts.builder.resolver })
+              : getResolver({ subjectSyntaxTypesSupported: opts.builder.subjectSyntaxTypesSupported }),
           },
         },
       }

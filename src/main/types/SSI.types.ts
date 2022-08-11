@@ -9,7 +9,7 @@ export { IProof, ICredentialSubject, ICredentialStatus, ICredential, IVerifiable
 export interface ResolveOpts {
   resolver?: Resolvable;
   resolveUrl?: string;
-  didMethods?: string[];
+  subjectSyntaxTypesSupported?: string[];
 }
 
 export interface DIDDocument extends DIFDIDDocument {

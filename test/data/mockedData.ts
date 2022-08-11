@@ -1,7 +1,17 @@
+import { ProofType } from '@sphereon/pex';
 import { DIDDocument } from 'did-resolver';
 
 import { JWTHeader, SIOP } from '../../src/main';
-import { CredentialFormat, ResponseContext, ResponseMode, SubjectIdentifierType } from '../../src/main/types/SIOP.types';
+import {
+  IdTokenType,
+  KeyAlgo,
+  ResponseContext,
+  ResponseMode,
+  Scope,
+  SigningAlgo,
+  SubjectIdentifierType,
+  SubjectType,
+} from '../../src/main/types/SIOP.types';
 
 export const DIDAUTH_HEADER: JWTHeader = {
   typ: 'JWT',
@@ -20,9 +30,22 @@ export const DIDAUTH_REQUEST_PAYLOAD: SIOP.AuthenticationRequestPayload = {
   nonce: 'n-0S6_WzA2M', // MUST be a random string from a high-entropy source
   state: 'af0ifjsldkj',
   registration: {
-    did_methods_supported: ['did:ethr:'],
-    subject_identifiers_supported: SubjectIdentifierType.DID,
-    credential_formats_supported: [CredentialFormat.JSON_LD, CredentialFormat.JWT],
+    authorization_endpoint: 'https://wallet.example.org',
+    id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+    id_token_types_supported: [IdTokenType.SUBJECT_SIGNED],
+    request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+    response_types_supported: ['id_token'],
+    scopes_supported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+    subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
+    subject_types_supported: [SubjectType.PAIRWISE],
+    vp_formats: {
+      ldp_vc: {
+        proof_type: [ProofType.EcdsaSecp256k1Signature2019],
+      },
+      jwt_vc: {
+        alg: [KeyAlgo.EDDSA],
+      },
+    },
   },
   /*registration: {
       subject_types_supported: SubjectType.PAIRWISE,
