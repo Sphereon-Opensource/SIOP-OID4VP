@@ -38,6 +38,7 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   // iss: string;
   //response_mode: ResponseMode;
   claims?: ClaimPayload; // claims parameter value, as specified in Section 5.5.
+  //TODO: https://sphereon.atlassian.net/browse/VDX-122 : SIOP: resolve registration parameter from registration_uri in client metadata
   registration?: RPRegistrationMetadataPayload;
   registration_uri?: string;
   //response_context: ResponseContext;
@@ -570,6 +571,7 @@ export enum Scope {
 
 export enum ResponseType {
   ID_TOKEN = 'id_token',
+  VP_TOKEN = 'vp_token',
 }
 
 export enum SubjectIdentifierType {
