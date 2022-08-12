@@ -124,7 +124,8 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
         verification: {
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
-            didMethods: opts.builder.subjectSyntaxTypesSupported,
+            //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
+            didMethods: !opts.builder.subjectSyntaxTypesSupported ? [] : opts.builder.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
             resolver: opts.builder.resolver
               ? getResolver({ resolver: opts.builder.resolver })
               : getResolver({ subjectSyntaxTypesSupported: opts.builder.subjectSyntaxTypesSupported }),
