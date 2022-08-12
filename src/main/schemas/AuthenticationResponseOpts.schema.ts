@@ -383,7 +383,10 @@ export const AuthenticationResponseOptsSchema = {
     },
     "ResponseType": {
       "type": "string",
-      "const": "id_token"
+      "enum": [
+        "id_token",
+        "vp_token"
+      ]
     },
     "ResponseMode": {
       "type": "string",

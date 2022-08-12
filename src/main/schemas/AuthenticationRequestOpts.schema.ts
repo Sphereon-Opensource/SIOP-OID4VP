@@ -197,7 +197,10 @@ export const AuthenticationRequestOptsSchema = {
     },
     "ResponseType": {
       "type": "string",
-      "const": "id_token"
+      "enum": [
+        "id_token",
+        "vp_token"
+      ]
     },
     "ClaimOpts": {
       "type": "object",
