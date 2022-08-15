@@ -1,6 +1,6 @@
 {
   "name": "@sphereon/did-auth-siop",
-  "version": "0.2.13",
+  "version": "0.2.14-unstable.0",
   "main": "dist/main/index.js",
   "types": "dist/main/index.d.ts",
   "license": "Apache-2.0",
