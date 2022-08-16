@@ -31,21 +31,16 @@ describe('RP Builder should', () => {
 
     expect(
       RP.builder()
-        .addIdTokenSigningAlgValuesSupported(SigningAlgo.EDDSA)
         .addDidMethod('factom')
         .addResolver('ethr', new Resolver(getUniResolver('ethr')))
         .redirect('https://redirect.me')
         .requestBy(PassBy.VALUE)
         .response(ResponseMode.POST)
-        .registrationBy(PassBy.REFERENCE, 'https://registration.here')
-        .addRequestObjectSigningAlgValuesSupported([SigningAlgo.EDDSA, SigningAlgo.ES256])
-        .addResponseTypesSupported(ResponseType.ID_TOKEN)
-        .addScopesSupported([Scope.OPENID_DIDAUTHN, Scope.OPENID])
-        .addSubjectTypesSupported(SubjectType.PAIRWISE)
-        .addVpFormatsSupported({
-          jwt_vc: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
-          jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
-          jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+        .registrationBy({
+          registrationBy: {
+            type: PassBy.REFERENCE,
+            referenceUri: 'https://registration.here',
+          },
         })
         .internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
         .build()
@@ -205,33 +200,42 @@ describe('RP should', () => {
     };
 
     const expectedUri =
-      'openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2' +
-      'Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr4' +
-      '9dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%7B%22id_token_signing_alg_values_supported%22%3A%5B%22EdDSA%' +
-      '22%5D%2C%22request_object_signing_alg_values_supported%22%3A%5B%22EdDSA%22%2C%22ES256%22%5D%2C%22response_types_supported%22%3A%5B%22id_' +
-      'token%22%5D%2C%22scopes_supported%22%3A%5B%22openid%20did_authn%22%2C%22openid%22%5D%2C%22subject_types_supported%22%3A%5B%22pairwise%22' +
-      '%5D%2C%22subject_syntax_types_supported%22%3A%5B%22did%3Aethr%3A%22%5D%2C%22vp_formats%22%3A%7B%22jwt_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA' +
-      '%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vp%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt%22%3A%' +
-      '7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
+      'openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2F' +
+      'acme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49d' +
+      'AZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%7B%22id_token_signing_alg_values_supported%22%3A%5B%22EdDSA%22%' +
+      '5D%2C%22request_object_signing_alg_values_supported%22%3A%5B%22EdDSA%22%2C%22ES256%22%5D%2C%22response_types_supported%22%3A%5B%22id_toke' +
+      'n%22%5D%2C%22scopes_supported%22%3A%5B%22openid%20did_authn%22%2C%22openid%22%5D%2C%22subject_types_supported%22%3A%5B%22pairwise%22%5D%2' +
+      'C%22subject_syntax_types_supported%22%3A%5B%22did%3Aethr%3A%22%5D%2C%22vp_formats%22%3A%7B%22jwt%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22' +
+      'ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vp%22%3A%7B%22al' +
+      'g%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
 
     const request = await RP.builder()
-      .addIdTokenSigningAlgValuesSupported(SigningAlgo.EDDSA)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .internalSignature(HEX_KEY, DID, KID)
-      .registrationBy(PassBy.VALUE)
-      .addDidMethod('ethr')
-      .addRequestObjectSigningAlgValuesSupported([SigningAlgo.EDDSA, SigningAlgo.ES256])
-      .addResponseTypesSupported([ResponseType.ID_TOKEN])
-      .addScopesSupported([Scope.OPENID_DIDAUTHN, Scope.OPENID])
-      .addSubjectTypesSupported(SubjectType.PAIRWISE)
-      .addVpFormatsSupported({
-        jwt_vc: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
-        jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
-        jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: {
+          jwt: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+          jwt_vc: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+          jwt_vp: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+        },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: [],
+        registrationBy: { type: PassBy.VALUE },
       })
+      .addDidMethod('ethr')
       .build()
 
       .createAuthenticationRequest({

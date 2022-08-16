@@ -245,7 +245,6 @@ export const metadata: {
     },
   },
   rpMetadata: {
-    authorization_endpoint: 'http://test.com',
     id_token_signing_alg_values_supported: [],
     request_object_signing_alg_values_supported: [SigningAlgo.EDDSA],
     response_types_supported: [ResponseType.ID_TOKEN],

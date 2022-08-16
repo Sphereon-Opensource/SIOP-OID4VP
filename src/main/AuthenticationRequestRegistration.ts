@@ -34,7 +34,6 @@ export function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): {
 
 function createRPRegistrationMetadataPayload(opts: SIOP.RPRegistrationMetadataOpts): SIOP.RPRegistrationMetadataPayload {
   return {
-    authorization_endpoint: opts.authorizationEndpoint,
     id_token_signing_alg_values_supported: opts.idTokenSigningAlgValuesSupported,
     request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported,
     response_types_supported: opts.responseTypesSupported,

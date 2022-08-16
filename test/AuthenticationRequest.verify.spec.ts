@@ -12,7 +12,6 @@ import {
   ResponseContext,
   ResponseMode,
   ResponseType,
-  Schema,
   Scope,
   SigningAlgo,
   SubjectIdentifierType,
@@ -52,7 +51,6 @@ describe('SIOP Request Validation', () => {
       state,
       nonce: State.getNonce(state),
       registration: {
-        authorization_endpoint: Schema.OPENID,
         id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         response_types_supported: [ResponseType.ID_TOKEN],

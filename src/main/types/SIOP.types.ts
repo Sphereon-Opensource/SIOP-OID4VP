@@ -200,14 +200,18 @@ export interface RequestRegistrationOpts extends RPRegistrationMetadataOpts {
 }
 
 export interface DiscoveryMetadataOpts {
-  vpFormats: Format;
-  authorizationEndpoint: Schema.OPENID | string;
+  //TODO add the check: Mandatory if PassBy.Value
+  vpFormats?: Format;
+  //TODO add the check: Mandatory if PassBy.Value
+  authorizationEndpoint?: Schema.OPENID | string;
   tokenEndpoint?: string;
   userinfoEndpoint?: string;
-  issuer: ResponseIss;
+  //TODO add the check: Mandatory if PassBy.Value
+  issuer?: ResponseIss;
   jwksUri?: string;
   registrationEndpoint?: string;
-  responseTypesSupported: ResponseType[] | ResponseType;
+  //TODO add the check: Mandatory if PassBy.Value
+  responseTypesSupported?: ResponseType[] | ResponseType;
   responseModesSupported?: ResponseMode[];
   grantTypesSupported?: GrantType[];
   acrValuesSupported?: AuthenticationContextReferences[];
@@ -236,7 +240,8 @@ export interface DiscoveryMetadataOpts {
   requireRequestUriRegistration?: boolean;
   opPolicyUri?: string;
   opTosUri?: string;
-  subjectSyntaxTypesSupported: string[];
+  //TODO add the check: Mandatory if PassBy.Value
+  subjectSyntaxTypesSupported?: string[];
   idTokenTypesSupported?: IdTokenType[];
 
   // didsSupported?: boolean;
@@ -251,54 +256,55 @@ export interface DiscoveryMetadataOpts {
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8.2
 // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
 export interface DiscoveryMetadataPayload {
-  authorization_endpoint: Schema | string;
-  token_endpoint?: string;
-  userinfo_endpoint?: string;
-  issuer: ResponseIss;
-  // marked as required by https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
-  jwks_uri?: string;
-  registration_endpoint?: string;
-  response_types_supported: ResponseType[] | ResponseType;
-  response_modes_supported?: ResponseMode[];
-  grant_types_supported?: GrantType[];
   acr_values_supported?: AuthenticationContextReferences[];
-  scopes_supported: Scope[];
-  subject_types_supported: SubjectType[];
-  id_token_signing_alg_values_supported: SigningAlgo[];
+  authorization_endpoint: Schema | string;
+  claims_locales_supported?: string[];
+  /**
+   * RECOMMENDED. JSON array containing a list of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for. Note that for privacy or other reasons, this might not be an exhaustive list.
+   */
+  claims_supported?: string[];
+  /**
+   * OPTIONAL. JSON array containing a list of the Claim Types that the OpenID Provider supports. These Claim Types are described in Section 5.6 of OpenID Connect Core 1.0 [OpenID.Core]. Values defined by this specification are normal, aggregated, and distributed. If omitted, the implementation supports only normal Claims.
+   */
+  claim_types_supported?: ClaimType[];
+
+  /**
+   * OPTIONAL. JSON array containing a list of the display parameter values that the OpenID Provider supports. These values are described in Section 3.1.2.1 of OpenID Connect Core 1.0 [OpenID.Core].
+   */
+  display_values_supported?: unknown[];
+  grant_types_supported?: GrantType[];
   id_token_encryption_alg_values_supported?: KeyAlgo[];
   /**
    * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for the ID Token to encode the Claims in a JWT [JWT].
    */
   //TODO: maybe add an enum for this with: A256GCM, A128CBC-HS256, ...
   id_token_encryption_enc_values_supported?: string[];
+  id_token_signing_alg_values_supported: SigningAlgo[];
+  issuer: ResponseIss;
+  jwks_uri?: string;
+  token_endpoint?: string;
+  userinfo_endpoint?: string;
+  // marked as required by https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+  registration_endpoint?: string;
+  response_types_supported: ResponseType[] | ResponseType;
+  response_modes_supported?: ResponseMode[];
+  scopes_supported: Scope[];
+  subject_types_supported: SubjectType[];
   userinfo_signing_alg_values_supported?: SigningAlgo[];
   userinfo_encryption_alg_values_supported?: SigningAlgo[];
-  /**
-   * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) [JWA] supported by the UserInfo Endpoint to encode the Claims in a JWT [JWT].
-   */
-  userinfo_encryption_enc_values_supported?: string[];
-  request_object_signing_alg_values_supported?: SigningAlgo[];
   request_object_encryption_alg_values_supported?: SigningAlgo[];
   /**
    * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for Request Objects. These algorithms are used both when the Request Object is passed by value and when it is passed by reference.
    */
   request_object_encryption_enc_values_supported?: string[];
+  request_object_signing_alg_values_supported?: SigningAlgo[];
   token_endpoint_auth_methods_supported?: TokenEndpointAuthMethod[];
   token_endpoint_auth_signing_alg_values_supported?: SigningAlgo[];
   /**
-   * OPTIONAL. JSON array containing a list of the display parameter values that the OpenID Provider supports. These values are described in Section 3.1.2.1 of OpenID Connect Core 1.0 [OpenID.Core].
+   * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) [JWA] supported by the UserInfo Endpoint to encode the Claims in a JWT [JWT].
    */
-  display_values_supported?: unknown[];
-  /**
-   * OPTIONAL. JSON array containing a list of the Claim Types that the OpenID Provider supports. These Claim Types are described in Section 5.6 of OpenID Connect Core 1.0 [OpenID.Core]. Values defined by this specification are normal, aggregated, and distributed. If omitted, the implementation supports only normal Claims.
-   */
-  claim_types_supported?: ClaimType[];
-  /**
-   * RECOMMENDED. JSON array containing a list of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for. Note that for privacy or other reasons, this might not be an exhaustive list.
-   */
-  claims_supported?: string[];
+  userinfo_encryption_enc_values_supported?: string[];
   service_documentation?: string;
-  claims_locales_supported?: string[];
   ui_locales_supported?: string[];
   claims_parameter_supported?: boolean;
   request_parameter_supported?: boolean;
@@ -328,14 +334,19 @@ export interface ResponseRegistrationOpts extends DiscoveryMetadataOpts {
 }
 
 export interface RPRegistrationMetadataOpts {
-  authorizationEndpoint?: string;
-  requestObjectSigningAlgValuesSupported: SigningAlgo[];
-  responseTypesSupported: string[];
-  scopesSupported: Scope[];
-  subjectTypesSupported: SubjectType[];
-  subjectSyntaxTypesSupported: string[];
-  idTokenSigningAlgValuesSupported: SigningAlgo[];
-  vpFormatsSupported: Format;
+  //TODO add the check: Mandatory if PassBy.Value
+  requestObjectSigningAlgValuesSupported?: SigningAlgo[];
+  //TODO add the check: Mandatory if PassBy.Value
+  responseTypesSupported?: ResponseType[];
+  //TODO add the check: Mandatory if PassBy.Value
+  scopesSupported?: Scope[];
+  //TODO add the check: Mandatory if PassBy.Value
+  subjectTypesSupported?: SubjectType[];
+  //TODO add the check: Mandatory if PassBy.Value
+  subjectSyntaxTypesSupported?: string[];
+  idTokenSigningAlgValuesSupported?: SigningAlgo[];
+  //TODO add the check: Mandatory if PassBy.Value
+  vpFormatsSupported?: Format;
   //TODO: ask @nklomp about this value, I couldn't find it anywhere in the old versions of protocol
   // subjectIdentifiersSupported: SubjectIdentifierType[] | SubjectIdentifierType;
   // didMethodsSupported?: string[] | string;
@@ -343,14 +354,13 @@ export interface RPRegistrationMetadataOpts {
 }
 
 export interface RPRegistrationMetadataPayload {
-  authorization_endpoint: string;
-  subject_syntax_types_supported: string[];
   id_token_signing_alg_values_supported: SigningAlgo[];
-  response_types_supported: string[];
-  scopes_supported: Scope[];
-  subject_types_supported: SubjectType[];
-  request_object_signing_alg_values_supported: SigningAlgo[];
   id_token_types_supported?: IdTokenType[];
+  request_object_signing_alg_values_supported: SigningAlgo[];
+  response_types_supported: ResponseType[];
+  scopes_supported: Scope[];
+  subject_syntax_types_supported: string[];
+  subject_types_supported: SubjectType[];
   vp_formats: Format;
 }
 

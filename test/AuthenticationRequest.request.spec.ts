@@ -377,7 +377,6 @@ describe('create Request JWT should', () => {
         response_mode: 'post',
         response_context: 'rp',
         registration: {
-          authorization_endpoint: undefined,
           id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           response_types_supported: [ResponseType.ID_TOKEN],

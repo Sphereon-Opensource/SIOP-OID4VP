@@ -1,5 +1,4 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
-import { Format } from '@sphereon/pex-models';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
@@ -17,10 +16,6 @@ import {
   ResponseContext,
   ResponseIss,
   ResponseMode,
-  ResponseType,
-  Scope,
-  SigningAlgo,
-  SubjectType,
   SuppliedSignature,
 } from './types/SIOP.types';
 
@@ -38,21 +33,9 @@ export default class RPBuilder {
   claims?: ClaimOpts;
 
   // claims?: ClaimPayload;
-  vpFormatsSupported: Format;
-  idTokenSigningAlgValuesSupported: SigningAlgo[];
-  subjectSyntaxTypesSupported: string[];
-  requestObjectSigningAlgValuesSupported: SigningAlgo[];
-  responseTypesSupported: ResponseType[];
-  scopesSupported: Scope[];
-  subjectTypesSupported: SubjectType[];
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
-    return this;
-  }
-
-  addVpFormatsSupported(credentialType: Format): RPBuilder {
-    this.vpFormatsSupported = credentialType;
     return this;
   }
 
@@ -62,76 +45,16 @@ export default class RPBuilder {
   }
 
   addResolver(didMethod: string, resolver: Resolvable): RPBuilder {
-    if (!this.subjectSyntaxTypesSupported || !this.subjectSyntaxTypesSupported.length) {
-      this.subjectSyntaxTypesSupported = [];
+    if (!this.requestRegistration.subjectSyntaxTypesSupported || !this.requestRegistration.subjectSyntaxTypesSupported.length) {
+      this.requestRegistration.subjectSyntaxTypesSupported = [];
     }
-    this.subjectSyntaxTypesSupported.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
+    this.requestRegistration.subjectSyntaxTypesSupported.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
     this.resolvers.set(DIDJwt.getMethodFromDid(didMethod), resolver);
-    return this;
-  }
-
-  addIdTokenSigningAlgValuesSupported(signingAlgo: SigningAlgo | SigningAlgo[]): RPBuilder {
-    if (!this.idTokenSigningAlgValuesSupported || !this.idTokenSigningAlgValuesSupported.length) {
-      this.idTokenSigningAlgValuesSupported = [];
-    }
-    if (Array.isArray(signingAlgo)) {
-      this.idTokenSigningAlgValuesSupported.push(...signingAlgo);
-    } else {
-      this.idTokenSigningAlgValuesSupported.push(signingAlgo);
-    }
     return this;
   }
 
   withAuthorizationEndpoint(authorizationEndpoint: string): RPBuilder {
     this.authorizationEndpoint = authorizationEndpoint;
-    return this;
-  }
-
-  addRequestObjectSigningAlgValuesSupported(signingAlgs: SigningAlgo | SigningAlgo[]): RPBuilder {
-    if (!this.requestObjectSigningAlgValuesSupported || !this.requestObjectSigningAlgValuesSupported.length) {
-      this.requestObjectSigningAlgValuesSupported = [];
-    }
-    if (Array.isArray(signingAlgs)) {
-      this.requestObjectSigningAlgValuesSupported.push(...signingAlgs);
-    } else {
-      this.requestObjectSigningAlgValuesSupported.push(signingAlgs);
-    }
-    return this;
-  }
-
-  addResponseTypesSupported(responseType: ResponseType | ResponseType[]): RPBuilder {
-    if (!this.responseTypesSupported || !this.responseTypesSupported.length) {
-      this.responseTypesSupported = [];
-    }
-    if (Array.isArray(responseType)) {
-      this.responseTypesSupported.push(...responseType);
-    } else {
-      this.responseTypesSupported.push(responseType);
-    }
-    return this;
-  }
-
-  addScopesSupported(scopes: Scope | Scope[]): RPBuilder {
-    if (!this.scopesSupported || !this.scopesSupported.length) {
-      this.scopesSupported = [];
-    }
-    if (Array.isArray(scopes)) {
-      this.scopesSupported.push(...scopes);
-    } else {
-      this.scopesSupported.push(scopes);
-    }
-    return this;
-  }
-
-  addSubjectTypesSupported(subjectTypes: SubjectType | SubjectType[]): RPBuilder {
-    if (!this.subjectTypesSupported || !this.subjectTypesSupported.length) {
-      this.subjectTypesSupported = [];
-    }
-    if (Array.isArray(subjectTypes)) {
-      this.subjectTypesSupported.push(...subjectTypes);
-    } else {
-      this.subjectTypesSupported.push(subjectTypes);
-    }
     return this;
   }
 
@@ -158,16 +81,10 @@ export default class RPBuilder {
     return this;
   }
 
-  registrationBy(registrationBy: PassBy, refUri?: string): RPBuilder {
+  registrationBy(requestRegistration: RequestRegistrationOpts): RPBuilder {
     this.requestRegistration = {
-      registrationBy: {
-        type: registrationBy,
-        referenceUri: refUri,
-      },
+      ...requestRegistration,
     };
-    /*if (refUri) {
-          this.requestRegistration.registrationBy.referenceUri = refUri;
-        }*/
     return this;
   }
 
@@ -199,14 +116,6 @@ export default class RPBuilder {
   }
 
   build(): RP {
-    this.requestRegistration.requestObjectSigningAlgValuesSupported = this.requestObjectSigningAlgValuesSupported;
-    this.requestRegistration.authorizationEndpoint = this.authorizationEndpoint;
-    this.requestRegistration.subjectSyntaxTypesSupported = this.subjectSyntaxTypesSupported;
-    this.requestRegistration.idTokenSigningAlgValuesSupported = this.idTokenSigningAlgValuesSupported;
-    this.requestRegistration.vpFormatsSupported = this.vpFormatsSupported;
-    this.requestRegistration.responseTypesSupported = this.responseTypesSupported;
-    this.requestRegistration.scopesSupported = this.scopesSupported;
-    this.requestRegistration.subjectTypesSupported = this.subjectTypesSupported;
     return new RP({ builder: this });
   }
 }

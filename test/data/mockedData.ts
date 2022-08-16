@@ -7,6 +7,7 @@ import {
   KeyAlgo,
   ResponseContext,
   ResponseMode,
+  ResponseType,
   Scope,
   SigningAlgo,
   SubjectIdentifierType,
@@ -30,11 +31,10 @@ export const DIDAUTH_REQUEST_PAYLOAD: SIOP.AuthenticationRequestPayload = {
   nonce: 'n-0S6_WzA2M', // MUST be a random string from a high-entropy source
   state: 'af0ifjsldkj',
   registration: {
-    authorization_endpoint: 'https://wallet.example.org',
     id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
     id_token_types_supported: [IdTokenType.SUBJECT_SIGNED],
     request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-    response_types_supported: ['id_token'],
+    response_types_supported: [ResponseType.ID_TOKEN],
     scopes_supported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
     subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
     subject_types_supported: [SubjectType.PAIRWISE],

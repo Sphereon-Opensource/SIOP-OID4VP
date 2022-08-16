@@ -1,6 +1,7 @@
 import { IPresentationDefinition, IVerifiableCredential } from '@sphereon/pex';
 import nock from 'nock';
 
+import { Scope, SigningAlgo, SubjectType } from '../dist/main/types/SIOP.types';
 import { OP, PresentationExchange, RP } from '../src/main';
 import {
   KeyAlgo,
@@ -9,9 +10,6 @@ import {
   PresentationLocation,
   ResponseIss,
   ResponseType,
-  Scope,
-  SigningAlgo,
-  SubjectType,
   VerifiablePresentationTypeFormat,
 } from '../src/main/types/SIOP.types';
 
@@ -109,24 +107,35 @@ describe('RP and OP interaction should', () => {
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
-      .addIdTokenSigningAlgValuesSupported(SigningAlgo.EDDSA)
-      .addRequestObjectSigningAlgValuesSupported([SigningAlgo.EDDSA, SigningAlgo.ES256])
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addVpFormatsSupported({ jwt_vc: { alg: [KeyAlgo.EDDSA] } })
-      .addScopesSupported([Scope.OPENID_DIDAUTHN, Scope.OPENID])
-      .addSubjectTypesSupported(SubjectType.PAIRWISE)
       .addDidMethod('ethr')
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .build();
     const op = OP.builder()
-      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addVpFormatsSupported({ jwt_vc: { alg: [KeyAlgo.EDDSA] } })
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: [],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -171,24 +180,34 @@ describe('RP and OP interaction should', () => {
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
-      .addIdTokenSigningAlgValuesSupported(SigningAlgo.EDDSA)
-      .addRequestObjectSigningAlgValuesSupported([SigningAlgo.EDDSA, SigningAlgo.ES256])
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addScopesSupported([Scope.OPENID_DIDAUTHN, Scope.OPENID])
-      .addSubjectTypesSupported(SubjectType.PAIRWISE)
-      .addVpFormatsSupported({ jwt_vc: { alg: [KeyAlgo.EDDSA] } })
       .addDidMethod('ethr')
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
-      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
-      .addIssuer(ResponseIss.SELF_ISSUED_V2)
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addVpFormatsSupported({ jwt_vc: { alg: [KeyAlgo.EDDSA] } })
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: [],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -235,14 +254,17 @@ describe('RP and OP interaction should', () => {
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
-      .addIdTokenSigningAlgValuesSupported(SigningAlgo.EDDSA)
-      .addRequestObjectSigningAlgValuesSupported(SigningAlgo.EDDSA)
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addScopesSupported(Scope.OPENID)
-      .addSubjectTypesSupported(SubjectType.PAIRWISE)
-      .addVpFormatsSupported({ jwt_vc: { alg: [KeyAlgo.EDDSA] } })
       .addDidMethod('ethr')
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
         location: PresentationLocation.VP_TOKEN,
@@ -250,13 +272,20 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
-      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
-      .addIssuer(ResponseIss.SELF_ISSUED_V2)
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addVpFormatsSupported({ jwt_vc: { alg: [KeyAlgo.EDDSA] } })
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: [],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -296,14 +325,17 @@ describe('RP and OP interaction should', () => {
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .addIdTokenSigningAlgValuesSupported(SigningAlgo.EDDSA)
-      .addRequestObjectSigningAlgValuesSupported([SigningAlgo.EDDSA, SigningAlgo.ES256K])
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addScopesSupported(Scope.OPENID)
-      .addSubjectTypesSupported(SubjectType.PAIRWISE)
-      .addVpFormatsSupported({ jwt_vc: { alg: [KeyAlgo.EDDSA] } })
       .addDidMethod('ethr')
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
         location: PresentationLocation.VP_TOKEN,
@@ -311,13 +343,20 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
-      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
-      .addIssuer(ResponseIss.SELF_ISSUED_V2)
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addVpFormatsSupported({ jwt_vc: { alg: [KeyAlgo.EDDSA] } })
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: [],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({

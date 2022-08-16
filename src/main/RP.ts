@@ -100,11 +100,11 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
         registration: opts.builder.requestRegistration as RequestRegistrationOpts,
         redirectUri: opts.builder.redirectUri,
         requestBy: opts.builder.requestObjectBy,
-        responseTypesSupported: opts.builder.responseTypesSupported,
-        scopesSupported: opts.builder.scopesSupported,
+        responseTypesSupported: opts.builder.requestRegistration.responseTypesSupported,
+        scopesSupported: opts.builder.requestRegistration.scopesSupported,
         signatureType: opts.builder.signatureType,
-        subjectTypesSupported: opts.builder.subjectTypesSupported,
-        requestObjectSigningAlgValuesSupported: opts.builder.requestObjectSigningAlgValuesSupported,
+        subjectTypesSupported: opts.builder.requestRegistration.subjectTypesSupported,
+        requestObjectSigningAlgValuesSupported: opts.builder.requestRegistration.requestObjectSigningAlgValuesSupported,
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
@@ -125,10 +125,13 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
             //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
-            didMethods: !opts.builder.subjectSyntaxTypesSupported ? [] : opts.builder.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
-            resolver: opts.builder.resolver
-              ? getResolver({ resolver: opts.builder.resolver })
-              : getResolver({ subjectSyntaxTypesSupported: opts.builder.subjectSyntaxTypesSupported }),
+            didMethods: !opts.builder.requestRegistration.subjectSyntaxTypesSupported
+              ? []
+              : opts.builder.requestRegistration.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
+            resolver: opts.builder.resolvers
+              ? //TODO: discuss this with Niels
+                getResolver({ resolver: opts.builder.resolvers.values().next().value })
+              : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
           },
         },
       }

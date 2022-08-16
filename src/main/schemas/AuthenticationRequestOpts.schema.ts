@@ -817,9 +817,6 @@ export const AuthenticationRequestOptsSchema = {
     "RequestRegistrationOpts": {
       "type": "object",
       "properties": {
-        "authorizationEndpoint": {
-          "type": "string"
-        },
         "requestObjectSigningAlgValuesSupported": {
           "type": "array",
           "items": {
@@ -829,7 +826,7 @@ export const AuthenticationRequestOptsSchema = {
         "responseTypesSupported": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/ResponseType"
           }
         },
         "scopesSupported": {
@@ -864,14 +861,7 @@ export const AuthenticationRequestOptsSchema = {
         }
       },
       "required": [
-        "idTokenSigningAlgValuesSupported",
-        "registrationBy",
-        "requestObjectSigningAlgValuesSupported",
-        "responseTypesSupported",
-        "scopesSupported",
-        "subjectSyntaxTypesSupported",
-        "subjectTypesSupported",
-        "vpFormatsSupported"
+        "registrationBy"
       ],
       "additionalProperties": false
     },

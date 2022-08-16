@@ -154,13 +154,13 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
           userinfoEndpoint: opts.builder.responseRegistration.userinfoEndpoint,
           jwksUri: opts.builder.responseRegistration.jwksUri,
           registrationEndpoint: opts.builder.responseRegistration.registrationEndpoint,
-          scopesSupported: opts.builder.scopesSupported,
-          responseTypesSupported: opts.builder.responseTypesSupported,
+          scopesSupported: opts.builder.responseRegistration.scopesSupported,
+          responseTypesSupported: opts.builder.responseRegistration.responseTypesSupported,
           responseModesSupported: opts.builder.responseRegistration.responseModesSupported,
           grantTypesSupported: opts.builder.responseRegistration.grantTypesSupported,
           acrValuesSupported: opts.builder.responseRegistration.acrValuesSupported,
-          subjectTypesSupported: opts.builder.subjectTypesSupported,
-          idTokenSigningAlgValuesSupported: opts.builder.idTokenSigningAlgValuesSupported,
+          subjectTypesSupported: opts.builder.responseRegistration.subjectTypesSupported,
+          idTokenSigningAlgValuesSupported: opts.builder.responseRegistration.idTokenSigningAlgValuesSupported,
           idTokenEncryptionAlgValuesSupported: opts.builder.responseRegistration.idTokenEncryptionAlgValuesSupported,
           idTokenEncryptionEncValuesSupported: opts.builder.responseRegistration.idTokenEncryptionEncValuesSupported,
           userinfoSigningAlgValuesSupported: opts.builder.responseRegistration.userinfoSigningAlgValuesSupported,
@@ -185,9 +185,9 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
           opTosUri: opts.builder.responseRegistration.opTosUri,
 
           registrationBy: opts.builder.responseRegistration.registrationBy,
-          subjectSyntaxTypesSupported: opts.builder.subjectSyntaxTypesSupported,
+          subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
 
-          vpFormats: opts.builder.vpFormats,
+          vpFormats: opts.builder.responseRegistration.vpFormats,
           idTokenTypesSupported: opts.builder.responseRegistration.idTokenTypesSupported,
         },
         did: opts.builder.signatureType.did,
@@ -211,10 +211,13 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
             //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
-            didMethods: !opts.builder.subjectSyntaxTypesSupported ? [] : opts.builder.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
-            resolver: opts.builder.resolver
-              ? getResolver({ resolver: opts.builder.resolver })
-              : getResolver({ subjectSyntaxTypesSupported: opts.builder.subjectSyntaxTypesSupported }),
+            didMethods: !opts.builder.responseRegistration.subjectSyntaxTypesSupported
+              ? []
+              : opts.builder.responseRegistration.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
+            resolver: opts.builder.resolvers
+              ? //TODO: discuss this with Niels
+                getResolver({ resolver: opts.builder.resolvers.values().next().value })
+              : getResolver({ subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported }),
           },
         },
       }

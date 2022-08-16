@@ -1,5 +1,6 @@
 import { ProofType } from '@sphereon/pex';
 
+import { KeyAlgo } from '../dist/main/types/SIOP.types';
 import { OP, OPBuilder, RP, SIOP } from '../src/main';
 import {
   AuthenticationRequestOpts,
@@ -35,18 +36,13 @@ describe('OP Builder should', () => {
 
     expect(
       OP.builder()
-        .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .addDidMethod('ethr')
-        .addResponseTypesSupported(ResponseType.ID_TOKEN)
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .response(ResponseMode.POST)
-        .registrationBy(PassBy.REFERENCE, 'https://registration.here')
-        .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
-        .addVpFormatsSupported({
-          jwt_vc: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
-          jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
-          jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+        .registrationBy({
+          registrationBy: { type: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
         })
+        .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
         .withExpiresIn(1000)
         .build()
     ).toBeInstanceOf(OP);
@@ -154,21 +150,21 @@ describe('OP should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
     const requestURI = await RP.builder()
+      .withAuthorizationEndpoint('www.muauthorizationendpoint.com')
       .redirect(EXAMPLE_REFERENCE_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
       .addDidMethod('ethr')
-      .addIdTokenSigningAlgValuesSupported(SigningAlgo.EDDSA)
-      .addRequestObjectSigningAlgValuesSupported([SigningAlgo.EDDSA, SigningAlgo.ES256])
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addScopesSupported([Scope.OPENID_DIDAUTHN, Scope.OPENID])
-      .addSubjectTypesSupported(SubjectType.PAIRWISE)
-      .addVpFormatsSupported({
-        ldp_vc: {
-          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
-        },
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+        registrationBy: { type: PassBy.VALUE },
       })
-      .registrationBy(PassBy.VALUE)
       .build()
 
       .createAuthenticationRequest({
@@ -177,18 +173,20 @@ describe('OP should', () => {
       });
 
     const verifiedRequest = await OP.builder()
-      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withExpiresIn(1000)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')
-      .addResponseTypesSupported(ResponseType.ID_TOKEN)
-      .addVpFormatsSupported({
-        ldp_vc: {
-          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
-        },
-      })
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormats: { ldp_vc: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .build()
 
       .verifyAuthenticationRequest(requestURI.jwt);

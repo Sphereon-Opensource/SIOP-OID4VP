@@ -312,12 +312,7 @@ export const AuthenticationResponseOptsSchema = {
         }
       },
       "required": [
-        "authorizationEndpoint",
-        "issuer",
-        "registrationBy",
-        "responseTypesSupported",
-        "subjectSyntaxTypesSupported",
-        "vpFormats"
+        "registrationBy"
       ],
       "additionalProperties": false
     },
