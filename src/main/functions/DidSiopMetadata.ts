@@ -3,6 +3,7 @@ import { Format } from '@sphereon/pex-models';
 import { SIOP, SIOPErrors } from '../types';
 import { CommonSupportedMetadata, DiscoveryMetadataPayload, RPRegistrationMetadataPayload, SubjectIdentifierType } from '../types/SIOP.types';
 
+//TODO, since syntax_types_Supported can contain non DIDs, fix it in the VDX-126
 export function assertValidMetadata(opMetadata: DiscoveryMetadataPayload, rpMetadata: RPRegistrationMetadataPayload): CommonSupportedMetadata {
   let subjectSyntaxTypesSupported = [];
   const credentials = supportedCredentialsFormats(rpMetadata.vp_formats, opMetadata.vp_formats);
@@ -49,11 +50,11 @@ function supportedDidMethods(rpMethods: string[] | string, opMethods: string[] |
   return supportedDidMethods;
 }
 
-export function supportedCredentialsFormats(rpCredentials: Format, opCredentials: Format): Format {
-  if (!rpCredentials || !opCredentials || !Object.keys(rpCredentials).length || !Object.keys(opCredentials).length) {
+export function supportedCredentialsFormats(rpFormat: Format, opFormat: Format): Format {
+  if (!rpFormat || !opFormat || !Object.keys(rpFormat).length || !Object.keys(opFormat).length) {
     throw new Error(SIOPErrors.CREDENTIALS_FORMATS_NOT_PROVIDED);
   }
-  const supportedCredentials = getIntersection(Object.keys(rpCredentials), Object.keys(opCredentials));
+  const supportedCredentials = getIntersection(Object.keys(rpFormat), Object.keys(opFormat));
   if (!supportedCredentials.length) {
     throw new Error(SIOPErrors.CREDENTIAL_FORMATS_NOT_SUPPORTED);
   }
@@ -61,12 +62,12 @@ export function supportedCredentialsFormats(rpCredentials: Format, opCredentials
   supportedCredentials.forEach(function (crFormat) {
     const rpAlgs = [];
     const opAlgs = [];
-    Object.keys(rpCredentials[crFormat]).forEach((k) => rpAlgs.push(...rpCredentials[crFormat][k]));
-    Object.keys(opCredentials[crFormat]).forEach((k) => opAlgs.push(...opCredentials[crFormat][k]));
+    Object.keys(rpFormat[crFormat]).forEach((k) => rpAlgs.push(...rpFormat[crFormat][k]));
+    Object.keys(opFormat[crFormat]).forEach((k) => opAlgs.push(...opFormat[crFormat][k]));
     let methodKeyRP = undefined;
     let methodKeyOP = undefined;
-    Object.keys(rpCredentials[crFormat]).forEach((k) => (methodKeyRP = k));
-    Object.keys(opCredentials[crFormat]).forEach((k) => (methodKeyOP = k));
+    Object.keys(rpFormat[crFormat]).forEach((k) => (methodKeyRP = k));
+    Object.keys(opFormat[crFormat]).forEach((k) => (methodKeyOP = k));
     if (methodKeyRP !== methodKeyOP) {
       throw new Error(SIOPErrors.CREDENTIAL_FORMATS_NOT_SUPPORTED);
     }
