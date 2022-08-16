@@ -193,9 +193,10 @@ function createClaimsPayload(opts: SIOP.ClaimOpts): ClaimPayload {
           throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
         } else {
           vp_token = {
+            //TODO: nonce should be initialized correctly
             nonce: 'NONCE_STRING',
             presentation_definition: def.definition,
-            response_type: 'vp_token',
+            response_type: PresentationLocation.VP_TOKEN,
           };
         }
         return;
