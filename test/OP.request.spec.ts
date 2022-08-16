@@ -35,6 +35,7 @@ describe('OP Builder should', () => {
 
     expect(
       OP.builder()
+        .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .addDidMethod('ethr')
         .addResponseTypesSupported(ResponseType.ID_TOKEN)
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -61,6 +62,7 @@ describe('OP should', () => {
       kid: KID,
     },
     registration: {
+      authorizationEndpoint: 'www.myauthorizationendpoint.com',
       responseTypesSupported: [ResponseType.ID_TOKEN],
       subjectSyntaxTypesSupported: ['did:web'],
       vpFormats: {
@@ -175,6 +177,7 @@ describe('OP should', () => {
       });
 
     const verifiedRequest = await OP.builder()
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withExpiresIn(1000)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')

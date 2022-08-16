@@ -82,12 +82,12 @@ export default class RPBuilder {
     return this;
   }
 
-  addAuthorizationEndpoint(authorizationEndpoint: string): RPBuilder {
+  withAuthorizationEndpoint(authorizationEndpoint: string): RPBuilder {
     this.authorizationEndpoint = authorizationEndpoint;
     return this;
   }
 
-  addRequestObjectSigningAlgValuesSupported(signingAlgs: SigningAlgo | SigningAlgo[]) {
+  addRequestObjectSigningAlgValuesSupported(signingAlgs: SigningAlgo | SigningAlgo[]): RPBuilder {
     if (!this.requestObjectSigningAlgValuesSupported || !this.requestObjectSigningAlgValuesSupported.length) {
       this.requestObjectSigningAlgValuesSupported = [];
     }
@@ -99,7 +99,7 @@ export default class RPBuilder {
     return this;
   }
 
-  addResponseTypesSupported(responseType: ResponseType | ResponseType[]) {
+  addResponseTypesSupported(responseType: ResponseType | ResponseType[]): RPBuilder {
     if (!this.responseTypesSupported || !this.responseTypesSupported.length) {
       this.responseTypesSupported = [];
     }
@@ -111,7 +111,7 @@ export default class RPBuilder {
     return this;
   }
 
-  addScopesSupported(scopes: Scope | Scope[]) {
+  addScopesSupported(scopes: Scope | Scope[]): RPBuilder {
     if (!this.scopesSupported || !this.scopesSupported.length) {
       this.scopesSupported = [];
     }
@@ -123,7 +123,7 @@ export default class RPBuilder {
     return this;
   }
 
-  addSubjectTypesSupported(subjectTypes: SubjectType | SubjectType[]) {
+  addSubjectTypesSupported(subjectTypes: SubjectType | SubjectType[]): RPBuilder {
     if (!this.subjectTypesSupported || !this.subjectTypesSupported.length) {
       this.subjectTypesSupported = [];
     }

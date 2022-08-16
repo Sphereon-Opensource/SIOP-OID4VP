@@ -201,7 +201,7 @@ export interface RequestRegistrationOpts extends RPRegistrationMetadataOpts {
 
 export interface DiscoveryMetadataOpts {
   vpFormats: Format;
-  authorizationEndpoint?: Schema.OPENID | string;
+  authorizationEndpoint: Schema.OPENID | string;
   tokenEndpoint?: string;
   userinfoEndpoint?: string;
   issuer: ResponseIss;

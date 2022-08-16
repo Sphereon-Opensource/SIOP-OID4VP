@@ -119,6 +119,7 @@ describe('RP and OP interaction should', () => {
       .registrationBy(PassBy.VALUE)
       .build();
     const op = OP.builder()
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -181,6 +182,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addResponseTypesSupported(ResponseType.ID_TOKEN)
@@ -248,6 +250,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addResponseTypesSupported(ResponseType.ID_TOKEN)
@@ -292,7 +295,7 @@ describe('RP and OP interaction should', () => {
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
-      .addAuthorizationEndpoint('')
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addIdTokenSigningAlgValuesSupported(SigningAlgo.EDDSA)
       .addRequestObjectSigningAlgValuesSupported([SigningAlgo.EDDSA, SigningAlgo.ES256K])
       .addResponseTypesSupported(ResponseType.ID_TOKEN)
@@ -308,6 +311,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addResponseTypesSupported(ResponseType.ID_TOKEN)

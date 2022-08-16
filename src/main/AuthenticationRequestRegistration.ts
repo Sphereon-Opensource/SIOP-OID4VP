@@ -32,7 +32,6 @@ export function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): {
   };
 }
 
-//TODO: fill it with right values
 function createRPRegistrationMetadataPayload(opts: SIOP.RPRegistrationMetadataOpts): SIOP.RPRegistrationMetadataPayload {
   return {
     authorization_endpoint: opts.authorizationEndpoint,

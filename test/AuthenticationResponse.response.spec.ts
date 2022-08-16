@@ -37,6 +37,7 @@ describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthenticationResponseOpts = {
     redirectUri: 'https://acme.com/hello',
     registration: {
+      authorizationEndpoint: 'www.myauthorizationendpoint.com',
       responseTypesSupported: [ResponseType.ID_TOKEN],
       subjectSyntaxTypesSupported: ['did:web'],
       vpFormats: {
@@ -44,7 +45,6 @@ describe('create JWT from Request JWT should', () => {
           proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
         },
       },
-      //TODO: fill it up with actual value
       issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
         type: PassBy.REFERENCE,
@@ -123,6 +123,7 @@ describe('create JWT from Request JWT should', () => {
     const responseOpts: AuthenticationResponseOpts = {
       redirectUri: 'https://acme.com/hello',
       registration: {
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         issuer: ResponseIss.SELF_ISSUED_V2,
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -257,6 +258,7 @@ describe('create JWT from Request JWT should', () => {
     const responseOpts: AuthenticationResponseOpts = {
       redirectUri: 'https://acme.com/hello',
       registration: {
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
         issuer: ResponseIss.SELF_ISSUED_V2,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         registrationBy: {
