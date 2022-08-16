@@ -50,8 +50,8 @@ export class PresentationExchange {
     }
 
     function sign(params: PresentationSignCallBackParams): Promise<IVerifiablePresentation> {
-      console.log('##### SIGN CALLBACK IMPLEMENTATION NEEDED FOR VP');
-      console.log(params);
+      // console.log('##### SIGN CALLBACK IMPLEMENTATION NEEDED FOR VP');
+      // console.log(params);
       return Promise.resolve(params.presentation as IVerifiablePresentation);
     }
 

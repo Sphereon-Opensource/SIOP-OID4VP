@@ -36,7 +36,7 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   redirect_uri: string;
   id_token_hint?: string; // TODO:  idtokenhint parameter value, as specified in Section 3.1.2. If the ID Token is encrypted to the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
   // iss: string;
-  //response_mode: ResponseMode;
+  response_mode: ResponseMode;
   claims?: ClaimPayload; // claims parameter value, as specified in Section 5.5.
   //TODO: https://sphereon.atlassian.net/browse/VDX-122 : SIOP: resolve registration parameter from registration_uri in client metadata
   registration?: RPRegistrationMetadataPayload;

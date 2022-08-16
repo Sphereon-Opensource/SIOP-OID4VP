@@ -50,15 +50,12 @@ function supportedDidMethods(rpMethods: string[] | string, opMethods: string[] |
   return supportedDidMethods;
 }
 
-export function supportedCredentialsFormats(rpFormat: Format, opFormat: Format): Format {
-  if (!rpFormat || !opFormat || !Object.keys(rpFormat).length || !Object.keys(opFormat).length) {
-    throw new Error(SIOPErrors.CREDENTIALS_FORMATS_NOT_PROVIDED);
-  }
+function getFormatIntersection(rpFormat: Format, opFormat: Format) {
+  const intersectionFormat: Format = {};
   const supportedCredentials = getIntersection(Object.keys(rpFormat), Object.keys(opFormat));
   if (!supportedCredentials.length) {
     throw new Error(SIOPErrors.CREDENTIAL_FORMATS_NOT_SUPPORTED);
   }
-  const intersectionFormat: Format = {};
   supportedCredentials.forEach(function (crFormat) {
     const rpAlgs = [];
     const opAlgs = [];
@@ -79,4 +76,11 @@ export function supportedCredentialsFormats(rpFormat: Format, opFormat: Format):
     intersectionFormat[crFormat][methodKeyOP] = algs;
   });
   return intersectionFormat;
+}
+
+export function supportedCredentialsFormats(rpFormat: Format, opFormat: Format): Format {
+  if (!rpFormat || !opFormat || !Object.keys(rpFormat).length || !Object.keys(opFormat).length) {
+    throw new Error(SIOPErrors.CREDENTIALS_FORMATS_NOT_PROVIDED);
+  }
+  return getFormatIntersection(rpFormat, opFormat);
 }
