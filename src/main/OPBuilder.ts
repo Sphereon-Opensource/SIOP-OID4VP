@@ -36,7 +36,9 @@ export default class OPBuilder {
     if (!this.responseRegistration.subjectSyntaxTypesSupported || !this.responseRegistration.subjectSyntaxTypesSupported.length) {
       this.responseRegistration.subjectSyntaxTypesSupported = [];
     }
-    this.responseRegistration.subjectSyntaxTypesSupported.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
+    Array.isArray(this.responseRegistration.subjectSyntaxTypesSupported)
+      ? this.responseRegistration.subjectSyntaxTypesSupported.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod))
+      : (this.responseRegistration.subjectSyntaxTypesSupported = DIDJwt.toSIOPRegistrationDidMethod(didMethod));
     this.resolvers.set(DIDJwt.getMethodFromDid(didMethod), resolver);
     return this;
   }

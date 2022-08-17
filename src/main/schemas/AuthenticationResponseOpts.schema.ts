@@ -151,131 +151,276 @@ export const AuthenticationResponseOptsSchema = {
           ]
         },
         "responseModesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ResponseMode"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseMode"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseMode"
+            }
+          ]
         },
         "grantTypesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/GrantType"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GrantType"
+              }
+            },
+            {
+              "$ref": "#/definitions/GrantType"
+            }
+          ]
         },
         "acrValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/AuthenticationContextReferences"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AuthenticationContextReferences"
+              }
+            },
+            {
+              "$ref": "#/definitions/AuthenticationContextReferences"
+            }
+          ]
         },
         "scopesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Scope"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
         },
         "subjectTypesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SubjectType"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
         },
         "idTokenSigningAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "idTokenEncryptionAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/KeyAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/KeyAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/KeyAlgo"
+            }
+          ]
         },
         "idTokenEncryptionEncValuesSupported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "userinfoSigningAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "userinfoEncryptionAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "userinfoEncryptionEncValuesSupported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "requestObjectSigningAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "requestObjectEncryptionAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "requestObjectEncryptionEncValuesSupported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "tokenEndpointAuthMethodsSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/TokenEndpointAuthMethod"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TokenEndpointAuthMethod"
+              }
+            },
+            {
+              "$ref": "#/definitions/TokenEndpointAuthMethod"
+            }
+          ]
         },
         "tokenEndpointAuthSigningAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "displayValuesSupported": {
-          "type": "array",
-          "items": {}
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {}
+            },
+            {}
+          ]
         },
         "claimTypesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ClaimType"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ClaimType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ClaimType"
+            }
+          ]
         },
         "claimsSupported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "serviceDocumentation": {
           "type": "string"
         },
         "claimsLocalesSupported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "uiLocalesSupported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "claimsParameterSupported": {
           "type": "boolean"
@@ -296,16 +441,30 @@ export const AuthenticationResponseOptsSchema = {
           "type": "string"
         },
         "subjectSyntaxTypesSupported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "idTokenTypesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/IdTokenType"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/IdTokenType"
+              }
+            },
+            {
+              "$ref": "#/definitions/IdTokenType"
+            }
+          ]
         },
         "registrationBy": {
           "$ref": "#/definitions/RegistrationType"

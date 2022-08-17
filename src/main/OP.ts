@@ -205,19 +205,25 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
 }
 
 function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; verifyOpts?: Partial<VerifyAuthenticationRequestOpts> }) {
+  const subjectSyntaxTypesSupported = [];
+  if (opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
+    if (Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
+      subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
+    } else {
+      subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
+    }
+  }
   return opts.builder
     ? {
         verification: {
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
             //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
-            didMethods: !opts.builder.responseRegistration.subjectSyntaxTypesSupported
-              ? []
-              : opts.builder.responseRegistration.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
+            didMethods: subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
             resolver: opts.builder.resolvers
               ? //TODO: discuss this with Niels
                 getResolver({ resolver: opts.builder.resolvers.values().next().value })
-              : getResolver({ subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported }),
+              : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
           },
         },
       }
