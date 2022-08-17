@@ -1,7 +1,6 @@
 import { IPresentationDefinition, IVerifiableCredential } from '@sphereon/pex';
 import nock from 'nock';
 
-import { Scope, SigningAlgo, SubjectType } from '../dist/main/types/SIOP.types';
 import { OP, PresentationExchange, RP } from '../src/main';
 import {
   KeyAlgo,
@@ -10,6 +9,9 @@ import {
   PresentationLocation,
   ResponseIss,
   ResponseType,
+  Scope,
+  SigningAlgo,
+  SubjectType,
   VerifiablePresentationTypeFormat,
 } from '../src/main/types/SIOP.types';
 
