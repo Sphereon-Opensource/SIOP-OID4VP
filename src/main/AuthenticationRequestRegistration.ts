@@ -18,6 +18,8 @@ export function createRequestRegistrationPayload(opts: SIOP.RequestRegistrationO
   } else {
     return { registration_uri: opts.registrationBy.referenceUri };
   }
+
+  // TODO write VDX-122 code here.
 }
 
 export function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): {
