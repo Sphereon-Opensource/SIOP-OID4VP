@@ -40,7 +40,7 @@ function createRPRegistrationMetadataPayload(opts: SIOP.RPRegistrationMetadataOp
     scopes_supported: opts.scopesSupported,
     subject_types_supported: opts.subjectTypesSupported,
     // TODO: https://sphereon.atlassian.net/browse/VDX-126 : supporting JSON Web Key (JWK) Thumbprint
-    subject_syntax_types_supported: opts.subjectSyntaxTypesSupported || ['did:key:', 'did:ion:', 'did:ethr:', 'did:factom:', 'did:lto:'],
+    subject_syntax_types_supported: opts.subjectSyntaxTypesSupported || ['did:web:', 'did:ion:'],
     vp_formats: opts.vpFormatsSupported,
   };
 }
