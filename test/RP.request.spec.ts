@@ -1,8 +1,18 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
+import { ProofType } from '@sphereon/pex';
 import { Resolver } from 'did-resolver';
 
 import { RP, RPBuilder, SIOP } from '../src/main';
-import { CredentialFormat, PassBy, ResponseMode, SubjectIdentifierType } from '../src/main/types/SIOP.types';
+import {
+  AuthenticationRequestOpts,
+  PassBy,
+  ResponseMode,
+  ResponseType,
+  Scope,
+  SigningAlgo,
+  SubjectIdentifierType,
+  SubjectType,
+} from '../src/main/types/SIOP.types';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -15,6 +25,7 @@ describe('RP Builder should', () => {
     expect.assertions(1);
     await expect(() => new RPBuilder().build()).toThrowError(Error);
   });
+
   it('build an RP when all arguments are set', async () => {
     expect.assertions(1);
 
@@ -25,8 +36,12 @@ describe('RP Builder should', () => {
         .redirect('https://redirect.me')
         .requestBy(PassBy.VALUE)
         .response(ResponseMode.POST)
-        .registrationBy(PassBy.REFERENCE, 'https://registration.here')
-        .addCredentialFormat(CredentialFormat.JWT)
+        .registrationBy({
+          registrationBy: {
+            type: PassBy.REFERENCE,
+            referenceUri: 'https://registration.here',
+          },
+        })
         .internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
         .build()
     ).toBeInstanceOf(RP);
@@ -41,7 +56,7 @@ describe('RP should', () => {
   it('return an RP when all request arguments are set', async () => {
     expect.assertions(1);
 
-    const opts = {
+    const opts: AuthenticationRequestOpts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: SIOP.PassBy.REFERENCE,
@@ -53,9 +68,17 @@ describe('RP should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: CredentialFormat.JWT,
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          jwt_vc: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -67,7 +90,7 @@ describe('RP should', () => {
 
   it('succeed from request opts when all params are set', async () => {
     // expect.assertions(1);
-    const opts = {
+    const opts: AuthenticationRequestOpts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: SIOP.PassBy.REFERENCE,
@@ -79,9 +102,18 @@ describe('RP should', () => {
         kid: KID,
       },
       registration: {
-        didMethodsSupported: ['did:ethr:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          jwt_vc: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          ldp_vc: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] },
+        },
         registrationBy: {
           type: SIOP.PassBy.VALUE,
         },
@@ -99,17 +131,34 @@ describe('RP should', () => {
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
       registration: {
-        did_methods_supported: ['did:ethr:'],
-        subject_identifiers_supported: 'did',
-        credential_formats_supported: ['jwt', 'w3cvc-jsonld'],
+        id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        response_types_supported: [ResponseType.ID_TOKEN],
+        scopes_supported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subject_syntax_types_supported: ['did:ethr:', 'did'],
+        subject_types_supported: [SubjectType.PAIRWISE],
+        vp_formats: {
+          jwt: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+          jwt_vc: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+        },
       },
     };
 
     const expectedUri =
-      'openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=di' +
-      'd%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=' +
-      '%7B%22did_methods_supported%22%3A%5B%22did%3Aethr%3A%22%5D%2C%22subject_identifiers_supported%22%3A%22did%22%2C%22credential_formats_supported%22%3A%5B%22jwt%22%2C%22w3cvc-jsonld%22%5D%7D' +
-      '&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
+      'openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F' +
+      '%2Facme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY' +
+      '3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%7B%22id_token_signing_alg_values_supported%22%3A%5B%22' +
+      'EdDSA%22%2C%22ES256%22%5D%2C%22request_object_signing_alg_values_supported%22%3A%5B%22EdDSA%22%2C%22ES256%22%5D%2C%22response_types_su' +
+      'pported%22%3A%5B%22id_token%22%5D%2C%22scopes_supported%22%3A%5B%22openid%20did_authn%22%2C%22openid%22%5D%2C%22subject_types_supporte' +
+      'd%22%3A%5B%22pairwise%22%5D%2C%22subject_syntax_types_supported%22%3A%5B%22did%3Aethr%3A%22%2C%22did%22%5D%2C%22vp_formats%22%3A%7B%22' +
+      'jwt_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vp%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256' +
+      'K%22%2C%22ES256%22%5D%7D%2C%22jwt%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22ldp_vc%22%3A%7B%22proof_t' +
+      'ype%22%3A%5B%22EcdsaSecp256k1Signature2019%22%2C%22EcdsaSecp256k1Signature2019%22%5D%7D%7D%7D&request_uri=https%3A%2F%2Frp.acme.com%2F' +
+      'siop%2Fjwts';
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.ey.*$/;
 
@@ -124,27 +173,41 @@ describe('RP should', () => {
 
   it('succeed from builder when all params are set', async () => {
     const expectedPayloadWithoutRequest = {
-      response_type: 'id_token',
-      scope: 'openid',
+      claims: undefined,
       client_id: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0',
-      redirect_uri: 'https://acme.com/hello',
       iss: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0',
-      response_mode: 'post',
-      response_context: 'rp',
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
-      state: 'b32f0087fc9816eb813fd11f',
+      redirect_uri: 'https://acme.com/hello',
       registration: {
-        did_methods_supported: ['did:ethr:'],
-        subject_identifiers_supported: 'did',
-        credential_formats_supported: ['jwt'],
+        id_token_signing_alg_values_supported: [SigningAlgo.EDDSA],
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        response_types_supported: [ResponseType.ID_TOKEN],
+        scopes_supported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subject_syntax_types_supported: ['did:ethr:'],
+        subject_types_supported: [SubjectType.PAIRWISE],
+        vp_formats: {
+          jwt: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+          jwt_vc: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+          jwt_vp: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+        },
       },
     };
 
     const expectedUri =
-      'openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2Facme.com%2Fhello&iss=di' +
-      'd%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=' +
-      '%7B%22did_methods_supported%22%3A%5B%22did%3Aethr%3A%22%5D%2C%22subject_identifiers_supported%22%3A%22did%22%2C%22credential_formats_supported%22%3A%5B%22jwt%22%5D%7D&request_uri=https%3A' +
-      '%2F%2Frp.acme.com%2Fsiop%2Fjwts';
+      'openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2F' +
+      'acme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49d' +
+      'AZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%7B%22id_token_signing_alg_values_supported%22%3A%5B%22EdDSA%22%' +
+      '5D%2C%22request_object_signing_alg_values_supported%22%3A%5B%22EdDSA%22%2C%22ES256%22%5D%2C%22response_types_supported%22%3A%5B%22id_toke' +
+      'n%22%5D%2C%22scopes_supported%22%3A%5B%22openid%20did_authn%22%2C%22openid%22%5D%2C%22subject_types_supported%22%3A%5B%22pairwise%22%5D%2' +
+      'C%22subject_syntax_types_supported%22%3A%5B%22did%3Aethr%3A%22%5D%2C%22vp_formats%22%3A%7B%22jwt%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22' +
+      'ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vp%22%3A%7B%22al' +
+      'g%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
 
@@ -152,9 +215,27 @@ describe('RP should', () => {
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .internalSignature(HEX_KEY, DID, KID)
-      .registrationBy(PassBy.VALUE)
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: {
+          jwt: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+          jwt_vc: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+          jwt_vp: {
+            alg: ['EdDSA', 'ES256K', 'ES256'],
+          },
+        },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: [],
+        registrationBy: { type: PassBy.VALUE },
+      })
       .addDidMethod('ethr')
-      .addCredentialFormat(CredentialFormat.JWT)
       .build()
 
       .createAuthenticationRequest({

@@ -96,10 +96,15 @@ export class RP {
 function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; requestOpts?: AuthenticationRequestOpts }) {
   const requestOpts: AuthenticationRequestOpts = opts.builder
     ? {
+        authorizationEndpoint: opts.builder.authorizationEndpoint,
         registration: opts.builder.requestRegistration as RequestRegistrationOpts,
         redirectUri: opts.builder.redirectUri,
         requestBy: opts.builder.requestObjectBy,
+        responseTypesSupported: opts.builder.requestRegistration.responseTypesSupported,
+        scopesSupported: opts.builder.requestRegistration.scopesSupported,
         signatureType: opts.builder.signatureType,
+        subjectTypesSupported: opts.builder.requestRegistration.subjectTypesSupported,
+        requestObjectSigningAlgValuesSupported: opts.builder.requestRegistration.requestObjectSigningAlgValuesSupported,
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
@@ -119,8 +124,14 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
         verification: {
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
-            didMethods: opts.builder.didMethods,
-            resolver: opts.builder.resolver ? getResolver({ resolver: opts.builder.resolver }) : getResolver({ didMethods: opts.builder.didMethods }),
+            //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
+            didMethods: !opts.builder.requestRegistration.subjectSyntaxTypesSupported
+              ? []
+              : opts.builder.requestRegistration.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
+            resolver: opts.builder.resolvers
+              ? //TODO: discuss this with Niels
+                getResolver({ resolver: opts.builder.resolvers.values().next().value })
+              : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
           },
         },
       }
