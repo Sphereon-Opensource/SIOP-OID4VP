@@ -217,7 +217,7 @@ async function createSIOPResponsePayload(
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
-  const isDidSupported = verifiedJwt.payload.registration?.subject_identifiers_supported?.includes(SubjectIdentifierType.DID);
+  const isDidSupported = verifiedJwt.payload.registration?.subject_syntax_types_supported?.includes(SubjectIdentifierType.DID);
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || State.getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || State.getNonce(state);

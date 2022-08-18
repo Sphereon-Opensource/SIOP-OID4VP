@@ -6,7 +6,6 @@ import { DIDJwt } from './functions';
 import { EcdsaSignature } from './types/JWT.types';
 import {
   ClaimOpts,
-  CredentialFormat,
   ExternalSignature,
   InternalSignature,
   NoSignature,
@@ -15,17 +14,16 @@ import {
   PresentationDefinitionWithLocation,
   RequestRegistrationOpts,
   ResponseContext,
+  ResponseIss,
   ResponseMode,
-  SubjectIdentifierType,
   SuppliedSignature,
 } from './types/SIOP.types';
 
 export default class RPBuilder {
-  subjectIdentifierTypes: SubjectIdentifierType = SubjectIdentifierType.DID;
-  didMethods: string[] = [];
+  authorizationEndpoint: string;
+  issuer: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   resolver?: Resolvable;
-  credentialFormats: CredentialFormat[] = [];
   requestRegistration: Partial<RequestRegistrationOpts> = {};
   redirectUri: string;
   requestObjectBy: ObjectBy;
@@ -36,8 +34,8 @@ export default class RPBuilder {
 
   // claims?: ClaimPayload;
 
-  addCredentialFormat(credentialType: CredentialFormat): RPBuilder {
-    this.credentialFormats.push(credentialType);
+  addIssuer(issuer: ResponseIss): RPBuilder {
+    this.issuer = issuer;
     return this;
   }
 
@@ -47,8 +45,16 @@ export default class RPBuilder {
   }
 
   addResolver(didMethod: string, resolver: Resolvable): RPBuilder {
-    this.didMethods.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
+    if (!this.requestRegistration.subjectSyntaxTypesSupported || !this.requestRegistration.subjectSyntaxTypesSupported.length) {
+      this.requestRegistration.subjectSyntaxTypesSupported = [];
+    }
+    this.requestRegistration.subjectSyntaxTypesSupported.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
     this.resolvers.set(DIDJwt.getMethodFromDid(didMethod), resolver);
+    return this;
+  }
+
+  withAuthorizationEndpoint(authorizationEndpoint: string): RPBuilder {
+    this.authorizationEndpoint = authorizationEndpoint;
     return this;
   }
 
@@ -75,16 +81,10 @@ export default class RPBuilder {
     return this;
   }
 
-  registrationBy(registrationBy: PassBy, refUri?: string): RPBuilder {
+  registrationBy(requestRegistration: RequestRegistrationOpts): RPBuilder {
     this.requestRegistration = {
-      registrationBy: {
-        type: registrationBy,
-        referenceUri: refUri,
-      },
+      ...requestRegistration,
     };
-    /*if (refUri) {
-          this.requestRegistration.registrationBy.referenceUri = refUri;
-        }*/
     return this;
   }
 
@@ -116,9 +116,6 @@ export default class RPBuilder {
   }
 
   build(): RP {
-    this.requestRegistration.didMethodsSupported = this.didMethods;
-    this.requestRegistration.subjectIdentifiersSupported = this.subjectIdentifierTypes;
-    this.requestRegistration.credentialFormatsSupported = this.credentialFormats;
     return new RP({ builder: this });
   }
 }

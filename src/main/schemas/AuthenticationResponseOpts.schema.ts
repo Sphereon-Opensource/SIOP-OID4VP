@@ -116,8 +116,78 @@ export const AuthenticationResponseOptsSchema = {
     "ResponseRegistrationOpts": {
       "type": "object",
       "properties": {
+        "vpFormats": {
+          "$ref": "#/definitions/Format"
+        },
         "authorizationEndpoint": {
           "type": "string"
+        },
+        "tokenEndpoint": {
+          "type": "string"
+        },
+        "userinfoEndpoint": {
+          "type": "string"
+        },
+        "issuer": {
+          "$ref": "#/definitions/ResponseIss"
+        },
+        "jwksUri": {
+          "type": "string"
+        },
+        "registrationEndpoint": {
+          "type": "string"
+        },
+        "responseTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
+        },
+        "responseModesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseMode"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseMode"
+            }
+          ]
+        },
+        "grantTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GrantType"
+              }
+            },
+            {
+              "$ref": "#/definitions/GrantType"
+            }
+          ]
+        },
+        "acrValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AuthenticationContextReferences"
+              }
+            },
+            {
+              "$ref": "#/definitions/AuthenticationContextReferences"
+            }
+          ]
         },
         "scopesSupported": {
           "anyOf": [
@@ -150,11 +220,76 @@ export const AuthenticationResponseOptsSchema = {
             {
               "type": "array",
               "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "idTokenEncryptionAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
                 "$ref": "#/definitions/KeyAlgo"
               }
             },
             {
               "$ref": "#/definitions/KeyAlgo"
+            }
+          ]
+        },
+        "idTokenEncryptionEncValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "userinfoSigningAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "userinfoEncryptionAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "userinfoEncryptionEncValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
             }
           ]
         },
@@ -171,10 +306,20 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
-        "didsSupported": {
-          "type": "boolean"
+        "requestObjectEncryptionAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
-        "didMethodsSupported": {
+        "requestObjectEncryptionEncValuesSupported": {
           "anyOf": [
             {
               "type": "array",
@@ -187,26 +332,55 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
-        "credentialSupported": {
-          "type": "boolean"
-        },
-        "credentialEndpoint": {
-          "type": "string"
-        },
-        "credentialFormatsSupported": {
+        "tokenEndpointAuthMethodsSupported": {
           "anyOf": [
             {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/CredentialFormat"
+                "$ref": "#/definitions/TokenEndpointAuthMethod"
               }
             },
             {
-              "$ref": "#/definitions/CredentialFormat"
+              "$ref": "#/definitions/TokenEndpointAuthMethod"
             }
           ]
         },
-        "credentialClaimsSupported": {
+        "tokenEndpointAuthSigningAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "displayValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {}
+            },
+            {}
+          ]
+        },
+        "claimTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ClaimType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ClaimType"
+            }
+          ]
+        },
+        "claimsSupported": {
           "anyOf": [
             {
               "type": "array",
@@ -219,8 +393,78 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
-        "credentialName": {
+        "serviceDocumentation": {
           "type": "string"
+        },
+        "claimsLocalesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "uiLocalesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "claimsParameterSupported": {
+          "type": "boolean"
+        },
+        "requestParameterSupported": {
+          "type": "boolean"
+        },
+        "requestUriParameterSupported": {
+          "type": "boolean"
+        },
+        "requireRequestUriRegistration": {
+          "type": "boolean"
+        },
+        "opPolicyUri": {
+          "type": "string"
+        },
+        "opTosUri": {
+          "type": "string"
+        },
+        "subjectSyntaxTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "idTokenTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/IdTokenType"
+              }
+            },
+            {
+              "$ref": "#/definitions/IdTokenType"
+            }
+          ]
         },
         "registrationBy": {
           "$ref": "#/definitions/RegistrationType"
@@ -231,11 +475,106 @@ export const AuthenticationResponseOptsSchema = {
       ],
       "additionalProperties": false
     },
+    "Format": {
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "$ref": "#/definitions/JwtObject"
+        },
+        "jwt_vc": {
+          "$ref": "#/definitions/JwtObject"
+        },
+        "jwt_vp": {
+          "$ref": "#/definitions/JwtObject"
+        },
+        "ldp": {
+          "$ref": "#/definitions/LdpObject"
+        },
+        "ldp_vc": {
+          "$ref": "#/definitions/LdpObject"
+        },
+        "ldp_vp": {
+          "$ref": "#/definitions/LdpObject"
+        }
+      },
+      "additionalProperties": false
+    },
+    "JwtObject": {
+      "type": "object",
+      "properties": {
+        "alg": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "alg"
+      ],
+      "additionalProperties": false
+    },
+    "LdpObject": {
+      "type": "object",
+      "properties": {
+        "proof_type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "proof_type"
+      ],
+      "additionalProperties": false
+    },
+    "ResponseIss": {
+      "type": "string",
+      "enum": [
+        "https://self-issued.me",
+        "https://self-issued.me/v2"
+      ]
+    },
+    "ResponseType": {
+      "type": "string",
+      "enum": [
+        "id_token",
+        "vp_token"
+      ]
+    },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
+    },
+    "GrantType": {
+      "type": "string",
+      "enum": [
+        "authorization_code",
+        "implicit"
+      ]
+    },
+    "AuthenticationContextReferences": {
+      "type": "string",
+      "enum": [
+        "phr",
+        "phrh"
+      ]
+    },
     "Scope": {
       "type": "string",
       "enum": [
         "openid",
-        "openid did_authn"
+        "openid did_authn",
+        "profile",
+        "email",
+        "address",
+        "phone"
       ]
     },
     "SubjectType": {
@@ -243,15 +582,6 @@ export const AuthenticationResponseOptsSchema = {
       "enum": [
         "public",
         "pairwise"
-      ]
-    },
-    "KeyAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K"
       ]
     },
     "SigningAlgo": {
@@ -264,11 +594,37 @@ export const AuthenticationResponseOptsSchema = {
         "none"
       ]
     },
-    "CredentialFormat": {
+    "KeyAlgo": {
       "type": "string",
       "enum": [
-        "w3cvc-jsonld",
-        "jwt"
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K"
+      ]
+    },
+    "TokenEndpointAuthMethod": {
+      "type": "string",
+      "enum": [
+        "client_secret_post",
+        "client_secret_basic",
+        "client_secret_jwt",
+        "private_key_jwt"
+      ]
+    },
+    "ClaimType": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "aggregated",
+        "distributed"
+      ]
+    },
+    "IdTokenType": {
+      "type": "string",
+      "enum": [
+        "subject_signed",
+        "attester_signed"
       ]
     },
     "RegistrationType": {
@@ -303,15 +659,6 @@ export const AuthenticationResponseOptsSchema = {
     "EncSymmetricAlgorithmCode": {
       "type": "string",
       "const": "XC20P"
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
     },
     "VerifiablePresentationResponseOpts": {
       "type": "object",

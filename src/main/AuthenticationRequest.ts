@@ -82,7 +82,7 @@ export default class AuthenticationRequest {
     const verPayload = payload as AuthenticationRequestPayload;
     if (opts.nonce && verPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
-    } else if (verPayload.registration?.subject_identifiers_supported && verPayload.registration.subject_identifiers_supported.length == 0) {
+    } else if (verPayload.registration?.subject_syntax_types_supported && verPayload.registration.subject_syntax_types_supported.length == 0) {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
 
@@ -192,7 +192,12 @@ function createClaimsPayload(opts: SIOP.ClaimOpts): ClaimPayload {
           // There can only be one definition in the vp_token according to the spec
           throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
         } else {
-          vp_token = { presentation_definition: def.definition };
+          vp_token = {
+            //TODO: nonce should be initialized correctly
+            nonce: 'NONCE_STRING',
+            presentation_definition: def.definition,
+            response_type: PresentationLocation.VP_TOKEN,
+          };
         }
         return;
       }

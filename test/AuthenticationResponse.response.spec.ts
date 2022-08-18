@@ -1,17 +1,20 @@
-import { IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
+import { IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphereon/pex';
 import { ICredential } from '@sphereon/pex/dist/main/lib/types';
 
-import { PresentationExchange } from '../src/main';
-import { AuthenticationRequest, AuthenticationResponse } from '../src/main';
+import { AuthenticationRequest, AuthenticationResponse, PresentationExchange } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
-import { AuthenticationRequestOpts } from '../src/main/types/SIOP.types';
 import {
+  AuthenticationRequestOpts,
   AuthenticationResponseOpts,
-  CredentialFormat,
   PassBy,
   PresentationLocation,
+  ResponseIss,
   ResponseMode,
+  ResponseType,
+  Scope,
+  SigningAlgo,
   SubjectIdentifierType,
+  SubjectType,
   VerifiablePresentationTypeFormat,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
@@ -34,13 +37,15 @@ describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthenticationResponseOpts = {
     redirectUri: 'https://acme.com/hello',
     registration: {
-      didsSupported: true,
-      didMethodsSupported: ['did:web'],
-      credentialSupported: false,
-      credentialName: 'test',
-      credentialEndpoint: 'http://test.com',
-      credentialClaimsSupported: 'any',
-      credentialFormatsSupported: CredentialFormat.JSON_LD,
+      authorizationEndpoint: 'www.myauthorizationendpoint.com',
+      responseTypesSupported: [ResponseType.ID_TOKEN],
+      subjectSyntaxTypesSupported: ['did:web'],
+      vpFormats: {
+        ldp_vc: {
+          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        },
+      },
+      issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
         type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -57,7 +62,7 @@ describe('create JWT from Request JWT should', () => {
   const verifyOpts: VerifyAuthenticationRequestOpts = {
     verification: {
       resolveOpts: {
-        didMethods: ['ethr'],
+        subjectSyntaxTypesSupported: ['ethr'],
       },
       mode: VerificationMode.INTERNAL,
     },
@@ -92,7 +97,7 @@ describe('create JWT from Request JWT should', () => {
 
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-    const requestOpts = {
+    const requestOpts: AuthenticationRequestOpts = {
       redirectUri: 'https://acme.com/hello',
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -101,15 +106,33 @@ describe('create JWT from Request JWT should', () => {
         kid: `${mockReqEntity.did}#controller`,
       },
       registration: {
-        didMethodsSupported: 'did:ethr:',
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: CredentialFormat.JSON_LD,
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: { type: PassBy.VALUE },
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
       redirectUri: 'https://acme.com/hello',
       registration: {
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormats: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: {
           type: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
@@ -168,9 +191,17 @@ describe('create JWT from Request JWT should', () => {
         kid: `${mockReqEntity.did}#controller`,
       },
       registration: {
-        didMethodsSupported: 'did:ethr:',
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: CredentialFormat.JSON_LD,
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
         registrationBy: { type: PassBy.VALUE },
       },
       claims: {
@@ -227,9 +258,18 @@ describe('create JWT from Request JWT should', () => {
     const responseOpts: AuthenticationResponseOpts = {
       redirectUri: 'https://acme.com/hello',
       registration: {
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        responseTypesSupported: [ResponseType.ID_TOKEN],
         registrationBy: {
           type: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
+        },
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormats: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
         },
       },
       signatureType: {

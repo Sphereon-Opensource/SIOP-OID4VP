@@ -29,7 +29,7 @@ import { isEd25519DidKeyMethod, isEd25519JWK } from './Keys';
  *  and the did doc of the issuer of the JWT.
  *
  *  @example
- *  verifyDidJWT('did:eosio:example', resolver, {audience: '5A8bRWU3F7j3REx3vkJ...', callbackUrl: 'https://...'}).then(obj => {
+ *  verifyDidJWT('did:key:example', resolver, {audience: '5A8bRWU3F7j3REx3vkJ...', callbackUrl: 'https://...'}).then(obj => {
  *      const did = obj.did                 // DIDres of signer
  *      const payload = obj.payload
  *      const doc = obj.doc                 // DIDres Document of signer

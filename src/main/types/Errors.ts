@@ -8,6 +8,7 @@ enum SIOPErrors {
   CANT_UNMARSHAL_JWT_VP = "can't unmarshal the presentation object",
   NO_PRESENTATION_SUBMISSION = 'The VP did not contain a presentation submission. Did you forget to call PresentationExchange.checkSubmissionFrom?',
   CREDENTIAL_FORMATS_NOT_SUPPORTED = 'CREDENTIAL_FORMATS_NOT_SUPPORTED',
+  CREDENTIALS_FORMATS_NOT_PROVIDED = 'Credentials format not provided by RP/OP',
   COULD_NOT_FIND_VCS_MATCHING_PD = 'Could not find VerifiableCredentials matching presentationDefinition object in the provided VC list',
   DIDAUTH_REQUEST_PAYLOAD_NOT_CREATED = 'DidAuthRequestPayload not created',
   DID_METHODS_NOT_SUPORTED = 'DID_METHODS_NOT_SUPPORTED',

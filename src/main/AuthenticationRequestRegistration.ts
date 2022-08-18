@@ -34,8 +34,13 @@ export function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): {
 
 function createRPRegistrationMetadataPayload(opts: SIOP.RPRegistrationMetadataOpts): SIOP.RPRegistrationMetadataPayload {
   return {
-    did_methods_supported: opts.didMethodsSupported || ['did:eosio:', 'did:ethr:', 'did:factom:', 'did:lto:'],
-    subject_identifiers_supported: opts.subjectIdentifiersSupported || SIOP.SubjectIdentifierType.DID,
-    credential_formats_supported: opts.credentialFormatsSupported || [],
+    id_token_signing_alg_values_supported: opts.idTokenSigningAlgValuesSupported,
+    request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported,
+    response_types_supported: opts.responseTypesSupported,
+    scopes_supported: opts.scopesSupported,
+    subject_types_supported: opts.subjectTypesSupported,
+    // TODO: https://sphereon.atlassian.net/browse/VDX-126 : supporting JSON Web Key (JWK) Thumbprint
+    subject_syntax_types_supported: opts.subjectSyntaxTypesSupported || ['did:web:', 'did:ion:'],
+    vp_formats: opts.vpFormatsSupported,
   };
 }
