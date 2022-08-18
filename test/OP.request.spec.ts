@@ -1,10 +1,10 @@
 import { ProofType } from '@sphereon/pex';
 
-import { KeyAlgo } from '../dist/main/types/SIOP.types';
 import { OP, OPBuilder, RP, SIOP } from '../src/main';
 import {
   AuthenticationRequestOpts,
   AuthenticationResponseOpts,
+  KeyAlgo,
   PassBy,
   ResponseIss,
   ResponseMode,
