@@ -51,8 +51,6 @@ export class PresentationExchange {
     }
 
     function sign(params: PresentationSignCallBackParams): Promise<IVerifiablePresentation> {
-      // console.log('##### SIGN CALLBACK IMPLEMENTATION NEEDED FOR VP');
-      // console.log(params);
       return Promise.resolve(params.presentation as IVerifiablePresentation);
     }
 
@@ -191,7 +189,6 @@ export class PresentationExchange {
         const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef[0].value)) as unknown as
           | PresentationDefinitionV1
           | PresentationDefinitionV2;
-        console.log(JSON.stringify(pd));
         allDefinitions = handleAddingSinglePDInIdToken(pd, allDefinitions);
       }
     }
