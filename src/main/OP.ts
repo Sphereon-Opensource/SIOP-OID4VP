@@ -49,10 +49,10 @@ export class OP {
   }
 
   public async verifyAuthenticationRequest(
-    requestJwtorUri: string,
+    requestJwtOrUri: string,
     opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
-    const jwt = requestJwtorUri.startsWith('ey') ? requestJwtorUri : (await parseAndResolveUri(requestJwtorUri)).jwt;
+    const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveUri(requestJwtOrUri)).jwt;
     const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts(opts));
     return verifiedJwt;
   }
