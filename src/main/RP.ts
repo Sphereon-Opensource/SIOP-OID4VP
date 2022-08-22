@@ -108,6 +108,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
+        linkedDomainValidationMode: opts.builder.linkedDomainCheckMode,
       }
     : opts.requestOpts;
 

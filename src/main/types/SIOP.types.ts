@@ -14,6 +14,7 @@ export interface AuthenticationRequestOpts {
   redirectUri: string; // The redirect URI
   requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication), or supplied (callback supplied)
+  linkedDomainValidationMode: LinkedDomainValidationMode; // determines how we'll handle the linked domains for this RP
   responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
   responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
   responseTypesSupported?: ResponseType[];
@@ -418,6 +419,11 @@ export enum ResponseContext {
   OP = 'op',
 }
 
+export enum LinkedDomainValidationMode {
+  NEVER = 'never', // We don't want to verify Linked domains
+  OPTIONAL = 'optional', // If present, did-auth-siop will check the linked domain
+  ALWAYS = 'always', // We'll always check the linked domains
+}
 export interface InternalSignature {
   hexPrivateKey: string; // hex private key Only secp256k1 format
   did: string;

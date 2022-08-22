@@ -8,6 +8,7 @@ import {
   ClaimOpts,
   ExternalSignature,
   InternalSignature,
+  LinkedDomainValidationMode,
   NoSignature,
   ObjectBy,
   PassBy,
@@ -31,6 +32,7 @@ export default class RPBuilder {
   responseMode?: ResponseMode;
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
+  linkedDomainCheckMode: LinkedDomainValidationMode;
 
   // claims?: ClaimPayload;
 
@@ -55,6 +57,11 @@ export default class RPBuilder {
 
   withAuthorizationEndpoint(authorizationEndpoint: string): RPBuilder {
     this.authorizationEndpoint = authorizationEndpoint;
+    return this;
+  }
+
+  withLinkedDomainValidationMode(mode: LinkedDomainValidationMode): RPBuilder {
+    this.linkedDomainCheckMode = mode;
     return this;
   }
 
