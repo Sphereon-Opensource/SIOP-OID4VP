@@ -226,7 +226,6 @@ describe('presentation exchange manager tests', () => {
         },
       ],
     };
-    // console.log(JSON.stringify(response,null,2))
     nock('http://my_own_pd.com')
       .persist()
       .get(/pd/)
@@ -280,7 +279,6 @@ describe('presentation exchange manager tests', () => {
       type: ['VerifiablePresentation'],
       verifiableCredential: vcs,
     });
-    console.log(JSON.stringify(result));
     expect(result.errors.length).toBe(0);
     expect(result.value.definition_id).toBe('Insurance Plans');
   });
