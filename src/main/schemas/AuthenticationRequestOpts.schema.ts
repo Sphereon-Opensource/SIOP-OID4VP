@@ -30,6 +30,9 @@ export const AuthenticationRequestOptsSchema = {
             }
           ]
         },
+        "linkedDomainValidationMode": {
+          "$ref": "#/definitions/LinkedDomainValidationMode"
+        },
         "responseMode": {
           "$ref": "#/definitions/ResponseMode"
         },
@@ -77,6 +80,7 @@ export const AuthenticationRequestOptsSchema = {
         "redirectUri",
         "requestBy",
         "signatureType",
+        "linkedDomainValidationMode",
         "registration"
       ],
       "additionalProperties": false
@@ -178,6 +182,14 @@ export const AuthenticationRequestOptsSchema = {
         "did"
       ],
       "additionalProperties": false
+    },
+    "LinkedDomainValidationMode": {
+      "type": "string",
+      "enum": [
+        "never",
+        "optional",
+        "always"
+      ]
     },
     "ResponseMode": {
       "type": "string",

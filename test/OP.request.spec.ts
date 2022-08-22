@@ -5,6 +5,7 @@ import {
   AuthenticationRequestOpts,
   AuthenticationResponseOpts,
   KeyAlgo,
+  LinkedDomainValidationMode,
   PassBy,
   ResponseIss,
   ResponseMode,
@@ -101,6 +102,7 @@ describe('OP should', () => {
   it('succeed from request opts when all params are set', async () => {
     const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
     const requestOpts: AuthenticationRequestOpts = {
+      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: SIOP.PassBy.REFERENCE,
@@ -150,6 +152,7 @@ describe('OP should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
     const requestURI = await RP.builder()
+      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .withAuthorizationEndpoint('www.muauthorizationendpoint.com')
       .redirect(EXAMPLE_REFERENCE_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)

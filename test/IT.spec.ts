@@ -4,6 +4,7 @@ import nock from 'nock';
 import { OP, PresentationExchange, RP } from '../src/main';
 import {
   KeyAlgo,
+  LinkedDomainValidationMode,
   PassBy,
   PresentationDefinitionWithLocation,
   PresentationLocation,
@@ -105,6 +106,7 @@ describe('RP and OP interaction should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
     const rp = RP.builder()
+      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -179,6 +181,7 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
+      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -253,6 +256,7 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
+      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -323,6 +327,7 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
+      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)

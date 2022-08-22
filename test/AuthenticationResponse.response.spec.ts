@@ -6,6 +6,7 @@ import SIOPErrors from '../src/main/types/Errors';
 import {
   AuthenticationRequestOpts,
   AuthenticationResponseOpts,
+  LinkedDomainValidationMode,
   PassBy,
   PresentationLocation,
   ResponseIss,
@@ -98,6 +99,7 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthenticationRequestOpts = {
+      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       redirectUri: 'https://acme.com/hello',
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -183,6 +185,7 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthenticationRequestOpts = {
+      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       redirectUri: 'https://acme.com/hello',
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
