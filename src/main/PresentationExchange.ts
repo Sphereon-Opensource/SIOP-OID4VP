@@ -13,8 +13,9 @@ import {
   SelectResults,
   Status,
 } from '@sphereon/pex';
-import { PresentationSubmission } from '@sphereon/pex-models';
+import { PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmission } from '@sphereon/pex-models';
 
+import { getWithUrl } from './functions/HttpUtils';
 import { extractDataFromPath } from './functions/ObjectUtils';
 import { SIOPErrors } from './types';
 import { JWTPayload } from './types/JWT.types';
@@ -138,47 +139,71 @@ export class PresentationExchange {
    * returns a PresentationDefinition if a valid instance found
    * @param obj: object that can have a presentation_definition inside
    */
-  public static findValidPresentationDefinitions(obj: JWTPayload): PresentationDefinitionWithLocation[] {
+  public static async findValidPresentationDefinitions(obj: JWTPayload): Promise<PresentationDefinitionWithLocation[]> {
     let allDefinitions: PresentationDefinitionWithLocation[];
-
-    function extractPDFromVPToken() {
+    async function extractPDFromVPToken() {
       const vpTokens = extractDataFromPath(obj, '$..vp_token.presentation_definition');
-
-      if (vpTokens) {
-        if (vpTokens.length == 1) {
-          PresentationExchange.assertValidPresentationDefinition(vpTokens[0].value);
-          allDefinitions = [{ definition: vpTokens[0].value, location: PresentationLocation.VP_TOKEN }];
-        } else if (vpTokens.length > 1) throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+      const vpTokenRef = extractDataFromPath(obj, '$..vp_token.presentation_definition_uri');
+      if (vpTokens && vpTokens.length && vpTokenRef && vpTokenRef.length) {
+        throw new Error(SIOPErrors.REQUEST_CLAIMS_CANT_SEND_PRESENTATION_DEFINITION_BY_RE_AND_VAL);
+      }
+      if (vpTokens && vpTokens.length == 1) {
+        PresentationExchange.assertValidPresentationDefinition(vpTokens[0].value);
+        allDefinitions = [{ definition: vpTokens[0].value, location: PresentationLocation.VP_TOKEN }];
+      }
+      if (vpTokens && vpTokens.length > 1) {
+        throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+      }
+      if (vpTokenRef && vpTokenRef.length) {
+        const result = await getWithUrl(vpTokenRef[0].value);
+        const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = await result.json();
+        PresentationExchange.assertValidPresentationDefinition(pd);
+        allDefinitions = [{ definition: pd, location: PresentationLocation.VP_TOKEN }];
       }
     }
 
-    function extractPDFromOtherTokens() {
+    function handleAddingSinglePDInIdToken(definition, allDefinitions: PresentationDefinitionWithLocation[]): PresentationDefinitionWithLocation[] {
+      PresentationExchange.assertValidPresentationDefinition(definition.value);
+      if (definition.path.includes(PresentationLocation.ID_TOKEN)) {
+        const defWithLocation = { definition: definition.value, location: PresentationLocation.ID_TOKEN };
+        if (!allDefinitions) {
+          allDefinitions = [defWithLocation];
+        } else {
+          allDefinitions.push(defWithLocation);
+        }
+      } else {
+        throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+      }
+      return allDefinitions;
+    }
+
+    async function extractPDFromOtherTokens() {
       const definitions = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition');
+      const definitionRef = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
+      if (definitions && definitions.length && definitionRef && definitionRef.length) {
+        throw new Error(SIOPErrors.REQUEST_CLAIMS_CANT_SEND_PRESENTATION_DEFINITION_BY_RE_AND_VAL);
+      }
       if (definitions && definitions.length) {
         definitions.forEach((definition) => {
-          PresentationExchange.assertValidPresentationDefinition(definition.value);
-          if (definition.path.includes(PresentationLocation.ID_TOKEN)) {
-            const defWithLocation = { definition: definition.value, location: PresentationLocation.ID_TOKEN };
-            if (!allDefinitions) {
-              allDefinitions = [defWithLocation];
-            } else {
-              allDefinitions.push(defWithLocation);
-            }
-          } else {
-            throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-          }
+          allDefinitions = handleAddingSinglePDInIdToken(definition, allDefinitions);
         });
+      } else if (definitionRef && definitionRef.length) {
+        const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef[0].value)) as unknown as
+          | PresentationDefinitionV1
+          | PresentationDefinitionV2;
+        console.log(JSON.stringify(pd));
+        allDefinitions = handleAddingSinglePDInIdToken(pd, allDefinitions);
       }
     }
 
     if (obj) {
-      extractPDFromVPToken();
-      extractPDFromOtherTokens();
+      await extractPDFromVPToken();
+      await extractPDFromOtherTokens();
     }
     return allDefinitions;
   }
 
-  public static assertValidPresentationDefintionWithLocations(defintionWithLocations: PresentationDefinitionWithLocation[]) {
+  public static assertValidPresentationDefinitionWithLocations(defintionWithLocations: PresentationDefinitionWithLocation[]) {
     if (defintionWithLocations && defintionWithLocations.length > 0) {
       defintionWithLocations.forEach((definitionWithLocation) =>
         PresentationExchange.assertValidPresentationDefinition(definitionWithLocation.definition)

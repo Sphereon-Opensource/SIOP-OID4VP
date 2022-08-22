@@ -43,3 +43,17 @@ export async function postAuthenticationResponseJwt(url: string, jwt: string): P
     throw new Error(`${(error as Error).message}`);
   }
 }
+
+export async function getWithUrl(url: string): Promise<Response> {
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+    });
+    if (!response || !response.status || (response.status !== 200 && response.status !== 201)) {
+      throw new Error(`${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText}, ${await response.json()}`);
+    }
+    return response;
+  } catch (error) {
+    throw new Error(`${(error as Error).message}`);
+  }
+}

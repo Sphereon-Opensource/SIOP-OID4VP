@@ -56,8 +56,8 @@ export default class AuthenticationRequest {
     };
   }
 
-  static wrapAsURI(request: SIOP.AuthenticationRequestWithJWT): SIOP.AuthenticationRequestURI {
-    return createURIFromJWT(request.opts, request.payload, request.jwt);
+  static async wrapAsURI(request: SIOP.AuthenticationRequestWithJWT): Promise<SIOP.AuthenticationRequestURI> {
+    return await createURIFromJWT(request.opts, request.payload, request.jwt);
   }
 
   /**
@@ -90,7 +90,7 @@ export default class AuthenticationRequest {
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
-    const presentationDefinitions = PresentationExchange.findValidPresentationDefinitions(payload);
+    const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
       ...verifiedJWT,
       verifyOpts: opts,
@@ -114,14 +114,14 @@ export default class AuthenticationRequest {
  * @param requestPayload
  * @param jwt
  */
-function createURIFromJWT(
+async function createURIFromJWT(
   requestOpts: SIOP.AuthenticationRequestOpts,
   requestPayload: SIOP.AuthenticationRequestPayload,
   jwt: string
-): SIOP.AuthenticationRequestURI {
+): Promise<SIOP.AuthenticationRequestURI> {
   const schema = 'openid://';
   // Only used to validate if it contains a definition
-  PresentationExchange.findValidPresentationDefinitions(requestPayload);
+  await PresentationExchange.findValidPresentationDefinitions(requestPayload);
 
   const query = Encodings.encodeJsonAsURI(requestPayload);
 
