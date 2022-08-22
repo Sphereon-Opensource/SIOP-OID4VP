@@ -1,5 +1,6 @@
 import { IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphereon/pex';
 import { PresentationDefinitionV1 } from '@sphereon/pex-models';
+import nock from 'nock';
 
 import { PresentationExchange, SIOP } from '../src/main';
 import { State } from '../src/main/functions';
@@ -22,8 +23,9 @@ import {
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
 const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
+const EXAMPLE_PD_URL = 'http://my_own_pd.com/pd/';
 
-async function getPayload(): Promise<AuthenticationRequestPayload> {
+async function getPayload_PD_Val(): Promise<AuthenticationRequestPayload> {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
   const state = State.getState();
   return {
@@ -95,6 +97,50 @@ async function getPayload(): Promise<AuthenticationRequestPayload> {
   };
 }
 
+async function getPayload_PD_Ref(): Promise<AuthenticationRequestPayload> {
+  const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
+  const state = State.getState();
+  return {
+    iss: mockEntity.did,
+    aud: 'test',
+    response_mode: ResponseMode.POST,
+    response_context: ResponseContext.RP,
+    redirect_uri: '',
+    scope: SIOP.Scope.OPENID,
+    response_type: SIOP.ResponseType.ID_TOKEN,
+    client_id: 'http://localhost:8080/test',
+    state,
+    nonce: State.getNonce(state),
+    registration: {
+      id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+      id_token_types_supported: [IdTokenType.SUBJECT_SIGNED],
+      request_object_signing_alg_values_supported: [SigningAlgo.ES256K, SigningAlgo.ES256, SigningAlgo.EDDSA],
+      response_types_supported: [ResponseType.ID_TOKEN],
+      scopes_supported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+      subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
+      subject_types_supported: [SubjectType.PAIRWISE],
+      vp_formats: {
+        ldp_vc: {
+          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        },
+        jwt_vc: {
+          alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
+        },
+      },
+    },
+    claims: {
+      id_token: {
+        acr: null,
+      },
+      vp_token: {
+        response_type: 'vp_token',
+        nonce: State.getNonce(state),
+        presentation_definition_uri: EXAMPLE_PD_URL,
+      },
+    },
+  };
+}
+
 function getVCs(): IVerifiableCredential[] {
   return [
     {
@@ -123,9 +169,9 @@ function getVCs(): IVerifiableCredential[] {
 }
 
 describe('presentation exchange manager tests', () => {
-  it("validatePresentationAgainstDefinition: should throw error if provided VP doesn't match the PD", async function () {
-    const payload: AuthenticationRequestPayload = await getPayload();
-    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
+  it("validatePresentationAgainstDefinition: should throw error if provided VP doesn't match the PD val", async function () {
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
     const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
@@ -148,10 +194,78 @@ describe('presentation exchange manager tests', () => {
     }
   });
 
-  it('validatePresentationAgainstDefinition: should pass if provided VP match the PD', async function () {
-    const payload: AuthenticationRequestPayload = await getPayload();
+  it("validatePresentationAgainstDefinition: should throw error if provided VP doesn't match the PD ref", async function () {
+    jest.setTimeout(100000);
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Ref();
+    const response = {
+      id: 'Insurance Plans',
+      input_descriptors: [
+        {
+          id: 'Ontario Health Insurance Plan',
+          schema: [
+            {
+              uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+            },
+            {
+              uri: 'https://www.w3.org/2018/credentials/v1',
+            },
+          ],
+          constraints: {
+            limit_disclosure: 'preferred',
+            fields: [
+              {
+                path: ['$.issuer.id'],
+                purpose: 'We can only verify bank accounts if they are attested by a source.',
+                filter: {
+                  type: 'string',
+                  pattern: 'did:example:issuer',
+                },
+              },
+            ],
+          },
+        },
+      ],
+    };
+    // console.log(JSON.stringify(response,null,2))
+    nock('http://my_own_pd.com')
+      .persist()
+      .get(/pd/)
+      .reply(200, { ...response });
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
-    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
+    vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
+    const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
+      didResolutionResult: undefined,
+      issuer: '',
+      jwt: '',
+      signer: undefined,
+      payload: payload,
+      presentationDefinitions: pd,
+      verifyOpts: null,
+    };
+    try {
+      await PresentationExchange.validatePresentationAgainstDefinition(verifiedJwt.presentationDefinitions[0].definition, {
+        '@context': ['https://www.w3.org/2018/credentials/v1'],
+        type: ['VerifiablePresentation'],
+        verifiableCredential: vcs,
+      });
+    } catch (e) {
+      expect(e.message).toContain(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
+    }
+  });
+
+  it('validatePresentationAgainstDefinition: should throw error if both pd and pd_ref is present', async function () {
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
+    payload.claims.vp_token.presentation_definition_uri = 'my_pd_url';
+    await expect(PresentationExchange.findValidPresentationDefinitions(payload)).rejects.toThrow(
+      SIOPErrors.REQUEST_CLAIMS_CANT_SEND_PRESENTATION_DEFINITION_BY_RE_AND_VAL
+    );
+  });
+
+  it('validatePresentationAgainstDefinition: should pass if provided VP match the PD', async function () {
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
+    const vcs = getVCs();
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
       didResolutionResult: undefined,
       issuer: '',
@@ -174,8 +288,8 @@ describe('presentation exchange manager tests', () => {
   it('submissionFrom: should pass if a valid presentationSubmission object created', async function () {
     const vcs = getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
-    const payload: AuthenticationRequestPayload = await getPayload();
-    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     await PresentationExchange.validatePresentationAgainstDefinition(pd[0].definition, {
       '@context': ['https://www.w3.org/2018/credentials/v1'],
       type: ['VerifiablePresentation'],
@@ -193,8 +307,8 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('selectVerifiableCredentialsForSubmission: should fail if selectResults object contains error', async function () {
-    const payload: AuthenticationRequestPayload = await getPayload();
-    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = undefined;
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
@@ -208,8 +322,8 @@ describe('presentation exchange manager tests', () => {
   it('selectVerifiableCredentialsForSubmission: should pass if a valid selectResults object created', async function () {
     const vcs = getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
-    const payload: AuthenticationRequestPayload = await getPayload();
-    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const result = await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     expect(result.errors.length).toBe(0);
     expect(result.matches.length).toBe(1);
@@ -218,23 +332,23 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('pass if no PresentationDefinition is found', async () => {
-    const payload: AuthenticationRequestPayload = await getPayload();
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
     payload.claims = undefined;
-    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     expect(pd).toBeUndefined();
   });
 
   it('pass if findValidPresentationDefinitions finds a valid presentation_definition', async () => {
-    const payload: AuthenticationRequestPayload = await getPayload();
-    const pd = PresentationExchange.findValidPresentationDefinitions(payload);
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
+    const pd = await PresentationExchange.findValidPresentationDefinitions(payload);
     const definition = pd[0].definition as PresentationDefinitionV1;
     expect(definition['id']).toBe('Insurance Plans');
     expect(definition['input_descriptors'][0].schema.length).toBe(2);
   });
 
   it('should validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
-    const payload: AuthenticationRequestPayload = await getPayload();
-    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
@@ -251,8 +365,8 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('should not validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
-    const payload: AuthenticationRequestPayload = await getPayload();
-    const pd: PresentationDefinitionWithLocation[] = PresentationExchange.findValidPresentationDefinitions(payload);
+    const payload: AuthenticationRequestPayload = await getPayload_PD_Val();
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);

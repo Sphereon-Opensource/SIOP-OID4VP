@@ -267,7 +267,7 @@ async function assertValidVerifiablePresentations(definitions: PresentationDefin
   }
 
   // const definitions: PresentationDefinitionWithLocation[] = verifyOpts?.claims?.presentationDefinitions;
-  PresentationExchange.assertValidPresentationDefintionWithLocations(definitions);
+  PresentationExchange.assertValidPresentationDefinitionWithLocations(definitions);
   let presentationPayloads: VerifiablePresentationPayload[];
 
   if (verPayload.verifiable_presentations && verPayload.verifiable_presentations.length > 0) {
