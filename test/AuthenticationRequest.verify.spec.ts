@@ -6,6 +6,10 @@ import SignJWT from 'jose/jwt/sign';
 import {
   AuthenticationRequest,
   AuthenticationRequestOpts,
+  AuthenticationRequestPayload,
+  getNonce,
+  getState,
+  KeyAlgo,
   LinkedDomainValidationMode,
   PassBy,
   ResponseContext,
@@ -102,7 +106,7 @@ describe('verifyJWT should', () => {
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
-    const requestOpts: SIOP.AuthenticationRequestOpts = {
+    const requestOpts: AuthenticationRequestOpts = {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,

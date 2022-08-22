@@ -6,6 +6,7 @@ import {
   AuthenticationRequest,
   AuthenticationRequestOpts,
   LinkedDomainValidationMode,
+  PassBy,
   PresentationLocation,
   ResponseType,
   Scope,
@@ -65,7 +66,7 @@ describe('create Request Uri should', () => {
 
   it('return a reference url', async () => {
     expect.assertions(11);
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -116,7 +117,7 @@ describe('create Request Uri should', () => {
 
   it('return a reference url when using did:key', async () => {
     expect.assertions(3);
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -159,7 +160,7 @@ describe('create Request Uri should', () => {
 
   it('return an url with an embedded token value', async () => {
     expect.assertions(2);
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -426,7 +427,7 @@ describe('create Request JWT should', () => {
   });
 
   it('succeed when requesting with a valid PD', async () => {
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -485,7 +486,7 @@ describe('create Request JWT should', () => {
 
   //todo Re-enable. Pex 0.6.x does not seem to throw this error (id is missing on the definition)
   xit('should throw error if presentation definition object is not valid', async () => {
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
