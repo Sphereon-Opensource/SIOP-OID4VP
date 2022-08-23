@@ -140,25 +140,25 @@ const responseOptsConf = {
   skipTypeCheck: true
 };
 
-const authenticationResponsePayload = {
+const rPRegistrationMetadataPayload = {
   path: '../src/main/types/SIOP.types.ts',
   tsconfig: 'tsconfig.json',
-  type: 'AuthenticationResponsePayload',
-  outputPath: 'src/main/schemas/AuthenticationResponsePayload.schema.ts',
-  outputConstName: 'AuthenticationResponsePayloadSchema',
+  type: 'RPRegistrationMetadataPayload',
+  outputPath: 'src/main/schemas/RPRegistrationMetadataPayload.schema.ts',
+  outputConstName: 'RPRegistrationMetadataPayloadSchema',
   skipTypeCheck: true
 };
 
-const requestRegistrationPayload = {
+const discoveryMetadataPayload = {
   path: '../src/main/types/SIOP.types.ts',
   tsconfig: 'tsconfig.json',
-  type: 'RequestRegistrationPayload',
-  outputPath: 'src/main/schemas/RequestRegistrationPayload.schema.ts',
-  outputConstName: 'RequestRegistrationPayloadSchema',
+  type: 'DiscoveryMetadataPayload',
+  outputPath: 'src/main/schemas/DiscoveryMetadataPayload.schema.ts',
+  outputConstName: 'DiscoveryMetadataPayloadSchema',
   skipTypeCheck: true
 };
 
 writeSchema(requestOptsConf, false);
 writeSchema(responseOptsConf, false);
-writeSchema(authenticationResponsePayload, true);
-writeSchema(requestRegistrationPayload, true);
+writeSchema(rPRegistrationMetadataPayload, true);
+writeSchema(discoveryMetadataPayload, true);

@@ -1,5 +1,5 @@
-export const RequestRegistrationPayloadSchema = {
-  "$ref": "#/definitions/RequestRegistrationPayload",
+export const RPRegistrationMetadataPayloadSchema = {
+  "$ref": "#/definitions/RPRegistrationMetadataPayload",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
     "Format": {
@@ -121,18 +121,6 @@ export const RequestRegistrationPayloadSchema = {
         "subject_types_supported",
         "vp_formats"
       ],
-      "type": "object"
-    },
-    "RequestRegistrationPayload": {
-      "additionalProperties": false,
-      "properties": {
-        "registration": {
-          "$ref": "#/definitions/RPRegistrationMetadataPayload"
-        },
-        "registration_uri": {
-          "type": "string"
-        }
-      },
       "type": "object"
     },
     "ResponseType": {
