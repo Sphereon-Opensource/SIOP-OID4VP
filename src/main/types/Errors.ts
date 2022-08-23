@@ -36,7 +36,7 @@ enum SIOPErrors {
   NO_SELFISSUED_ISS = 'The Response Token Issuer Claim (iss) MUST be https://self-isued.me',
   NO_SUB_TYPE = 'No or empty sub_type found in JWT payload',
   REGISTRATION_NOT_SET = 'Registration metadata not set.',
-  REQUEST_CLAIMS_CANT_SEND_PRESENTATION_DEFINITION_BY_RE_AND_VAL = "Request claims can't have both 'presentation_definition' and 'presentation_definition_uri'",
+  REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE = "Request claims can't have both 'presentation_definition' and 'presentation_definition_uri'",
   REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID = 'Presentation definition in the request claims is not valid',
   REQUEST_OBJECT_TYPE_NOT_SET = 'Request object type is not set.',
   RESPONSE_AUD_MISMATCH_REDIRECT_URI = 'The audience (aud) in Response Token does NOT match the redirect_uri value sent in the Authentication Request',

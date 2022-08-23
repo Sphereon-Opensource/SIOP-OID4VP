@@ -122,7 +122,6 @@ async function createURIFromJWT(
   const schema = 'openid://';
   // Only used to validate if it contains a definition
   await PresentationExchange.findValidPresentationDefinitions(requestPayload);
-
   const query = Encodings.encodeJsonAsURI(requestPayload);
 
   switch (requestOpts.requestBy?.type) {
