@@ -5,7 +5,20 @@ import { PresentationExchange } from './PresentationExchange';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
 import { JWT, SIOP, SIOPErrors } from './types';
-import { AuthenticationRequestPayload, ClaimPayload, IdTokenClaimPayload, PresentationLocation, VpTokenClaimPayload } from './types/SIOP.types';
+import {
+  AuthenticationRequestPayload,
+  ClaimPayload,
+  IdTokenClaimPayload,
+  PresentationLocation,
+  RPRegistrationMetadataPayload,
+  VpTokenClaimPayload
+} from './types/SIOP.types';
+import Ajv from 'ajv';
+import { RPRegistrationMetadataPayloadSchema } from './schemas/RPRegistrationMetadataPayload.schema';
+import { getWithUrl } from './functions/HttpUtils';
+
+const ajv = new Ajv();
+const validate = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export default class AuthenticationRequest {
   /**
@@ -82,11 +95,9 @@ export default class AuthenticationRequest {
     const verPayload = payload as AuthenticationRequestPayload;
     if (opts.nonce && verPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
-
-    // TODO HR add VDX-122 code here.
-    } else if (verPayload.registration?.subject_syntax_types_supported && verPayload.registration.subject_syntax_types_supported.length == 0) {
-      throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
+
+    await this.assertValidRegistration(verPayload);
 
     const verifiedJWT = await DIDJwt.verifyDidJWT(jwt, DIDres.getResolver(opts.verification.resolveOpts), options);
     if (!verifiedJWT || !verifiedJWT.payload) {
@@ -99,6 +110,26 @@ export default class AuthenticationRequest {
       presentationDefinitions,
       payload: verifiedJWT.payload as AuthenticationRequestPayload,
     };
+  }
+
+  static async assertValidRegistration(verPayload: AuthenticationRequestPayload) {
+    if (!verPayload.registration_uri || !new URL(verPayload.registration_uri)) {
+      throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
+    } else if (verPayload.registration_uri && verPayload.registration) {
+      throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
+    }
+
+    let regObj = verPayload.registration;
+
+    if(verPayload.registration_uri) {
+      regObj = await getWithUrl(verPayload.registration_uri) as unknown as RPRegistrationMetadataPayload;
+    }
+
+    if (regObj && !validate(regObj)) {
+      throw new Error('Registration data validation error: ' + JSON.stringify(validate.errors));
+    } else if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
+      throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
+    }
   }
 }
 
@@ -126,7 +157,7 @@ async function createURIFromJWT(
   await PresentationExchange.findValidPresentationDefinitions(requestPayload);
   const query = Encodings.encodeJsonAsURI(requestPayload);
 
-  // TODO write VDX-122 code here.
+  AuthenticationRequest.assertValidRegistration(requestPayload);
 
   switch (requestOpts.requestBy?.type) {
     case SIOP.PassBy.REFERENCE:
