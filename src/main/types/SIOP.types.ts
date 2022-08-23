@@ -129,8 +129,6 @@ export interface IdTokenClaimPayload {
   [x: string]: unknown;
 }
 
-// A request MUST contain a presentation_definition or a presentation_definition_uri but both are mutually exclusive.
-//TODO: https://sphereon.atlassian.net/browse/VDX-120
 export interface VpTokenClaimPayload {
   response_type: string;
   presentation_definition?: PresentationDefinitionV1 | PresentationDefinitionV2;
