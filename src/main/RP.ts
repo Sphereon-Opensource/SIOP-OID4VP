@@ -26,6 +26,8 @@ import {
 const ajv = new Ajv();
 const validate = ajv.compile(AuthenticationRequestOptsSchema);
 
+// TODO HR This class does not need VDX-122 implementation. Once done remove this comment.
+
 export class RP {
   private readonly _authRequestOpts: AuthenticationRequestOpts;
   private readonly _verifyAuthResponseOpts: Partial<VerifyAuthenticationResponseOpts>;

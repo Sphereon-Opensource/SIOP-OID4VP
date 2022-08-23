@@ -1,7 +1,11 @@
 import { SIOP, SIOPErrors } from './types';
 import { PassBy, RequestRegistrationPayload } from './types/SIOP.types';
 
+// TODO HR This class has all the VDX-122 marked already. Once done remove this comment.
+
 export function assertValidRequestRegistrationOpts(opts: SIOP.RequestRegistrationOpts) {
+
+  // TODO write VDX-122 code here.
   if (!opts) {
     throw new Error(SIOPErrors.REGISTRATION_NOT_SET);
   } else if (opts.registrationBy.type !== SIOP.PassBy.REFERENCE && opts.registrationBy.type !== SIOP.PassBy.VALUE) {
