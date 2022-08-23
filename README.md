@@ -349,9 +349,8 @@ const reqURI = await rp.createAuthenticationRequest({
     state: "b32f0087fc9816eb813fd11f"
 });
 
-console.log(`nonce: ${reqURI.nonce}, state: ${reqURI.state}`);
+console.log(`nonce: ${reqURI.requestOpts.nonce}, state: ${reqURI.requestOpts.state}`);
 // nonce: qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg, state: b32f0087fc9816eb813fd11f
-
 
 console.log(reqURI.encodedUri)
 // openid://?response_type=id_token&scope=openid&client_id=did.......&jwt=ey..........
