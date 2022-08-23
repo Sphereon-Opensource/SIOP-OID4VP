@@ -1,9 +1,12 @@
+import Ajv from 'ajv';
 import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
 import { PresentationExchange } from './PresentationExchange';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
+import { getWithUrl } from './functions/HttpUtils';
+import { RPRegistrationMetadataPayloadSchema } from './schemas/RPRegistrationMetadataPayload.schema';
 import { JWT, SIOP, SIOPErrors } from './types';
 import {
   AuthenticationRequestPayload,
@@ -11,11 +14,8 @@ import {
   IdTokenClaimPayload,
   PresentationLocation,
   RPRegistrationMetadataPayload,
-  VpTokenClaimPayload
+  VpTokenClaimPayload,
 } from './types/SIOP.types';
-import Ajv from 'ajv';
-import { RPRegistrationMetadataPayloadSchema } from './schemas/RPRegistrationMetadataPayload.schema';
-import { getWithUrl } from './functions/HttpUtils';
 
 const ajv = new Ajv();
 const validate = ajv.compile(RPRegistrationMetadataPayloadSchema);
@@ -121,8 +121,8 @@ export default class AuthenticationRequest {
 
     let regObj = verPayload.registration;
 
-    if(verPayload.registration_uri) {
-      regObj = await getWithUrl(verPayload.registration_uri) as unknown as RPRegistrationMetadataPayload;
+    if (verPayload.registration_uri) {
+      regObj = (await getWithUrl(verPayload.registration_uri)) as unknown as RPRegistrationMetadataPayload;
     }
 
     if (regObj && !validate(regObj)) {
