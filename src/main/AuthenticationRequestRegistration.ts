@@ -2,8 +2,6 @@ import { SIOP, SIOPErrors } from './types';
 import { PassBy, RequestRegistrationPayload } from './types/SIOP.types';
 
 export function assertValidRequestRegistrationOpts(opts: SIOP.RequestRegistrationOpts) {
-
-  // TODO write VDX-122 code here.
   if (!opts) {
     throw new Error(SIOPErrors.REGISTRATION_NOT_SET);
   } else if (opts.registrationBy.type !== SIOP.PassBy.REFERENCE && opts.registrationBy.type !== SIOP.PassBy.VALUE) {
@@ -20,8 +18,6 @@ export function createRequestRegistrationPayload(opts: SIOP.RequestRegistrationO
   } else {
     return { registration_uri: opts.registrationBy.referenceUri };
   }
-
-  // TODO write VDX-122 code here.
 }
 
 export function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): {

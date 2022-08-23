@@ -143,7 +143,8 @@ async function parseAndResolveUri(encodedUri: string) {
   const requestPayload = AuthenticationRequest.parseURI(encodedUri);
   const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
 
-  // TODO HR add VDX-122 code here.
+  AuthenticationRequest.assertValidRegistration(requestPayload);
+
   const registration = requestPayload.registration || (await (await fetch(requestPayload.registration_uri)).json());
   return { requestPayload, jwt, registration };
 }
