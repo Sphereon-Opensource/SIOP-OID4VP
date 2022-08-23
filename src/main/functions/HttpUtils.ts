@@ -45,15 +45,14 @@ export async function postAuthenticationResponseJwt(url: string, jwt: string): P
 }
 
 export async function getWithUrl(url: string): Promise<Response> {
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
+  return fetch(url)
+    .then((response: Response) => {
+      if (response.status >= 400) {
+        return Promise.reject(Error(`${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText} URL: ${url}`));
+      }
+      return response.json();
+    })
+    .catch((e) => {
+      return Promise.reject(Error(`${(e as Error).message}`));
     });
-    if (!response || !response.status || (response.status !== 200 && response.status !== 201)) {
-      throw new Error(`${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText}, ${await response.json()}`);
-    }
-    return response;
-  } catch (error) {
-    throw new Error(`${(error as Error).message}`);
-  }
 }

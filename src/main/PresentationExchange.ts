@@ -138,58 +138,55 @@ export class PresentationExchange {
    * @param obj: object that can have a presentation_definition inside
    */
   public static async findValidPresentationDefinitions(obj: JWTPayload): Promise<PresentationDefinitionWithLocation[]> {
-    let allDefinitions: PresentationDefinitionWithLocation[];
+    const allDefinitions: PresentationDefinitionWithLocation[] = [];
+
     async function extractPDFromVPToken() {
       const vpTokens = extractDataFromPath(obj, '$..vp_token.presentation_definition');
       const vpTokenRef = extractDataFromPath(obj, '$..vp_token.presentation_definition_uri');
       if (vpTokens && vpTokens.length && vpTokenRef && vpTokenRef.length) {
-        throw new Error(SIOPErrors.REQUEST_CLAIMS_CANT_SEND_PRESENTATION_DEFINITION_BY_RE_AND_VAL);
+        throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
-      if (vpTokens && vpTokens.length == 1) {
-        PresentationExchange.assertValidPresentationDefinition(vpTokens[0].value);
-        allDefinitions = [{ definition: vpTokens[0].value, location: PresentationLocation.VP_TOKEN }];
-      }
-      if (vpTokens && vpTokens.length > 1) {
-        throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-      }
-      if (vpTokenRef && vpTokenRef.length) {
-        const result = await getWithUrl(vpTokenRef[0].value);
-        const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = await result.json();
-        PresentationExchange.assertValidPresentationDefinition(pd);
-        allDefinitions = [{ definition: pd, location: PresentationLocation.VP_TOKEN }];
+      if (vpTokens && vpTokens.length) {
+        vpTokens.forEach((vpToken) => {
+          PresentationExchange.assertValidPresentationDefinition(vpToken.value);
+          allDefinitions.push({ definition: vpToken.value, location: PresentationLocation.VP_TOKEN });
+        });
+      } else if (vpTokenRef && vpTokenRef.length) {
+        for (const vptr of vpTokenRef) {
+          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(vptr.value)) as unknown as
+            | PresentationDefinitionV1
+            | PresentationDefinitionV2;
+          PresentationExchange.assertValidPresentationDefinition(pd);
+          allDefinitions.push({ definition: pd, location: PresentationLocation.VP_TOKEN });
+        }
       }
     }
 
-    function handleAddingSinglePDInIdToken(definition, allDefinitions: PresentationDefinitionWithLocation[]): PresentationDefinitionWithLocation[] {
+    function addSingleIdTokenPDToPDs(definition) {
       PresentationExchange.assertValidPresentationDefinition(definition.value);
-      if (definition.path.includes(PresentationLocation.ID_TOKEN)) {
-        const defWithLocation = { definition: definition.value, location: PresentationLocation.ID_TOKEN };
-        if (!allDefinitions) {
-          allDefinitions = [defWithLocation];
-        } else {
-          allDefinitions.push(defWithLocation);
-        }
-      } else {
+      if (!definition.path.includes(PresentationLocation.ID_TOKEN)) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
       }
-      return allDefinitions;
+      allDefinitions.push({ definition: definition.value, location: PresentationLocation.ID_TOKEN });
     }
 
     async function extractPDFromOtherTokens() {
       const definitions = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition');
-      const definitionRef = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
-      if (definitions && definitions.length && definitionRef && definitionRef.length) {
-        throw new Error(SIOPErrors.REQUEST_CLAIMS_CANT_SEND_PRESENTATION_DEFINITION_BY_RE_AND_VAL);
+      const definitionRefs = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
+      if (definitions && definitions.length && definitionRefs && definitionRefs.length) {
+        throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
       if (definitions && definitions.length) {
         definitions.forEach((definition) => {
-          allDefinitions = handleAddingSinglePDInIdToken(definition, allDefinitions);
+          addSingleIdTokenPDToPDs(definition);
         });
-      } else if (definitionRef && definitionRef.length) {
-        const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef[0].value)) as unknown as
-          | PresentationDefinitionV1
-          | PresentationDefinitionV2;
-        allDefinitions = handleAddingSinglePDInIdToken(pd, allDefinitions);
+      } else if (definitionRefs && definitionRefs.length) {
+        for (const definitionRef of definitionRefs) {
+          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef)) as unknown as
+            | PresentationDefinitionV1
+            | PresentationDefinitionV2;
+          addSingleIdTokenPDToPDs(pd);
+        }
       }
     }
 

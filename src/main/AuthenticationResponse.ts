@@ -283,7 +283,7 @@ async function assertValidVerifiablePresentations(definitions: PresentationDefin
 
   /*console.log('pd:', JSON.stringify(definitions));
   console.log('vps:', JSON.stringify(presentationPayloads));*/
-  if (definitions && !presentationPayloads) {
+  if (definitions && definitions.length && !presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
   } else if (!definitions && presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
