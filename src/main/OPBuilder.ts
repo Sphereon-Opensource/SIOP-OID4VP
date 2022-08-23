@@ -6,6 +6,8 @@ import { DIDJwt } from './functions';
 import { EcdsaSignature } from './types/JWT.types';
 import { ExternalSignature, InternalSignature, ResponseIss, ResponseMode, ResponseRegistrationOpts, SuppliedSignature } from './types/SIOP.types';
 
+// TODO HR This class does not need VDX-122 implementation. Once done remove this comment.
+
 export default class OPBuilder {
   expiresIn?: number;
   issuer: ResponseIss;

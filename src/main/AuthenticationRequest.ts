@@ -7,6 +7,8 @@ import { decodeUriAsJson } from './functions/Encodings';
 import { JWT, SIOP, SIOPErrors } from './types';
 import { AuthenticationRequestPayload, ClaimPayload, IdTokenClaimPayload, PresentationLocation, VpTokenClaimPayload } from './types/SIOP.types';
 
+// TODO HR This class has all the VDX-122 marked already. Once done remove this comment.
+
 export default class AuthenticationRequest {
   /**
    * Create a signed URL encoded URI with a signed SIOP request token on RP side
@@ -82,6 +84,8 @@ export default class AuthenticationRequest {
     const verPayload = payload as AuthenticationRequestPayload;
     if (opts.nonce && verPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
+
+// TODO HR add VDX-122 code here.
     } else if (verPayload.registration?.subject_syntax_types_supported && verPayload.registration.subject_syntax_types_supported.length == 0) {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
@@ -123,6 +127,8 @@ async function createURIFromJWT(
   // Only used to validate if it contains a definition
   await PresentationExchange.findValidPresentationDefinitions(requestPayload);
   const query = Encodings.encodeJsonAsURI(requestPayload);
+
+  // TODO write VDX-122 code here.
 
   switch (requestOpts.requestBy?.type) {
     case SIOP.PassBy.REFERENCE:

@@ -26,6 +26,8 @@ const ajv = new Ajv();
 
 const validate = ajv.compile(AuthenticationResponseOptsSchema);
 
+// TODO HR This class has all the VDX-122 marked already. Once done remove this comment.
+
 // The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
 export class OP {
   private readonly _authResponseOpts: AuthenticationResponseOpts;
@@ -44,6 +46,7 @@ export class OP {
     return this._verifyAuthRequestOpts;
   }
 
+  // TODO SK Can you please put some documentation on it?
   public async postAuthenticationResponse(authenticationResponse: AuthenticationResponseWithJWT): Promise<Response> {
     return postAuthenticationResponse(authenticationResponse.payload.aud, authenticationResponse);
   }
@@ -70,6 +73,7 @@ export class OP {
     return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
   }
 
+  // TODO SK Can you please put some documentation on it?
   public async submitAuthenticationResponse(verifiedJwt: SIOP.AuthenticationResponseWithJWT): Promise<Response> {
     if (
       !verifiedJwt ||
@@ -140,6 +144,8 @@ export class OP {
 async function parseAndResolveUri(encodedUri: string) {
   const requestPayload = AuthenticationRequest.parseURI(encodedUri);
   const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
+
+  // TODO HR add VDX-122 code here.
   const registration = requestPayload.registration || (await (await fetch(requestPayload.registration_uri)).json());
   return { requestPayload, jwt, registration };
 }

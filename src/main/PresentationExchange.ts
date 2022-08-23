@@ -26,6 +26,8 @@ import {
   VerifiablePresentationTypeFormat,
 } from './types/SIOP.types';
 
+// TODO HR This class does not need VDX-122 implementation. Once done remove this comment.
+
 export class PresentationExchange {
   readonly pex = new PEX();
   readonly allVerifiableCredentials: IVerifiableCredential[];

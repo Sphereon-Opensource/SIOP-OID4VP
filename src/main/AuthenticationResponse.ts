@@ -18,6 +18,8 @@ import {
   VerifyAuthenticationResponseOpts,
 } from './types/SIOP.types';
 
+// TODO HR This class does not need VDX-122 implementation. Once done remove this comment.
+
 export default class AuthenticationResponse {
   /**
    * Creates a SIOP Response Object
@@ -39,6 +41,7 @@ export default class AuthenticationResponse {
     return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJWT, responseOpts);
   }
 
+  // TODO SK Can you please put some documentation on it?
   static async createJWTFromVerifiedRequest(
     verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
     responseOpts: SIOP.AuthenticationResponseOpts
