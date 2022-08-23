@@ -20,7 +20,6 @@ import {
   SuppliedSignature,
 } from './types/SIOP.types';
 
-// TODO HR This class does not need VDX-122 implementation. Once done remove this comment.
 export default class RPBuilder {
   authorizationEndpoint: string;
   issuer: ResponseIss;

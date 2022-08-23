@@ -26,8 +26,6 @@ const ajv = new Ajv();
 
 const validate = ajv.compile(AuthenticationResponseOptsSchema);
 
-// TODO HR This class has all the VDX-122 marked already. Once done remove this comment.
-
 // The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
 export class OP {
   private readonly _authResponseOpts: AuthenticationResponseOpts;

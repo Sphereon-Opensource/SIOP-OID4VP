@@ -1,8 +1,6 @@
 import { SIOP } from './types';
 import { ResponseIss, ResponseType, Schema, Scope, SubjectType } from './types/SIOP.types';
 
-// TODO HR This class does not need VDX-122 implementation. Once done remove this comment.
-
 export function createDiscoveryMetadataPayload(opts: SIOP.DiscoveryMetadataOpts): SIOP.DiscoveryMetadataPayload {
   return {
     subject_syntax_types_supported: [],
