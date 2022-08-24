@@ -1,5 +1,12 @@
+import Ajv from 'ajv';
+
+import { getWithUrl } from './functions/HttpUtils';
+import { RPRegistrationMetadataPayloadSchema } from './schemas/RPRegistrationMetadataPayload.schema';
 import { SIOP, SIOPErrors } from './types';
-import { PassBy, RequestRegistrationPayload } from './types/SIOP.types';
+import { PassBy, RequestRegistrationPayload, RPRegistrationMetadataPayload } from './types/SIOP.types';
+
+const ajv = new Ajv();
+const validate = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export function assertValidRequestRegistrationOpts(opts: SIOP.RequestRegistrationOpts) {
   if (!opts) {
@@ -11,22 +18,35 @@ export function assertValidRequestRegistrationOpts(opts: SIOP.RequestRegistratio
   }
 }
 
-export function createRequestRegistrationPayload(opts: SIOP.RequestRegistrationOpts): RequestRegistrationPayload {
+export async function createRequestRegistrationPayload(opts: SIOP.RequestRegistrationOpts): Promise<RequestRegistrationPayload> {
   assertValidRequestRegistrationOpts(opts);
+
+  const regObj: SIOP.RPRegistrationMetadataPayload = createRPRegistrationMetadataPayload(opts);
+
+  let regObjToValidate;
+  if (opts.registrationBy.referenceUri) {
+    regObjToValidate = (await getWithUrl(opts.registrationBy.referenceUri)) as unknown as RPRegistrationMetadataPayload;
+  }
+
+  if (regObjToValidate && !validate(regObjToValidate)) {
+    throw new Error('Registration data validation error: ' + JSON.stringify(validate.errors));
+  }
+
   if (opts.registrationBy.type == PassBy.VALUE) {
-    return { registration: createRPRegistrationMetadataPayload(opts) };
+    return { registration: regObj };
   } else {
     return { registration_uri: opts.registrationBy.referenceUri };
   }
 }
 
-export function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): {
+export async function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): Promise<{
   requestRegistrationPayload: RequestRegistrationPayload;
   rpRegistrationMetadataPayload: SIOP.RPRegistrationMetadataPayload;
   opts: SIOP.RequestRegistrationOpts;
-} {
+}> {
+  const requestRegistrationPayload = await createRequestRegistrationPayload(opts);
   return {
-    requestRegistrationPayload: createRequestRegistrationPayload(opts),
+    requestRegistrationPayload: requestRegistrationPayload,
     rpRegistrationMetadataPayload: createRPRegistrationMetadataPayload(opts),
     opts,
   };
