@@ -115,8 +115,13 @@ export default class AuthenticationRequest {
   static async assertValidRegistration(verPayload: AuthenticationRequestPayload) {
     if (verPayload.registration_uri && verPayload.registration) {
       throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
-    } else if (!verPayload.registration_uri || !new URL(verPayload.registration_uri)) {
-      throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
+    } else if (verPayload.registration_uri) {
+      try {
+        new URL(verPayload.registration_uri);
+      } catch (e) {
+        console.log(e);
+        throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
+      }
     }
 
     let regObj = verPayload.registration;
