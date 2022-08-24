@@ -23,18 +23,19 @@ import {
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
-// const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 const HEX_KEY = 'f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f';
 const DID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0';
 const KID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1';
 
 const validButExpiredJWT =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2MzIwODkxNTMsImV4cCI6MTYzMjA4OTc1MywicmVzcG9uc2VfdHlwZSI6ImlkX3Rva2VuIiwic2NvcGUiOiJvcGVuaWQiLCJjbGllbnRfaWQiOiJkaWQ6ZXRocjoweDUwMjM4M2Q0ZmIwOWIzQThEYzYxMzNFQkI2QzFGZTQyOUIxODAyNUEiLCJyZWRpcmVjdF91cmkiOiJodHRwczovL2FjbWUuY29tL2hlbGxvIiwiaXNzIjoiZGlkOmV0aHI6MHg1MDIzODNkNGZiMDliM0E4RGM2MTMzRUJCNkMxRmU0MjlCMTgwMjVBIiwicmVzcG9uc2VfbW9kZSI6InBvc3QiLCJyZXNwb25zZV9jb250ZXh0IjoicnAiLCJub25jZSI6IlJtZ2l6SDhSQTFYRHJ5enZiNHM5c2tzRXBTd1haYTZLb0dqaUdzR0RzVlkiLCJzdGF0ZSI6ImQ3N2M5NDBlYjc0MGYwMmIyMzgxZjYzMiIsInJlZ2lzdHJhdGlvbiI6eyJpZF90b2tlbl9zaWduaW5nX2FsZ192YWx1ZXNfc3VwcG9ydGVkIjpbIkVkRFNBIiwiRVMyNTYiXSwiaWRfdG9rZW5fdHlwZXNfc3VwcG9ydGVkIjpbInN1YmplY3Rfc2lnbmVkIl0sInJlcXVlc3Rfb2JqZWN0X3NpZ25pbmdfYWxnX3ZhbHVlc19zdXBwb3J0ZWQiOlsiRWREU0EiLCJFUzI1NiJdLCJyZXNwb25zZV90eXBlc19zdXBwb3J0ZWQiOlsiaWRfdG9rZW4iXSwic2NvcGVzX3N1cHBvcnRlZCI6WyJvcGVuaWQiLCJvcGVuaWQgZGlkX2F1dGhuIl0sInN1YmplY3Rfc3ludGF4X3R5cGVzX3N1cHBvcnRlZCI6WyJkaWQ6ZXRocjoiLCJkaWQiXSwic3ViamVjdF90eXBlc19zdXBwb3J0ZWQiOlsicGFpcndpc2UiXSwidnBfZm9ybWF0cyI6eyJsZHBfdmMiOnsicHJvb2ZfdHlwZSI6WyJFY2RzYVNlY3AyNTZrMVNpZ25hdHVyZTIwMTkiXX0sImp3dF92YyI6eyJhbGciOlsiRWREU0EiXX19fX0.pEH-ggj5TXj-6st3TeL_iioCEEKBc8K5_6EfDPSgjeg';
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1NjEzNTEyOTAsImV4cCI6MTU2MTM1MTg5MCwicmVzcG9uc2VfdHlwZSI6ImlkX3Rva2VuIiwic2NvcGUiOiJvcGVuaWQiLCJjbGllbnRfaWQiOiJkaWQ6ZXRocjoweDQ4NzNFQzc0MUQ4RDFiMjU4YUYxQjUyNDczOEIzNjNhQTIxOTk5MjAiLCJyZWRpcmVjdF91cmkiOiJodHRwczovL2FjbWUuY29tL2hlbGxvIiwiaXNzIjoiZGlkOmV0aHI6MHg0ODczRUM3NDFEOEQxYjI1OGFGMUI1MjQ3MzhCMzYzYUEyMTk5OTIwIiwicmVzcG9uc2VfbW9kZSI6InBvc3QiLCJyZXNwb25zZV9jb250ZXh0IjoicnAiLCJub25jZSI6IlVTLU9wY1FHLXlXS3lWUTRlTU53UFB3Um10UVVGdmpkOHJXeTViRC10MXciLCJzdGF0ZSI6IjdmMjcxYzZjYjk2ZThmOThhMzkxYWU5ZCIsInJlZ2lzdHJhdGlvbiI6eyJpZF90b2tlbl9zaWduaW5nX2FsZ192YWx1ZXNfc3VwcG9ydGVkIjpbIkVkRFNBIiwiRVMyNTYiXSwicmVxdWVzdF9vYmplY3Rfc2lnbmluZ19hbGdfdmFsdWVzX3N1cHBvcnRlZCI6WyJFZERTQSIsIkVTMjU2Il0sInJlc3BvbnNlX3R5cGVzX3N1cHBvcnRlZCI6WyJpZF90b2tlbiJdLCJzY29wZXNfc3VwcG9ydGVkIjpbIm9wZW5pZCBkaWRfYXV0aG4iLCJvcGVuaWQiXSwic3ViamVjdF90eXBlc19zdXBwb3J0ZWQiOlsicGFpcndpc2UiXSwic3ViamVjdF9zeW50YXhfdHlwZXNfc3VwcG9ydGVkIjpbImRpZDpldGhyOiIsImRpZCJdLCJ2cF9mb3JtYXRzIjp7ImxkcF92YyI6eyJwcm9vZl90eXBlIjpbIkVjZHNhU2VjcDI1NmsxU2lnbmF0dXJlMjAxOSIsIkVjZHNhU2VjcDI1NmsxU2lnbmF0dXJlMjAxOSJdfX19fQ.Wd6I7BT7fWZSuYozUwHnyEsEoAe6OjdyzEEKXnWk8bY';
+
+const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 
 describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthenticationResponseOpts = {
-    redirectUri: 'https://acme.com/hello',
+    redirectUri: EXAMPLE_REDIRECT_URL,
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
       responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -86,6 +87,9 @@ describe('create JWT from Request JWT should', () => {
 
   it('throw JWT_ERROR when expired but valid JWT is passed in', async () => {
     expect.assertions(1);
+    const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
+    const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
+    const requestOpts: AuthenticationRequestOpts = {
     await expect(AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, responseOpts, verifyOpts)).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1632089753/
     );
@@ -121,7 +125,7 @@ describe('create JWT from Request JWT should', () => {
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
-      redirectUri: 'https://acme.com/hello',
+      redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -262,7 +266,7 @@ describe('create JWT from Request JWT should', () => {
     await pex.selectVerifiableCredentialsForSubmission(definition);
     const result: IVerifiablePresentation = await pex.submissionFrom(definition, vp.verifiableCredential);
     const responseOpts: AuthenticationResponseOpts = {
-      redirectUri: 'https://acme.com/hello',
+      redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         issuer: ResponseIss.SELF_ISSUED_V2,
