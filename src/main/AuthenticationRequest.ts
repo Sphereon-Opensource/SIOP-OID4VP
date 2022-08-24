@@ -1,4 +1,4 @@
-// import Ajv from 'ajv';
+import Ajv from 'ajv';
 import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
@@ -6,7 +6,7 @@ import { PresentationExchange } from './PresentationExchange';
 import { DIDJwt, DIDres, Encodings, State } from './functions';
 import { decodeUriAsJson } from './functions/Encodings';
 import { getWithUrl } from './functions/HttpUtils';
-// import { RPRegistrationMetadataPayloadSchema } from './schemas/RPRegistrationMetadataPayload.schema';
+import { RPRegistrationMetadataPayloadSchema } from './schemas/RPRegistrationMetadataPayload.schema';
 import { JWT, SIOP, SIOPErrors } from './types';
 import {
   AuthenticationRequestPayload,
@@ -17,8 +17,8 @@ import {
   VpTokenClaimPayload,
 } from './types/SIOP.types';
 
-// const ajv = new Ajv();
-// const validate = ajv.compile(RPRegistrationMetadataPayloadSchema);
+const ajv = new Ajv();
+const validate = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export default class AuthenticationRequest {
   /**
@@ -56,7 +56,7 @@ export default class AuthenticationRequest {
    * If you do use this method, you can call the wrapInUri afterwards to get the URI
    */
   static async createJWT(opts: SIOP.AuthenticationRequestOpts): Promise<SIOP.AuthenticationRequestWithJWT> {
-    const siopRequestPayload = createAuthenticationRequestPayload(opts);
+    const siopRequestPayload = await createAuthenticationRequestPayload(opts);
     const { nonce, state } = siopRequestPayload;
     const jwt = await DIDJwt.signDidJwtPayload(siopRequestPayload, opts);
 
@@ -130,10 +130,9 @@ export default class AuthenticationRequest {
       regObj = (await getWithUrl(verPayload.registration_uri)) as unknown as RPRegistrationMetadataPayload;
     }
 
-    /*
     if (regObj && !validate(regObj)) {
       throw new Error('Registration data validation error: ' + JSON.stringify(validate.errors));
-    } else */ if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
+    } else if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
   }
@@ -250,10 +249,10 @@ function createClaimsPayload(opts: SIOP.ClaimOpts): ClaimPayload {
   return payload;
 }
 
-function createAuthenticationRequestPayload(opts: SIOP.AuthenticationRequestOpts): SIOP.AuthenticationRequestPayload {
+async function createAuthenticationRequestPayload(opts: SIOP.AuthenticationRequestOpts): Promise<SIOP.AuthenticationRequestPayload> {
   assertValidRequestOpts(opts);
   const state = State.getState(opts.state);
-  const registration = createRequestRegistration(opts.registration);
+  const registration = await createRequestRegistration(opts.registration);
   const claims = createClaimsPayload(opts.claims);
 
   return {
