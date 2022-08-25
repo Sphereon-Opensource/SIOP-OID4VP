@@ -13,12 +13,12 @@ import {
   InternalVerification,
   ParsedAuthenticationRequestURI,
   ResponseMode,
+  SIOPErrors,
   UrlEncodingFormat,
   VerifiablePresentationResponseOpts,
   VerificationMode,
   VerifiedAuthenticationRequestWithJWT,
   VerifyAuthenticationRequestOpts,
-  SIOPErrors
 } from './types';
 
 const ajv = new Ajv();
@@ -142,7 +142,10 @@ async function parseAndResolveUri(encodedUri: string) {
   const requestPayload = AuthenticationRequest.parseURI(encodedUri);
   const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
 
-  AuthenticationRequest.assertValidRegistration(requestPayload, AuthenticationRequest.getRemoteRegistrationObj(requestPayload.registration_uri));
+  AuthenticationRequest.assertValidRegistration(
+    requestPayload,
+    await AuthenticationRequest.getRemoteRegistrationObj(requestPayload.registration_uri)
+  );
 
   const registration = requestPayload.registration || (await (await fetch(requestPayload.registration_uri)).json());
   return { requestPayload, jwt, registration };
