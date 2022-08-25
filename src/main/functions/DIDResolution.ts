@@ -24,3 +24,7 @@ export function getResolver(opts: ResolveOpts): Resolvable {
   }
   return new Resolver(...uniResolvers);
 }
+
+export async function resolveDidDocument(did: string, opts?: ResolveOpts): Promise<DIDDocument> {
+  return (await getResolver(opts).resolve(did)).didDocument;
+}

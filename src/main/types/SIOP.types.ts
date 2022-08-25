@@ -3,8 +3,7 @@ import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sph
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
 
-import { EcdsaSignature, JWTPayload, VerifiedJWT } from './JWT.types';
-import { LinkedDataProof, ResolveOpts } from './SSI.types';
+import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
 
 export const expirationTime = 10 * 60;
 

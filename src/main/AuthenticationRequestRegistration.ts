@@ -1,35 +1,39 @@
 import Ajv from 'ajv';
 
-import { getWithUrl } from './functions/HttpUtils';
-import { RPRegistrationMetadataPayloadSchema } from './schemas/RPRegistrationMetadataPayload.schema';
-import { SIOP, SIOPErrors } from './types';
-import { PassBy, RequestRegistrationPayload, RPRegistrationMetadataPayload } from './types/SIOP.types';
+import { getWithUrl } from './functions';
+import { RPRegistrationMetadataPayloadSchema } from './schemas';
+import {
+  PassBy,
+  RequestRegistrationOpts,
+  RequestRegistrationPayload,
+  RPRegistrationMetadataOpts,
+  RPRegistrationMetadataPayload,
+  SIOPErrors,
+} from './types';
 
 const ajv = new Ajv();
-const validate = ajv.compile(RPRegistrationMetadataPayloadSchema);
+const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
-export function assertValidRequestRegistrationOpts(opts: SIOP.RequestRegistrationOpts) {
+export function assertValidRequestRegistrationOpts(opts: RequestRegistrationOpts) {
   if (!opts) {
     throw new Error(SIOPErrors.REGISTRATION_NOT_SET);
-  } else if (opts.registrationBy.type !== SIOP.PassBy.REFERENCE && opts.registrationBy.type !== SIOP.PassBy.VALUE) {
+  } else if (opts.registrationBy.type !== PassBy.REFERENCE && opts.registrationBy.type !== PassBy.VALUE) {
     throw new Error(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
-  } else if (opts.registrationBy.type === SIOP.PassBy.REFERENCE && !opts.registrationBy.referenceUri) {
+  } else if (opts.registrationBy.type === PassBy.REFERENCE && !opts.registrationBy.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
 }
 
-export async function createRequestRegistrationPayload(opts: SIOP.RequestRegistrationOpts): Promise<RequestRegistrationPayload> {
+export async function createRequestRegistrationPayload(opts: RequestRegistrationOpts): Promise<RequestRegistrationPayload> {
   assertValidRequestRegistrationOpts(opts);
 
-  const regObj: SIOP.RPRegistrationMetadataPayload = createRPRegistrationMetadataPayload(opts);
+  const regObj: RPRegistrationMetadataPayload = createRPRegistrationMetadataPayload(opts);
 
-  let regObjToValidate;
   if (opts.registrationBy.referenceUri) {
-    regObjToValidate = (await getWithUrl(opts.registrationBy.referenceUri)) as unknown as RPRegistrationMetadataPayload;
-  }
-
-  if (regObjToValidate && !validate(regObjToValidate)) {
-    throw new Error('Registration data validation error: ' + JSON.stringify(validate.errors));
+    const regObjToValidate = (await getWithUrl(opts.registrationBy.referenceUri)) as unknown as RPRegistrationMetadataPayload;
+    if (!regObjToValidate || !validateRPRegistrationMetadata(regObjToValidate)) {
+      throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
+    }
   }
 
   if (opts.registrationBy.type == PassBy.VALUE) {
@@ -39,10 +43,10 @@ export async function createRequestRegistrationPayload(opts: SIOP.RequestRegistr
   }
 }
 
-export async function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): Promise<{
+export async function createRequestRegistration(opts: RequestRegistrationOpts): Promise<{
   requestRegistrationPayload: RequestRegistrationPayload;
-  rpRegistrationMetadataPayload: SIOP.RPRegistrationMetadataPayload;
-  opts: SIOP.RequestRegistrationOpts;
+  rpRegistrationMetadataPayload: RPRegistrationMetadataPayload;
+  opts: RequestRegistrationOpts;
 }> {
   const requestRegistrationPayload = await createRequestRegistrationPayload(opts);
   return {
@@ -52,7 +56,7 @@ export async function createRequestRegistration(opts: SIOP.RequestRegistrationOp
   };
 }
 
-function createRPRegistrationMetadataPayload(opts: SIOP.RPRegistrationMetadataOpts): SIOP.RPRegistrationMetadataPayload {
+function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): RPRegistrationMetadataPayload {
   return {
     id_token_signing_alg_values_supported: opts.idTokenSigningAlgValuesSupported,
     request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported,

@@ -1,6 +1,6 @@
 import nock from 'nock';
 
-import { postWithBearerToken } from '../src/main/functions/HttpUtils';
+import { postWithBearerToken } from '../src/main';
 import { SIOPErrors } from '../src/main/types';
 
 const URL = 'https://example.com';

@@ -21,7 +21,7 @@
     "test:lint": "eslint . --ext .ts",
     "test:prettier": "prettier \"{src,test}/**/*.ts\" --list-different",
     "test:cov": "jest --ci --coverage && codecov",
-    "uninstall": "rimraf dist coverage package-lock.json node_modules"
+    "uninstall": "rimraf dist coverage node_modules"
   },
   "engines": {
     "node": ">=14"

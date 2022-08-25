@@ -3,22 +3,46 @@ import { JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
 import { PresentationExchange } from './PresentationExchange';
-import { DIDJwt, DIDres, Encodings, State } from './functions';
-import { decodeUriAsJson } from './functions/Encodings';
-import { getWithUrl } from './functions/HttpUtils';
-import { RPRegistrationMetadataPayloadSchema } from './schemas/RPRegistrationMetadataPayload.schema';
-import { JWT, SIOP, SIOPErrors } from './types';
 import {
+  decodeUriAsJson,
+  encodeJsonAsURI,
+  getAudience,
+  getNonce,
+  getResolver,
+  getState,
+  getWithUrl,
+  parseJWT,
+  signDidJwtPayload,
+  verifyDidJWT,
+} from './functions';
+import { RPRegistrationMetadataPayloadSchema } from './schemas';
+import {
+  AuthenticationRequestOpts,
   AuthenticationRequestPayload,
+  AuthenticationRequestURI,
+  AuthenticationRequestWithJWT,
+  ClaimOpts,
   ClaimPayload,
   IdTokenClaimPayload,
+  isExternalVerification,
+  isInternalVerification,
+  JWTPayload,
+  PassBy,
   PresentationLocation,
+  ResponseContext,
+  ResponseMode,
+  ResponseType,
   RPRegistrationMetadataPayload,
+  Scope,
+  SIOPErrors,
+  UrlEncodingFormat,
+  VerifiedAuthenticationRequestWithJWT,
+  VerifyAuthenticationRequestOpts,
   VpTokenClaimPayload,
-} from './types/SIOP.types';
+} from './types';
 
 const ajv = new Ajv();
-const validate = ajv.compile(RPRegistrationMetadataPayloadSchema);
+const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export default class AuthenticationRequest {
   /**
@@ -30,7 +54,7 @@ export default class AuthenticationRequest {
    *
    * Normally you will want to use this method to create the request.
    */
-  static async createURI(opts: SIOP.AuthenticationRequestOpts): Promise<SIOP.AuthenticationRequestURI> {
+  static async createURI(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestURI> {
     const { jwt, payload } = await AuthenticationRequest.createJWT(opts);
     return createURIFromJWT(opts, payload, jwt);
   }
@@ -55,10 +79,10 @@ export default class AuthenticationRequest {
    * Normally you will want to use the createURI version. That creates a URI that includes the JWT from this method in the URI
    * If you do use this method, you can call the wrapInUri afterwards to get the URI
    */
-  static async createJWT(opts: SIOP.AuthenticationRequestOpts): Promise<SIOP.AuthenticationRequestWithJWT> {
+  static async createJWT(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestWithJWT> {
     const siopRequestPayload = await createAuthenticationRequestPayload(opts);
     const { nonce, state } = siopRequestPayload;
-    const jwt = await DIDJwt.signDidJwtPayload(siopRequestPayload, opts);
+    const jwt = await signDidJwtPayload(siopRequestPayload, opts);
 
     return {
       jwt,
@@ -69,7 +93,7 @@ export default class AuthenticationRequest {
     };
   }
 
-  static async wrapAsURI(request: SIOP.AuthenticationRequestWithJWT): Promise<SIOP.AuthenticationRequestURI> {
+  static async wrapAsURI(request: AuthenticationRequestWithJWT): Promise<AuthenticationRequestURI> {
     return await createURIFromJWT(request.opts, request.payload, request.jwt);
   }
 
@@ -79,17 +103,17 @@ export default class AuthenticationRequest {
    * @param jwt
    * @param opts
    */
-  static async verifyJWT(jwt: string, opts: SIOP.VerifyAuthenticationRequestOpts): Promise<SIOP.VerifiedAuthenticationRequestWithJWT> {
+  static async verifyJWT(jwt: string, opts: VerifyAuthenticationRequestOpts): Promise<VerifiedAuthenticationRequestWithJWT> {
     assertValidVerifyOpts(opts);
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
     }
 
-    const { header, payload } = DIDJwt.parseJWT(jwt);
+    const { header, payload } = parseJWT(jwt);
     assertValidRequestJWT(header, payload);
 
     const options = {
-      audience: DIDJwt.getAudience(jwt),
+      audience: getAudience(jwt),
     };
 
     const verPayload = payload as AuthenticationRequestPayload;
@@ -99,7 +123,7 @@ export default class AuthenticationRequest {
 
     await this.assertValidRegistration(verPayload);
 
-    const verifiedJWT = await DIDJwt.verifyDidJWT(jwt, DIDres.getResolver(opts.verification.resolveOpts), options);
+    const verifiedJWT = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
@@ -112,26 +136,22 @@ export default class AuthenticationRequest {
     };
   }
 
-  static async assertValidRegistration(verPayload: AuthenticationRequestPayload) {
+  static async assertValidRegistration(verPayload: AuthenticationRequestPayload): Promise<void> {
     if (verPayload.registration_uri && verPayload.registration) {
       throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
     } else if (verPayload.registration_uri) {
       try {
         new URL(verPayload.registration_uri);
       } catch (e) {
-        console.log(e);
         throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
       }
     }
 
-    let regObj = verPayload.registration;
+    const response = (await getWithUrl(verPayload.registration_uri)) as unknown as RPRegistrationMetadataPayload;
+    const regObj = verPayload.registration_uri ? response : verPayload.registration;
 
-    if (verPayload.registration_uri) {
-      regObj = (await getWithUrl(verPayload.registration_uri)) as unknown as RPRegistrationMetadataPayload;
-    }
-
-    if (regObj && !validate(regObj)) {
-      throw new Error('Registration data validation error: ' + JSON.stringify(validate.errors));
+    if (regObj && !validateRPRegistrationMetadata(regObj)) {
+      throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
     } else if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
@@ -153,30 +173,30 @@ export default class AuthenticationRequest {
  * @param jwt
  */
 async function createURIFromJWT(
-  requestOpts: SIOP.AuthenticationRequestOpts,
-  requestPayload: SIOP.AuthenticationRequestPayload,
+  requestOpts: AuthenticationRequestOpts,
+  requestPayload: AuthenticationRequestPayload,
   jwt: string
-): Promise<SIOP.AuthenticationRequestURI> {
+): Promise<AuthenticationRequestURI> {
   const schema = 'openid://';
   // Only used to validate if it contains a definition
   await PresentationExchange.findValidPresentationDefinitions(requestPayload);
-  const query = Encodings.encodeJsonAsURI(requestPayload);
+  const query = encodeJsonAsURI(requestPayload);
 
   AuthenticationRequest.assertValidRegistration(requestPayload);
 
   switch (requestOpts.requestBy?.type) {
-    case SIOP.PassBy.REFERENCE:
+    case PassBy.REFERENCE:
       return {
         encodedUri: `${schema}?${query}&request_uri=${encodeURIComponent(requestOpts.requestBy.referenceUri)}`,
-        encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
+        encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
         requestOpts,
         requestPayload,
         jwt,
       };
-    case SIOP.PassBy.VALUE:
+    case PassBy.VALUE:
       return {
         encodedUri: `${schema}?${query}&request=${jwt}`,
-        encodingFormat: SIOP.UrlEncodingFormat.FORM_URL_ENCODED,
+        encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
         requestOpts,
         requestPayload,
         jwt,
@@ -185,31 +205,31 @@ async function createURIFromJWT(
   throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
 }
 
-function assertValidRequestJWT(_header: JWTHeader, _payload: JWT.JWTPayload) {
+function assertValidRequestJWT(_header: JWTHeader, _payload: JWTPayload) {
   /*console.log(_header);
     console.log(_payload);*/
 }
 
-function assertValidVerifyOpts(opts: SIOP.VerifyAuthenticationRequestOpts) {
-  if (!opts || !opts.verification || (!SIOP.isExternalVerification(opts.verification) && !SIOP.isInternalVerification(opts.verification))) {
+function assertValidVerifyOpts(opts: VerifyAuthenticationRequestOpts) {
+  if (!opts || !opts.verification || (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
 }
 
-function assertValidRequestOpts(opts: SIOP.AuthenticationRequestOpts) {
+function assertValidRequestOpts(opts: AuthenticationRequestOpts) {
   if (!opts || !opts.redirectUri) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   } else if (!opts.requestBy) {
     throw new Error(SIOPErrors.BAD_PARAMS);
-  } else if (opts.requestBy.type !== SIOP.PassBy.REFERENCE && opts.requestBy.type !== SIOP.PassBy.VALUE) {
+  } else if (opts.requestBy.type !== PassBy.REFERENCE && opts.requestBy.type !== PassBy.VALUE) {
     throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
-  } else if (opts.requestBy.type === SIOP.PassBy.REFERENCE && !opts.requestBy.referenceUri) {
+  } else if (opts.requestBy.type === PassBy.REFERENCE && !opts.requestBy.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
   assertValidRequestRegistrationOpts(opts.registration);
 }
 
-function createClaimsPayload(opts: SIOP.ClaimOpts): ClaimPayload {
+function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
   if (!opts || !opts.presentationDefinitions || opts.presentationDefinitions.length == 0) {
     return undefined;
   }
@@ -249,21 +269,21 @@ function createClaimsPayload(opts: SIOP.ClaimOpts): ClaimPayload {
   return payload;
 }
 
-async function createAuthenticationRequestPayload(opts: SIOP.AuthenticationRequestOpts): Promise<SIOP.AuthenticationRequestPayload> {
+async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestPayload> {
   assertValidRequestOpts(opts);
-  const state = State.getState(opts.state);
+  const state = getState(opts.state);
   const registration = await createRequestRegistration(opts.registration);
   const claims = createClaimsPayload(opts.claims);
 
   return {
-    response_type: SIOP.ResponseType.ID_TOKEN,
-    scope: SIOP.Scope.OPENID,
+    response_type: ResponseType.ID_TOKEN,
+    scope: Scope.OPENID,
     client_id: opts.signatureType.did || opts.redirectUri, //todo: check whether we should include opts.redirectUri value here, or the whole of client_id to begin with
     redirect_uri: opts.redirectUri,
     iss: opts.signatureType.did,
-    response_mode: opts.responseMode || SIOP.ResponseMode.POST,
-    response_context: opts.responseContext || SIOP.ResponseContext.RP,
-    nonce: State.getNonce(state, opts.nonce),
+    response_mode: opts.responseMode || ResponseMode.POST,
+    response_context: opts.responseContext || ResponseContext.RP,
+    nonce: getNonce(state, opts.nonce),
     state,
     ...registration.requestRegistrationPayload,
     claims,

@@ -2,13 +2,13 @@ import { IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphe
 import { PresentationDefinitionV1 } from '@sphereon/pex-models';
 import nock from 'nock';
 
-import { PresentationExchange, SIOP } from '../src/main';
-import { State } from '../src/main/functions';
-import { SIOPErrors } from '../src/main/types';
 import {
   AuthenticationRequestPayload,
+  getNonce,
+  getState,
   IdTokenType,
   PresentationDefinitionWithLocation,
+  PresentationExchange,
   ResponseContext,
   ResponseMode,
   ResponseType,
@@ -18,7 +18,9 @@ import {
   SubjectType,
   VerifiablePresentationPayload,
   VerifiablePresentationTypeFormat,
-} from '../src/main/types/SIOP.types';
+  VerifiedAuthenticationRequestWithJWT,
+} from '../src/main';
+import { SIOPErrors } from '../src/main/types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
@@ -27,18 +29,18 @@ const EXAMPLE_PD_URL = 'http://my_own_pd.com/pd/';
 
 async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
-  const state = State.getState();
+  const state = getState();
   return {
     iss: mockEntity.did,
     aud: 'test',
     response_mode: ResponseMode.POST,
     response_context: ResponseContext.RP,
     redirect_uri: '',
-    scope: SIOP.Scope.OPENID,
-    response_type: SIOP.ResponseType.ID_TOKEN,
+    scope: Scope.OPENID,
+    response_type: ResponseType.ID_TOKEN,
     client_id: 'http://localhost:8080/test',
     state,
-    nonce: State.getNonce(state),
+    nonce: getNonce(state),
     registration: {
       id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       id_token_types_supported: [IdTokenType.SUBJECT_SIGNED],
@@ -62,7 +64,7 @@ async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
       },
       vp_token: {
         response_type: 'vp_token',
-        nonce: State.getNonce(state),
+        nonce: getNonce(state),
         presentation_definition: {
           id: 'Insurance Plans',
           input_descriptors: [
@@ -99,18 +101,18 @@ async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
 
 async function getPayloadPdRef(): Promise<AuthenticationRequestPayload> {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
-  const state = State.getState();
+  const state = getState();
   return {
     iss: mockEntity.did,
     aud: 'test',
     response_mode: ResponseMode.POST,
     response_context: ResponseContext.RP,
     redirect_uri: '',
-    scope: SIOP.Scope.OPENID,
-    response_type: SIOP.ResponseType.ID_TOKEN,
+    scope: Scope.OPENID,
+    response_type: ResponseType.ID_TOKEN,
     client_id: 'http://localhost:8080/test',
     state,
-    nonce: State.getNonce(state),
+    nonce: getNonce(state),
     registration: {
       id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       id_token_types_supported: [IdTokenType.SUBJECT_SIGNED],
@@ -134,7 +136,7 @@ async function getPayloadPdRef(): Promise<AuthenticationRequestPayload> {
       },
       vp_token: {
         response_type: 'vp_token',
-        nonce: State.getNonce(state),
+        nonce: getNonce(state),
         presentation_definition_uri: EXAMPLE_PD_URL,
       },
     },
@@ -174,7 +176,7 @@ describe('presentation exchange manager tests', () => {
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
-    const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
+    const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
       didResolutionResult: undefined,
       issuer: '',
       jwt: '',
@@ -230,7 +232,7 @@ describe('presentation exchange manager tests', () => {
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
-    const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
+    const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
       didResolutionResult: undefined,
       issuer: '',
       jwt: '',
@@ -260,7 +262,7 @@ describe('presentation exchange manager tests', () => {
     const payload: AuthenticationRequestPayload = await getPayloadPdVal();
     const vcs = getVCs();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
-    const verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT = {
+    const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
       didResolutionResult: undefined,
       issuer: '',
       jwt: '',

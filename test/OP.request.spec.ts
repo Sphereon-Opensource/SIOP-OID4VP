@@ -1,6 +1,6 @@
 import { ProofType } from '@sphereon/pex';
 
-import { OP, OPBuilder, RP, SIOP } from '../src/main';
+import { OP, OPBuilder, RP } from '../src/main';
 import {
   AuthenticationRequestOpts,
   AuthenticationResponseOpts,
@@ -16,7 +16,7 @@ import {
   SubjectType,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
-} from '../src/main/types/SIOP.types';
+} from '../src/main';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
@@ -70,7 +70,7 @@ describe('OP should', () => {
       //TODO: fill it up with actual value
       issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
-        type: SIOP.PassBy.VALUE,
+        type: PassBy.VALUE,
       },
     },
     responseMode: ResponseMode.POST,
@@ -105,7 +105,7 @@ describe('OP should', () => {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -126,7 +126,7 @@ describe('OP should', () => {
           jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };

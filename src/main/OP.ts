@@ -4,10 +4,9 @@ import fetch from 'cross-fetch';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { getResolver } from './functions/DIDResolution';
-import { postAuthenticationResponse, postAuthenticationResponseJwt } from './functions/HttpUtils';
-import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
-import { SIOP, SIOPErrors } from './types';
+import { getResolver, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
+import { AuthenticationResponseOptsSchema } from './schemas';
+import { SIOPErrors } from './types';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
@@ -20,7 +19,7 @@ import {
   VerificationMode,
   VerifiedAuthenticationRequestWithJWT,
   VerifyAuthenticationRequestOpts,
-} from './types/SIOP.types';
+} from './types';
 
 const ajv = new Ajv();
 
@@ -59,7 +58,7 @@ export class OP {
   }
 
   public async createAuthenticationResponse(
-    verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
+    verifiedJwt: VerifiedAuthenticationRequestWithJWT,
     responseOpts?: {
       nonce?: string;
       state?: string;
@@ -72,7 +71,7 @@ export class OP {
   }
 
   // TODO SK Can you please put some documentation on it?
-  public async submitAuthenticationResponse(verifiedJwt: SIOP.AuthenticationResponseWithJWT): Promise<Response> {
+  public async submitAuthenticationResponse(verifiedJwt: AuthenticationResponseWithJWT): Promise<Response> {
     if (
       !verifiedJwt ||
       (verifiedJwt.responseOpts.responseMode &&

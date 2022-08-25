@@ -1,8 +1,6 @@
 import { fetch } from 'cross-fetch';
 
-import { SIOPErrors } from '../types';
-import { JWTPayload } from '../types/JWT.types';
-import { AuthenticationResponseWithJWT } from '../types/SIOP.types';
+import { AuthenticationResponseWithJWT, JWTPayload, SIOPErrors } from '../types';
 
 export async function postWithBearerToken(url: string, body: JWTPayload, bearerToken: string): Promise<Response> {
   try {

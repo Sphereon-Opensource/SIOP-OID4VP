@@ -2,10 +2,10 @@ import { getUniResolver } from '@sphereon/did-uni-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
-import { DIDJwt } from './functions';
-import { EcdsaSignature } from './types/JWT.types';
+import { getMethodFromDid, toSIOPRegistrationDidMethod } from './functions';
 import {
   ClaimOpts,
+  EcdsaSignature,
   ExternalSignature,
   InternalSignature,
   LinkedDomainValidationMode,
@@ -18,7 +18,7 @@ import {
   ResponseIss,
   ResponseMode,
   SuppliedSignature,
-} from './types/SIOP.types';
+} from './types';
 
 export default class RPBuilder {
   authorizationEndpoint: string;
@@ -50,8 +50,8 @@ export default class RPBuilder {
     if (!this.requestRegistration.subjectSyntaxTypesSupported || !this.requestRegistration.subjectSyntaxTypesSupported.length) {
       this.requestRegistration.subjectSyntaxTypesSupported = [];
     }
-    this.requestRegistration.subjectSyntaxTypesSupported.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod));
-    this.resolvers.set(DIDJwt.getMethodFromDid(didMethod), resolver);
+    this.requestRegistration.subjectSyntaxTypesSupported.push(toSIOPRegistrationDidMethod(didMethod));
+    this.resolvers.set(getMethodFromDid(didMethod), resolver);
     return this;
   }
 
@@ -66,7 +66,7 @@ export default class RPBuilder {
   }
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): RPBuilder {
-    this.addResolver(didMethod, new Resolver(getUniResolver(DIDJwt.getMethodFromDid(didMethod), { ...opts })));
+    this.addResolver(didMethod, new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
     return this;
   }
 

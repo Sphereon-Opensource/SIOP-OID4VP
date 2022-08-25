@@ -3,13 +3,12 @@ import { JWTDecoded } from 'did-jwt/lib/JWT';
 import { Resolvable } from 'did-resolver';
 
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
-import { JWT, SIOP, SIOPErrors } from '../types';
-import { EcdsaSignature } from '../types/JWT.types';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestPayload,
   AuthenticationResponseOpts,
   AuthenticationResponsePayload,
+  EcdsaSignature,
   expirationTime,
   isExternalSignature,
   isInternalSignature,
@@ -19,10 +18,11 @@ import {
   KeyAlgo,
   ResponseIss,
   SignatureResponse,
-} from '../types/SIOP.types';
+  SIOPErrors,
+  VerifiedJWT,
+} from '../types';
 
-import { postWithBearerToken } from './HttpUtils';
-import { isEd25519DidKeyMethod, isEd25519JWK } from './Keys';
+import { isEd25519DidKeyMethod, isEd25519JWK, postWithBearerToken } from './';
 
 /**
  *  Verifies given JWT. If the JWT is valid, the promise returns an object including the JWT, the payload of the JWT,
@@ -45,7 +45,7 @@ import { isEd25519DidKeyMethod, isEd25519JWK } from './Keys';
  *  @param    {String}            options.callbackUrl   callback url in JWT
  *  @return   {Promise<Object, Error>}                  a promise which resolves with a response object or rejects with an error
  */
-export async function verifyDidJWT(jwt: string, resolver: Resolvable, options: JWTVerifyOptions): Promise<JWT.VerifiedJWT> {
+export async function verifyDidJWT(jwt: string, resolver: Resolvable, options: JWTVerifyOptions): Promise<VerifiedJWT> {
   return verifyJWT(jwt, { resolver, ...options });
 }
 
@@ -120,7 +120,7 @@ async function signDidJwtInternal(
   const options = {
     issuer,
     signer,
-    expiresIn: SIOP.expirationTime,
+    expiresIn: expirationTime,
   };
 
   return await createDidJWT({ ...payload }, options, header);
@@ -133,16 +133,15 @@ async function signDidJwtExternal(
   kid?: string
 ): Promise<string> {
   // todo: Create method. We are doing roughly the same multiple times
-  const alg =
-    isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? SIOP.KeyAlgo.EDDSA : SIOP.KeyAlgo.ES256K;
+  const alg = isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
 
   const body = {
     issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.did,
     payload,
-    type: alg === SIOP.KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
+    type: alg === KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
     expiresIn: expirationTime,
     alg,
-    selfIssued: payload.iss.includes(SIOP.ResponseIss.SELF_ISSUED_V2) ? payload.iss : undefined,
+    selfIssued: payload.iss.includes(ResponseIss.SELF_ISSUED_V2) ? payload.iss : undefined,
     kid,
   };
 
@@ -172,7 +171,7 @@ async function signDidJwtSupplied(
   const options = {
     issuer,
     signer,
-    expiresIn: SIOP.expirationTime,
+    expiresIn: expirationTime,
   };
 
   return await createDidJWT({ ...payload }, options, header);

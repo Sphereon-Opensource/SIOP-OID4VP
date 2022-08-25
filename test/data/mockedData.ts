@@ -1,8 +1,10 @@
 import { ProofType } from '@sphereon/pex';
+import { JWTHeader } from 'did-jwt';
 import { DIDDocument } from 'did-resolver';
 
-import { JWTHeader, SIOP } from '../../src/main';
 import {
+  AuthenticationRequestPayload,
+  AuthenticationResponsePayload,
   IdTokenType,
   KeyAlgo,
   ResponseContext,
@@ -12,7 +14,7 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
-} from '../../src/main/types/SIOP.types';
+} from '../../src/main';
 
 export const DIDAUTH_HEADER: JWTHeader = {
   typ: 'JWT',
@@ -20,10 +22,10 @@ export const DIDAUTH_HEADER: JWTHeader = {
   kid: 'did:ethr:0x416e6e6162656c2e4c65652e452d412d506f652e#key1',
 };
 
-export const DIDAUTH_REQUEST_PAYLOAD: SIOP.AuthenticationRequestPayload = {
+export const DIDAUTH_REQUEST_PAYLOAD: AuthenticationRequestPayload = {
   iss: 'did:ethr:0x416e6e6162656c2e4c65652e452d412d506f652e', // DIDres of the RP (kid must point to a key in this DIDres Document)
-  scope: SIOP.Scope.OPENID, // MUST be "openid did_authn"
-  response_type: SIOP.ResponseType.ID_TOKEN, // MUST be ID Token
+  scope: Scope.OPENID, // MUST be "openid did_authn"
+  response_type: ResponseType.ID_TOKEN, // MUST be ID Token
   response_context: ResponseContext.RP,
   response_mode: ResponseMode.POST,
   redirect_uri: 'http://app.example/demo', // Redirect URI after successful authentication
@@ -58,14 +60,14 @@ export const DIDAUTH_REQUEST_PAYLOAD: SIOP.AuthenticationRequestPayload = {
       /!*!// either using jwks_uri or jwks
       jwks_uri: ""
           "https://uniresolver.io/1.0/identifiers/did:example:0xab;transform-keys=jwks",
-      id_token_signed_response_alg: SIOP.KeyAlgo.ES256K,*!/
+      id_token_signed_response_alg: KeyAlgo.ES256K,*!/
   },*/
   exp: 1569937756, // Unix Timestamp; Date and time when the ID Token expires.
   iat: 1569934156,
 };
 
-export const DIDAUTH_RESPONSE_PAYLOAD: SIOP.AuthenticationResponsePayload = {
-  iss: 'did:ethr:0x226e2e2223333c2e4c65652e452d412d50611111', // SIOP.ResponseIss.SELF_ISSUED_V2, // MUST be https://self-issued.me/v2, but implementations use DIDs here. Resolution is based on this
+export const DIDAUTH_RESPONSE_PAYLOAD: AuthenticationResponsePayload = {
+  iss: 'did:ethr:0x226e2e2223333c2e4c65652e452d412d50611111', // ResponseIss.SELF_ISSUED_V2, // MUST be https://self-issued.me/v2, but implementations use DIDs here. Resolution is based on this
   sub: 'QS+5mH5GqVxuah94+D9wV97mMKZ6iMzW1op4B4s02Jk=', // Thumbprint of the sub_jwk
   aud: 'http://app.example/demo', // MUST be client_id from the Request Object
   exp: 1569937756, // Unix Timestamp; Date and time when the ID Token expires.

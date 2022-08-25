@@ -21,7 +21,9 @@ import {
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
   VerifyAuthenticationResponseOpts,
-} from './types/SIOP.types';
+} from './types';
+
+import { AuthenticationRequest, AuthenticationResponse, RPBuilder } from './';
 
 const ajv = new Ajv();
 const validate = ajv.compile(AuthenticationRequestOptsSchema);
@@ -65,8 +67,8 @@ export class RP {
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
-    const state = opts?.state || State.getState(opts?.state);
-    const nonce = opts?.nonce || State.getNonce(state, opts?.nonce);
+    const state = opts?.state || getState(opts?.state);
+    const nonce = opts?.nonce || getNonce(state, opts?.nonce);
     return {
       ...this._authRequestOpts,
       state,

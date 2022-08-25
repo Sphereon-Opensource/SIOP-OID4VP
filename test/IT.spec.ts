@@ -1,20 +1,21 @@
 import { IPresentationDefinition, IVerifiableCredential } from '@sphereon/pex';
 import nock from 'nock';
 
-import { OP, PresentationExchange, RP } from '../src/main';
 import {
   KeyAlgo,
   LinkedDomainValidationMode,
   PassBy,
   PresentationDefinitionWithLocation,
+  PresentationExchange,
   PresentationLocation,
   ResponseIss,
   ResponseType,
+  RP,
   Scope,
   SigningAlgo,
   SubjectType,
   VerifiablePresentationTypeFormat,
-} from '../src/main/types/SIOP.types';
+} from '../src/main';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 

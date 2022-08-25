@@ -3,10 +3,8 @@ import * as dotenv from 'dotenv';
 import parseJwk from 'jose/jwk/parse';
 import SignJWT from 'jose/jwt/sign';
 
-import { AuthenticationRequest, SIOP } from '../src/main';
-import { State } from '../src/main/functions';
-import SIOPErrors from '../src/main/types/Errors';
 import {
+  AuthenticationRequest,
   AuthenticationRequestOpts,
   LinkedDomainValidationMode,
   PassBy,
@@ -19,7 +17,8 @@ import {
   SubjectType,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
-} from '../src/main/types/SIOP.types';
+} from '../src/main';
+import SIOPErrors from '../src/main/types/Errors';
 
 import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
 
@@ -35,22 +34,22 @@ describe('SIOP Request Validation', () => {
     expect.assertions(1);
     const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
     const header = {
-      alg: SIOP.KeyAlgo.ES256K,
+      alg: KeyAlgo.ES256K,
       typ: 'JWT',
       kid: `${mockEntity.did}#controller`,
     };
-    const state = State.getState();
-    const payload: SIOP.AuthenticationRequestPayload = {
+    const state = getState();
+    const payload: AuthenticationRequestPayload = {
       iss: mockEntity.did,
       aud: 'test',
       response_mode: ResponseMode.POST,
       response_context: ResponseContext.RP,
       redirect_uri: '',
-      scope: SIOP.Scope.OPENID,
-      response_type: SIOP.ResponseType.ID_TOKEN,
+      scope: Scope.OPENID,
+      response_type: ResponseType.ID_TOKEN,
       client_id: 'http://localhost:8080/test',
       state,
-      nonce: State.getNonce(state),
+      nonce: getNonce(state),
       registration: {
         id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
@@ -67,13 +66,13 @@ describe('SIOP Request Validation', () => {
       /*registration: {
           jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did}`,
           // jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did};transform-keys=jwks`,
-          id_token_signed_response_alg: SIOP.KeyAlgo.ES256K,
+          id_token_signed_response_alg: KeyAlgo.ES256K,
       },*/
     };
-    const privateKey = await parseJwk(mockEntity.jwk, SIOP.KeyAlgo.ES256K);
+    const privateKey = await parseJwk(mockEntity.jwk, KeyAlgo.ES256K);
     const jwt = await new SignJWT(payload).setProtectedHeader(header).sign(privateKey);
 
-    const optsVerify: SIOP.VerifyAuthenticationRequestOpts = {
+    const optsVerify: VerifyAuthenticationRequestOpts = {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
@@ -108,7 +107,7 @@ describe('verifyJWT should', () => {
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       nonce: 'expected nonce',
@@ -131,7 +130,7 @@ describe('verifyJWT should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };
@@ -154,7 +153,7 @@ describe('verifyJWT should', () => {
   it('succeed if a valid JWT is passed', async () => {
     const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
     /*const header = {
-        alg: SIOP.KeyAlgo.ES256K,
+        alg: KeyAlgo.ES256K,
         typ: "JWT",
         kid: `${mockEntity.did}#controller`,
     };
