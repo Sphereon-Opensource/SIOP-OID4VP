@@ -1,12 +1,13 @@
 import { IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphereon/pex';
 import { ICredential } from '@sphereon/pex/dist/main/lib/types';
 
-import { AuthenticationRequest, AuthenticationResponse, PresentationExchange } from '../src/main';
-import SIOPErrors from '../src/main/types/Errors';
 import {
+  AuthenticationRequest,
   AuthenticationRequestOpts,
+  AuthenticationResponse,
   AuthenticationResponseOpts,
   PassBy,
+  PresentationExchange,
   PresentationLocation,
   ResponseIss,
   ResponseMode,
@@ -18,7 +19,8 @@ import {
   VerifiablePresentationTypeFormat,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
-} from '../src/main/types/SIOP.types';
+} from '../src/main';
+import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 

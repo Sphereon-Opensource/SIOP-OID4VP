@@ -2,17 +2,18 @@ import { getUniResolver } from '@sphereon/did-uni-client';
 import { ProofType } from '@sphereon/pex';
 import { Resolver } from 'did-resolver';
 
-import { RP, RPBuilder, SIOP } from '../src/main';
 import {
   AuthenticationRequestOpts,
   PassBy,
   ResponseMode,
   ResponseType,
+  RP,
+  RPBuilder,
   Scope,
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
-} from '../src/main/types/SIOP.types';
+} from '../src/main';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -59,7 +60,7 @@ describe('RP should', () => {
     const opts: AuthenticationRequestOpts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -80,7 +81,7 @@ describe('RP should', () => {
           jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };
@@ -93,7 +94,7 @@ describe('RP should', () => {
     const opts: AuthenticationRequestOpts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -115,7 +116,7 @@ describe('RP should', () => {
           ldp_vc: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };

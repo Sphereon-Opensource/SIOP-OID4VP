@@ -1,7 +1,6 @@
-import { SIOP } from './types';
-import { ResponseIss, ResponseType, Schema, Scope, SubjectType } from './types/SIOP.types';
+import { DiscoveryMetadataOpts, DiscoveryMetadataPayload, ResponseIss, ResponseType, Schema, Scope, SigningAlgo, SubjectType } from './types';
 
-export function createDiscoveryMetadataPayload(opts: SIOP.DiscoveryMetadataOpts): SIOP.DiscoveryMetadataPayload {
+export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): DiscoveryMetadataPayload {
   return {
     subject_syntax_types_supported: [],
     issuer: ResponseIss.SELF_ISSUED_V2,
@@ -16,13 +15,13 @@ export function createDiscoveryMetadataPayload(opts: SIOP.DiscoveryMetadataOpts)
     acr_values_supported: opts.acrValuesSupported,
     scopes_supported: opts?.scopesSupported || [Scope.OPENID],
     subject_types_supported: opts?.subjectTypesSupported || [SubjectType.PAIRWISE],
-    id_token_signing_alg_values_supported: opts?.idTokenSigningAlgValuesSupported || [SIOP.SigningAlgo.ES256K, SIOP.SigningAlgo.EDDSA],
+    id_token_signing_alg_values_supported: opts?.idTokenSigningAlgValuesSupported || [SigningAlgo.ES256K, SigningAlgo.EDDSA],
     id_token_encryption_alg_values_supported: opts.idTokenEncryptionAlgValuesSupported,
     id_token_encryption_enc_values_supported: opts.idTokenEncryptionEncValuesSupported,
     userinfo_signing_alg_values_supported: opts.userinfoSigningAlgValuesSupported,
     userinfo_encryption_alg_values_supported: opts.userinfoEncryptionAlgValuesSupported,
     userinfo_encryption_enc_values_supported: opts.userinfoEncryptionEncValuesSupported,
-    request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported || [SIOP.SigningAlgo.ES256K, SIOP.SigningAlgo.EDDSA],
+    request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported || [SigningAlgo.ES256K, SigningAlgo.EDDSA],
     request_object_encryption_alg_values_supported: opts.requestObjectEncryptionAlgValuesSupported,
     request_object_encryption_enc_values_supported: opts.requestObjectEncryptionEncValuesSupported,
     token_endpoint_auth_methods_supported: opts.tokenEndpointAuthMethodsSupported,

@@ -1,7 +1,6 @@
 import { Format } from '@sphereon/pex-models';
 
-import { SIOP, SIOPErrors } from '../types';
-import { CommonSupportedMetadata, DiscoveryMetadataPayload, RPRegistrationMetadataPayload, SubjectIdentifierType } from '../types/SIOP.types';
+import { CommonSupportedMetadata, DiscoveryMetadataPayload, RPRegistrationMetadataPayload, SIOPErrors, SubjectIdentifierType } from '../types';
 
 //TODO, since syntax_types_Supported can contain non DIDs, fix it in the VDX-126
 export function assertValidMetadata(opMetadata: DiscoveryMetadataPayload, rpMetadata: RPRegistrationMetadataPayload): CommonSupportedMetadata {
@@ -36,7 +35,7 @@ function getIntersection<T>(rpMetadata: Array<T> | T, opMetadata: Array<T> | T):
 function verifySubjectIdentifiers(subjectSyntaxTypesSupported: string[]): boolean {
   if (subjectSyntaxTypesSupported.length) {
     if (Array.isArray(subjectSyntaxTypesSupported)) {
-      return subjectSyntaxTypesSupported.includes(SIOP.SubjectIdentifierType.DID);
+      return subjectSyntaxTypesSupported.includes(SubjectIdentifierType.DID);
     }
   }
   return false;

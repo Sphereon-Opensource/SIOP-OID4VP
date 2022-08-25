@@ -1,8 +1,8 @@
-import * as DIDres from './DIDResolution';
-import * as DIDJwt from './DidJWT';
-import * as Encodings from './Encodings';
-import * as HTTP from './HttpUtils';
-import * as Keys from './Keys';
-import * as State from './State';
-
-export { DIDJwt, DIDres, Encodings, HTTP, Keys, State };
+export * from './DidJWT';
+export * from './DIDResolution';
+export * from './DidSiopMetadata';
+export * from './Encodings';
+export * from './HttpUtils';
+export * from './Keys';
+export * from './ObjectUtils';
+export * from './State';

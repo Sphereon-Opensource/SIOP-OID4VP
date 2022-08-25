@@ -13,12 +13,13 @@ import jwt_decode from 'jwt-decode';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
-import { SIOP } from '../src/main';
-import { assertValidMetadata } from '../src/main/functions/DidSiopMetadata';
-import { base64ToHexString } from '../src/main/functions/Encodings';
-import SIOPErrors from '../src/main/types/Errors';
 import {
+  assertValidMetadata,
+  base64ToHexString,
   DiscoveryMetadataPayload,
+  KeyAlgo,
+  KeyCurve,
+  KeyType,
   ResponseIss,
   ResponseType,
   RPRegistrationMetadataPayload,
@@ -26,7 +27,8 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
-} from '../src/main/types/SIOP.types';
+} from '../src/main';
+import SIOPErrors from '../src/main/types/Errors';
 
 import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
 
@@ -37,9 +39,9 @@ export interface TESTKEY {
 }
 
 export async function generateTestKey(kty: string): Promise<TESTKEY> {
-  if (kty !== SIOP.KeyType.EC) throw new Error(SIOPErrors.NO_ALG_SUPPORTED);
+  if (kty !== KeyType.EC) throw new Error(SIOPErrors.NO_ALG_SUPPORTED);
   const key = crypto.generateKeyPairSync('ec', {
-    namedCurve: SIOP.KeyCurve.SECP256k1,
+    namedCurve: KeyCurve.SECP256k1,
   });
   const privateJwk = await fromKeyLike(key.privateKey);
 
@@ -91,7 +93,7 @@ export const mockedKeyAndDid = async (): Promise<{
 }> => {
   // generate a new keypair
   const key = crypto.generateKeyPairSync('ec', {
-    namedCurve: SIOP.KeyCurve.SECP256k1,
+    namedCurve: KeyCurve.SECP256k1,
   });
   const privateJwk = await fromKeyLike(key.privateKey);
   const hexPrivateKey = base64ToHexString(privateJwk.d);
@@ -127,7 +129,7 @@ const mockedEntityAuthNToken = async (
     nonce: uuidv4(),
   };
 
-  const privateKey = await parseJwk(jwk, SIOP.KeyAlgo.ES256K);
+  const privateKey = await parseJwk(jwk, KeyAlgo.ES256K);
   const jwt = await new SignJWT(payload as unknown as JWTPayload)
     .setProtectedHeader({
       alg: 'ES256K',
@@ -164,7 +166,7 @@ export async function mockedGetEnterpriseAuthToken(enterpriseName?: string): Pro
     },
   };
 
-  const privateKey = await parseJwk(testAuth.jwk, SIOP.KeyAlgo.ES256K);
+  const privateKey = await parseJwk(testAuth.jwk, KeyAlgo.ES256K);
   const jwt = await new SignJWT(testApiPayload)
     .setProtectedHeader({
       alg: 'ES256K',

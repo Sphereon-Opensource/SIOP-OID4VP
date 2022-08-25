@@ -5,7 +5,7 @@ import { ec as EC } from 'elliptic';
 import { JWK } from 'jose/types';
 import SHA from 'sha.js';
 
-import { SIOP } from '../types';
+import { KeyCurve, KeyType } from '../types';
 
 import { base64urlEncodeBuffer } from './Encodings';
 
@@ -16,7 +16,7 @@ export function isEd25519DidKeyMethod(did?: string) {
 }
 
 export function isEd25519JWK(jwk: JWK): boolean {
-  return jwk && !!jwk.crv && jwk.crv === SIOP.KeyCurve.ED25519;
+  return jwk && !!jwk.crv && jwk.crv === KeyCurve.ED25519;
 }
 
 export function getBase58PrivateKeyFromHexPrivateKey(hexPrivateKey: string): string {
@@ -28,14 +28,14 @@ export function getPublicED25519JWKFromHexPrivateKey(hexPrivateKey: string, kid?
   const privKey = ec.keyFromPrivate(hexPrivateKey);
   const pubPoint = privKey.getPublic();
 
-  return toJWK(kid, SIOP.KeyCurve.ED25519, pubPoint);
+  return toJWK(kid, KeyCurve.ED25519, pubPoint);
 }
 
 function getPublicSECP256k1JWKFromHexPrivateKey(hexPrivateKey: string, kid: string) {
   const ec = new EC('secp256k1');
   const privKey = ec.keyFromPrivate(hexPrivateKey.replace('0x', ''), 'hex');
   const pubPoint = privKey.getPublic();
-  return toJWK(kid, SIOP.KeyCurve.SECP256k1, pubPoint);
+  return toJWK(kid, KeyCurve.SECP256k1, pubPoint);
 }
 
 export function getPublicJWKFromHexPrivateKey(hexPrivateKey: string, kid?: string, did?: string): JWK {
@@ -45,10 +45,10 @@ export function getPublicJWKFromHexPrivateKey(hexPrivateKey: string, kid?: strin
   return getPublicSECP256k1JWKFromHexPrivateKey(hexPrivateKey, kid);
 }
 
-function toJWK(kid: string, crv: SIOP.KeyCurve, pubPoint: EC.BN) {
+function toJWK(kid: string, crv: KeyCurve, pubPoint: EC.BN) {
   return {
     kid,
-    kty: SIOP.KeyType.EC,
+    kty: KeyType.EC,
     crv: crv,
     x: base64url.toBase64(pubPoint.getX().toArrayLike(Buffer)),
     y: base64url.toBase64(pubPoint.getY().toArrayLike(Buffer)),
