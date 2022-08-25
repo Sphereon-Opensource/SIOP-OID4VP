@@ -156,15 +156,14 @@ export default class AuthenticationRequest {
     }
   }
 
-  static async getRemoteRegistrationObj (registrationUri: string): Promise<RPRegistrationMetadataPayload> {
+  static async getRemoteRegistrationObj(registrationUri: string): Promise<RPRegistrationMetadataPayload> {
     let response: RPRegistrationMetadataPayload;
     if (registrationUri) {
-      response = await getWithUrl(registrationUri) as unknown as RPRegistrationMetadataPayload;
+      response = (await getWithUrl(registrationUri)) as unknown as RPRegistrationMetadataPayload;
     }
 
     return response;
   }
-
 }
 
 /***************************************
@@ -191,7 +190,10 @@ async function createURIFromJWT(
   await PresentationExchange.findValidPresentationDefinitions(requestPayload);
   const query = encodeJsonAsURI(requestPayload);
 
-  await AuthenticationRequest.assertValidRegistration(requestPayload, await AuthenticationRequest.getRemoteRegistrationObj(requestPayload.registration_uri));
+  await AuthenticationRequest.assertValidRegistration(
+    requestPayload,
+    await AuthenticationRequest.getRemoteRegistrationObj(requestPayload.registration_uri)
+  );
 
   switch (requestOpts.requestBy?.type) {
     case PassBy.REFERENCE:
@@ -297,5 +299,4 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
     ...registration.requestRegistrationPayload,
     claims,
   };
-
 }
