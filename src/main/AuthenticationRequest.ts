@@ -147,8 +147,7 @@ export default class AuthenticationRequest {
       }
     }
 
-    const response = (await getWithUrl(verPayload.registration_uri)) as unknown as RPRegistrationMetadataPayload;
-    const regObj = verPayload.registration_uri ? response : verPayload.registration;
+    const regObj = verPayload.registration_uri ? (await getWithUrl(verPayload.registration_uri)) as unknown as RPRegistrationMetadataPayload : verPayload.registration;
 
     if (regObj && !validateRPRegistrationMetadata(regObj)) {
       throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
