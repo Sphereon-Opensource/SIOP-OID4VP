@@ -121,7 +121,7 @@ export default class AuthenticationRequest {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
     }
 
-    await this.assertValidRegistration(verPayload);
+    await this.assertValidRegistration(verPayload, await AuthenticationRequest.getRemoteRegistrationObj(verPayload.registration_uri));
 
     const verifiedJWT = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
     if (!verifiedJWT || !verifiedJWT.payload) {
@@ -136,7 +136,7 @@ export default class AuthenticationRequest {
     };
   }
 
-  static async assertValidRegistration(verPayload: AuthenticationRequestPayload): Promise<void> {
+  static async assertValidRegistration(verPayload: AuthenticationRequestPayload, remoteRegObj: RPRegistrationMetadataPayload): Promise<void> {
     if (verPayload.registration_uri && verPayload.registration) {
       throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
     } else if (verPayload.registration_uri) {
@@ -147,7 +147,7 @@ export default class AuthenticationRequest {
       }
     }
 
-    const regObj = verPayload.registration_uri ? (await getWithUrl(verPayload.registration_uri)) as unknown as RPRegistrationMetadataPayload : verPayload.registration;
+    const regObj: RPRegistrationMetadataPayload = verPayload.registration_uri ? remoteRegObj : verPayload.registration;
 
     if (regObj && !validateRPRegistrationMetadata(regObj)) {
       throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
@@ -155,6 +155,16 @@ export default class AuthenticationRequest {
       throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
     }
   }
+
+  static async getRemoteRegistrationObj (registrationUri: string): Promise<RPRegistrationMetadataPayload> {
+    let response: RPRegistrationMetadataPayload;
+    if (registrationUri) {
+      response = await getWithUrl(registrationUri) as unknown as RPRegistrationMetadataPayload;
+    }
+
+    return response;
+  }
+
 }
 
 /***************************************
@@ -181,7 +191,7 @@ async function createURIFromJWT(
   await PresentationExchange.findValidPresentationDefinitions(requestPayload);
   const query = encodeJsonAsURI(requestPayload);
 
-  AuthenticationRequest.assertValidRegistration(requestPayload);
+  await AuthenticationRequest.assertValidRegistration(requestPayload, await AuthenticationRequest.getRemoteRegistrationObj(requestPayload.registration_uri));
 
   switch (requestOpts.requestBy?.type) {
     case PassBy.REFERENCE:
@@ -287,4 +297,5 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
     ...registration.requestRegistrationPayload,
     claims,
   };
+
 }
