@@ -18,7 +18,7 @@ import {
   SubjectType,
   VerifiablePresentationTypeFormat,
   VerificationMode,
-  VerifyAuthenticationRequestOpts
+  VerifyAuthenticationRequestOpts,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -141,7 +141,21 @@ describe('create JWT from Request JWT should', () => {
     };
 
     /*const requestWithJWT = */ await AuthenticationRequest.createJWT(requestOpts);
-    const jwtString: string = 'eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDVENjE2MjlhMTNiMTcwMEQ4NUM2MmQ5QjkxNTlCRTkwQTIyNTU3YzkjY29udHJvbGxlciIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NjE1MTIwOTIsImV4cCI6MTY2MTUxMjY5MiwicmVzcG9uc2VfdHlwZSI6ImlkX3Rva2VuIiwic2NvcGUiOiJvcGVuaWQiLCJjbGllbnRfaWQiOiJkaWQ6ZXRocjoweDVENjE2MjlhMTNiMTcwMEQ4NUM2MmQ5QjkxNTlCRTkwQTIyNTU3YzkiLCJyZWRpcmVjdF91cmkiOiJodHRwczovL2FjbWUuY29tL2hlbGxvIiwiaXNzIjoiZGlkOmV0aHI6MHg1RDYxNjI5YTEzYjE3MDBEODVDNjJkOUI5MTU5QkU5MEEyMjU1N2M5IiwicmVzcG9uc2VfbW9kZSI6InBvc3QiLCJyZXNwb25zZV9jb250ZXh0IjoicnAiLCJub25jZSI6ImswSng1QVI0ZVRkZ3oyb0pYSWpJYXJ3STh0dDdmeXZELWszVDhaQ2pFcmciLCJzdGF0ZSI6ImRiZTcxYTZjN2U1MzI3MmFjOGJjZThiMyIsInJlZ2lzdHJhdGlvbiI6eyJpZF90b2tlbl9zaWduaW5nX2FsZ192YWx1ZXNfc3VwcG9ydGVkIjpbIkVkRFNBIiwiRVMyNTYiXSwicmVxdWVzdF9vYmplY3Rfc2lnbmluZ19hbGdfdmFsdWVzX3N1cHBvcnRlZCI6WyJFZERTQSIsIkVTMjU2Il0sInJlc3BvbnNlX3R5cGVzX3N1cHBvcnRlZCI6WyJpZF90b2tlbiJdLCJzY29wZXNfc3VwcG9ydGVkIjpbIm9wZW5pZCBkaWRfYXV0aG4iLCJvcGVuaWQiXSwic3ViamVjdF90eXBlc19zdXBwb3J0ZWQiOlsicGFpcndpc2UiXSwic3ViamVjdF9zeW50YXhfdHlwZXNfc3VwcG9ydGVkIjpbImRpZDpldGhyOiIsImRpZCJdLCJ2cF9mb3JtYXRzIjp7ImxkcF92YyI6eyJwcm9vZl90eXBlIjpbIkVjZHNhU2VjcDI1NmsxU2lnbmF0dXJlMjAxOSIsIkVjZHNhU2VjcDI1NmsxU2lnbmF0dXJlMjAxOSJdfX19fQ.UOiNmI2T0-EayoN5TmMLUAmgUcf_IBY6uJ-VHfGJjqXy9qkk65AIGFSkkta7jCAE3mbOxBsK7XVYjYMKXtq3Lw'; // const requestWithJWT created on previous line.
+    const jwtString: string =
+      'eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDVENjE2MjlhMTNiMTcwMEQ4NUM2MmQ5QjkxNTlCRT' +
+      'kwQTIyNTU3YzkjY29udHJvbGxlciIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NjE1MTIwOTIsImV4cCI6MTY2MTUxMjY5MiwicmVzcG9uc2VfdHl' +
+      'wZSI6ImlkX3Rva2VuIiwic2NvcGUiOiJvcGVuaWQiLCJjbGllbnRfaWQiOiJkaWQ6ZXRocjoweDVENjE2MjlhMTNiMTcwMEQ4NUM2MmQ5QjkxN' +
+      'TlCRTkwQTIyNTU3YzkiLCJyZWRpcmVjdF91cmkiOiJodHRwczovL2FjbWUuY29tL2hlbGxvIiwiaXNzIjoiZGlkOmV0aHI6MHg1RDYxNjI5YTE' +
+      'zYjE3MDBEODVDNjJkOUI5MTU5QkU5MEEyMjU1N2M5IiwicmVzcG9uc2VfbW9kZSI6InBvc3QiLCJyZXNwb25zZV9jb250ZXh0IjoicnAiLCJub' +
+      '25jZSI6ImswSng1QVI0ZVRkZ3oyb0pYSWpJYXJ3STh0dDdmeXZELWszVDhaQ2pFcmciLCJzdGF0ZSI6ImRiZTcxYTZjN2U1MzI3MmFjOGJjZTh' +
+      'iMyIsInJlZ2lzdHJhdGlvbiI6eyJpZF90b2tlbl9zaWduaW5nX2FsZ192YWx1ZXNfc3VwcG9ydGVkIjpbIkVkRFNBIiwiRVMyNTYiXSwicmVxd' +
+      'WVzdF9vYmplY3Rfc2lnbmluZ19hbGdfdmFsdWVzX3N1cHBvcnRlZCI6WyJFZERTQSIsIkVTMjU2Il0sInJlc3BvbnNlX3R5cGVzX3N1cHBvcnR' +
+      'lZCI6WyJpZF90b2tlbiJdLCJzY29wZXNfc3VwcG9ydGVkIjpbIm9wZW5pZCBkaWRfYXV0aG4iLCJvcGVuaWQiXSwic3ViamVjdF90eXBlc19zd' +
+      'XBwb3J0ZWQiOlsicGFpcndpc2UiXSwic3ViamVjdF9zeW50YXhfdHlwZXNfc3VwcG9ydGVkIjpbImRpZDpldGhyOiIsImRpZCJdLCJ2cF9mb3J' +
+      'tYXRzIjp7ImxkcF92YyI6eyJwcm9vZl90eXBlIjpbIkVjZHNhU2VjcDI1NmsxU2lnbmF0dXJlMjAxOSIsIkVjZHNhU2VjcDI1NmsxU2lnbmF0d' +
+      'XJlMjAxOSJdfX19fQ.UOiNmI2T0-EayoN5TmMLUAmgUcf_IBY6uJ-VHfGJjqXy9qkk65AIGFSkkta7jCAE3mbOxBsK7XVYjYMKXtq3Lw';
+    // const requestWithJWT created on previous line.
+
     await expect(AuthenticationResponse.createJWTFromRequestJWT(jwtString, responseOpts, verifyOpts)).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1632089753/
     );
