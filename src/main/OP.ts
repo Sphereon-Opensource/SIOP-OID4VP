@@ -142,9 +142,9 @@ async function parseAndResolveUri(encodedUri: string) {
   const requestPayload = AuthenticationRequest.parseURI(encodedUri);
   const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
 
-  AuthenticationRequest.assertValidRegistration(
-    requestPayload,
-    await AuthenticationRequest.getRemoteRegistrationObj(requestPayload.registration_uri)
+  AuthenticationRequest.assertValidRequestObject(requestPayload);
+  AuthenticationRequest.assertValidRegistrationObject(
+    await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration)
   );
 
   const registration = requestPayload.registration || (await (await fetch(requestPayload.registration_uri)).json());
