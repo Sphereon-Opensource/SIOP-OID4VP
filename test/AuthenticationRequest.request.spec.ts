@@ -2,17 +2,18 @@ import { parse } from 'querystring';
 
 import { IPresentationDefinition, ProofType } from '@sphereon/pex';
 
-import { AuthenticationRequest, SIOP } from '../src/main';
-import SIOPErrors from '../src/main/types/Errors';
 import {
+  AuthenticationRequest,
   AuthenticationRequestOpts,
+  PassBy,
   PresentationLocation,
   ResponseType,
   Scope,
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
-} from '../src/main/types/SIOP.types';
+} from '../src/main';
+import SIOPErrors from '../src/main/types/Errors';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -56,7 +57,7 @@ describe('create Request Uri should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
       },
     };
     await expect(AuthenticationRequest.createURI(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
@@ -64,11 +65,11 @@ describe('create Request Uri should', () => {
 
   it('return a reference url', async () => {
     expect.assertions(11);
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -89,7 +90,7 @@ describe('create Request Uri should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };
@@ -101,9 +102,9 @@ describe('create Request Uri should', () => {
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`openid://`);
-    expect(uriDecoded).toContain(`?response_type=${SIOP.ResponseType.ID_TOKEN}`);
+    expect(uriDecoded).toContain(`?response_type=${ResponseType.ID_TOKEN}`);
     expect(uriDecoded).toContain(`&redirect_uri=${opts.redirectUri}`);
-    expect(uriDecoded).toContain(`&scope=${SIOP.Scope.OPENID}`);
+    expect(uriDecoded).toContain(`&scope=${Scope.OPENID}`);
     expect(uriDecoded).toContain(`&request_uri=`);
 
     const data = parse(uriDecoded);
@@ -114,11 +115,11 @@ describe('create Request Uri should', () => {
 
   it('return a reference url when using did:key', async () => {
     expect.assertions(3);
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -140,7 +141,7 @@ describe('create Request Uri should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };
@@ -156,11 +157,11 @@ describe('create Request Uri should', () => {
 
   it('return an url with an embedded token value', async () => {
     expect.assertions(2);
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.VALUE,
+        type: PassBy.VALUE,
       },
       signatureType: {
         hexPrivateKey: HEX_KEY,
@@ -180,7 +181,7 @@ describe('create Request Uri should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };
@@ -217,7 +218,7 @@ describe('create Request JWT should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };
@@ -229,7 +230,7 @@ describe('create Request JWT should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
       },
       signatureType: {
         hexPrivateKey: HEX_KEY,
@@ -245,7 +246,7 @@ describe('create Request JWT should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };
@@ -257,7 +258,7 @@ describe('create Request JWT should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {},
@@ -270,7 +271,7 @@ describe('create Request JWT should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };
@@ -282,7 +283,7 @@ describe('create Request JWT should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -311,7 +312,7 @@ describe('create Request JWT should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -328,7 +329,7 @@ describe('create Request JWT should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.REFERENCE,
+          type: PassBy.REFERENCE,
         },
       },
     };
@@ -341,7 +342,7 @@ describe('create Request JWT should', () => {
       requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -362,7 +363,7 @@ describe('create Request JWT should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
     };
@@ -421,11 +422,11 @@ describe('create Request JWT should', () => {
   });
 
   it('succeed when requesting with a valid PD', async () => {
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -446,7 +447,7 @@ describe('create Request JWT should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
       claims: {
@@ -479,11 +480,11 @@ describe('create Request JWT should', () => {
 
   //todo Re-enable. Pex 0.6.x does not seem to throw this error (id is missing on the definition)
   xit('should throw error if presentation definition object is not valid', async () => {
-    const opts: SIOP.AuthenticationRequestOpts = {
+    const opts: AuthenticationRequestOpts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+        type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       signatureType: {
@@ -504,7 +505,7 @@ describe('create Request JWT should', () => {
           },
         },
         registrationBy: {
-          type: SIOP.PassBy.VALUE,
+          type: PassBy.VALUE,
         },
       },
       claims: {

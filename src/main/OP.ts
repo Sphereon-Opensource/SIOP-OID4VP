@@ -4,10 +4,8 @@ import fetch from 'cross-fetch';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { getResolver } from './functions/DIDResolution';
-import { postAuthenticationResponse, postAuthenticationResponseJwt } from './functions/HttpUtils';
-import { AuthenticationResponseOptsSchema } from './schemas/AuthenticationResponseOpts.schema';
-import { SIOP, SIOPErrors } from './types';
+import { getResolver, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
+import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
@@ -15,12 +13,13 @@ import {
   InternalVerification,
   ParsedAuthenticationRequestURI,
   ResponseMode,
+  SIOPErrors,
   UrlEncodingFormat,
   VerifiablePresentationResponseOpts,
   VerificationMode,
   VerifiedAuthenticationRequestWithJWT,
   VerifyAuthenticationRequestOpts,
-} from './types/SIOP.types';
+} from './types';
 
 const ajv = new Ajv();
 
@@ -44,6 +43,7 @@ export class OP {
     return this._verifyAuthRequestOpts;
   }
 
+  // TODO SK Can you please put some documentation on it?
   public async postAuthenticationResponse(authenticationResponse: AuthenticationResponseWithJWT): Promise<Response> {
     return postAuthenticationResponse(authenticationResponse.payload.aud, authenticationResponse);
   }
@@ -58,7 +58,7 @@ export class OP {
   }
 
   public async createAuthenticationResponse(
-    verifiedJwt: SIOP.VerifiedAuthenticationRequestWithJWT,
+    verifiedJwt: VerifiedAuthenticationRequestWithJWT,
     responseOpts?: {
       nonce?: string;
       state?: string;
@@ -70,7 +70,8 @@ export class OP {
     return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
   }
 
-  public async submitAuthenticationResponse(verifiedJwt: SIOP.AuthenticationResponseWithJWT): Promise<Response> {
+  // TODO SK Can you please put some documentation on it?
+  public async submitAuthenticationResponse(verifiedJwt: AuthenticationResponseWithJWT): Promise<Response> {
     if (
       !verifiedJwt ||
       (verifiedJwt.responseOpts.responseMode &&
@@ -140,6 +141,12 @@ export class OP {
 async function parseAndResolveUri(encodedUri: string) {
   const requestPayload = AuthenticationRequest.parseURI(encodedUri);
   const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
+
+  AuthenticationRequest.assertValidRequestObject(requestPayload);
+  AuthenticationRequest.assertValidRegistrationObject(
+    await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration)
+  );
+
   const registration = requestPayload.registration || (await (await fetch(requestPayload.registration_uri)).json());
   return { requestPayload, jwt, registration };
 }

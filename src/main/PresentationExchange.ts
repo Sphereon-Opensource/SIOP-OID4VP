@@ -15,16 +15,15 @@ import {
 } from '@sphereon/pex';
 import { PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmission } from '@sphereon/pex-models';
 
-import { getWithUrl } from './functions/HttpUtils';
-import { extractDataFromPath } from './functions/ObjectUtils';
-import { SIOPErrors } from './types';
-import { JWTPayload } from './types/JWT.types';
+import { extractDataFromPath, getWithUrl } from './functions';
 import {
+  JWTPayload,
   PresentationDefinitionWithLocation,
   PresentationLocation,
+  SIOPErrors,
   VerifiablePresentationPayload,
   VerifiablePresentationTypeFormat,
-} from './types/SIOP.types';
+} from './types';
 
 export class PresentationExchange {
   readonly pex = new PEX();

@@ -2,9 +2,16 @@ import { getUniResolver } from '@sphereon/did-uni-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';
-import { DIDJwt } from './functions';
-import { EcdsaSignature } from './types/JWT.types';
-import { ExternalSignature, InternalSignature, ResponseIss, ResponseMode, ResponseRegistrationOpts, SuppliedSignature } from './types/SIOP.types';
+import { getMethodFromDid, toSIOPRegistrationDidMethod } from './functions';
+import {
+  EcdsaSignature,
+  ExternalSignature,
+  InternalSignature,
+  ResponseIss,
+  ResponseMode,
+  ResponseRegistrationOpts,
+  SuppliedSignature,
+} from './types';
 
 export default class OPBuilder {
   expiresIn?: number;
@@ -18,7 +25,7 @@ export default class OPBuilder {
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
-    this.addResolver(didMethod, new Resolver(getUniResolver(DIDJwt.getMethodFromDid(didMethod), { ...opts })));
+    this.addResolver(didMethod, new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
     return this;
   }
 
@@ -37,9 +44,9 @@ export default class OPBuilder {
       this.responseRegistration.subjectSyntaxTypesSupported = [];
     }
     Array.isArray(this.responseRegistration.subjectSyntaxTypesSupported)
-      ? this.responseRegistration.subjectSyntaxTypesSupported.push(DIDJwt.toSIOPRegistrationDidMethod(didMethod))
-      : (this.responseRegistration.subjectSyntaxTypesSupported = DIDJwt.toSIOPRegistrationDidMethod(didMethod));
-    this.resolvers.set(DIDJwt.getMethodFromDid(didMethod), resolver);
+      ? this.responseRegistration.subjectSyntaxTypesSupported.push(toSIOPRegistrationDidMethod(didMethod))
+      : (this.responseRegistration.subjectSyntaxTypesSupported = toSIOPRegistrationDidMethod(didMethod));
+    this.resolvers.set(getMethodFromDid(didMethod), resolver);
     return this;
   }
 

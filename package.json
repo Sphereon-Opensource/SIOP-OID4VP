@@ -13,13 +13,15 @@
     "build": "run-p build:*",
     "build:main": "tsc -p tsconfig.build.json",
     "build:schemaGenerator": "node --loader ts-node/esm generator/schemaGenerator.ts",
+    "clean": "rimraf dist coverage",
     "fix": "run-s fix:*",
     "fix:prettier": "prettier \"{src,test}/**/*.ts\" --write",
     "fix:lint": "eslint . --ext .ts --fix",
     "test": "run-s build test:*",
     "test:lint": "eslint . --ext .ts",
     "test:prettier": "prettier \"{src,test}/**/*.ts\" --list-different",
-    "test:cov": "jest --ci --coverage && codecov"
+    "test:cov": "jest --ci --coverage && codecov",
+    "uninstall": "rimraf dist coverage node_modules"
   },
   "engines": {
     "node": ">=14"

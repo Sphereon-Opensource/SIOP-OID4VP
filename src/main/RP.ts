@@ -1,12 +1,7 @@
 import Ajv from 'ajv';
 
-import AuthenticationRequest from './AuthenticationRequest';
-import AuthenticationResponse from './AuthenticationResponse';
-import RPBuilder from './RPBuilder';
-import { State } from './functions';
-import { getResolver } from './functions/DIDResolution';
-import { AuthenticationRequestOptsSchema } from './schemas/AuthenticationRequestOpts.schema';
-import { SIOP } from './types';
+import { getNonce, getResolver, getState } from './functions';
+import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
@@ -17,7 +12,9 @@ import {
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
   VerifyAuthenticationResponseOpts,
-} from './types/SIOP.types';
+} from './types';
+
+import { AuthenticationRequest, AuthenticationResponse, RPBuilder } from './';
 
 const ajv = new Ajv();
 const validate = ajv.compile(AuthenticationRequestOptsSchema);
@@ -58,8 +55,8 @@ export class RP {
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
-    const state = opts?.state || State.getState(opts?.state);
-    const nonce = opts?.nonce || State.getNonce(state, opts?.nonce);
+    const state = opts?.state || getState(opts?.state);
+    const nonce = opts?.nonce || getNonce(state, opts?.nonce);
     return {
       ...this._authRequestOpts,
       state,
@@ -84,7 +81,7 @@ export class RP {
     };
   }
 
-  public static fromRequestOpts(opts: SIOP.AuthenticationRequestOpts): RP {
+  public static fromRequestOpts(opts: AuthenticationRequestOpts): RP {
     return new RP({ requestOpts: opts });
   }
 

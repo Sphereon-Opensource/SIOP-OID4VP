@@ -1,38 +1,62 @@
-import { SIOP, SIOPErrors } from './types';
-import { PassBy, RequestRegistrationPayload } from './types/SIOP.types';
+import Ajv from 'ajv';
 
-export function assertValidRequestRegistrationOpts(opts: SIOP.RequestRegistrationOpts) {
+import { getWithUrl } from './functions';
+import { RPRegistrationMetadataPayloadSchema } from './schemas';
+import {
+  PassBy,
+  RequestRegistrationOpts,
+  RequestRegistrationPayload,
+  RPRegistrationMetadataOpts,
+  RPRegistrationMetadataPayload,
+  SIOPErrors,
+} from './types';
+
+const ajv = new Ajv();
+const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
+
+export function assertValidRequestRegistrationOpts(opts: RequestRegistrationOpts) {
   if (!opts) {
     throw new Error(SIOPErrors.REGISTRATION_NOT_SET);
-  } else if (opts.registrationBy.type !== SIOP.PassBy.REFERENCE && opts.registrationBy.type !== SIOP.PassBy.VALUE) {
+  } else if (opts.registrationBy.type !== PassBy.REFERENCE && opts.registrationBy.type !== PassBy.VALUE) {
     throw new Error(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
-  } else if (opts.registrationBy.type === SIOP.PassBy.REFERENCE && !opts.registrationBy.referenceUri) {
+  } else if (opts.registrationBy.type === PassBy.REFERENCE && !opts.registrationBy.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
 }
 
-export function createRequestRegistrationPayload(opts: SIOP.RequestRegistrationOpts): RequestRegistrationPayload {
+export async function createRequestRegistrationPayload(opts: RequestRegistrationOpts): Promise<RequestRegistrationPayload> {
   assertValidRequestRegistrationOpts(opts);
+
+  const regObj: RPRegistrationMetadataPayload = createRPRegistrationMetadataPayload(opts);
+
+  if (opts.registrationBy.referenceUri) {
+    const regObjToValidate = (await getWithUrl(opts.registrationBy.referenceUri)) as unknown as RPRegistrationMetadataPayload;
+    if (!regObjToValidate || !validateRPRegistrationMetadata(regObjToValidate)) {
+      throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
+    }
+  }
+
   if (opts.registrationBy.type == PassBy.VALUE) {
-    return { registration: createRPRegistrationMetadataPayload(opts) };
+    return { registration: regObj };
   } else {
     return { registration_uri: opts.registrationBy.referenceUri };
   }
 }
 
-export function createRequestRegistration(opts: SIOP.RequestRegistrationOpts): {
+export async function createRequestRegistration(opts: RequestRegistrationOpts): Promise<{
   requestRegistrationPayload: RequestRegistrationPayload;
-  rpRegistrationMetadataPayload: SIOP.RPRegistrationMetadataPayload;
-  opts: SIOP.RequestRegistrationOpts;
-} {
+  rpRegistrationMetadataPayload: RPRegistrationMetadataPayload;
+  opts: RequestRegistrationOpts;
+}> {
+  const requestRegistrationPayload = await createRequestRegistrationPayload(opts);
   return {
-    requestRegistrationPayload: createRequestRegistrationPayload(opts),
+    requestRegistrationPayload: requestRegistrationPayload,
     rpRegistrationMetadataPayload: createRPRegistrationMetadataPayload(opts),
     opts,
   };
 }
 
-function createRPRegistrationMetadataPayload(opts: SIOP.RPRegistrationMetadataOpts): SIOP.RPRegistrationMetadataPayload {
+function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): RPRegistrationMetadataPayload {
   return {
     id_token_signing_alg_values_supported: opts.idTokenSigningAlgValuesSupported,
     request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported,

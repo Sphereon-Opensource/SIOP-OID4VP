@@ -3,8 +3,7 @@ import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sph
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose/types';
 
-import { EcdsaSignature, JWTPayload, VerifiedJWT } from './JWT.types';
-import { LinkedDataProof, ResolveOpts } from './SSI.types';
+import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
 
 export const expirationTime = 10 * 60;
 
@@ -38,7 +37,6 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   // iss: string;
   response_mode: ResponseMode;
   claims?: ClaimPayload; // claims parameter value, as specified in Section 5.5.
-  //TODO: https://sphereon.atlassian.net/browse/VDX-122 : SIOP: resolve registration parameter from registration_uri in client metadata
   registration?: RPRegistrationMetadataPayload;
   registration_uri?: string;
   //response_context: ResponseContext;
