@@ -121,7 +121,10 @@ export default class AuthenticationRequest {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
     }
 
-    await this.assertValidRegistration(verPayload, await AuthenticationRequest.getRemoteRegistrationObj(verPayload.registration_uri));
+    AuthenticationRequest.assertValidRequestObject(verPayload);
+    AuthenticationRequest.assertValidRegistrationObject(
+      await AuthenticationRequest.getRegistrationObj(verPayload.registration_uri, verPayload.registration)
+    );
 
     const verifiedJWT = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
     if (!verifiedJWT || !verifiedJWT.payload) {
@@ -136,7 +139,15 @@ export default class AuthenticationRequest {
     };
   }
 
-  static async assertValidRegistration(verPayload: AuthenticationRequestPayload, remoteRegObj: RPRegistrationMetadataPayload): Promise<void> {
+  public static assertValidRegistrationObject(regObj: RPRegistrationMetadataPayload) {
+    if (regObj && !validateRPRegistrationMetadata(regObj)) {
+      throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
+    } else if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
+      throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
+    }
+  }
+
+  public static assertValidRequestObject(verPayload: AuthenticationRequestPayload): void {
     if (verPayload.registration_uri && verPayload.registration) {
       throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
     } else if (verPayload.registration_uri) {
@@ -146,18 +157,13 @@ export default class AuthenticationRequest {
         throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
       }
     }
-
-    const regObj: RPRegistrationMetadataPayload = verPayload.registration_uri ? remoteRegObj : verPayload.registration;
-
-    if (regObj && !validateRPRegistrationMetadata(regObj)) {
-      throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
-    } else if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
-      throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
-    }
   }
 
-  static async getRemoteRegistrationObj(registrationUri: string): Promise<RPRegistrationMetadataPayload> {
-    let response: RPRegistrationMetadataPayload;
+  public static async getRegistrationObj(
+    registrationUri: string,
+    registrationObject: RPRegistrationMetadataPayload
+  ): Promise<RPRegistrationMetadataPayload> {
+    let response: RPRegistrationMetadataPayload = registrationObject;
     if (registrationUri) {
       response = (await getWithUrl(registrationUri)) as unknown as RPRegistrationMetadataPayload;
     }
@@ -190,9 +196,9 @@ async function createURIFromJWT(
   await PresentationExchange.findValidPresentationDefinitions(requestPayload);
   const query = encodeJsonAsURI(requestPayload);
 
-  await AuthenticationRequest.assertValidRegistration(
-    requestPayload,
-    await AuthenticationRequest.getRemoteRegistrationObj(requestPayload.registration_uri)
+  AuthenticationRequest.assertValidRequestObject(requestPayload);
+  AuthenticationRequest.assertValidRegistrationObject(
+    await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration)
   );
 
   switch (requestOpts.requestBy?.type) {
