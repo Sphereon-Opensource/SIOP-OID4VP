@@ -19,7 +19,7 @@ import {
   SubjectType,
   VerifiablePresentationTypeFormat,
   VerificationMode,
-  VerifyAuthenticationRequestOpts
+  VerifyAuthenticationRequestOpts,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
