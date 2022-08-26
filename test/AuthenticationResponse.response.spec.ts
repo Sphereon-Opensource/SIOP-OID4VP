@@ -1,17 +1,15 @@
 import { IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphereon/pex';
 import { ICredential } from '@sphereon/pex/dist/main/lib/types';
-import parseJwk from 'jose/jwk/parse';
-import SignJWT from 'jose/jwt/sign';
 
 import {
   AuthenticationRequest,
-  AuthenticationRequestOpts, AuthenticationRequestPayload,
+  AuthenticationRequestOpts,
   AuthenticationResponse,
   AuthenticationResponseOpts,
   LinkedDomainValidationMode,
   PassBy,
   PresentationExchange,
-  PresentationLocation, ResponseContext,
+  PresentationLocation,
   ResponseIss,
   ResponseMode,
   ResponseType,
