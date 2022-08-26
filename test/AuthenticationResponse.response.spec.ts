@@ -1,14 +1,16 @@
 import { IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphereon/pex';
 import { ICredential } from '@sphereon/pex/dist/main/lib/types';
+import parseJwk from 'jose/jwk/parse';
+import SignJWT from 'jose/jwt/sign';
 
 import {
   AuthenticationRequest,
-  AuthenticationRequestOpts,
+  AuthenticationRequestOpts, AuthenticationRequestPayload,
   AuthenticationResponse,
-  AuthenticationResponseOpts,
+  AuthenticationResponseOpts, getNonce, getState, KeyAlgo,
   PassBy,
   PresentationExchange,
-  PresentationLocation,
+  PresentationLocation, ResponseContext,
   ResponseIss,
   ResponseMode,
   ResponseType,
@@ -18,7 +20,7 @@ import {
   SubjectType,
   VerifiablePresentationTypeFormat,
   VerificationMode,
-  VerifyAuthenticationRequestOpts,
+  VerifyAuthenticationRequestOpts
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -88,61 +90,48 @@ describe('create JWT from Request JWT should', () => {
 
   it('throw JWT_ERROR when expired but valid JWT is passed in', async () => {
     expect.assertions(1);
-    const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
-    const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-    const requestOpts: AuthenticationRequestOpts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
-      signatureType: {
-        hexPrivateKey: mockReqEntity.hexPrivateKey,
-        did: mockReqEntity.did,
-        kid: `${mockReqEntity.did}#controller`,
-      },
+    const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
+    const header = {
+      alg: KeyAlgo.ES256K,
+      typ: 'JWT',
+      kid: `${mockEntity.did}#controller`,
+    };
+    const state = getState();
+    const payload: AuthenticationRequestPayload = {
+      iss: mockEntity.did,
+      aud: 'test',
+      response_mode: ResponseMode.POST,
+      response_context: ResponseContext.RP,
+      redirect_uri: '',
+      scope: Scope.OPENID,
+      response_type: ResponseType.ID_TOKEN,
+      client_id: 'http://localhost:8080/test',
+      state,
+      nonce: getNonce(state),
       registration: {
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        responseTypesSupported: [ResponseType.ID_TOKEN],
-        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-        subjectTypesSupported: [SubjectType.PAIRWISE],
-        vpFormatsSupported: {
+        id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+        response_types_supported: [ResponseType.ID_TOKEN],
+        scopes_supported: [Scope.OPENID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
+        subject_types_supported: [SubjectType.PAIRWISE],
+        vp_formats: {
           ldp_vc: {
             proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: { type: PassBy.VALUE },
       },
+      /*registration: {
+          jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did}`,
+          // jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did};transform-keys=jwks`,
+          id_token_signed_response_alg: KeyAlgo.ES256K,
+      },*/
     };
-    const responseOpts: AuthenticationResponseOpts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      registration: {
-        authorizationEndpoint: 'www.myauthorizationendpoint.com',
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        issuer: ResponseIss.SELF_ISSUED_V2,
-        responseTypesSupported: [ResponseType.ID_TOKEN],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
-        vpFormats: {
-          ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
-          },
-        },
-        registrationBy: {
-          type: PassBy.REFERENCE,
-          referenceUri: EXAMPLE_REFERENCE_URL,
-        },
-      },
-      signatureType: {
-        did: mockResEntity.did,
-        hexPrivateKey: mockResEntity.hexPrivateKey,
-        kid: `${mockResEntity.did}#controller`,
-      },
-      did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
-      responseMode: ResponseMode.POST,
-    };
-
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-    // FIXME NK we need to have an expired token to make the test case pass again. This one is not expired. Hence the test case is passing.
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).rejects.toThrow(
+    const privateKey = await parseJwk(mockEntity.jwk, KeyAlgo.ES256K);
+    const jwt = await new SignJWT(payload).setProtectedHeader(header).sign(privateKey);
+    // FIXME NK we need the above 'jwt' to have valid sign and be expired so that we can create a constant with that
+    //  value and use in the below function to make the promise rejected and to make the test case pass.
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(jwt, responseOpts, verifyOpts)).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1632089753/
     );
   });
