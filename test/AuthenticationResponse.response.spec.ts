@@ -1,16 +1,14 @@
 import { IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphereon/pex';
 import { ICredential } from '@sphereon/pex/dist/main/lib/types';
-import parseJwk from 'jose/jwk/parse';
-import SignJWT from 'jose/jwt/sign';
 
 import {
   AuthenticationRequest,
-  AuthenticationRequestOpts, AuthenticationRequestPayload,
+  AuthenticationRequestOpts,
   AuthenticationResponse,
-  AuthenticationResponseOpts, getNonce, getState, KeyAlgo,
+  AuthenticationResponseOpts,
   PassBy,
   PresentationExchange,
-  PresentationLocation, ResponseContext,
+  PresentationLocation,
   ResponseIss,
   ResponseMode,
   ResponseType,
@@ -90,48 +88,61 @@ describe('create JWT from Request JWT should', () => {
 
   it('throw JWT_ERROR when expired but valid JWT is passed in', async () => {
     expect.assertions(1);
-    const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-    const header = {
-      alg: KeyAlgo.ES256K,
-      typ: 'JWT',
-      kid: `${mockEntity.did}#controller`,
-    };
-    const state = getState();
-    const payload: AuthenticationRequestPayload = {
-      iss: mockEntity.did,
-      aud: 'test',
-      response_mode: ResponseMode.POST,
-      response_context: ResponseContext.RP,
-      redirect_uri: '',
-      scope: Scope.OPENID,
-      response_type: ResponseType.ID_TOKEN,
-      client_id: 'http://localhost:8080/test',
-      state,
-      nonce: getNonce(state),
+    const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
+    const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
+    const requestOpts: AuthenticationRequestOpts = {
+      redirectUri: EXAMPLE_REDIRECT_URL,
+      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+      signatureType: {
+        hexPrivateKey: mockReqEntity.hexPrivateKey,
+        did: mockReqEntity.did,
+        kid: `${mockReqEntity.did}#controller`,
+      },
       registration: {
-        id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        response_types_supported: [ResponseType.ID_TOKEN],
-        scopes_supported: [Scope.OPENID],
-        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
-        subject_types_supported: [SubjectType.PAIRWISE],
-        vp_formats: {
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
           ldp_vc: {
             proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
           },
         },
+        registrationBy: { type: PassBy.VALUE },
       },
-      /*registration: {
-          jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did}`,
-          // jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did};transform-keys=jwks`,
-          id_token_signed_response_alg: KeyAlgo.ES256K,
-      },*/
     };
-    const privateKey = await parseJwk(mockEntity.jwk, KeyAlgo.ES256K);
-    const jwt = await new SignJWT(payload).setProtectedHeader(header).sign(privateKey);
-    // FIXME NK we need the above 'jwt' to have valid sign and be expired so that we can create a constant with that
-    //  value and use in the below function to make the promise rejected and to make the test case pass.
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(jwt, responseOpts, verifyOpts)).rejects.toThrow(
+    const responseOpts: AuthenticationResponseOpts = {
+      redirectUri: EXAMPLE_REDIRECT_URL,
+      registration: {
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormats: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
+        registrationBy: {
+          type: PassBy.REFERENCE,
+          referenceUri: EXAMPLE_REFERENCE_URL,
+        },
+      },
+      signatureType: {
+        did: mockResEntity.did,
+        hexPrivateKey: mockResEntity.hexPrivateKey,
+        kid: `${mockResEntity.did}#controller`,
+      },
+      did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
+      responseMode: ResponseMode.POST,
+    };
+
+    /*const requestWithJWT = */ await AuthenticationRequest.createJWT(requestOpts);
+    const jwtString: string = 'eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDVENjE2MjlhMTNiMTcwMEQ4NUM2MmQ5QjkxNTlCRTkwQTIyNTU3YzkjY29udHJvbGxlciIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2NjE1MTIwOTIsImV4cCI6MTY2MTUxMjY5MiwicmVzcG9uc2VfdHlwZSI6ImlkX3Rva2VuIiwic2NvcGUiOiJvcGVuaWQiLCJjbGllbnRfaWQiOiJkaWQ6ZXRocjoweDVENjE2MjlhMTNiMTcwMEQ4NUM2MmQ5QjkxNTlCRTkwQTIyNTU3YzkiLCJyZWRpcmVjdF91cmkiOiJodHRwczovL2FjbWUuY29tL2hlbGxvIiwiaXNzIjoiZGlkOmV0aHI6MHg1RDYxNjI5YTEzYjE3MDBEODVDNjJkOUI5MTU5QkU5MEEyMjU1N2M5IiwicmVzcG9uc2VfbW9kZSI6InBvc3QiLCJyZXNwb25zZV9jb250ZXh0IjoicnAiLCJub25jZSI6ImswSng1QVI0ZVRkZ3oyb0pYSWpJYXJ3STh0dDdmeXZELWszVDhaQ2pFcmciLCJzdGF0ZSI6ImRiZTcxYTZjN2U1MzI3MmFjOGJjZThiMyIsInJlZ2lzdHJhdGlvbiI6eyJpZF90b2tlbl9zaWduaW5nX2FsZ192YWx1ZXNfc3VwcG9ydGVkIjpbIkVkRFNBIiwiRVMyNTYiXSwicmVxdWVzdF9vYmplY3Rfc2lnbmluZ19hbGdfdmFsdWVzX3N1cHBvcnRlZCI6WyJFZERTQSIsIkVTMjU2Il0sInJlc3BvbnNlX3R5cGVzX3N1cHBvcnRlZCI6WyJpZF90b2tlbiJdLCJzY29wZXNfc3VwcG9ydGVkIjpbIm9wZW5pZCBkaWRfYXV0aG4iLCJvcGVuaWQiXSwic3ViamVjdF90eXBlc19zdXBwb3J0ZWQiOlsicGFpcndpc2UiXSwic3ViamVjdF9zeW50YXhfdHlwZXNfc3VwcG9ydGVkIjpbImRpZDpldGhyOiIsImRpZCJdLCJ2cF9mb3JtYXRzIjp7ImxkcF92YyI6eyJwcm9vZl90eXBlIjpbIkVjZHNhU2VjcDI1NmsxU2lnbmF0dXJlMjAxOSIsIkVjZHNhU2VjcDI1NmsxU2lnbmF0dXJlMjAxOSJdfX19fQ.UOiNmI2T0-EayoN5TmMLUAmgUcf_IBY6uJ-VHfGJjqXy9qkk65AIGFSkkta7jCAE3mbOxBsK7XVYjYMKXtq3Lw'; // const requestWithJWT created on previous line.
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(jwtString, responseOpts, verifyOpts)).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1632089753/
     );
   });
