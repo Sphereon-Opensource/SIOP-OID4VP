@@ -22,6 +22,7 @@ enum SIOPErrors {
   INVALID_AUDIENCE = 'Audience is invalid. Should be a string value.',
   ISS_DID_NOT_JWKS_URI_DID = ' DID in the jwks_uri does NOT match the DID in the iss claim',
   JWK_THUMBPRINT_MISMATCH_SUB = 'JWK computed thumbprint does not match thumbprint included in Response Token sub claim',
+  LINK_DOMAIN_CANT_BE_VERIFIED = "Can't verify linked domains.",
   MALFORMED_SIGNATURE_RESPONSE = 'Response format is malformed',
   NO_ALG_SUPPORTED = 'Algorithm not supported.',
   NO_ALG_SUPPORTED_YET = 'Algorithm is not supported yet. Only ES256 supported for this version.',

@@ -2,7 +2,7 @@ import { getUniResolver } from '@sphereon/did-uni-client';
 import { DIDResolutionOptions, DIDResolutionResult, ParsedDID, Resolvable, Resolver } from 'did-resolver';
 
 import SIOPErrors from '../types/Errors';
-import { DIDDocument, ResolveOpts } from '../types/SSI.types';
+import { ResolveOpts } from '../types/SSI.types';
 
 import { getMethodFromDid } from './DidJWT';
 
@@ -13,7 +13,8 @@ export function getResolver(opts: ResolveOpts): Resolvable {
   if (!opts || !opts.subjectSyntaxTypesSupported) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
-
+  // 'did:eth:'
+  // const didMethods = opts.subjectSyntaxTypesSupported.filter((supported) => supported.includes('did:'));
   const uniResolvers: {
     [p: string]: (did: string, _parsed: ParsedDID, _didResolver: Resolver, _options: DIDResolutionOptions) => Promise<DIDResolutionResult>;
   }[] = [];
@@ -22,8 +23,4 @@ export function getResolver(opts: ResolveOpts): Resolvable {
     uniResolvers.push(uniResolver);
   }
   return new Resolver(...uniResolvers);
-}
-
-export async function resolveDidDocument(did: string, opts?: ResolveOpts): Promise<DIDDocument> {
-  return (await getResolver(opts).resolve(did)).didDocument;
 }
