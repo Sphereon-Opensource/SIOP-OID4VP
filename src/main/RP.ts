@@ -3,12 +3,9 @@ import WDCErrors from '@sphereon/wellknown-dids-client/dist/constants/Errors';
 import Ajv from 'ajv';
 import { decodeJWT } from 'did-jwt';
 
-import AuthenticationRequest from './AuthenticationRequest';
-import AuthenticationResponse from './AuthenticationResponse';
-import RPBuilder from './RPBuilder';
-import { State } from './functions';
-import { getResolver } from './functions/DIDResolution';
-import { AuthenticationRequestOptsSchema } from './schemas/AuthenticationRequestOpts.schema';
+
+import { getNonce, getResolver, getState } from './functions';
+import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
