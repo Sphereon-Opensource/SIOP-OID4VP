@@ -93,8 +93,64 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthenticationRequestOpts = {
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, responseOpts, verifyOpts)).rejects.toThrow(
-      /invalid_jwt: JWT has expired: exp: 1632089753/
+      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      redirectUri: EXAMPLE_REDIRECT_URL,
+      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+      signatureType: {
+        hexPrivateKey: mockReqEntity.hexPrivateKey,
+        did: mockReqEntity.did,
+        kid: `${mockReqEntity.did}#controller`,
+      },
+      registration: {
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
+        registrationBy: { type: PassBy.VALUE },
+      },
+    };
+    const responseOpts: AuthenticationResponseOpts = {
+      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      redirectUri: EXAMPLE_REDIRECT_URL,
+      registration: {
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormats: {
+          ldp_vc: {
+            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
+        registrationBy: {
+          type: PassBy.REFERENCE,
+          referenceUri: EXAMPLE_REFERENCE_URL,
+        },
+      },
+      signatureType: {
+        did: mockResEntity.did,
+        hexPrivateKey: mockResEntity.hexPrivateKey,
+        kid: `${mockResEntity.did}#controller`,
+      },
+      did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
+      responseMode: ResponseMode.POST,
+    };
+
+    jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
+
+    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+
+    jest.useRealTimers();
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).rejects.toThrow(
+      /invalid_jwt: JWT has expired: exp: 1577837400/
     );
   });
 
@@ -128,6 +184,7 @@ describe('create JWT from Request JWT should', () => {
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
+      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',

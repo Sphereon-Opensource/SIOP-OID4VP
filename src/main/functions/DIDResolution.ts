@@ -1,6 +1,7 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
 import { DIDResolutionOptions, DIDResolutionResult, ParsedDID, Resolvable, Resolver } from 'did-resolver';
 
+import { DIDDocument } from '../types';
 import SIOPErrors from '../types/Errors';
 import { ResolveOpts } from '../types/SSI.types';
 

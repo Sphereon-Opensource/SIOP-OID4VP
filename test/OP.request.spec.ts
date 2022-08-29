@@ -1,15 +1,17 @@
 import { ProofType } from '@sphereon/pex';
 
-import { OP, OPBuilder, RP } from '../src/main';
 import {
   AuthenticationRequestOpts,
   AuthenticationResponseOpts,
   KeyAlgo,
   LinkedDomainValidationMode,
+  OP,
+  OPBuilder,
   PassBy,
   ResponseIss,
   ResponseMode,
   ResponseType,
+  RP,
   Scope,
   SigningAlgo,
   SubjectIdentifierType,
@@ -37,6 +39,7 @@ describe('OP Builder should', () => {
 
     expect(
       OP.builder()
+        .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
         .addDidMethod('ethr')
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .response(ResponseMode.POST)

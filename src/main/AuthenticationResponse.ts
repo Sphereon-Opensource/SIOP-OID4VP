@@ -15,6 +15,7 @@ import {
   signDidJwtPayload,
   verifyDidJWT,
 } from './functions';
+import { validateWithDid } from './functions/LinkedDomainValidations';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponsePayload,
@@ -25,6 +26,7 @@ import {
   isInternalVerification,
   isSuppliedSignature,
   JWTPayload,
+  LinkedDomainValidationMode,
   PresentationDefinitionWithLocation,
   PresentationLocation,
   ResponseIss,
@@ -110,10 +112,12 @@ export default class AuthenticationResponse {
    *
    * @param jwt ID token to be validated
    * @param verifyOpts
+   * @param linkedDomainValidationMode The policy regarding linkedDomainValidation
    */
   static async verifyJWT(
     jwt: string,
     verifyOpts: VerifyAuthenticationResponseOpts,
+    linkedDomainValidationMode?: LinkedDomainValidationMode
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
@@ -128,6 +132,8 @@ export default class AuthenticationResponse {
     });
 
     const issuerDid = getIssuerDidFromPayload(payload);
+    if (linkedDomainValidationMode && linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER)
+      await validateWithDid(issuerDid, linkedDomainValidationMode);
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);

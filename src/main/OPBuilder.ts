@@ -7,6 +7,7 @@ import {
   EcdsaSignature,
   ExternalSignature,
   InternalSignature,
+  LinkedDomainValidationMode,
   ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,

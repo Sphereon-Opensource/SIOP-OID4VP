@@ -1,19 +1,13 @@
-import { DomainLinkageCredential, IVerifyCredentialResult, WellKnownDidVerifier } from '@sphereon/wellknown-dids-client';
-import WDCErrors from '@sphereon/wellknown-dids-client/dist/constants/Errors';
 import Ajv from 'ajv';
-import { decodeJWT } from 'did-jwt';
-
 
 import { getNonce, getResolver, getState } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
-  AuthenticationResponsePayload,
   ClaimOpts,
   ExternalVerification,
   InternalVerification,
-  LinkedDomainValidationMode,
   RequestRegistrationOpts,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
@@ -57,9 +51,6 @@ export class RP {
       claims?: ClaimOpts;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
-    if (this._authRequestOpts.linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER) {
-      await this.verifyLinkedDomainCredentialJwt(jwt);
-    }
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts), this._authRequestOpts.linkedDomainValidationMode);
   }
 
@@ -96,43 +87,6 @@ export class RP {
 
   public static builder() {
     return new RPBuilder();
-  }
-
-  private async verifyLinkedDomainCredentialJwt(jwt: string) {
-    const verifyCallback = async (): Promise<IVerifyCredentialResult> => {
-      return { verified: true };
-    };
-    const verifier = new WellKnownDidVerifier({
-      verifySignatureCallback: () => verifyCallback(),
-      onlyVerifyServiceDid: false,
-    });
-    const payload: AuthenticationResponsePayload = decodeJWT(jwt).payload as AuthenticationResponsePayload;
-    if (payload.verifiable_presentations) {
-      for (const vp of payload.verifiable_presentations) {
-        for (const vc of vp.presentation.verifiableCredential) {
-          await this.verifyLinkedDomainCredentialVC(vc as unknown as DomainLinkageCredential, verifier);
-        }
-      }
-    }
-    if (payload.vp_token) {
-      for (const vc of payload.vp_token.presentation.verifiableCredential) {
-        await this.verifyLinkedDomainCredentialVC(vc as unknown as DomainLinkageCredential, verifier);
-      }
-    }
-  }
-
-  private async verifyLinkedDomainCredentialVC(vc: DomainLinkageCredential, verifier: WellKnownDidVerifier) {
-    try {
-      await verifier.verifyDomainLinkageCredential({ credential: vc });
-    } catch (e) {
-      if (
-        (e.message != WDCErrors.PROPERTY_LINKED_DIDS_DOES_NOT_CONTAIN_ANY_DOAMIN_LINK_CREDENTIALS &&
-          e.message != WDCErrors.PROPERTY_LINKED_DIDS_NOT_PRESENT &&
-          e.message != WDCErrors.PROPERTY_TYPE_NOT_CONTAIN_VALID_LINKED_DOMAIN) ||
-        this.authRequestOpts.linkedDomainValidationMode != LinkedDomainValidationMode.OPTIONAL
-      )
-        throw new Error(e.message);
-    }
   }
 }
 
