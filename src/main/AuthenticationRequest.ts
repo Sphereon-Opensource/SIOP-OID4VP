@@ -103,7 +103,11 @@ export default class AuthenticationRequest {
    * @param jwt
    * @param opts
    */
-  static async verifyJWT(jwt: string, opts: VerifyAuthenticationRequestOpts): Promise<VerifiedAuthenticationRequestWithJWT> {
+  static async verifyJWT(
+    jwt: string,
+    opts: VerifyAuthenticationRequestOpts,
+    linkedDomainValidationMode?: LinkedDomainValidationMode
+  ): Promise<SIOP.VerifiedAuthenticationRequestWithJWT> {
     assertValidVerifyOpts(opts);
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
@@ -129,6 +133,9 @@ export default class AuthenticationRequest {
     const verifiedJWT = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
+    }
+    if (linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER) {
+      LinkedDomainValidations.validateWithDid(verPayload.iss, linkedDomainValidationMode)
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {

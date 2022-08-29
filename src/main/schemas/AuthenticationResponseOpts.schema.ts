@@ -440,6 +440,9 @@ export const AuthenticationResponseOptsSchema = {
         "opTosUri": {
           "type": "string"
         },
+        "linkedDomainValidationMode": {
+          "$ref": "#/definitions/LinkedDomainValidationMode"
+        },
         "subjectSyntaxTypesSupported": {
           "anyOf": [
             {
@@ -471,6 +474,7 @@ export const AuthenticationResponseOptsSchema = {
         }
       },
       "required": [
+        "linkedDomainValidationMode",
         "registrationBy"
       ],
       "additionalProperties": false
@@ -618,6 +622,14 @@ export const AuthenticationResponseOptsSchema = {
         "normal",
         "aggregated",
         "distributed"
+      ]
+    },
+    "LinkedDomainValidationMode": {
+      "type": "string",
+      "enum": [
+        "never",
+        "optional",
+        "always"
       ]
     },
     "IdTokenType": {

@@ -111,7 +111,10 @@ export default class AuthenticationResponse {
    * @param jwt ID token to be validated
    * @param verifyOpts
    */
-  static async verifyJWT(jwt: string, verifyOpts: VerifyAuthenticationResponseOpts): Promise<VerifiedAuthenticationResponseWithJWT> {
+  static async verifyJWT(
+    jwt: string,
+    verifyOpts: VerifyAuthenticationResponseOpts,
+  ): Promise<VerifiedAuthenticationResponseWithJWT> {
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
     }

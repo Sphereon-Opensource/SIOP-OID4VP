@@ -60,7 +60,7 @@ export class RP {
     if (this._authRequestOpts.linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER) {
       await this.verifyLinkedDomainCredentialJwt(jwt);
     }
-    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
+    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts), this._authRequestOpts.linkedDomainValidationMode);
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {

@@ -77,10 +77,11 @@ export interface AuthenticationRequestWithJWT {
 
 export interface AuthenticationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
+  registration: ResponseRegistrationOpts;
+  linkedDomainValidationMode: LinkedDomainValidationMode;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   nonce?: string;
   state?: string;
-  registration: ResponseRegistrationOpts;
   responseMode?: ResponseMode;
   did: string;
   vp?: VerifiablePresentationResponseOpts[];

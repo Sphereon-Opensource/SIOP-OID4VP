@@ -37,6 +37,7 @@ const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 
 describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthenticationResponseOpts = {
+    linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -268,6 +269,7 @@ describe('create JWT from Request JWT should', () => {
     await pex.selectVerifiableCredentialsForSubmission(definition);
     const result: IVerifiablePresentation = await pex.submissionFrom(definition, vp.verifiableCredential);
     const responseOpts: AuthenticationResponseOpts = {
+      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',

@@ -52,6 +52,7 @@ describe('OP Builder should', () => {
 
 describe('OP should', () => {
   const responseOpts: AuthenticationResponseOpts = {
+    linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
     signatureType: {
       hexPrivateKey: HEX_KEY,
@@ -176,6 +177,7 @@ describe('OP should', () => {
       });
 
     const verifiedRequest = await OP.builder()
+      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .withExpiresIn(1000)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')

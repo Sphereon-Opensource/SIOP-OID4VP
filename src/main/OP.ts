@@ -53,7 +53,11 @@ export class OP {
     opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
     const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveUri(requestJwtOrUri)).jwt;
-    const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts(opts));
+    const verifiedJwt = AuthenticationRequest.verifyJWT(
+      jwt,
+      this.newVerifyAuthenticationRequestOpts(opts),
+      this._authResponseOpts.linkedDomainValidationMode
+    );
     return verifiedJwt;
   }
 
@@ -190,7 +194,6 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
           requireRequestUriRegistration: opts.builder.responseRegistration.requireRequestUriRegistration,
           opPolicyUri: opts.builder.responseRegistration.opPolicyUri,
           opTosUri: opts.builder.responseRegistration.opTosUri,
-
           registrationBy: opts.builder.responseRegistration.registrationBy,
           subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
 
@@ -199,6 +202,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
         },
         did: opts.builder.signatureType.did,
         expiresIn: opts.builder.expiresIn,
+        linkedDomainValidationMode: opts.builder.linkedDomainCheckMode,
         signatureType: opts.builder.signatureType,
         responseMode: opts.builder.responseMode,
       }
