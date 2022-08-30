@@ -80,7 +80,6 @@ export const AuthenticationRequestOptsSchema = {
         "redirectUri",
         "requestBy",
         "signatureType",
-        "linkedDomainValidationMode",
         "registration"
       ],
       "additionalProperties": false

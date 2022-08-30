@@ -4,5 +4,6 @@ export * from './DidSiopMetadata';
 export * from './Encodings';
 export * from './HttpUtils';
 export * from './Keys';
+export * from './LinkedDomainValidations';
 export * from './ObjectUtils';
 export * from './State';

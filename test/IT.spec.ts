@@ -1,5 +1,5 @@
-import { IPresentationDefinition, IVerifiableCredential } from '@sphereon/pex';
-import WDCErrors from '@sphereon/wellknown-dids-client/dist/constants/Errors';
+import {IPresentationDefinition, IVerifiableCredential, ProofType} from '@sphereon/pex';
+import { WDCErrors } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
 import {
@@ -500,6 +500,106 @@ describe('RP and OP interaction should', () => {
       })
     ).rejects.toThrow(new Error(WDCErrors.PROPERTY_SERVICE_NOT_PRESENT));
   }, 10000);
+
+  it('succeed when calling with LinkedDomainValidationMode.ALWAYS', async () => {
+    const rpMockEntity = {
+      hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
+      did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
+      didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller',
+    };
+
+    const opMockEntity = {
+      hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
+      did: 'did:ion:EiCJ9mdHjaHbmvpIgFZdyQrNBl3bQJt6qLPvNc5crhHGBQ:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJkaWQxLXRlc3QiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia3R5IjoiRUMiLCJ4IjoiQUY4Q1B2alBiTVlST014UllhUmF3TmRQOTJUNDQxZnNjckdnRWcxeG5tTSIsInkiOiJhLVlpQ2tFRlVQam50RjVMYmtXZFNUU1ZNSTlHbFl6MmJHMGZkNUJmWUJvIn0sInB1cnBvc2VzIjpbImF1dGhlbnRpY2F0aW9uIiwiYXNzZXJ0aW9uTWV0aG9kIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkifSx7ImlkIjoiZGlkMi10ZXN0IiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6InFqZjRSNUFCalhfb0NRallhdXM0NnJpOUVOZ1VvbVRGQnNhYl91cC05Q0kiLCJ5IjoiNXJoOXdfYmNqUVEwaFlaNkN1RVJ6RTlaS0U5TFVpbmZBdDViSE1kOU9ucyJ9LCJwdXJwb3NlcyI6WyJrZXlBZ3JlZW1lbnQiXSwidHlwZSI6IkVjZHNhU2VjcDI1NmsxVmVyaWZpY2F0aW9uS2V5MjAxOSJ9XSwic2VydmljZXMiOlt7ImlkIjoiYmFyIiwic2VydmljZUVuZHBvaW50IjoiaHR0cHM6Ly9iYXIuZXhhbXBsZS5jb20iLCJ0eXBlIjoiTGlua2VkRG9tYWlucyJ9XX19XSwidXBkYXRlQ29tbWl0bWVudCI6IkVpQ1E4c3hkam80Mm1hYmV0WTVXVDliVkl1S1A2eGlXS3NxVUVJOWxDbmxEd1EifSwic3VmZml4RGF0YSI6eyJkZWx0YUhhc2giOiJFaUI4X3hkejNIVzRVY3o2TTJvTWE2ZWFWdHY4TVU5b2xkMFRYVW9JcWdIRzVnIiwicmVjb3ZlcnlDb21taXRtZW50IjoiRWlDMFdDeXBVT3g0MHMyOHpTY2FPT1VBeWxSbnBPOGdSb3lVNzlOMnA4bDVjQSJ9fQ',
+      didKey: 'did:ion:EiCJ9mdHjaHbmvpIgFZdyQrNBl3bQJt6qLPvNc5crhHGBQ:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJkaWQxLXRlc3QiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia3R5IjoiRUMiLCJ4IjoiQUY4Q1B2alBiTVlST014UllhUmF3TmRQOTJUNDQxZnNjckdnRWcxeG5tTSIsInkiOiJhLVlpQ2tFRlVQam50RjVMYmtXZFNUU1ZNSTlHbFl6MmJHMGZkNUJmWUJvIn0sInB1cnBvc2VzIjpbImF1dGhlbnRpY2F0aW9uIiwiYXNzZXJ0aW9uTWV0aG9kIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkifSx7ImlkIjoiZGlkMi10ZXN0IiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6InFqZjRSNUFCalhfb0NRallhdXM0NnJpOUVOZ1VvbVRGQnNhYl91cC05Q0kiLCJ5IjoiNXJoOXdfYmNqUVEwaFlaNkN1RVJ6RTlaS0U5TFVpbmZBdDViSE1kOU9ucyJ9LCJwdXJwb3NlcyI6WyJrZXlBZ3JlZW1lbnQiXSwidHlwZSI6IkVjZHNhU2VjcDI1NmsxVmVyaWZpY2F0aW9uS2V5MjAxOSJ9XSwic2VydmljZXMiOlt7ImlkIjoiYmFyIiwic2VydmljZUVuZHBvaW50IjoiaHR0cHM6Ly9iYXIuZXhhbXBsZS5jb20iLCJ0eXBlIjoiTGlua2VkRG9tYWlucyJ9XX19XSwidXBkYXRlQ29tbWl0bWVudCI6IkVpQ1E4c3hkam80Mm1hYmV0WTVXVDliVkl1S1A2eGlXS3NxVUVJOWxDbmxEd1EifSwic3VmZml4RGF0YSI6eyJkZWx0YUhhc2giOiJFaUI4X3hkejNIVzRVY3o2TTJvTWE2ZWFWdHY4TVU5b2xkMFRYVW9JcWdIRzVnIiwicmVjb3ZlcnlDb21taXRtZW50IjoiRWlDMFdDeXBVT3g0MHMyOHpTY2FPT1VBeWxSbnBPOGdSb3lVNzlOMnA4bDVjQSJ9fQ#controller',
+    };
+
+    const rp = RP.builder()
+    .withLinkedDomainValidationMode(LinkedDomainValidationMode.ALWAYS)
+    .redirect(EXAMPLE_REDIRECT_URL)
+    .requestBy(PassBy.VALUE)
+    .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+    .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
+    .addDidMethod('ion')
+    .registrationBy({
+      idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
+      responseTypesSupported: [ResponseType.ID_TOKEN],
+      vpFormatsSupported: {
+      jwt_vc: { alg: [KeyAlgo.EDDSA] },
+      ldp_vc: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019]},
+      ldp_vp: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019]},
+      ldp: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019]}
+    },
+      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+      subjectTypesSupported: [SubjectType.PAIRWISE],
+      subjectSyntaxTypesSupported: ['did', 'did:ion'],
+      registrationBy: { type: PassBy.VALUE },
+    })
+    .addPresentationDefinitionClaim({
+      definition: getPresentationDefinition(),
+      location: PresentationLocation.VP_TOKEN,
+    })
+    .build();
+    const op = OP.builder()
+    .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
+    .withExpiresIn(1000)
+    .addDidMethod('ethr')
+    .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+    .registrationBy({
+      authorizationEndpoint: 'www.myauthorizationendpoint.com',
+      idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
+      issuer: ResponseIss.SELF_ISSUED_V2,
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
+      responseTypesSupported: [ResponseType.ID_TOKEN],
+      vpFormats: {
+        jwt_vc: { alg: [KeyAlgo.EDDSA] },
+        ldp_vc: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019]},
+        ldp_vp: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019]},
+        ldp: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019]}
+      },
+      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+      subjectTypesSupported: [SubjectType.PAIRWISE],
+      subjectSyntaxTypesSupported: [],
+      registrationBy: { type: PassBy.VALUE },
+    })
+    .build();
+
+    const requestURI = await rp.createAuthenticationRequest({
+      nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+      state: 'b32f0087fc9816eb813fd11f',
+    });
+
+    // Let's test the parsing
+    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+    expect(parsedAuthReqURI.requestPayload).toBeDefined();
+    expect(parsedAuthReqURI.jwt).toBeDefined();
+    expect(parsedAuthReqURI.registration).toBeDefined();
+
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    expect(verifiedAuthReqWithJWT.signer).toBeDefined();
+    expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
+    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
+    const vp = await pex.submissionFrom(pd[0].definition, getVCs());
+    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
+      vp: [
+        {
+          presentation: vp,
+          format: VerifiablePresentationTypeFormat.LDP_VP,
+          location: PresentationLocation.VP_TOKEN,
+        },
+      ],
+    });
+    expect(authenticationResponseWithJWT.payload).toBeDefined();
+
+    await expect(
+        rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+          audience: EXAMPLE_REDIRECT_URL,
+        })
+    ).rejects.toThrow(new Error(WDCErrors.PROPERTY_SERVICE_NOT_PRESENT));
+  }, 30000);
 
   it('succeed when calling with LinkedDomainValidationMode.OPTIONAL', async () => {
     const rpMockEntity = {

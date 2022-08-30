@@ -32,7 +32,7 @@ export default class RPBuilder {
   responseMode?: ResponseMode;
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
-  linkedDomainCheckMode: LinkedDomainValidationMode;
+  linkedDomainCheckMode?: LinkedDomainValidationMode;
 
   // claims?: ClaimPayload;
 

@@ -51,7 +51,6 @@ export const AuthenticationResponseOptsSchema = {
       },
       "required": [
         "registration",
-        "linkedDomainValidationMode",
         "signatureType",
         "did"
       ],

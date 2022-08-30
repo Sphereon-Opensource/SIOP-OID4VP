@@ -13,9 +13,9 @@ import {
   getThumbprint,
   parseJWT,
   signDidJwtPayload,
+  validateLinkedDomainWithDid,
   verifyDidJWT,
 } from './functions';
-import { validateWithDid } from './functions/LinkedDomainValidations';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponsePayload,
@@ -133,7 +133,7 @@ export default class AuthenticationResponse {
 
     const issuerDid = getIssuerDidFromPayload(payload);
     if (linkedDomainValidationMode && linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER)
-      await validateWithDid(issuerDid, linkedDomainValidationMode);
+      await validateLinkedDomainWithDid(issuerDid, linkedDomainValidationMode);
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);

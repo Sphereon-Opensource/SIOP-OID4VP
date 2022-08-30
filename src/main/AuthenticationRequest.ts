@@ -13,9 +13,9 @@ import {
   getWithUrl,
   parseJWT,
   signDidJwtPayload,
+  validateLinkedDomainWithDid,
   verifyDidJWT,
 } from './functions';
-import { validateWithDid } from './functions/LinkedDomainValidations';
 import { RPRegistrationMetadataPayloadSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -105,11 +105,7 @@ export default class AuthenticationRequest {
    * @param jwt
    * @param opts
    */
-  static async verifyJWT(
-    jwt: string,
-    opts: VerifyAuthenticationRequestOpts,
-    linkedDomainValidationMode?: LinkedDomainValidationMode
-  ): Promise<VerifiedAuthenticationRequestWithJWT> {
+  static async verifyJWT(jwt: string, opts: VerifyAuthenticationRequestOpts): Promise<VerifiedAuthenticationRequestWithJWT> {
     assertValidVerifyOpts(opts);
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
@@ -136,8 +132,8 @@ export default class AuthenticationRequest {
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
-    if (linkedDomainValidationMode && linkedDomainValidationMode != LinkedDomainValidationMode.NEVER) {
-      validateWithDid(verPayload.iss, linkedDomainValidationMode);
+    if (opts.linkedDomainValidationMode && opts.linkedDomainValidationMode != LinkedDomainValidationMode.NEVER) {
+      await validateLinkedDomainWithDid(verPayload.iss, opts.linkedDomainValidationMode);
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {

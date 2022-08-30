@@ -11,6 +11,7 @@ import {
   AuthenticationResponseWithJWT,
   ExternalVerification,
   InternalVerification,
+  LinkedDomainValidationMode,
   ParsedAuthenticationRequestURI,
   ResponseMode,
   SIOPErrors,
@@ -55,8 +56,7 @@ export class OP {
     const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveUri(requestJwtOrUri)).jwt;
     const verifiedJwt = AuthenticationRequest.verifyJWT(
       jwt,
-      this.newVerifyAuthenticationRequestOpts(opts),
-      this._authResponseOpts.linkedDomainValidationMode
+      this.newVerifyAuthenticationRequestOpts({ ...opts, linkedDomainValidationMode: this._authResponseOpts.linkedDomainValidationMode })
     );
     return verifiedJwt;
   }
@@ -125,9 +125,11 @@ export class OP {
   public newVerifyAuthenticationRequestOpts(opts?: {
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
+    linkedDomainValidationMode?: LinkedDomainValidationMode;
   }): VerifyAuthenticationRequestOpts {
     return {
       ...this._verifyAuthRequestOpts,
+      linkedDomainValidationMode: opts?.linkedDomainValidationMode,
       nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
       verification: opts?.verification || this._verifyAuthRequestOpts.verification,
     };

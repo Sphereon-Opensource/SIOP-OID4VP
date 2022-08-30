@@ -14,8 +14,7 @@ export function getResolver(opts: ResolveOpts): Resolvable {
   if (!opts || !opts.subjectSyntaxTypesSupported) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
-  // 'did:eth:'
-  // const didMethods = opts.subjectSyntaxTypesSupported.filter((supported) => supported.includes('did:'));
+
   const uniResolvers: {
     [p: string]: (did: string, _parsed: ParsedDID, _didResolver: Resolver, _options: DIDResolutionOptions) => Promise<DIDResolutionResult>;
   }[] = [];

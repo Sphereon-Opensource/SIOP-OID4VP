@@ -13,7 +13,7 @@ export interface AuthenticationRequestOpts {
   redirectUri: string; // The redirect URI
   requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication), or supplied (callback supplied)
-  linkedDomainValidationMode: LinkedDomainValidationMode; // determines how we'll handle the linked domains for this RP
+  linkedDomainValidationMode?: LinkedDomainValidationMode; // determines how we'll handle the linked domains for this RP
   responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
   responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
   responseTypesSupported?: ResponseType[];
@@ -78,7 +78,7 @@ export interface AuthenticationRequestWithJWT {
 export interface AuthenticationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
   registration: ResponseRegistrationOpts;
-  linkedDomainValidationMode: LinkedDomainValidationMode;
+  linkedDomainValidationMode?: LinkedDomainValidationMode;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   nonce?: string;
   state?: string;
@@ -468,6 +468,7 @@ export interface ExternalVerification {
 
 export interface VerifyAuthenticationRequestOpts {
   verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
+  linkedDomainValidationMode?: LinkedDomainValidationMode;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // If provided the nonce in the request needs to match
   // redirectUri?: string;
@@ -475,6 +476,7 @@ export interface VerifyAuthenticationRequestOpts {
 
 export interface VerifyAuthenticationResponseOpts {
   verification: InternalVerification | ExternalVerification;
+  linkedDomainValidationMode?: LinkedDomainValidationMode;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // mandatory? // To verify the response against the supplied nonce
   state?: string; // mandatory? // To verify the response against the supplied state
