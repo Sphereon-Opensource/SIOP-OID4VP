@@ -145,6 +145,9 @@ describe('create JWT from Request JWT should', () => {
     };
 
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
+    jest
+      .useFakeTimers()
+      .setSystemTime(new Date('2020-01-01'));
 
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
 
@@ -162,6 +165,7 @@ describe('create JWT from Request JWT should', () => {
     const requestOpts: AuthenticationRequestOpts = {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       redirectUri: 'https://acme.com/hello',
+      redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
         hexPrivateKey: mockReqEntity.hexPrivateKey,
@@ -253,7 +257,7 @@ describe('create JWT from Request JWT should', () => {
     };
     const requestOpts: AuthenticationRequestOpts = {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
-      redirectUri: 'https://acme.com/hello',
+      redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
         hexPrivateKey: mockReqEntity.hexPrivateKey,

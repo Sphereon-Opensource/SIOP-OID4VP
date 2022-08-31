@@ -1,11 +1,9 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
 import { DIDResolutionOptions, DIDResolutionResult, ParsedDID, Resolvable, Resolver } from 'did-resolver';
 
-import { DIDDocument } from '../types';
-import SIOPErrors from '../types/Errors';
-import { ResolveOpts } from '../types/SSI.types';
+import { DIDDocument, ResolveOpts, SIOPErrors } from '../types';
 
-import { getMethodFromDid } from './DidJWT';
+import { getMethodFromDid } from './';
 
 export function getResolver(opts: ResolveOpts): Resolvable {
   if (opts && opts.resolver) {
