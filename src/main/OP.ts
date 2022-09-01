@@ -51,13 +51,10 @@ export class OP {
 
   public async verifyAuthenticationRequest(
     requestJwtOrUri: string,
-    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
+    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification; linkedDomainValidationMode?: LinkedDomainValidationMode }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
     const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
-    const verifiedJwt = AuthenticationRequest.verifyJWT(
-      jwt,
-      this.newVerifyAuthenticationRequestOpts({ ...opts, linkedDomainValidationMode: this._authResponseOpts.linkedDomainValidationMode })
-    );
+    const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts }));
     return verifiedJwt;
   }
 
@@ -206,7 +203,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
         },
         did: opts.builder.signatureType.did,
         expiresIn: opts.builder.expiresIn,
-        linkedDomainValidationMode: opts.builder.linkedDomainCheckMode,
+        linkedDomainValidationMode: opts.builder.linkedDomainValidationMode,
         signatureType: opts.builder.signatureType,
         responseMode: opts.builder.responseMode,
       }

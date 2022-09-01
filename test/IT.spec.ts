@@ -110,7 +110,6 @@ describe('RP and OP interaction should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
     const rp = RP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -128,7 +127,6 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -186,7 +184,6 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -203,7 +200,6 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -262,7 +258,6 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -283,7 +278,6 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -334,7 +328,6 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -356,7 +349,6 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -448,7 +440,6 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -544,7 +535,6 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -623,9 +613,7 @@ describe('RP and OP interaction should', () => {
       ],
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    // const result = await validateLinkedDomainWithDid(did, LinkedDomainValidationMode.ALWAYS)
     await expect(validateLinkedDomainWithDid(did, LinkedDomainValidationMode.ALWAYS)).resolves.not.toThrow();
-    // console.log(result)
   });
 
   it('succeed when calling with LinkedDomainValidationMode.OPTIONAL', async () => {

@@ -112,13 +112,8 @@ export default class AuthenticationResponse {
    *
    * @param jwt ID token to be validated
    * @param verifyOpts
-   * @param linkedDomainValidationMode The policy regarding linkedDomainValidation
    */
-  static async verifyJWT(
-    jwt: string,
-    verifyOpts: VerifyAuthenticationResponseOpts,
-    linkedDomainValidationMode?: LinkedDomainValidationMode
-  ): Promise<VerifiedAuthenticationResponseWithJWT> {
+  static async verifyJWT(jwt: string, verifyOpts: VerifyAuthenticationResponseOpts): Promise<VerifiedAuthenticationResponseWithJWT> {
     if (!jwt) {
       throw new Error(SIOPErrors.NO_JWT);
     }
@@ -132,8 +127,8 @@ export default class AuthenticationResponse {
     });
 
     const issuerDid = getIssuerDidFromPayload(payload);
-    if (linkedDomainValidationMode && linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER) {
-      await validateLinkedDomainWithDid(issuerDid, linkedDomainValidationMode);
+    if (verifyOpts.linkedDomainValidationMode && verifyOpts.linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER) {
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.linkedDomainValidationMode);
     }
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
