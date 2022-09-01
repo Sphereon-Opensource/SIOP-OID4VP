@@ -1,3 +1,4 @@
+import { PEX } from '@sphereon/pex';
 import Ajv from 'ajv';
 import { JWTHeader } from 'did-jwt';
 
@@ -22,13 +23,13 @@ import {
   AuthenticationRequestPayload,
   AuthenticationRequestURI,
   AuthenticationRequestWithJWT,
+  CheckLinkedDomain,
   ClaimOpts,
   ClaimPayload,
   IdTokenClaimPayload,
   isExternalVerification,
   isInternalVerification,
   JWTPayload,
-  LinkedDomainValidationMode,
   PassBy,
   PresentationLocation,
   ResponseContext,
@@ -131,8 +132,8 @@ export default class AuthenticationRequest {
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
-    if (opts.linkedDomainValidationMode && opts.linkedDomainValidationMode != LinkedDomainValidationMode.NEVER) {
-      await validateLinkedDomainWithDid(verPayload.iss, opts.linkedDomainValidationMode);
+    if (opts.checkLinkedDomain && opts.checkLinkedDomain != CheckLinkedDomain.NEVER) {
+      await validateLinkedDomainWithDid(verPayload.iss, opts.checkLinkedDomain);
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
@@ -253,8 +254,12 @@ function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
   }
   let vp_token: VpTokenClaimPayload;
   let id_token: IdTokenClaimPayload;
-
+  const pex: PEX = new PEX();
   opts.presentationDefinitions.forEach((def) => {
+    const discoveryResult = pex.definitionVersionDiscovery(def.definition);
+    if (discoveryResult.error) {
+      throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+    }
     switch (def.location) {
       case PresentationLocation.ID_TOKEN: {
         if (!id_token || !id_token.verifiable_presentations) {
