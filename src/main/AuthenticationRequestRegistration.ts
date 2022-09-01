@@ -11,7 +11,7 @@ import {
   SIOPErrors,
 } from './types';
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allowUnionTypes: true });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export function assertValidRequestRegistrationOpts(opts: RequestRegistrationOpts) {

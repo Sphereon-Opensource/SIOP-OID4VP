@@ -43,7 +43,7 @@ import {
   VpTokenClaimPayload,
 } from './types';
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allowUnionTypes: true });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export default class AuthenticationRequest {

@@ -17,7 +17,7 @@ import {
 
 import { AuthenticationRequest, AuthenticationResponse, RPBuilder } from './';
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allowUnionTypes: true });
 const validate = ajv.compile(AuthenticationRequestOptsSchema);
 
 export class RP {
