@@ -186,7 +186,7 @@ export const AuthenticationRequestOptsSchema = {
       "type": "string",
       "enum": [
         "never",
-        "optional",
+        "if_present",
         "always"
       ]
     },

@@ -27,7 +27,7 @@ export async function validateLinkedDomainWithDid(did: string, linkedDomainValid
 
       if (
         linkedDomainValidationMode === LinkedDomainValidationMode.ALWAYS ||
-        (linkedDomainValidationMode === LinkedDomainValidationMode.OPTIONAL && !messageCondition)
+        (linkedDomainValidationMode === LinkedDomainValidationMode.IF_PRESENT && !messageCondition)
       ) {
         throw new Error(
           validationResult.message
@@ -42,7 +42,7 @@ export async function validateLinkedDomainWithDid(did: string, linkedDomainValid
     const messageCondition: boolean = validMessages.includes(err.message);
     if (
       linkedDomainValidationMode === LinkedDomainValidationMode.ALWAYS ||
-      (linkedDomainValidationMode === LinkedDomainValidationMode.OPTIONAL && !messageCondition)
+      (linkedDomainValidationMode === LinkedDomainValidationMode.IF_PRESENT && !messageCondition)
     ) {
       throw new Error(err.message);
     }

@@ -630,7 +630,7 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.OPTIONAL)
+      .withLinkedDomainValidationMode(LinkedDomainValidationMode.IF_PRESENT)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)

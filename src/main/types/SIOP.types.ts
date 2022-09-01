@@ -418,8 +418,8 @@ export enum ResponseContext {
 
 export enum LinkedDomainValidationMode {
   NEVER = 'never', // We don't want to verify Linked domains
-  OPTIONAL = 'optional', // If present, did-auth-siop will check the linked domain
-  ALWAYS = 'always', // We'll always check the linked domains
+  IF_PRESENT = 'if_present', // If present, did-auth-siop will check the linked domain, if exist and not valid, throws an exception
+  ALWAYS = 'always', // We'll always check the linked domains, if not exist or not valid, throws an exception
 }
 export interface InternalSignature {
   hexPrivateKey: string; // hex private key Only secp256k1 format
