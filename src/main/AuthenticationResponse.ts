@@ -132,8 +132,9 @@ export default class AuthenticationResponse {
     });
 
     const issuerDid = getIssuerDidFromPayload(payload);
-    if (linkedDomainValidationMode && linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER)
+    if (linkedDomainValidationMode && linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER) {
       await validateLinkedDomainWithDid(issuerDid, linkedDomainValidationMode);
+    }
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);

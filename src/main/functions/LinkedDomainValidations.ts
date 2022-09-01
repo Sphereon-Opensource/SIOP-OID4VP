@@ -1,6 +1,12 @@
-import { IVerifyCredentialResult, ValidationStatusEnum, WDCErrors, WellKnownDidVerifier } from '@sphereon/wellknown-dids-client';
+import {
+  IDomainLinkageValidation,
+  IVerifyCredentialResult,
+  ValidationStatusEnum,
+  WDCErrors,
+  WellKnownDidVerifier,
+} from '@sphereon/wellknown-dids-client';
 
-import { LinkedDomainValidationMode } from '../types';
+import { DIDDocument, LinkedDomainValidationMode } from '../types';
 
 import { resolveDidDocument } from './DIDResolution';
 import { getMethodFromDid } from './DidJWT';
@@ -13,17 +19,9 @@ export async function validateLinkedDomainWithDid(did: string, linkedDomainValid
     WDCErrors.PROPERTY_SERVICE_NOT_PRESENT.valueOf(),
   ];
 
-  const verifyCallback = async (): Promise<IVerifyCredentialResult> => {
-    return { verified: true };
-  };
-  const verifier = new WellKnownDidVerifier({
-    verifySignatureCallback: () => verifyCallback(),
-    onlyVerifyServiceDid: false,
-  });
-
   const didDocument = await resolveDidDocument(did, { subjectSyntaxTypesSupported: [getMethodFromDid(did)] });
   try {
-    const validationResult = await verifier.verifyDomainLinkage({ didDocument: didDocument });
+    const validationResult = await checkWellknownDid(didDocument);
     if (validationResult.status === ValidationStatusEnum.INVALID) {
       const messageCondition: boolean = validMessages.includes(validationResult.message);
 
@@ -31,12 +29,17 @@ export async function validateLinkedDomainWithDid(did: string, linkedDomainValid
         linkedDomainValidationMode === LinkedDomainValidationMode.ALWAYS ||
         (linkedDomainValidationMode === LinkedDomainValidationMode.OPTIONAL && !messageCondition)
       ) {
-        throw new Error(validationResult.message);
+        throw new Error(
+          validationResult.message
+            ? validationResult.message
+            : validationResult.endpointDescriptors.length
+            ? validationResult.endpointDescriptors[0].message
+            : 'Failed to validate domain linkage.'
+        );
       }
     }
   } catch (err) {
     const messageCondition: boolean = validMessages.includes(err.message);
-
     if (
       linkedDomainValidationMode === LinkedDomainValidationMode.ALWAYS ||
       (linkedDomainValidationMode === LinkedDomainValidationMode.OPTIONAL && !messageCondition)
@@ -44,4 +47,15 @@ export async function validateLinkedDomainWithDid(did: string, linkedDomainValid
       throw new Error(err.message);
     }
   }
+}
+
+async function checkWellknownDid(didDocument: DIDDocument): Promise<IDomainLinkageValidation> {
+  const verifyCallback = async (): Promise<IVerifyCredentialResult> => {
+    return { verified: true };
+  };
+  const verifier = new WellKnownDidVerifier({
+    verifySignatureCallback: () => verifyCallback(),
+    onlyVerifyServiceDid: false,
+  });
+  return await verifier.verifyDomainLinkage({ didDocument: didDocument });
 }

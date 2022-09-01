@@ -53,7 +53,7 @@ export class OP {
     requestJwtOrUri: string,
     opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
-    const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveUri(requestJwtOrUri)).jwt;
+    const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
     const verifiedJwt = AuthenticationRequest.verifyJWT(
       jwt,
       this.newVerifyAuthenticationRequestOpts({ ...opts, linkedDomainValidationMode: this._authResponseOpts.linkedDomainValidationMode })
@@ -92,14 +92,14 @@ export class OP {
    * @param encodedUri
    */
   public async parseAuthenticationRequestURI(encodedUri: string): Promise<ParsedAuthenticationRequestURI> {
-    const { requestPayload, jwt, registration } = await parseAndResolveUri(encodedUri);
+    const { requestPayload, jwt, registrationMetadata } = await parseAndResolveUri(encodedUri);
 
     return {
       encodedUri,
       encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
       jwt,
       requestPayload,
-      registration,
+      registration: registrationMetadata,
     };
   }
 
@@ -144,17 +144,19 @@ export class OP {
   }
 }
 
-async function parseAndResolveUri(encodedUri: string) {
+async function parseAndResolveRequestUri(encodedUri: string) {
   const requestPayload = AuthenticationRequest.parseURI(encodedUri);
   const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
+  return { requestPayload, jwt };
+}
 
+async function parseAndResolveUri(encodedUri: string) {
+  const { requestPayload, jwt } = await parseAndResolveRequestUri(encodedUri);
   AuthenticationRequest.assertValidRequestObject(requestPayload);
-  AuthenticationRequest.assertValidRegistrationObject(
-    await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration)
-  );
+  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration);
+  AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
-  const registration = requestPayload.registration || (await (await fetch(requestPayload.registration_uri)).json());
-  return { requestPayload, jwt, registration };
+  return { requestPayload, jwt, registrationMetadata };
 }
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {

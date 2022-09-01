@@ -145,9 +145,7 @@ describe('create JWT from Request JWT should', () => {
     };
 
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
-    jest
-      .useFakeTimers()
-      .setSystemTime(new Date('2020-01-01'));
+    jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
 
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
 
@@ -164,7 +162,6 @@ describe('create JWT from Request JWT should', () => {
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthenticationRequestOpts = {
       linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
-      redirectUri: 'https://acme.com/hello',
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -222,7 +219,7 @@ describe('create JWT from Request JWT should', () => {
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
     console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
     await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
-  });
+  }, 10000);
 
   it('succeed when valid JWT with PD is passed in', async () => {
     expect.assertions(1);

@@ -8,6 +8,7 @@ import {
   ClaimOpts,
   ExternalVerification,
   InternalVerification,
+  LinkedDomainValidationMode,
   RequestRegistrationOpts,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
@@ -49,9 +50,10 @@ export class RP {
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
       claims?: ClaimOpts;
+      linkedDomainValidationMode?: LinkedDomainValidationMode;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
-    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts), this._authRequestOpts.linkedDomainValidationMode);
+    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
@@ -70,6 +72,7 @@ export class RP {
     verification?: InternalVerification | ExternalVerification;
     claims?: ClaimOpts;
     audience: string;
+    linkedDomainValidationMode?: LinkedDomainValidationMode;
   }): VerifyAuthenticationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
@@ -78,6 +81,7 @@ export class RP {
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
       claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
+      linkedDomainValidationMode: opts?.linkedDomainValidationMode || this._authRequestOpts.linkedDomainValidationMode,
     };
   }
 

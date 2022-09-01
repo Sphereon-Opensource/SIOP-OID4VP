@@ -24,7 +24,7 @@ export default class OPBuilder {
   // vp?: VerifiablePresentation;
   resolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
-  linkedDomainCheckMode: LinkedDomainValidationMode;
+  linkedDomainValidationMode?: LinkedDomainValidationMode;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     this.addResolver(didMethod, new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
@@ -63,7 +63,7 @@ export default class OPBuilder {
   }
 
   withLinkedDomainValidationMode(mode: LinkedDomainValidationMode): OPBuilder {
-    this.linkedDomainCheckMode = mode;
+    this.linkedDomainValidationMode = mode;
     return this;
   }
 
