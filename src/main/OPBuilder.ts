@@ -4,10 +4,10 @@ import { Resolvable, Resolver } from 'did-resolver';
 import { OP } from './OP';
 import { getMethodFromDid, toSIOPRegistrationDidMethod } from './functions';
 import {
+  CheckLinkedDomain,
   EcdsaSignature,
   ExternalSignature,
   InternalSignature,
-  LinkedDomainValidationMode,
   ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,
@@ -24,7 +24,7 @@ export default class OPBuilder {
   // vp?: VerifiablePresentation;
   resolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
-  linkedDomainValidationMode?: LinkedDomainValidationMode;
+  checkLinkedDomain?: CheckLinkedDomain;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     this.addResolver(didMethod, new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
@@ -62,8 +62,8 @@ export default class OPBuilder {
     return this;
   }
 
-  withLinkedDomainValidationMode(mode: LinkedDomainValidationMode): OPBuilder {
-    this.linkedDomainValidationMode = mode;
+  withCheckLinkedDomain(mode: CheckLinkedDomain): OPBuilder {
+    this.checkLinkedDomain = mode;
     return this;
   }
 

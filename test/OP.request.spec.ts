@@ -3,8 +3,8 @@ import { ProofType } from '@sphereon/pex';
 import {
   AuthenticationRequestOpts,
   AuthenticationResponseOpts,
+  CheckLinkedDomain,
   KeyAlgo,
-  LinkedDomainValidationMode,
   OP,
   OPBuilder,
   PassBy,
@@ -39,7 +39,7 @@ describe('OP Builder should', () => {
 
     expect(
       OP.builder()
-        .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
+        .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addDidMethod('ethr')
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .response(ResponseMode.POST)
@@ -55,7 +55,7 @@ describe('OP Builder should', () => {
 
 describe('OP should', () => {
   const responseOpts: AuthenticationResponseOpts = {
-    linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+    checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
     signatureType: {
       hexPrivateKey: HEX_KEY,
@@ -106,7 +106,7 @@ describe('OP should', () => {
   it('succeed from request opts when all params are set', async () => {
     const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
     const requestOpts: AuthenticationRequestOpts = {
-      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: PassBy.REFERENCE,
@@ -156,7 +156,7 @@ describe('OP should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
     const requestURI = await RP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withAuthorizationEndpoint('www.muauthorizationendpoint.com')
       .redirect(EXAMPLE_REFERENCE_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
@@ -180,7 +180,7 @@ describe('OP should', () => {
       });
 
     const verifiedRequest = await OP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withExpiresIn(1000)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')

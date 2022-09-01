@@ -11,8 +11,8 @@ export const AuthenticationResponseOptsSchema = {
         "registration": {
           "$ref": "#/definitions/ResponseRegistrationOpts"
         },
-        "linkedDomainValidationMode": {
-          "$ref": "#/definitions/LinkedDomainValidationMode"
+        "checkLinkedDomain": {
+          "$ref": "#/definitions/CheckLinkedDomain"
         },
         "signatureType": {
           "anyOf": [
@@ -603,7 +603,7 @@ export const AuthenticationResponseOptsSchema = {
       "type": "string",
       "const": "XC20P"
     },
-    "LinkedDomainValidationMode": {
+    "CheckLinkedDomain": {
       "type": "string",
       "enum": [
         "never",

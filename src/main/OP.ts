@@ -9,9 +9,9 @@ import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
+  CheckLinkedDomain,
   ExternalVerification,
   InternalVerification,
-  LinkedDomainValidationMode,
   ParsedAuthenticationRequestURI,
   ResponseMode,
   SIOPErrors,
@@ -51,7 +51,7 @@ export class OP {
 
   public async verifyAuthenticationRequest(
     requestJwtOrUri: string,
-    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification; linkedDomainValidationMode?: LinkedDomainValidationMode }
+    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification; checkLinkedDomain?: CheckLinkedDomain }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
     const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
     const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts }));
@@ -122,11 +122,11 @@ export class OP {
   public newVerifyAuthenticationRequestOpts(opts?: {
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
-    linkedDomainValidationMode?: LinkedDomainValidationMode;
+    checkLinkedDomain?: CheckLinkedDomain;
   }): VerifyAuthenticationRequestOpts {
     return {
       ...this._verifyAuthRequestOpts,
-      linkedDomainValidationMode: opts?.linkedDomainValidationMode,
+      checkLinkedDomain: opts?.checkLinkedDomain,
       nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
       verification: opts?.verification || this._verifyAuthRequestOpts.verification,
     };
@@ -203,7 +203,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
         },
         did: opts.builder.signatureType.did,
         expiresIn: opts.builder.expiresIn,
-        linkedDomainValidationMode: opts.builder.linkedDomainValidationMode,
+        checkLinkedDomain: opts.builder.checkLinkedDomain,
         signatureType: opts.builder.signatureType,
         responseMode: opts.builder.responseMode,
       }

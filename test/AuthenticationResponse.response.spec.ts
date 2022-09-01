@@ -6,7 +6,7 @@ import {
   AuthenticationRequestOpts,
   AuthenticationResponse,
   AuthenticationResponseOpts,
-  LinkedDomainValidationMode,
+  CheckLinkedDomain,
   PassBy,
   PresentationExchange,
   PresentationLocation,
@@ -37,7 +37,7 @@ const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 
 describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthenticationResponseOpts = {
-    linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+    checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -93,7 +93,7 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthenticationRequestOpts = {
-      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -117,7 +117,7 @@ describe('create JWT from Request JWT should', () => {
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
-      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -161,7 +161,7 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthenticationRequestOpts = {
-      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -185,7 +185,7 @@ describe('create JWT from Request JWT should', () => {
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
-      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -253,7 +253,7 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthenticationRequestOpts = {
-      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -327,7 +327,7 @@ describe('create JWT from Request JWT should', () => {
     await pex.selectVerifiableCredentialsForSubmission(definition);
     const result: IVerifiablePresentation = await pex.submissionFrom(definition, vp.verifiableCredential);
     const responseOpts: AuthenticationResponseOpts = {
-      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',

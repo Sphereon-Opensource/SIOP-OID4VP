@@ -5,10 +5,10 @@ import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
+  CheckLinkedDomain,
   ClaimOpts,
   ExternalVerification,
   InternalVerification,
-  LinkedDomainValidationMode,
   RequestRegistrationOpts,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
@@ -50,7 +50,7 @@ export class RP {
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
       claims?: ClaimOpts;
-      linkedDomainValidationMode?: LinkedDomainValidationMode;
+      checkLinkedDomain?: CheckLinkedDomain;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
@@ -72,7 +72,7 @@ export class RP {
     verification?: InternalVerification | ExternalVerification;
     claims?: ClaimOpts;
     audience: string;
-    linkedDomainValidationMode?: LinkedDomainValidationMode;
+    checkLinkedDomain?: CheckLinkedDomain;
   }): VerifyAuthenticationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
@@ -81,7 +81,7 @@ export class RP {
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
       claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
-      linkedDomainValidationMode: opts?.linkedDomainValidationMode || this._authRequestOpts.linkedDomainValidationMode,
+      checkLinkedDomain: opts?.checkLinkedDomain || this._authRequestOpts.checkLinkedDomain,
     };
   }
 
@@ -109,7 +109,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
-        linkedDomainValidationMode: opts.builder.linkedDomainCheckMode,
+        checkLinkedDomain: opts.builder.checkLinkedDomain,
       }
     : opts.requestOpts;
 

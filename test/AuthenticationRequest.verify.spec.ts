@@ -7,10 +7,10 @@ import {
   AuthenticationRequest,
   AuthenticationRequestOpts,
   AuthenticationRequestPayload,
+  CheckLinkedDomain,
   getNonce,
   getState,
   KeyAlgo,
-  LinkedDomainValidationMode,
   PassBy,
   ResponseContext,
   ResponseMode,
@@ -107,7 +107,7 @@ describe('verifyJWT should', () => {
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
     const requestOpts: AuthenticationRequestOpts = {
-      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
@@ -163,7 +163,6 @@ describe('verifyJWT should', () => {
     };
     const state = State.getState();*/
     const requestOpts: AuthenticationRequestOpts = {
-      linkedDomainValidationMode: LinkedDomainValidationMode.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       authorizationEndpoint: '',
       redirectUri: 'https://acme.com/hello',

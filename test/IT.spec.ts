@@ -3,8 +3,8 @@ import { WDCErrors } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
 import {
+  CheckLinkedDomain,
   KeyAlgo,
-  LinkedDomainValidationMode,
   OP,
   PassBy,
   PresentationDefinitionWithLocation,
@@ -418,7 +418,7 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.ALWAYS)
+      .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -508,7 +508,7 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.ALWAYS)
+      .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -613,7 +613,7 @@ describe('RP and OP interaction should', () => {
       ],
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    await expect(validateLinkedDomainWithDid(did, LinkedDomainValidationMode.ALWAYS)).resolves.not.toThrow();
+    await expect(validateLinkedDomainWithDid(did, CheckLinkedDomain.ALWAYS)).resolves.not.toThrow();
   });
 
   it('succeed when calling with LinkedDomainValidationMode.OPTIONAL', async () => {
@@ -630,7 +630,7 @@ describe('RP and OP interaction should', () => {
     };
 
     const rp = RP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.IF_PRESENT)
+      .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -652,7 +652,7 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
-      .withLinkedDomainValidationMode(LinkedDomainValidationMode.NEVER)
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)

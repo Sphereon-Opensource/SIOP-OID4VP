@@ -30,8 +30,8 @@ export const AuthenticationRequestOptsSchema = {
             }
           ]
         },
-        "linkedDomainValidationMode": {
-          "$ref": "#/definitions/LinkedDomainValidationMode"
+        "checkLinkedDomain": {
+          "$ref": "#/definitions/CheckLinkedDomain"
         },
         "responseMode": {
           "$ref": "#/definitions/ResponseMode"
@@ -182,7 +182,7 @@ export const AuthenticationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "LinkedDomainValidationMode": {
+    "CheckLinkedDomain": {
       "type": "string",
       "enum": [
         "never",

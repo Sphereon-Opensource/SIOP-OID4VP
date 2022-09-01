@@ -20,13 +20,13 @@ import {
   AuthenticationResponseOpts,
   AuthenticationResponsePayload,
   AuthenticationResponseWithJWT,
+  CheckLinkedDomain,
   isExternalSignature,
   isExternalVerification,
   isInternalSignature,
   isInternalVerification,
   isSuppliedSignature,
   JWTPayload,
-  LinkedDomainValidationMode,
   PresentationDefinitionWithLocation,
   PresentationLocation,
   ResponseIss,
@@ -127,8 +127,8 @@ export default class AuthenticationResponse {
     });
 
     const issuerDid = getIssuerDidFromPayload(payload);
-    if (verifyOpts.linkedDomainValidationMode && verifyOpts.linkedDomainValidationMode !== LinkedDomainValidationMode.NEVER) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.linkedDomainValidationMode);
+    if (verifyOpts.checkLinkedDomain && verifyOpts.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.checkLinkedDomain);
     }
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });

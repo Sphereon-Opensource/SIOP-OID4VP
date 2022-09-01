@@ -4,11 +4,11 @@ import { Resolvable, Resolver } from 'did-resolver';
 import { RP } from './RP';
 import { getMethodFromDid, toSIOPRegistrationDidMethod } from './functions';
 import {
+  CheckLinkedDomain,
   ClaimOpts,
   EcdsaSignature,
   ExternalSignature,
   InternalSignature,
-  LinkedDomainValidationMode,
   NoSignature,
   ObjectBy,
   PassBy,
@@ -32,7 +32,7 @@ export default class RPBuilder {
   responseMode?: ResponseMode;
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
-  linkedDomainCheckMode?: LinkedDomainValidationMode;
+  checkLinkedDomain?: CheckLinkedDomain;
 
   // claims?: ClaimPayload;
 
@@ -60,8 +60,8 @@ export default class RPBuilder {
     return this;
   }
 
-  withLinkedDomainValidationMode(mode: LinkedDomainValidationMode): RPBuilder {
-    this.linkedDomainCheckMode = mode;
+  withCheckLinkedDomain(mode: CheckLinkedDomain): RPBuilder {
+    this.checkLinkedDomain = mode;
     return this;
   }
 

@@ -6,12 +6,12 @@ import {
   WellKnownDidVerifier,
 } from '@sphereon/wellknown-dids-client';
 
-import { DIDDocument, LinkedDomainValidationMode } from '../types';
+import { CheckLinkedDomain, DIDDocument } from '../types';
 
 import { resolveDidDocument } from './DIDResolution';
 import { getMethodFromDid } from './DidJWT';
 
-export async function validateLinkedDomainWithDid(did: string, linkedDomainValidationMode: LinkedDomainValidationMode) {
+export async function validateLinkedDomainWithDid(did: string, checkLinkedDomain: CheckLinkedDomain) {
   const validMessages: string[] = [
     WDCErrors.PROPERTY_LINKED_DIDS_DOES_NOT_CONTAIN_ANY_DOMAIN_LINK_CREDENTIALS.valueOf(),
     WDCErrors.PROPERTY_LINKED_DIDS_NOT_PRESENT.valueOf(),
@@ -25,10 +25,7 @@ export async function validateLinkedDomainWithDid(did: string, linkedDomainValid
     if (validationResult.status === ValidationStatusEnum.INVALID) {
       const messageCondition: boolean = validMessages.includes(validationResult.message);
 
-      if (
-        linkedDomainValidationMode === LinkedDomainValidationMode.ALWAYS ||
-        (linkedDomainValidationMode === LinkedDomainValidationMode.IF_PRESENT && !messageCondition)
-      ) {
+      if (checkLinkedDomain === CheckLinkedDomain.ALWAYS || (checkLinkedDomain === CheckLinkedDomain.IF_PRESENT && !messageCondition)) {
         throw new Error(
           validationResult.message
             ? validationResult.message
@@ -40,10 +37,7 @@ export async function validateLinkedDomainWithDid(did: string, linkedDomainValid
     }
   } catch (err) {
     const messageCondition: boolean = validMessages.includes(err.message);
-    if (
-      linkedDomainValidationMode === LinkedDomainValidationMode.ALWAYS ||
-      (linkedDomainValidationMode === LinkedDomainValidationMode.IF_PRESENT && !messageCondition)
-    ) {
+    if (checkLinkedDomain === CheckLinkedDomain.ALWAYS || (checkLinkedDomain === CheckLinkedDomain.IF_PRESENT && !messageCondition)) {
       throw new Error(err.message);
     }
   }
