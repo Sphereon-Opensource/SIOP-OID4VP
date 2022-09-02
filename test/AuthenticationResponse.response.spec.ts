@@ -212,10 +212,6 @@ describe('create JWT from Request JWT should', () => {
       responseMode: ResponseMode.POST,
     };
 
-    // nock()
-    // .get('/404', { iss: 'mock' }, { reqheaders: { Authorization: 'Bearer bearerToken' } })
-    // .reply(404, 'Not found');
-
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
     console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
     await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
