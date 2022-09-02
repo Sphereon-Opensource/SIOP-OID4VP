@@ -7,6 +7,7 @@ import {
   AuthenticationRequest,
   AuthenticationRequestOpts,
   AuthenticationRequestPayload,
+  CheckLinkedDomain,
   getNonce,
   getState,
   KeyAlgo,
@@ -106,6 +107,7 @@ describe('verifyJWT should', () => {
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
     const requestOpts: AuthenticationRequestOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {

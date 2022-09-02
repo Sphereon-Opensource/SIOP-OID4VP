@@ -9,6 +9,7 @@ import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
+  CheckLinkedDomain,
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
@@ -21,7 +22,7 @@ import {
   VerifyAuthenticationRequestOpts,
 } from './types';
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allowUnionTypes: true });
 
 const validate = ajv.compile(AuthenticationResponseOptsSchema);
 
@@ -49,11 +50,11 @@ export class OP {
   }
 
   public async verifyAuthenticationRequest(
-    requestJwtorUri: string,
-    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
+    requestJwtOrUri: string,
+    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification; checkLinkedDomain?: CheckLinkedDomain }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
-    const jwt = requestJwtorUri.startsWith('ey') ? requestJwtorUri : (await parseAndResolveUri(requestJwtorUri)).jwt;
-    const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts(opts));
+    const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
+    const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts }));
     return verifiedJwt;
   }
 
@@ -88,14 +89,14 @@ export class OP {
    * @param encodedUri
    */
   public async parseAuthenticationRequestURI(encodedUri: string): Promise<ParsedAuthenticationRequestURI> {
-    const { requestPayload, jwt, registration } = await parseAndResolveUri(encodedUri);
+    const { requestPayload, jwt, registrationMetadata } = await parseAndResolveUri(encodedUri);
 
     return {
       encodedUri,
       encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
       jwt,
       requestPayload,
-      registration,
+      registration: registrationMetadata,
     };
   }
 
@@ -121,9 +122,11 @@ export class OP {
   public newVerifyAuthenticationRequestOpts(opts?: {
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
+    checkLinkedDomain?: CheckLinkedDomain;
   }): VerifyAuthenticationRequestOpts {
     return {
       ...this._verifyAuthRequestOpts,
+      checkLinkedDomain: opts?.checkLinkedDomain,
       nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
       verification: opts?.verification || this._verifyAuthRequestOpts.verification,
     };
@@ -138,17 +141,19 @@ export class OP {
   }
 }
 
-async function parseAndResolveUri(encodedUri: string) {
+async function parseAndResolveRequestUri(encodedUri: string) {
   const requestPayload = AuthenticationRequest.parseURI(encodedUri);
   const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
+  return { requestPayload, jwt };
+}
 
+async function parseAndResolveUri(encodedUri: string) {
+  const { requestPayload, jwt } = await parseAndResolveRequestUri(encodedUri);
   AuthenticationRequest.assertValidRequestObject(requestPayload);
-  AuthenticationRequest.assertValidRegistrationObject(
-    await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration)
-  );
+  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration);
+  AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
-  const registration = requestPayload.registration || (await (await fetch(requestPayload.registration_uri)).json());
-  return { requestPayload, jwt, registration };
+  return { requestPayload, jwt, registrationMetadata };
 }
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {
@@ -190,7 +195,6 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
           requireRequestUriRegistration: opts.builder.responseRegistration.requireRequestUriRegistration,
           opPolicyUri: opts.builder.responseRegistration.opPolicyUri,
           opTosUri: opts.builder.responseRegistration.opTosUri,
-
           registrationBy: opts.builder.responseRegistration.registrationBy,
           subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
 
@@ -199,6 +203,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
         },
         did: opts.builder.signatureType.did,
         expiresIn: opts.builder.expiresIn,
+        checkLinkedDomain: opts.builder.checkLinkedDomain,
         signatureType: opts.builder.signatureType,
         responseMode: opts.builder.responseMode,
       }

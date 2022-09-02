@@ -1,3 +1,4 @@
+import { PEX } from '@sphereon/pex';
 import Ajv from 'ajv';
 import { JWTHeader } from 'did-jwt';
 
@@ -13,6 +14,7 @@ import {
   getWithUrl,
   parseJWT,
   signDidJwtPayload,
+  validateLinkedDomainWithDid,
   verifyDidJWT,
 } from './functions';
 import { RPRegistrationMetadataPayloadSchema } from './schemas';
@@ -21,6 +23,7 @@ import {
   AuthenticationRequestPayload,
   AuthenticationRequestURI,
   AuthenticationRequestWithJWT,
+  CheckLinkedDomain,
   ClaimOpts,
   ClaimPayload,
   IdTokenClaimPayload,
@@ -41,7 +44,7 @@ import {
   VpTokenClaimPayload,
 } from './types';
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allowUnionTypes: true });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export default class AuthenticationRequest {
@@ -122,13 +125,15 @@ export default class AuthenticationRequest {
     }
 
     AuthenticationRequest.assertValidRequestObject(verPayload);
-    AuthenticationRequest.assertValidRegistrationObject(
-      await AuthenticationRequest.getRegistrationObj(verPayload.registration_uri, verPayload.registration)
-    );
+    const registrationMetadata = await AuthenticationRequest.getRegistrationObj(verPayload.registration_uri, verPayload.registration);
+    AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
     const verifiedJWT = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
+    }
+    if (opts.checkLinkedDomain && opts.checkLinkedDomain != CheckLinkedDomain.NEVER) {
+      await validateLinkedDomainWithDid(verPayload.iss, opts.checkLinkedDomain);
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
@@ -150,12 +155,6 @@ export default class AuthenticationRequest {
   public static assertValidRequestObject(verPayload: AuthenticationRequestPayload): void {
     if (verPayload.registration_uri && verPayload.registration) {
       throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
-    } else if (verPayload.registration_uri) {
-      try {
-        new URL(verPayload.registration_uri);
-      } catch (e) {
-        throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
-      }
     }
   }
 
@@ -165,7 +164,11 @@ export default class AuthenticationRequest {
   ): Promise<RPRegistrationMetadataPayload> {
     let response: RPRegistrationMetadataPayload = registrationObject;
     if (registrationUri) {
-      response = (await getWithUrl(registrationUri)) as unknown as RPRegistrationMetadataPayload;
+      try {
+        response = (await getWithUrl(registrationUri)) as unknown as RPRegistrationMetadataPayload;
+      } catch (e) {
+        throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
+      }
     }
 
     return response;
@@ -197,9 +200,8 @@ async function createURIFromJWT(
   const query = encodeJsonAsURI(requestPayload);
 
   AuthenticationRequest.assertValidRequestObject(requestPayload);
-  AuthenticationRequest.assertValidRegistrationObject(
-    await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration)
-  );
+  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration);
+  AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
   switch (requestOpts.requestBy?.type) {
     case PassBy.REFERENCE:
@@ -252,8 +254,12 @@ function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
   }
   let vp_token: VpTokenClaimPayload;
   let id_token: IdTokenClaimPayload;
-
+  const pex: PEX = new PEX();
   opts.presentationDefinitions.forEach((def) => {
+    const discoveryResult = pex.definitionVersionDiscovery(def.definition);
+    if (discoveryResult.error) {
+      throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+    }
     switch (def.location) {
       case PresentationLocation.ID_TOKEN: {
         if (!id_token || !id_token.verifiable_presentations) {

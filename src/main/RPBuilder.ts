@@ -4,6 +4,7 @@ import { Resolvable, Resolver } from 'did-resolver';
 import { RP } from './RP';
 import { getMethodFromDid, toSIOPRegistrationDidMethod } from './functions';
 import {
+  CheckLinkedDomain,
   ClaimOpts,
   EcdsaSignature,
   ExternalSignature,
@@ -31,6 +32,7 @@ export default class RPBuilder {
   responseMode?: ResponseMode;
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
+  checkLinkedDomain?: CheckLinkedDomain;
 
   // claims?: ClaimPayload;
 
@@ -55,6 +57,11 @@ export default class RPBuilder {
 
   withAuthorizationEndpoint(authorizationEndpoint: string): RPBuilder {
     this.authorizationEndpoint = authorizationEndpoint;
+    return this;
+  }
+
+  withCheckLinkedDomain(mode: CheckLinkedDomain): RPBuilder {
+    this.checkLinkedDomain = mode;
     return this;
   }
 

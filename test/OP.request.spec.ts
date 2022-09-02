@@ -1,14 +1,17 @@
 import { ProofType } from '@sphereon/pex';
 
-import { OP, OPBuilder, RP } from '../src/main';
 import {
   AuthenticationRequestOpts,
   AuthenticationResponseOpts,
+  CheckLinkedDomain,
   KeyAlgo,
+  OP,
+  OPBuilder,
   PassBy,
   ResponseIss,
   ResponseMode,
   ResponseType,
+  RP,
   Scope,
   SigningAlgo,
   SubjectIdentifierType,
@@ -36,6 +39,7 @@ describe('OP Builder should', () => {
 
     expect(
       OP.builder()
+        .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addDidMethod('ethr')
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .response(ResponseMode.POST)
@@ -51,6 +55,7 @@ describe('OP Builder should', () => {
 
 describe('OP should', () => {
   const responseOpts: AuthenticationResponseOpts = {
+    checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
     signatureType: {
       hexPrivateKey: HEX_KEY,
@@ -101,6 +106,7 @@ describe('OP should', () => {
   it('succeed from request opts when all params are set', async () => {
     const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
     const requestOpts: AuthenticationRequestOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: PassBy.REFERENCE,
@@ -150,6 +156,7 @@ describe('OP should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
     const requestURI = await RP.builder()
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withAuthorizationEndpoint('www.muauthorizationendpoint.com')
       .redirect(EXAMPLE_REFERENCE_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
@@ -173,6 +180,7 @@ describe('OP should', () => {
       });
 
     const verifiedRequest = await OP.builder()
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withExpiresIn(1000)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')

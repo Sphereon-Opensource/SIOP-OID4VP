@@ -5,6 +5,7 @@ import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
+  CheckLinkedDomain,
   ClaimOpts,
   ExternalVerification,
   InternalVerification,
@@ -16,7 +17,7 @@ import {
 
 import { AuthenticationRequest, AuthenticationResponse, RPBuilder } from './';
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allowUnionTypes: true });
 const validate = ajv.compile(AuthenticationRequestOptsSchema);
 
 export class RP {
@@ -49,6 +50,7 @@ export class RP {
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
       claims?: ClaimOpts;
+      checkLinkedDomain?: CheckLinkedDomain;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
@@ -70,6 +72,7 @@ export class RP {
     verification?: InternalVerification | ExternalVerification;
     claims?: ClaimOpts;
     audience: string;
+    checkLinkedDomain?: CheckLinkedDomain;
   }): VerifyAuthenticationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
@@ -78,6 +81,7 @@ export class RP {
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
       claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
+      checkLinkedDomain: opts?.checkLinkedDomain || this._authRequestOpts.checkLinkedDomain,
     };
   }
 
@@ -105,6 +109,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
+        checkLinkedDomain: opts.builder.checkLinkedDomain,
       }
     : opts.requestOpts;
 

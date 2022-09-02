@@ -13,12 +13,14 @@ import {
   getThumbprint,
   parseJWT,
   signDidJwtPayload,
+  validateLinkedDomainWithDid,
   verifyDidJWT,
 } from './functions';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponsePayload,
   AuthenticationResponseWithJWT,
+  CheckLinkedDomain,
   isExternalSignature,
   isExternalVerification,
   isInternalSignature,
@@ -125,6 +127,9 @@ export default class AuthenticationResponse {
     });
 
     const issuerDid = getIssuerDidFromPayload(payload);
+    if (verifyOpts.checkLinkedDomain && verifyOpts.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.checkLinkedDomain);
+    }
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);

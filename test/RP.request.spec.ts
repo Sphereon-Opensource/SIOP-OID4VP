@@ -4,6 +4,7 @@ import { Resolver } from 'did-resolver';
 
 import {
   AuthenticationRequestOpts,
+  CheckLinkedDomain,
   PassBy,
   ResponseMode,
   ResponseType,
@@ -32,6 +33,7 @@ describe('RP Builder should', () => {
 
     expect(
       RP.builder()
+        .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addDidMethod('factom')
         .addResolver('ethr', new Resolver(getUniResolver('ethr')))
         .redirect('https://redirect.me')
@@ -58,6 +60,7 @@ describe('RP should', () => {
     expect.assertions(1);
 
     const opts: AuthenticationRequestOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: PassBy.REFERENCE,
@@ -92,6 +95,7 @@ describe('RP should', () => {
   it('succeed from request opts when all params are set', async () => {
     // expect.assertions(1);
     const opts: AuthenticationRequestOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
         type: PassBy.REFERENCE,
@@ -213,6 +217,7 @@ describe('RP should', () => {
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
 
     const request = await RP.builder()
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .internalSignature(HEX_KEY, DID, KID)

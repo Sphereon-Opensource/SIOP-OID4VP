@@ -30,6 +30,9 @@ export const AuthenticationRequestOptsSchema = {
             }
           ]
         },
+        "checkLinkedDomain": {
+          "$ref": "#/definitions/CheckLinkedDomain"
+        },
         "responseMode": {
           "$ref": "#/definitions/ResponseMode"
         },
@@ -178,6 +181,14 @@ export const AuthenticationRequestOptsSchema = {
         "did"
       ],
       "additionalProperties": false
+    },
+    "CheckLinkedDomain": {
+      "type": "string",
+      "enum": [
+        "never",
+        "if_present",
+        "always"
+      ]
     },
     "ResponseMode": {
       "type": "string",

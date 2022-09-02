@@ -6,6 +6,7 @@ import {
   AuthenticationRequestOpts,
   AuthenticationResponse,
   AuthenticationResponseOpts,
+  CheckLinkedDomain,
   PassBy,
   PresentationExchange,
   PresentationLocation,
@@ -36,6 +37,7 @@ const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 
 describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthenticationResponseOpts = {
+    checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -91,6 +93,7 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthenticationRequestOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -114,6 +117,7 @@ describe('create JWT from Request JWT should', () => {
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -140,9 +144,8 @@ describe('create JWT from Request JWT should', () => {
       responseMode: ResponseMode.POST,
     };
 
-    jest
-      .useFakeTimers()
-      .setSystemTime(new Date('2020-01-01'));
+    jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
+    jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
 
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
 
@@ -158,6 +161,7 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthenticationRequestOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -181,6 +185,7 @@ describe('create JWT from Request JWT should', () => {
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -210,7 +215,7 @@ describe('create JWT from Request JWT should', () => {
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
     console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
     await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
-  });
+  }, 10000);
 
   it('succeed when valid JWT with PD is passed in', async () => {
     expect.assertions(1);
@@ -244,6 +249,7 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthenticationRequestOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
       signatureType: {
@@ -317,6 +323,7 @@ describe('create JWT from Request JWT should', () => {
     await pex.selectVerifiableCredentialsForSubmission(definition);
     const result: IVerifiablePresentation = await pex.submissionFrom(definition, vp.verifiableCredential);
     const responseOpts: AuthenticationResponseOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',

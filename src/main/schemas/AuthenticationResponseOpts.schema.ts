@@ -8,6 +8,12 @@ export const AuthenticationResponseOptsSchema = {
         "redirectUri": {
           "type": "string"
         },
+        "registration": {
+          "$ref": "#/definitions/ResponseRegistrationOpts"
+        },
+        "checkLinkedDomain": {
+          "$ref": "#/definitions/CheckLinkedDomain"
+        },
         "signatureType": {
           "anyOf": [
             {
@@ -27,9 +33,6 @@ export const AuthenticationResponseOptsSchema = {
         "state": {
           "type": "string"
         },
-        "registration": {
-          "$ref": "#/definitions/ResponseRegistrationOpts"
-        },
         "responseMode": {
           "$ref": "#/definitions/ResponseMode"
         },
@@ -47,71 +50,11 @@ export const AuthenticationResponseOptsSchema = {
         }
       },
       "required": [
-        "signatureType",
         "registration",
+        "signatureType",
         "did"
       ],
       "additionalProperties": false
-    },
-    "InternalSignature": {
-      "type": "object",
-      "properties": {
-        "hexPrivateKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "hexPrivateKey",
-        "did"
-      ],
-      "additionalProperties": false
-    },
-    "ExternalSignature": {
-      "type": "object",
-      "properties": {
-        "signatureUri": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "authZToken": {
-          "type": "string"
-        },
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "signatureUri",
-        "did"
-      ],
-      "additionalProperties": false
-    },
-    "SuppliedSignature": {
-      "type": "object",
-      "properties": {
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "did",
-        "kid"
-      ],
-      "additionalProperties": true
     },
     "ResponseRegistrationOpts": {
       "type": "object",
@@ -659,6 +602,74 @@ export const AuthenticationResponseOptsSchema = {
     "EncSymmetricAlgorithmCode": {
       "type": "string",
       "const": "XC20P"
+    },
+    "CheckLinkedDomain": {
+      "type": "string",
+      "enum": [
+        "never",
+        "if_present",
+        "always"
+      ]
+    },
+    "InternalSignature": {
+      "type": "object",
+      "properties": {
+        "hexPrivateKey": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hexPrivateKey",
+        "did"
+      ],
+      "additionalProperties": false
+    },
+    "ExternalSignature": {
+      "type": "object",
+      "properties": {
+        "signatureUri": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "authZToken": {
+          "type": "string"
+        },
+        "hexPublicKey": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "signatureUri",
+        "did"
+      ],
+      "additionalProperties": false
+    },
+    "SuppliedSignature": {
+      "type": "object",
+      "properties": {
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "did",
+        "kid"
+      ],
+      "additionalProperties": true
     },
     "VerifiablePresentationResponseOpts": {
       "type": "object",
