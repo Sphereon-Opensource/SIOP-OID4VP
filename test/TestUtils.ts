@@ -1,7 +1,6 @@
 import crypto from 'crypto';
 
-// import { DidKeyDriver } from '@digitalcredentials/did-method-key'
-import { ProofType } from '@sphereon/pex';
+import { IProofType } from '@sphereon/ssi-types';
 import base58 from 'bs58';
 import { DIDDocument } from 'did-resolver';
 import { ethers } from 'ethers';
@@ -239,7 +238,7 @@ export const metadata: {
     subject_types_supported: [SubjectType.PAIRWISE],
     vp_formats: {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
       jwt_vc: {
         alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
@@ -255,7 +254,7 @@ export const metadata: {
     subject_types_supported: [SubjectType.PAIRWISE],
     vp_formats: {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
       jwt_vc: {
         alg: [SigningAlgo.ES256, SigningAlgo.ES256K],

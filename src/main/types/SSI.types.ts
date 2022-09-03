@@ -1,10 +1,5 @@
-import { ICredentialStatus, ICredentialSubject, IPresentation, IProof, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
-import { ICredential } from '@sphereon/pex/dist/main/lib/types';
 import { Resolvable } from 'did-resolver';
 import { JWK } from 'jose/types';
-
-// Here because we previously had these interfaces in this file
-export { IProof, ICredentialSubject, ICredentialStatus, ICredential, IVerifiableCredential, IPresentation, IVerifiablePresentation };
 
 export interface ResolveOpts {
   resolver?: Resolvable;

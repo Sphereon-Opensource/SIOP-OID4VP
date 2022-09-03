@@ -1,4 +1,4 @@
-import { ProofType } from '@sphereon/pex';
+import { IProofType } from '@sphereon/ssi-types';
 
 import {
   AuthenticationRequestOpts,
@@ -68,7 +68,7 @@ describe('OP should', () => {
       subjectSyntaxTypesSupported: ['did:web'],
       vpFormats: {
         ldp_vc: {
-          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
         },
       },
       //TODO: fill it up with actual value
@@ -189,7 +189,7 @@ describe('OP should', () => {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormats: { ldp_vc: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] } },
+        vpFormats: { ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],

@@ -1,6 +1,7 @@
 import { parse } from 'querystring';
 
-import { IPresentationDefinition, ProofType } from '@sphereon/pex';
+import { IPresentationDefinition } from '@sphereon/pex';
+import { IProofType } from '@sphereon/ssi-types';
 
 import {
   AuthenticationRequest,
@@ -88,7 +89,7 @@ describe('create Request Uri should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -140,7 +141,7 @@ describe('create Request Uri should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -181,7 +182,7 @@ describe('create Request Uri should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -218,7 +219,7 @@ describe('create Request JWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -246,7 +247,7 @@ describe('create Request JWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -271,7 +272,7 @@ describe('create Request JWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -300,7 +301,7 @@ describe('create Request JWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -329,7 +330,7 @@ describe('create Request JWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -364,7 +365,7 @@ describe('create Request JWT should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -449,7 +450,7 @@ describe('create Request JWT should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -507,7 +508,7 @@ describe('create Request JWT should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {

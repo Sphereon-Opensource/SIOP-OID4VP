@@ -1,4 +1,4 @@
-import { ProofType } from '@sphereon/pex';
+import { IProofType } from '@sphereon/ssi-types';
 import { JWTHeader } from 'did-jwt';
 import { DIDDocument } from 'did-resolver';
 
@@ -42,7 +42,7 @@ export const DIDAUTH_REQUEST_PAYLOAD: AuthenticationRequestPayload = {
     subject_types_supported: [SubjectType.PAIRWISE],
     vp_formats: {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019],
       },
       jwt_vc: {
         alg: [KeyAlgo.EDDSA],

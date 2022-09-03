@@ -1,5 +1,5 @@
-import { IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphereon/pex';
-import { ICredential } from '@sphereon/pex/dist/main/lib/types';
+import { IPresentationDefinition } from '@sphereon/pex';
+import { ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
 
 import {
   AuthenticationRequest,
@@ -45,7 +45,7 @@ describe('create JWT from Request JWT should', () => {
       subjectSyntaxTypesSupported: ['did:web'],
       vpFormats: {
         ldp_vc: {
-          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
         },
       },
       issuer: ResponseIss.SELF_ISSUED_V2,
@@ -110,7 +110,7 @@ describe('create JWT from Request JWT should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: { type: PassBy.VALUE },
@@ -127,7 +127,7 @@ describe('create JWT from Request JWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormats: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -178,7 +178,7 @@ describe('create JWT from Request JWT should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: { type: PassBy.VALUE },
@@ -195,7 +195,7 @@ describe('create JWT from Request JWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormats: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -266,7 +266,7 @@ describe('create JWT from Request JWT should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: { type: PassBy.VALUE },
@@ -336,7 +336,7 @@ describe('create JWT from Request JWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormats: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
       },

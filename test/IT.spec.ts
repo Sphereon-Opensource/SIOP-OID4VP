@@ -1,4 +1,5 @@
-import { IPresentationDefinition, IVerifiableCredential, ProofType } from '@sphereon/pex';
+import { IPresentationDefinition } from '@sphereon/pex';
+import { IProofType, IVerifiableCredential } from '@sphereon/ssi-types';
 import { WDCErrors } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
@@ -520,9 +521,9 @@ describe('RP and OP interaction should', () => {
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormatsSupported: {
           jwt_vc: { alg: [KeyAlgo.EDDSA] },
-          ldp_vc: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] },
-          ldp_vp: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] },
-          ldp: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] },
+          ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
         },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
@@ -546,9 +547,9 @@ describe('RP and OP interaction should', () => {
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormats: {
           jwt_vc: { alg: [KeyAlgo.EDDSA] },
-          ldp_vc: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] },
-          ldp_vp: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] },
-          ldp: { proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019] },
+          ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
         },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],

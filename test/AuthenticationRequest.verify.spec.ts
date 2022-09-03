@@ -1,4 +1,4 @@
-import { ProofType } from '@sphereon/pex';
+import { IProofType } from '@sphereon/ssi-types';
 import * as dotenv from 'dotenv';
 import parseJwk from 'jose/jwk/parse';
 import SignJWT from 'jose/jwt/sign';
@@ -63,7 +63,7 @@ describe('SIOP Request Validation', () => {
         subject_types_supported: [SubjectType.PAIRWISE],
         vp_formats: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
       },
@@ -130,7 +130,7 @@ describe('verifyJWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: {
@@ -181,7 +181,7 @@ describe('verifyJWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr:'],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         registrationBy: { type: PassBy.VALUE },
@@ -220,7 +220,7 @@ describe('OP and RP communication should', () => {
   it('work if RP supports any OP did methods', () => {
     metadata.opMetadata.vp_formats = {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
     };
     metadata.rpMetadata.subject_syntax_types_supported = ['did:web', SubjectIdentifierType.DID];
@@ -237,7 +237,7 @@ describe('OP and RP communication should', () => {
   it('work if RP supports any OP credential formats', () => {
     metadata.opMetadata.vp_formats = {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
     };
     const result = metadata.verify();
