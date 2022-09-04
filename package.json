@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "@digitalcredentials/did-method-key": "^2.0.3",
-    "@types/jest": "^29.0.0",
+    "@types/jest": "^28.1.8",
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
     "codecov": "^3.8.3",
