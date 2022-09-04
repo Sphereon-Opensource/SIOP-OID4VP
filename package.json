@@ -47,7 +47,7 @@
     "did-resolver": "3.2.2",
     "elliptic": "^6.5.4",
     "eth-crypto": "^2.3.0",
-    "jose": "3.20.3",
+    "jose": "^4.9.2",
     "js-sha3": "^0.8.0",
     "multiformats": "^9.7.1",
     "querystring": "^0.2.1",

@@ -1,5 +1,5 @@
 import { JWTHeader } from 'did-jwt';
-import { JWK } from 'jose/types';
+import { JWK } from 'jose';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
@@ -180,7 +180,7 @@ async function createThumbprintAndJWK(resOpts: AuthenticationResponseOpts): Prom
   let thumbprint;
   let subJwk;
   if (isInternalSignature(resOpts.signatureType)) {
-    thumbprint = getThumbprint(resOpts.signatureType.hexPrivateKey, resOpts.did);
+    thumbprint = await getThumbprint(resOpts.signatureType.hexPrivateKey, resOpts.did);
     subJwk = getPublicJWKFromHexPrivateKey(
       resOpts.signatureType.hexPrivateKey,
       resOpts.signatureType.kid || `${resOpts.signatureType.did}#key-1`,
@@ -194,6 +194,7 @@ async function createThumbprintAndJWK(resOpts: AuthenticationResponseOpts): Prom
                     thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
                     subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
   } else if (isSuppliedSignature(resOpts.signatureType)) {
+    // fixme: These are uninitialized. Probably we have to extend the supplied signature to provide these.
     return { thumbprint, subJwk };
   } else {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
@@ -237,7 +238,9 @@ async function createSIOPResponsePayload(
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
+  // fixme: This is not according to spec. It is not only did:, but also did:<method>
   const isDidSupported = verifiedJwt.payload.registration?.subject_syntax_types_supported?.includes(SubjectIdentifierType.DID);
+  // todo: We should look at whether we can use a DID from the OP and the RP supporting it, or whether we can use a thumbprint according to OP and RP
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);

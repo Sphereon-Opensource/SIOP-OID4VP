@@ -2,12 +2,9 @@
 import base64url from 'base64url';
 import * as bs58 from 'bs58';
 import { ec as EC } from 'elliptic';
-import { JWK } from 'jose/types';
-import SHA from 'sha.js';
+import { calculateJwkThumbprint, JWK } from 'jose';
 
 import { KeyCurve, KeyType } from '../types';
-
-import { base64urlEncodeBuffer } from './Encodings';
 
 const ED25519_DID_KEY = 'did:key:z6Mk';
 
@@ -55,19 +52,6 @@ function toJWK(kid: string, crv: KeyCurve, pubPoint: EC.BN) {
   };
 }
 
-function getThumbprintFromJwkImpl(jwk: JWK): string {
-  const fields = {
-    crv: jwk.crv,
-    kty: jwk.kty,
-    x: jwk.x,
-    y: jwk.y,
-  };
-
-  const buff = SHA('sha256').update(JSON.stringify(fields)).digest();
-
-  return base64urlEncodeBuffer(buff);
-}
-
 // from fingerprintFromPublicKey function in @transmute/Ed25519KeyPair
 function getThumbprintFromJwkDIDKeyImpl(jwk: JWK): string {
   // ed25519 cryptonyms are multicodec encoded values, specifically:
@@ -83,16 +67,16 @@ function getThumbprintFromJwkDIDKeyImpl(jwk: JWK): string {
   return `z${bs58.encode(buffer)}`;
 }
 
-export function getThumbprintFromJwk(jwk: JWK, did: string): string {
+export async function getThumbprintFromJwk(jwk: JWK, did: string): Promise<string> {
   if (isEd25519DidKeyMethod(did)) {
     return getThumbprintFromJwkDIDKeyImpl(jwk);
   } else {
-    return getThumbprintFromJwkImpl(jwk);
+    return await calculateJwkThumbprint(jwk, 'sha256');
   }
 }
 
-export function getThumbprint(hexPrivateKey: string, did: string): string {
-  return getThumbprintFromJwk(
+export async function getThumbprint(hexPrivateKey: string, did: string): Promise<string> {
+  return await getThumbprintFromJwk(
     isEd25519DidKeyMethod(did) ? getPublicED25519JWKFromHexPrivateKey(hexPrivateKey) : getPublicJWKFromHexPrivateKey(hexPrivateKey),
     did
   );

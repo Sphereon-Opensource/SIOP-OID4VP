@@ -1,7 +1,6 @@
 import { IProofType } from '@sphereon/ssi-types';
 import * as dotenv from 'dotenv';
-import parseJwk from 'jose/jwk/parse';
-import SignJWT from 'jose/jwt/sign';
+import { importJWK, SignJWT } from 'jose';
 
 import {
   AuthenticationRequest,
@@ -73,7 +72,7 @@ describe('SIOP Request Validation', () => {
           id_token_signed_response_alg: KeyAlgo.ES256K,
       },*/
     };
-    const privateKey = await parseJwk(mockEntity.jwk, KeyAlgo.ES256K);
+    const privateKey = await importJWK(mockEntity.jwk, KeyAlgo.ES256K);
     const jwt = await new SignJWT(payload).setProtectedHeader(header).sign(privateKey);
 
     const optsVerify: VerifyAuthenticationRequestOpts = {

@@ -1,5 +1,5 @@
 import { Resolvable } from 'did-resolver';
-import { JWK } from 'jose/types';
+import { JWK } from 'jose';
 
 export interface ResolveOpts {
   resolver?: Resolvable;

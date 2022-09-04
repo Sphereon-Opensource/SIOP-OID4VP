@@ -1,7 +1,7 @@
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation } from '@sphereon/ssi-types';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
-import { JWK } from 'jose/types';
+import { JWK } from 'jose';
 
 import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
 
