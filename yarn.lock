@@ -1614,13 +1614,13 @@
   resolved "https://registry.yarnpkg.com/@sphereon/pex-models/-/pex-models-1.1.0.tgz#716898344fd07400bbffaa0c34a1f7ecdda14166"
   integrity sha512-kMslWspdqwuXGBFxOPXTAK8HlIHycBR/locYHMlYmyvdnau6bp40JXk2zviBRVOPfe8N3Dv2p5IPAjMk3pT77A==
 
-"@sphereon/pex@^1.1.4-unstable.0":
-  version "1.1.4-unstable.0"
-  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-1.1.4-unstable.0.tgz#7464da848688613f57a55401177d2a0073a63f0e"
-  integrity sha512-uTfFSLiqR1sRSie5G3U4fsB8JBXvFJwBE3DsKHUQWGpnPV7bP24mk/QieWYydj99dkTe3li7CjV14PF4YF8ojA==
+"@sphereon/pex@^1.1.4-unstable.2":
+  version "1.1.4-unstable.2"
+  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-1.1.4-unstable.2.tgz#29f85cebe030c30ab1c74c0f1910885dbe0d4db6"
+  integrity sha512-chmqeCa+FWjAdNGlv8llwFAib7bfpzGhMF7RjjITcmHh++S7Tv8eaPvJ7VKVLhbNpf9nNVAqaxn9X1LfOi5GRQ==
   dependencies:
     "@sphereon/pex-models" "^1.1.0"
-    "@sphereon/ssi-types" "^0.8.1-next.2"
+    "@sphereon/ssi-types" "^0.8.1-next.3"
     ajv "^8.11.0"
     ajv-formats "^2.1.1"
     jsonpath "^1.1.1"
@@ -1628,17 +1628,17 @@
     nanoid "^3.3.4"
     string.prototype.matchall "^4.0.7"
 
-"@sphereon/ssi-types@^0.8.1-next.2", "@sphereon/ssi-types@^0.8.1-next.3":
+"@sphereon/ssi-types@^0.8.1-next.3":
   version "0.8.1-next.3"
   resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.8.1-next.3.tgz#f2618c6ebe33c653031c6b87fd519c7ce3fa4d15"
   integrity sha512-QN6PyIsmSJ9jUYi8rPwUsXZMmN6pzCkw0FGpRM6DEavWE3X4lm9USXnpdSYxFP7jRIZCm6bQfVAjUBmWmwG7dw==
 
-"@sphereon/wellknown-dids-client@^0.1.3-unstable.0":
-  version "0.1.3-unstable.0"
-  resolved "https://registry.yarnpkg.com/@sphereon/wellknown-dids-client/-/wellknown-dids-client-0.1.3-unstable.0.tgz#b4e43f453e9341d9422028ec71518d39c541b9bd"
-  integrity sha512-Od+8fHxLNMOwOEYiGIyzeHytvfiOdQfyv2f2LD7ZywXdzu0jX8me5hFm8CXC/vODWv3l2jlgHwG8rfBvnrkIdg==
+"@sphereon/wellknown-dids-client@^0.1.3-unstable.1":
+  version "0.1.3-unstable.1"
+  resolved "https://registry.yarnpkg.com/@sphereon/wellknown-dids-client/-/wellknown-dids-client-0.1.3-unstable.1.tgz#2a76d78ea7ef519fa7d4e879dff100941caeeaa8"
+  integrity sha512-nGdS0EV85IlSQDJxFnycYB9O3GBTv6pT8kh94CrMKzyGi2oyjNi72Tni/5sbjcH5u5K7BC6bwBUzTBKAST983g==
   dependencies:
-    "@sphereon/ssi-types" "^0.8.1-next.2"
+    "@sphereon/ssi-types" "^0.8.1-next.3"
     cross-fetch "^3.1.5"
     jwt-decode "^3.1.2"
 
