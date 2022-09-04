@@ -238,9 +238,11 @@ async function createSIOPResponsePayload(
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
-  // fixme: This is not according to spec. It is not only did:, but also did:<method>
+  // fixme: This is not according to spec. It is not only did:, but can also be one or more did:<method> instead of did: alone
+  // see: https://sphereon.atlassian.net/browse/VDX-137
   const isDidSupported = verifiedJwt.payload.registration?.subject_syntax_types_supported?.includes(SubjectIdentifierType.DID);
   // todo: We should look at whether we can use a DID from the OP and the RP supporting it, or whether we can use a thumbprint according to OP and RP
+  // see: https://sphereon.atlassian.net/browse/VDX-137
   const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
   const state = resOpts.state || getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
