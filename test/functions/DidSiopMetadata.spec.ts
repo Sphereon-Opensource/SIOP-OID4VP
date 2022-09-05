@@ -1,5 +1,5 @@
-import { ProofType } from '@sphereon/pex';
 import { Format } from '@sphereon/pex-models';
+import { IProofType } from '@sphereon/ssi-types';
 
 import { SigningAlgo, SIOPErrors, supportedCredentialsFormats } from '../../src/main';
 
@@ -7,7 +7,7 @@ describe('DidSiopMetadata should ', () => {
   it('find supportedCredentialsFormats correctly', async function () {
     const rpFormat: Format = {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
       jwt_vc: {
         alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
@@ -24,7 +24,7 @@ describe('DidSiopMetadata should ', () => {
   it('throw CREDENTIAL_FORMATS_NOT_SUPPORTED for algs not matching', async function () {
     const rpFormat: Format = {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
       jwt_vc: {
         alg: [SigningAlgo.ES256K],
@@ -41,7 +41,7 @@ describe('DidSiopMetadata should ', () => {
   it('throw CREDENTIAL_FORMATS_NOT_SUPPORTED for types not matching', async function () {
     const rpFormat: Format = {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
     };
     const opFormat: Format = {

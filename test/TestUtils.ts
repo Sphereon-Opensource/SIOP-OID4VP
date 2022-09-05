@@ -1,14 +1,10 @@
 import crypto from 'crypto';
 
-// import { DidKeyDriver } from '@digitalcredentials/did-method-key'
-import { ProofType } from '@sphereon/pex';
+import { IProofType } from '@sphereon/ssi-types';
 import base58 from 'bs58';
 import { DIDDocument } from 'did-resolver';
 import { ethers } from 'ethers';
-import fromKeyLike from 'jose/jwk/from_key_like';
-import parseJwk from 'jose/jwk/parse';
-import SignJWT from 'jose/jwt/sign';
-import { JWK, JWTPayload } from 'jose/types';
+import { exportJWK, importJWK, JWK, JWTPayload, SignJWT } from 'jose';
 import jwt_decode from 'jwt-decode';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
@@ -43,7 +39,7 @@ export async function generateTestKey(kty: string): Promise<TESTKEY> {
   const key = crypto.generateKeyPairSync('ec', {
     namedCurve: KeyCurve.SECP256k1,
   });
-  const privateJwk = await fromKeyLike(key.privateKey);
+  const privateJwk = await exportJWK(key.privateKey);
 
   const did = getDIDFromKey(privateJwk);
 
@@ -95,7 +91,7 @@ export const mockedKeyAndDid = async (): Promise<{
   const key = crypto.generateKeyPairSync('ec', {
     namedCurve: KeyCurve.SECP256k1,
   });
-  const privateJwk = await fromKeyLike(key.privateKey);
+  const privateJwk = await exportJWK(key.privateKey);
   const hexPrivateKey = base64ToHexString(privateJwk.d);
   const wallet: ethers.Wallet = new ethers.Wallet(prefixWith0x(hexPrivateKey));
   const did = `did:ethr:${wallet.address}`;
@@ -129,7 +125,7 @@ const mockedEntityAuthNToken = async (
     nonce: uuidv4(),
   };
 
-  const privateKey = await parseJwk(jwk, KeyAlgo.ES256K);
+  const privateKey = await importJWK(jwk, KeyAlgo.ES256K);
   const jwt = await new SignJWT(payload as unknown as JWTPayload)
     .setProtectedHeader({
       alg: 'ES256K',
@@ -166,7 +162,7 @@ export async function mockedGetEnterpriseAuthToken(enterpriseName?: string): Pro
     },
   };
 
-  const privateKey = await parseJwk(testAuth.jwk, KeyAlgo.ES256K);
+  const privateKey = await importJWK(testAuth.jwk, KeyAlgo.ES256K);
   const jwt = await new SignJWT(testApiPayload)
     .setProtectedHeader({
       alg: 'ES256K',
@@ -239,7 +235,7 @@ export const metadata: {
     subject_types_supported: [SubjectType.PAIRWISE],
     vp_formats: {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
       jwt_vc: {
         alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
@@ -255,7 +251,7 @@ export const metadata: {
     subject_types_supported: [SubjectType.PAIRWISE],
     vp_formats: {
       ldp_vc: {
-        proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
       jwt_vc: {
         alg: [SigningAlgo.ES256, SigningAlgo.ES256K],

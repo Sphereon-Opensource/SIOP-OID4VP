@@ -1,5 +1,5 @@
-import { IVerifiableCredential, IVerifiablePresentation, ProofType } from '@sphereon/pex';
 import { PresentationDefinitionV1 } from '@sphereon/pex-models';
+import { IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
 import nock from 'nock';
 
 import {
@@ -51,7 +51,7 @@ async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
       subject_types_supported: [SubjectType.PAIRWISE],
       vp_formats: {
         ldp_vc: {
-          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
         },
         jwt_vc: {
           alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
@@ -123,7 +123,7 @@ async function getPayloadPdRef(): Promise<AuthenticationRequestPayload> {
       subject_types_supported: [SubjectType.PAIRWISE],
       vp_formats: {
         ldp_vc: {
-          proof_type: [ProofType.EcdsaSecp256k1Signature2019, ProofType.EcdsaSecp256k1Signature2019],
+          proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
         },
         jwt_vc: {
           alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
