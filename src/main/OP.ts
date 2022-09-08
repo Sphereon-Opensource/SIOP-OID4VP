@@ -9,7 +9,6 @@ import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
-  CheckLinkedDomain,
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
@@ -51,7 +50,7 @@ export class OP {
 
   public async verifyAuthenticationRequest(
     requestJwtOrUri: string,
-    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification; checkLinkedDomain?: CheckLinkedDomain }
+    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
     const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
     const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts }));
@@ -122,11 +121,9 @@ export class OP {
   public newVerifyAuthenticationRequestOpts(opts?: {
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
-    checkLinkedDomain?: CheckLinkedDomain;
   }): VerifyAuthenticationRequestOpts {
     return {
       ...this._verifyAuthRequestOpts,
-      checkLinkedDomain: opts?.checkLinkedDomain,
       nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
       verification: opts?.verification || this._verifyAuthRequestOpts.verification,
     };
@@ -203,7 +200,6 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
         },
         did: opts.builder.signatureType.did,
         expiresIn: opts.builder.expiresIn,
-        checkLinkedDomain: opts.builder.checkLinkedDomain,
         signatureType: opts.builder.signatureType,
         responseMode: opts.builder.responseMode,
       }
@@ -229,6 +225,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
     ? {
         verification: {
           mode: VerificationMode.INTERNAL,
+          checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
             //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
             didMethods: subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),

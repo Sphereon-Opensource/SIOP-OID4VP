@@ -132,8 +132,8 @@ export default class AuthenticationRequest {
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
-    if (opts.checkLinkedDomain && opts.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(verPayload.iss, opts.checkLinkedDomain);
+    if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
+      await validateLinkedDomainWithDid(verPayload.iss, opts.verification.checkLinkedDomain);
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
