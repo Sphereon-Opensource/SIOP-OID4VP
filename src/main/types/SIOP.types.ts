@@ -452,15 +452,15 @@ export enum VerificationMode {
   EXTERNAL,
 }
 
-export interface InternalVerification {
+export interface Verification {
+  checkLinkedDomain?: CheckLinkedDomain;
   mode: VerificationMode;
-  /*registry?: string;
-        rpcUrl?: string;*/
   resolveOpts: ResolveOpts;
 }
 
-export interface ExternalVerification {
-  mode: VerificationMode;
+export type InternalVerification = Verification;
+
+export interface ExternalVerification extends Verification {
   verifyUri: string; // url to call to verify the id_token signature
   authZToken?: string; // Optional: bearer token to use to the call
   resolveOpts: ResolveOpts;
