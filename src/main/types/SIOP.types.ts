@@ -467,7 +467,7 @@ export interface ExternalVerification extends Verification {
 }
 
 export interface VerifyAuthenticationRequestOpts {
-  verification: Verification; // To use internal verification or external hosted verification
+  verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
   checkLinkedDomain?: CheckLinkedDomain;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // If provided the nonce in the request needs to match
@@ -475,7 +475,7 @@ export interface VerifyAuthenticationRequestOpts {
 }
 
 export interface VerifyAuthenticationResponseOpts {
-  verification: Verification;
+  verification: InternalVerification | ExternalVerification;
   checkLinkedDomain?: CheckLinkedDomain;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // mandatory? // To verify the response against the supplied nonce
@@ -637,9 +637,9 @@ export const isRequestPayload = (object: AuthenticationRequestPayload | Authenti
 export const isResponsePayload = (object: AuthenticationRequestPayload | AuthenticationResponsePayload): object is AuthenticationResponsePayload =>
   'iss' in object && 'aud' in object;
 
-export const isInternalVerification = (object: Verification): object is InternalVerification =>
+export const isInternalVerification = (object: InternalVerification | ExternalVerification): object is InternalVerification =>
   object.mode === VerificationMode.INTERNAL; /* && !isExternalVerification(object)*/
-export const isExternalVerification = (object: Verification): object is ExternalVerification =>
+export const isExternalVerification = (object: InternalVerification | ExternalVerification): object is ExternalVerification =>
   object.mode === VerificationMode.EXTERNAL; /*&& 'verifyUri' in object || 'authZToken' in object*/
 
 export const isVP = (object: PEVerifiablePresentation | PEPresentation): object is PEVerifiablePresentation => 'presentation' in object;
