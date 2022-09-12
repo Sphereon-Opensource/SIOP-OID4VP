@@ -248,7 +248,7 @@ function assertValidRequestOpts(opts: AuthenticationRequestOpts) {
   assertValidRequestRegistrationOpts(opts.registration);
 }
 
-function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
+function createClaimsPayload(opts: ClaimOpts, nonce: string): ClaimPayload {
   if (!opts || !opts.presentationDefinitions || opts.presentationDefinitions.length == 0) {
     return undefined;
   }
@@ -276,7 +276,7 @@ function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
         } else {
           vp_token = {
             //TODO: nonce should be initialized correctly
-            nonce: 'NONCE_STRING',
+            nonce: nonce,
             presentation_definition: def.definition,
             response_type: PresentationLocation.VP_TOKEN,
           };
@@ -296,7 +296,7 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
   assertValidRequestOpts(opts);
   const state = getState(opts.state);
   const registration = await createRequestRegistration(opts.registration);
-  const claims = createClaimsPayload(opts.claims);
+  const claims = createClaimsPayload(opts.claims, opts.nonce);
 
   return {
     response_type: ResponseType.ID_TOKEN,

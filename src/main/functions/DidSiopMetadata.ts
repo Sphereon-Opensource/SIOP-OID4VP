@@ -8,7 +8,6 @@ import {
   SubjectSyntaxTypesSupportedValues,
 } from '../types';
 
-//TODO, since syntax_types_Supported can contain non DIDs, fix it in the VDX-126
 export function assertValidMetadata(opMetadata: DiscoveryMetadataPayload, rpMetadata: RPRegistrationMetadataPayload): CommonSupportedMetadata {
   let subjectSyntaxTypesSupported = [];
   const credentials = supportedCredentialsFormats(rpMetadata.vp_formats, opMetadata.vp_formats);
