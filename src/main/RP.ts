@@ -125,7 +125,6 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
-            //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
             subjectSyntaxTypesSupported: !opts.builder.requestRegistration.subjectSyntaxTypesSupported
               ? []
               : opts.builder.requestRegistration.subjectSyntaxTypesSupported,
