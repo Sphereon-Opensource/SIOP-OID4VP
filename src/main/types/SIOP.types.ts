@@ -591,6 +591,11 @@ export enum SubjectIdentifierType {
   DID = 'did',
 }
 
+export enum SubjectSyntaxTypesSupportedValues {
+  DID = 'did',
+  JWK_THUMBPRINT = 'urn:ietf:params:oauth:jwk-thumbprint',
+}
+
 export enum CredentialFormat {
   JSON_LD = 'w3cvc-jsonld',
   JWT = 'jwt',

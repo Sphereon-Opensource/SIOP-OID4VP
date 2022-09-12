@@ -233,7 +233,6 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
-            //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
             subjectSyntaxTypesSupported: subjectSyntaxTypesSupported,
             resolver:
               opts.builder.resolvers && opts.builder.resolvers.size //TODO: discuss this with Niels

@@ -63,7 +63,7 @@ function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): 
     response_types_supported: opts.responseTypesSupported,
     scopes_supported: opts.scopesSupported,
     subject_types_supported: opts.subjectTypesSupported,
-    // TODO: https://sphereon.atlassian.net/browse/VDX-126 : supporting JSON Web Key (JWK) Thumbprint
+    // TODO: @Niels do we need the default did-methods?
     subject_syntax_types_supported: opts.subjectSyntaxTypesSupported || ['did:web:', 'did:ion:'],
     vp_formats: opts.vpFormatsSupported,
   };
