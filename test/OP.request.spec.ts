@@ -86,7 +86,7 @@ describe('OP should', () => {
     verification: {
       mode: VerificationMode.INTERNAL,
       resolveOpts: {
-        subjectSyntaxTypesSupported: ['ethr'],
+        subjectSyntaxTypesSupported: ['did:ethr'],
       },
     },
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
@@ -119,7 +119,7 @@ describe('OP should', () => {
       },
       registration: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],

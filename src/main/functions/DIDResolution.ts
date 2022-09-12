@@ -1,7 +1,7 @@
-import { getUniResolver } from '@sphereon/did-uni-client';
+import { getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { DIDResolutionOptions, DIDResolutionResult, ParsedDID, Resolvable, Resolver } from 'did-resolver';
 
-import { DIDDocument, ResolveOpts, SIOPErrors } from '../types';
+import { DIDDocument, ResolveOpts, SIOPErrors, SubjectIdentifierType } from '../types';
 
 import { getMethodFromDid } from './';
 
@@ -16,11 +16,16 @@ export function getResolver(opts: ResolveOpts): Resolvable {
   const uniResolvers: {
     [p: string]: (did: string, _parsed: ParsedDID, _didResolver: Resolver, _options: DIDResolutionOptions) => Promise<DIDResolutionResult>;
   }[] = [];
-  for (const didMethod of opts.subjectSyntaxTypesSupported) {
-    const uniResolver = getUniResolver(getMethodFromDid(didMethod), { resolveUrl: opts.resolveUrl });
-    uniResolvers.push(uniResolver);
+  if (opts.subjectSyntaxTypesSupported.indexOf(SubjectIdentifierType.DID) === -1) {
+    const specificDidMethods = opts.subjectSyntaxTypesSupported.filter((sst) => sst.includes('did:'));
+    for (const didMethod of specificDidMethods) {
+      const uniResolver = getUniResolver(getMethodFromDid(didMethod), { resolveUrl: opts.resolveUrl });
+      uniResolvers.push(uniResolver);
+    }
+    return new Resolver(...uniResolvers);
+  } else {
+    return new UniResolver();
   }
-  return new Resolver(...uniResolvers);
 }
 
 export async function resolveDidDocument(did: string, opts?: ResolveOpts): Promise<DIDDocument> {

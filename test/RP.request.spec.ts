@@ -34,7 +34,7 @@ describe('RP Builder should', () => {
     expect(
       RP.builder()
         .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-        .addDidMethod('factom')
+        .addDidMethod('did:factom')
         .addResolver('ethr', new Resolver(getUniResolver('ethr')))
         .redirect('https://redirect.me')
         .requestBy(PassBy.VALUE)
@@ -241,7 +241,7 @@ describe('RP should', () => {
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
       })
-      .addDidMethod('ethr')
+      .addDidMethod('did:ethr')
       .build()
 
       .createAuthenticationRequest({

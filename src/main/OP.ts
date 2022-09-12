@@ -32,7 +32,7 @@ export class OP {
 
   public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts; verifyOpts?: VerifyAuthenticationRequestOpts }) {
     this._authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
-    this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
+    this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) } as Partial<VerifyAuthenticationRequestOpts>;
   }
 
   get authResponseOpts(): AuthenticationResponseOpts {
@@ -218,7 +218,13 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
     if (Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
       subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
     } else {
-      subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
+      subjectSyntaxTypesSupported.push(opts.builder.responseRegistration.subjectSyntaxTypesSupported);
+    }
+  } else if (opts?.verifyOpts?.verification?.resolveOpts?.subjectSyntaxTypesSupported) {
+    if (Array.isArray(opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported)) {
+      subjectSyntaxTypesSupported.push(...opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported);
+    } else {
+      subjectSyntaxTypesSupported.push(opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported);
     }
   }
   return opts.builder
@@ -228,11 +234,11 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
             //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
-            didMethods: subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
-            resolver: opts.builder.resolvers
-              ? //TODO: discuss this with Niels
-                getResolver({ resolver: opts.builder.resolvers.values().next().value })
-              : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
+            subjectSyntaxTypesSupported: subjectSyntaxTypesSupported,
+            resolver:
+              opts.builder.resolvers && opts.builder.resolvers.size //TODO: discuss this with Niels
+                ? getResolver({ resolver: opts.builder.resolvers.values().next().value })
+                : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
           },
         },
       }

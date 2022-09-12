@@ -126,13 +126,13 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
             //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
-            didMethods: !opts.builder.requestRegistration.subjectSyntaxTypesSupported
+            subjectSyntaxTypesSupported: !opts.builder.requestRegistration.subjectSyntaxTypesSupported
               ? []
-              : opts.builder.requestRegistration.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
-            resolver: opts.builder.resolvers
-              ? //TODO: discuss this with Niels
-                getResolver({ resolver: opts.builder.resolvers.values().next().value })
-              : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
+              : opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+            resolver:
+              opts.builder.resolvers && opts.builder.resolvers.size //TODO: discuss this with Niels
+                ? getResolver({ resolver: opts.builder.resolvers.values().next().value })
+                : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
           },
         },
       }

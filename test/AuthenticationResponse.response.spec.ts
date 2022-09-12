@@ -65,7 +65,7 @@ describe('create JWT from Request JWT should', () => {
   const verifyOpts: VerifyAuthenticationRequestOpts = {
     verification: {
       resolveOpts: {
-        subjectSyntaxTypesSupported: ['ethr'],
+        subjectSyntaxTypesSupported: ['did:ethr'],
       },
       mode: VerificationMode.INTERNAL,
     },

@@ -79,7 +79,7 @@ describe('SIOP Request Validation', () => {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          subjectSyntaxTypesSupported: ['ethr'],
+          subjectSyntaxTypesSupported: ['did:ethr'],
         },
       },
     };
@@ -192,7 +192,7 @@ describe('verifyJWT should', () => {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          subjectSyntaxTypesSupported: ['ethr'],
+          subjectSyntaxTypesSupported: ['did:ethr'],
         },
       },
     };

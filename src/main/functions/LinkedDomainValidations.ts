@@ -9,7 +9,6 @@ import {
 import { CheckLinkedDomain, DIDDocument } from '../types';
 
 import { resolveDidDocument } from './DIDResolution';
-import { getMethodFromDid } from './DidJWT';
 
 function getValidationErrorMessages(validationResult: IDomainLinkageValidation): string[] {
   const messages = [];
@@ -57,7 +56,7 @@ function checkInvalidMessages(validationErrorMessages: string[]): { status: bool
 }
 
 export async function validateLinkedDomainWithDid(did: string, checkLinkedDomain: CheckLinkedDomain) {
-  const didDocument = await resolveDidDocument(did, { subjectSyntaxTypesSupported: [getMethodFromDid(did)] });
+  const didDocument = await resolveDidDocument(did, { subjectSyntaxTypesSupported: ['did'] });
   try {
     const validationResult = await checkWellknownDid(didDocument);
     if (validationResult.status === ValidationStatusEnum.INVALID) {
