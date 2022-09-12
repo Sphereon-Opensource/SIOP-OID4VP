@@ -658,6 +658,14 @@ export const AuthenticationResponseOptsSchema = {
     "SuppliedSignature": {
       "type": "object",
       "properties": {
+        "signature": {
+          "properties": {
+            "isFunction": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
         "did": {
           "type": "string"
         },
@@ -666,10 +674,11 @@ export const AuthenticationResponseOptsSchema = {
         }
       },
       "required": [
+        "signature",
         "did",
         "kid"
       ],
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "VerifiablePresentationResponseOpts": {
       "type": "object",

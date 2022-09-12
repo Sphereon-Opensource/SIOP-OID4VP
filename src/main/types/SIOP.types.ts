@@ -1,6 +1,10 @@
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
-import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation } from '@sphereon/ssi-types';
-import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
+import {
+  IPresentation as PEPresentation,
+  IVerifiableCredential,
+  IVerifiablePresentation as PEVerifiablePresentation
+} from '@sphereon/ssi-types';
+import {DIDDocument as DIFDIDDocument, VerificationMethod} from 'did-resolver';
 import { JWK } from 'jose';
 
 import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
@@ -24,6 +28,7 @@ export interface AuthenticationRequestOpts {
   scopesSupported?: Scope[];
   subjectTypesSupported?: SubjectType[];
   requestObjectSigningAlgValuesSupported?: SigningAlgo[];
+  revocationVerificationCallback?: RevocationVerificationCallback
   // slint-disable-next-line @typescript-eslint/no-explicit-any
   // [x: string]: any;
 }
@@ -452,23 +457,26 @@ export enum VerificationMode {
   EXTERNAL,
 }
 
-export interface Verification {
-  checkLinkedDomain?: CheckLinkedDomain;
+export interface InternalVerification {
   mode: VerificationMode;
+  /*registry?: string;
+        rpcUrl?: string;*/
   resolveOpts: ResolveOpts;
+  revocationOpts?: RevocationOpts
 }
 
-export type InternalVerification = Verification;
-
-export interface ExternalVerification extends Verification {
+export interface ExternalVerification {
+  mode: VerificationMode;
   verifyUri: string; // url to call to verify the id_token signature
   authZToken?: string; // Optional: bearer token to use to the call
   resolveOpts: ResolveOpts;
+  revocationOpts?: RevocationOpts
 }
 
 export interface VerifyAuthenticationRequestOpts {
   verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
   checkLinkedDomain?: CheckLinkedDomain;
+  revocationVerificationCallback?: RevocationVerificationCallback;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // If provided the nonce in the request needs to match
   // redirectUri?: string;
@@ -482,6 +490,7 @@ export interface VerifyAuthenticationResponseOpts {
   state?: string; // mandatory? // To verify the response against the supplied state
   audience: string; // The audience/redirect_uri
   claims?: ClaimOpts; // The claims, typically the same values used during request creation
+  //revocationVerificationCallback: RevocationVerificationCallback
 }
 
 export interface ResponseClaims {
@@ -644,3 +653,31 @@ export const isExternalVerification = (object: InternalVerification | ExternalVe
 
 export const isVP = (object: PEVerifiablePresentation | PEPresentation): object is PEVerifiablePresentation => 'presentation' in object;
 export const isPresentation = (object: PEVerifiablePresentation | PEPresentation): object is PEPresentation => 'presentation_submission' in object;
+
+export enum RevocationStatus {
+  VALID = 'valid',
+  INVALID = 'invalid'
+}
+
+export interface IRevocationVerificationStatus {
+  status: RevocationStatus
+  error?: string
+}
+
+export enum RevocationVcType { // TODO this enum is already somewhere
+  LDP_VC = 'ldp_vc',
+  JWT_VC = 'jwt_vc',
+}
+
+export type RevocationVerificationCallback = (vc: IVerifiableCredential, type: RevocationVcType) => Promise<IRevocationVerificationStatus>
+
+export enum RevocationVerification {
+  NEVER = 'never', // We don't want to verify revocation
+  IF_PRESENT = 'if_present', // If credentialStatus is present, did-auth-siop will verify revocation. If present and not valid an exception is thrown
+  ALWAYS = 'always', // We'll always check the revocation, if not present or not valid, throws an exception
+}
+
+export interface RevocationOpts {
+  revocationVerification: RevocationVerification,
+  revocationVerificationCallback?: RevocationVerificationCallback;
+}

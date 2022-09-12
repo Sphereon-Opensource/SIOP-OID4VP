@@ -18,7 +18,6 @@ class CustomTypeFormatter implements SubTypeFormatter {
   public getDefinition(): Definition {
     // Return a custom schema for the function property.
     return {
-      type: "object",
       properties: {
         isFunction: {
           type: "boolean",

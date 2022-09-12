@@ -51,6 +51,7 @@ export class RP {
       verification?: InternalVerification | ExternalVerification;
       claims?: ClaimOpts;
       checkLinkedDomain?: CheckLinkedDomain;
+      // revocationVerificationCallback?: RevocationVerificationCallback;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
@@ -73,6 +74,7 @@ export class RP {
     claims?: ClaimOpts;
     audience: string;
     checkLinkedDomain?: CheckLinkedDomain;
+    // revocationVerificationCallback?: RevocationVerificationCallback;
   }): VerifyAuthenticationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
@@ -81,6 +83,8 @@ export class RP {
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
       claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
+      checkLinkedDomain: opts?.checkLinkedDomain || this._verifyAuthResponseOpts.checkLinkedDomain, //_authRequestOpts //_verifyAuthResponseOpts
+      //revocationVerificationCallback: opts?.revocationVerificationCallback || this._verifyAuthResponseOpts.revocationVerificationCallback
     };
   }
 
@@ -108,6 +112,8 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
+        checkLinkedDomain: opts.builder.checkLinkedDomain,
+        revocationVerificationCallback: opts.builder.revocationVerificationCallback
       }
     : opts.requestOpts;
 
@@ -123,7 +129,6 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
     ? {
         verification: {
           mode: VerificationMode.INTERNAL,
-          checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
             //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
             didMethods: !opts.builder.requestRegistration.subjectSyntaxTypesSupported
@@ -134,7 +139,12 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
                 getResolver({ resolver: opts.builder.resolvers.values().next().value })
               : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
           },
+          revocationOpts: {
+            revocationVerification: opts.builder.revocationVerification,
+            revocationVerificationCallback: opts.builder.revocationVerificationCallback
+          }
         },
+        revocationVerificationCallback: opts.builder.revocationVerificationCallback
       }
     : opts.verifyOpts;
 }

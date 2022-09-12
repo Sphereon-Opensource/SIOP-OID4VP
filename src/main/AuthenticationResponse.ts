@@ -1,9 +1,8 @@
-import { JWTHeader } from 'did-jwt';
-import { JWK } from 'jose';
-
+import {JWTHeader} from 'did-jwt';
+import {JWK} from 'jose';
 import AuthenticationRequest from './AuthenticationRequest';
-import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
-import { PresentationExchange } from './PresentationExchange';
+import {createDiscoveryMetadataPayload} from './AuthenticationResponseRegistration';
+import {PresentationExchange} from './PresentationExchange';
 import {
   getIssuerDidFromPayload,
   getNonce,
@@ -15,6 +14,7 @@ import {
   signDidJwtPayload,
   validateLinkedDomainWithDid,
   verifyDidJWT,
+  verifyRevocation,
 } from './functions';
 import {
   AuthenticationResponseOpts,
@@ -30,6 +30,7 @@ import {
   PresentationDefinitionWithLocation,
   PresentationLocation,
   ResponseIss,
+  RevocationVerification,
   SIOPErrors,
   SubjectIdentifierType,
   VerifiablePresentationPayload,
@@ -127,12 +128,20 @@ export default class AuthenticationResponse {
     });
 
     const issuerDid = getIssuerDidFromPayload(payload);
-    if (verifyOpts.verification.checkLinkedDomain && verifyOpts.verification.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification.checkLinkedDomain);
+
+    if (verifyOpts.checkLinkedDomain && verifyOpts.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.checkLinkedDomain);
     }
+
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
+
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
+
+    if (verifyOpts.verification.revocationOpts && verifyOpts.verification.revocationOpts.revocationVerification !== RevocationVerification.NEVER) {
+      // TODO if present
+      await verifyRevocation(verPayload.vp_token, verifyOpts.verification.revocationOpts.revocationVerificationCallback)
+    }
 
     return {
       signer: verifiedJWT.signer,

@@ -17,6 +17,8 @@ import {
   ResponseContext,
   ResponseIss,
   ResponseMode,
+  RevocationVerification,
+  RevocationVerificationCallback,
   SuppliedSignature,
 } from './types';
 
@@ -33,6 +35,8 @@ export default class RPBuilder {
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
   checkLinkedDomain?: CheckLinkedDomain;
+  revocationVerification?: RevocationVerification;
+  revocationVerificationCallback?: RevocationVerificationCallback;
 
   // claims?: ClaimPayload;
 
@@ -120,6 +124,16 @@ export default class RPBuilder {
       this.claims.presentationDefinitions.push(definitionOpt);
     }
     return this;
+  }
+
+  withRevocationVerification(mode: RevocationVerification): RPBuilder {
+    this.revocationVerification = mode
+    return this
+  }
+
+  withRevocationVerificationCallback(callback: RevocationVerificationCallback): RPBuilder {
+    this.revocationVerificationCallback = callback
+    return this
   }
 
   build(): RP {

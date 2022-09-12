@@ -6,4 +6,5 @@ export * from './HttpUtils';
 export * from './Keys';
 export * from './LinkedDomainValidations';
 export * from './ObjectUtils';
+export * from './Revocation';
 export * from './State';
