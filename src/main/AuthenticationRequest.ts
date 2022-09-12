@@ -133,7 +133,7 @@ export default class AuthenticationRequest {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
     if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(verPayload.iss, opts.verification.checkLinkedDomain);
+      await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, opts.verification.checkLinkedDomain);
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {

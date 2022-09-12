@@ -128,7 +128,7 @@ export default class AuthenticationResponse {
 
     const issuerDid = getIssuerDidFromPayload(payload);
     if (verifyOpts.verification.checkLinkedDomain && verifyOpts.verification.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification.checkLinkedDomain);
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, verifyOpts.verification.checkLinkedDomain);
     }
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });

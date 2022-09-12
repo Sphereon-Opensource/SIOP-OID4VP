@@ -56,10 +56,10 @@ function checkInvalidMessages(validationErrorMessages: string[]): { status: bool
   return { status: true };
 }
 
-export async function validateLinkedDomainWithDid(did: string, checkLinkedDomain: CheckLinkedDomain) {
+export async function validateLinkedDomainWithDid(did: string, verifyCallback: () => Promise<IVerifyCredentialResult>, checkLinkedDomain: CheckLinkedDomain) {
   const didDocument = await resolveDidDocument(did, { subjectSyntaxTypesSupported: [getMethodFromDid(did)] });
   try {
-    const validationResult = await checkWellknownDid(didDocument);
+    const validationResult = await checkWellKnownDid({ didDocument, verifyCallback });
     if (validationResult.status === ValidationStatusEnum.INVALID) {
       const validationErrorMessages = getValidationErrorMessages(validationResult);
       const messageCondition: { status: boolean; message?: string } = checkInvalidMessages(validationErrorMessages);
@@ -75,13 +75,15 @@ export async function validateLinkedDomainWithDid(did: string, checkLinkedDomain
   }
 }
 
-async function checkWellknownDid(didDocument: DIDDocument): Promise<IDomainLinkageValidation> {
-  const verifyCallback = async (): Promise<IVerifyCredentialResult> => {
-    return { verified: true };
-  };
+interface CheckWellKnownDidArgs {
+  didDocument: DIDDocument;
+  verifyCallback: () => Promise<IVerifyCredentialResult>
+}
+
+async function checkWellKnownDid(args: CheckWellKnownDidArgs): Promise<IDomainLinkageValidation> {
   const verifier = new WellKnownDidVerifier({
-    verifySignatureCallback: () => verifyCallback(),
+    verifySignatureCallback: () => args.verifyCallback(),
     onlyVerifyServiceDid: false,
   });
-  return await verifier.verifyDomainLinkage({ didDocument: didDocument });
+  return await verifier.verifyDomainLinkage({ didDocument: args.didDocument });
 }
