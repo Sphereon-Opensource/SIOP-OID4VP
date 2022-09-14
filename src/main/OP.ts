@@ -154,6 +154,15 @@ async function parseAndResolveUri(encodedUri: string) {
 }
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {
+  if (opts?.builder?.didMethods.length && opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
+    if (!Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
+      opts.builder.responseRegistration.subjectSyntaxTypesSupported = [opts.builder.responseRegistration.subjectSyntaxTypesSupported];
+    }
+    const unionSubjectSyntaxTypes = new Set();
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
+    opts.builder.didMethods.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
+  }
   const responseOpts: AuthenticationResponseOpts = opts.builder
     ? {
         registration: {
@@ -234,9 +243,10 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
             subjectSyntaxTypesSupported: subjectSyntaxTypesSupported,
-            resolver:
-              opts.builder.resolvers && opts.builder.resolvers.size //TODO: discuss this with Niels
-                ? getResolver({ resolver: opts.builder.resolvers.values().next().value })
+            resolvers:
+              //TODO: discuss this with Niels
+              opts.builder.resolvers && opts.builder.resolvers.size
+                ? opts.builder.resolvers
                 : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
           },
         },

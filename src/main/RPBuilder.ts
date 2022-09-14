@@ -33,7 +33,7 @@ export default class RPBuilder {
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
   checkLinkedDomain?: CheckLinkedDomain;
-
+  didMethods: string[] = [];
   // claims?: ClaimPayload;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
@@ -67,6 +67,7 @@ export default class RPBuilder {
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): RPBuilder {
     this.addResolver(didMethod, new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
+    this.didMethods.push(didMethod);
     return this;
   }
 
