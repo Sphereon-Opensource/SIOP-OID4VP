@@ -1,24 +1,24 @@
-import nock from 'nock';
-
-import {CheckLinkedDomain, validateLinkedDomainWithDid} from '../../src/main';
-import {ISignedDomainLinkageCredential, IVerifyCallbackArgs, IVerifyCredentialResult, VerifyCallback} from "@sphereon/wellknown-dids-client";
-import {getResolver} from "@sphereon/ssi-sdk-bls-did-resolver-key";
 import {
   LdCredentialModule,
-  SphereonBbsBlsSignature2020, SphereonEcdsaSecp256k1RecoverySignature2020,
+  SphereonBbsBlsSignature2020,
+  SphereonEcdsaSecp256k1RecoverySignature2020,
   SphereonEd25519Signature2018,
-  SphereonEd25519Signature2020
-} from "@sphereon/jsonld-vc-verifier";
-import {LdDefaultContexts} from "@sphereon/jsonld-vc-verifier/dist/src/ld-default-contexts";
-import {LdContextLoader} from "@sphereon/jsonld-vc-verifier/dist/src/ld-context-loader";
-import {LdSuiteLoader} from "@sphereon/jsonld-vc-verifier/dist/src/ld-suite-loader";
-import {DIDResolver} from "@sphereon/jsonld-vc-verifier/dist/src/resolver";
-import {Resolver} from "did-resolver";
-import {AssertionProofPurpose} from "@sphereon/jsonld-vc-verifier/dist/src/types/types";
+  SphereonEd25519Signature2020,
+} from '@sphereon/jsonld-vc-verifier';
+import { LdContextLoader } from '@sphereon/jsonld-vc-verifier/dist/src/ld-context-loader';
+import { LdDefaultContexts } from '@sphereon/jsonld-vc-verifier/dist/src/ld-default-contexts';
+import { LdSuiteLoader } from '@sphereon/jsonld-vc-verifier/dist/src/ld-suite-loader';
+import { DIDResolver } from '@sphereon/jsonld-vc-verifier/dist/src/resolver';
+import { AssertionProofPurpose } from '@sphereon/jsonld-vc-verifier/dist/src/types/types';
+import { getResolver } from '@sphereon/ssi-sdk-bls-did-resolver-key';
+import { ISignedDomainLinkageCredential, IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
+import { Resolver } from 'did-resolver';
+import nock from 'nock';
 
-let ldCredentialModule: LdCredentialModule
-let didResolver: DIDResolver
-let verifyCallback: VerifyCallback
+import { CheckLinkedDomain, validateLinkedDomainWithDid } from '../../src/main';
+
+let ldCredentialModule: LdCredentialModule;
+let didResolver: DIDResolver;
 
 beforeAll(() => {
   ldCredentialModule = new LdCredentialModule({
@@ -37,14 +37,19 @@ beforeAll(() => {
   didResolver = new DIDResolver({
     resolver: new Resolver({ ...getResolver() }),
   });
-})
+});
 
-verifyCallback = async (args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => {
+const verifyCallback = async (args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => {
   if (typeof args.credential === 'string') {
-     args.credential = JSON.parse(args.credential)
+    args.credential = JSON.parse(args.credential);
   }
-  const verified = await ldCredentialModule.verifyCredential(args.credential as ISignedDomainLinkageCredential, didResolver, true, new AssertionProofPurpose())
-  return { verified }
+  const verified = await ldCredentialModule.verifyCredential(
+    args.credential as ISignedDomainLinkageCredential,
+    didResolver,
+    true,
+    new AssertionProofPurpose()
+  );
+  return { verified };
 };
 
 describe('validateLinkedDomainWithDid should', () => {

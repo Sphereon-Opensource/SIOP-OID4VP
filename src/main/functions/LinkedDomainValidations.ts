@@ -1,4 +1,17 @@
 import {
+  LdCredentialModule,
+  SphereonBbsBlsSignature2020,
+  SphereonEcdsaSecp256k1RecoverySignature2020,
+  SphereonEd25519Signature2018,
+  SphereonEd25519Signature2020,
+} from '@sphereon/jsonld-vc-verifier';
+import { LdContextLoader } from '@sphereon/jsonld-vc-verifier/dist/src/ld-context-loader';
+import { LdDefaultContexts } from '@sphereon/jsonld-vc-verifier/dist/src/ld-default-contexts';
+import { LdSuiteLoader } from '@sphereon/jsonld-vc-verifier/dist/src/ld-suite-loader';
+import { DIDResolver } from '@sphereon/jsonld-vc-verifier/dist/src/resolver';
+import { AssertionProofPurpose } from '@sphereon/jsonld-vc-verifier/dist/src/types/types';
+import { getResolver } from '@sphereon/ssi-sdk-bls-did-resolver-key';
+import {
   IDomainLinkageValidation,
   ISignedDomainLinkageCredential,
   IVerifyCallbackArgs,
@@ -9,27 +22,14 @@ import {
   WDCErrors,
   WellKnownDidVerifier,
 } from '@sphereon/wellknown-dids-client';
+import { verifyCredential } from 'did-jwt-vc';
+import { JWT } from 'did-jwt-vc/lib/types';
+import { Resolver } from 'did-resolver';
 
-import {CheckLinkedDomain, DIDDocument} from '../types';
+import { CheckLinkedDomain, DIDDocument } from '../types';
 
-import {resolveDidDocument} from './DIDResolution';
-import {getMethodFromDid} from './DidJWT';
-import {AssertionProofPurpose} from "@sphereon/jsonld-vc-verifier/dist/src/types/types";
-import {
-  LdCredentialModule,
-  SphereonBbsBlsSignature2020,
-  SphereonEcdsaSecp256k1RecoverySignature2020,
-  SphereonEd25519Signature2018,
-  SphereonEd25519Signature2020
-} from "@sphereon/jsonld-vc-verifier";
-import {LdContextLoader} from "@sphereon/jsonld-vc-verifier/dist/src/ld-context-loader";
-import {LdDefaultContexts} from "@sphereon/jsonld-vc-verifier/dist/src/ld-default-contexts";
-import {LdSuiteLoader} from "@sphereon/jsonld-vc-verifier/dist/src/ld-suite-loader";
-import {DIDResolver} from "@sphereon/jsonld-vc-verifier/dist/src/resolver";
-import {Resolver} from "did-resolver";
-import {getResolver} from "@sphereon/ssi-sdk-bls-did-resolver-key";
-import {VerifiedCredential, verifyCredential} from "did-jwt-vc";
-import {JWT} from "did-jwt-vc/lib/types";
+import { resolveDidDocument } from './DIDResolution';
+import { getMethodFromDid } from './DidJWT';
 
 function getValidationErrorMessages(validationResult: IDomainLinkageValidation): string[] {
   const messages = [];
@@ -97,7 +97,7 @@ export async function validateLinkedDomainWithDid(did: string, verifyCallback: V
 
 interface CheckWellKnownDidArgs {
   didDocument: DIDDocument;
-  verifyCallback: VerifyCallback
+  verifyCallback: VerifyCallback;
 }
 
 async function checkWellKnownDid(args: CheckWellKnownDidArgs): Promise<IDomainLinkageValidation> {
@@ -111,21 +111,21 @@ async function checkWellKnownDid(args: CheckWellKnownDidArgs): Promise<IDomainLi
 export const verifyCallback = async (args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => {
   try {
     if (args?.proofFormat === ProofFormatTypesEnum.JSON_WEB_TOKEN && typeof args.credential === 'string') {
-      return verifyJsonWebTokenVC(args as JWT)
+      return verifyJsonWebTokenVC(args as JWT);
     } else if (args?.proofFormat === ProofFormatTypesEnum.JSON_LD) {
-      return verifyJsonLdVC(args)
+      return verifyJsonLdVC(args);
     }
   } catch (error: unknown) {
-    throw new Error(`The verifiable credential is invalid ${error}`)
+    throw new Error(`The verifiable credential is invalid ${error}`);
   }
-}
+};
 
 const verifyJsonWebTokenVC = async (credential: JWT): Promise<IVerifyCredentialResult> => {
-  await verifyCredential(credential, new Resolver({ ...getResolver() }))
-  return { verified: true }
-}
+  await verifyCredential(credential, new Resolver({ ...getResolver() }));
+  return { verified: true };
+};
 
-const verifyJsonLdVC = async (args: Pick<IVerifyCallbackArgs, "credential">): Promise<IVerifyCredentialResult> => {
+const verifyJsonLdVC = async (args: Pick<IVerifyCallbackArgs, 'credential'>): Promise<IVerifyCredentialResult> => {
   const ldCredentialModule = new LdCredentialModule({
     ldContextLoader: new LdContextLoader({
       contextsPaths: [LdDefaultContexts],
@@ -142,6 +142,11 @@ const verifyJsonLdVC = async (args: Pick<IVerifyCallbackArgs, "credential">): Pr
   const didResolver = new DIDResolver({
     resolver: new Resolver({ ...getResolver() }),
   });
-  const verified = await ldCredentialModule.verifyCredential(args.credential as ISignedDomainLinkageCredential, didResolver, true, new AssertionProofPurpose())
-  return { verified }
-}
+  const verified = await ldCredentialModule.verifyCredential(
+    args.credential as ISignedDomainLinkageCredential,
+    didResolver,
+    true,
+    new AssertionProofPurpose()
+  );
+  return { verified };
+};

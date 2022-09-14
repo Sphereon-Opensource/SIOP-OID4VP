@@ -1,10 +1,10 @@
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation } from '@sphereon/ssi-types';
+import { IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose';
 
 import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
-import {IVerifyCredentialResult} from "@sphereon/wellknown-dids-client";
 
 export const expirationTime = 10 * 60;
 
@@ -473,7 +473,7 @@ export interface VerifyAuthenticationRequestOpts {
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // If provided the nonce in the request needs to match
   // redirectUri?: string;
-  verifyCallback?: () => Promise<IVerifyCredentialResult>
+  verifyCallback?: () => Promise<IVerifyCredentialResult>;
 }
 
 export interface VerifyAuthenticationResponseOpts {
@@ -484,7 +484,7 @@ export interface VerifyAuthenticationResponseOpts {
   state?: string; // mandatory? // To verify the response against the supplied state
   audience: string; // The audience/redirect_uri
   claims?: ClaimOpts; // The claims, typically the same values used during request creation
-  verifyCallback?: () => Promise<IVerifyCredentialResult>,
+  verifyCallback?: () => Promise<IVerifyCredentialResult>;
 }
 
 export interface ResponseClaims {
