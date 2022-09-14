@@ -1,10 +1,50 @@
 import nock from 'nock';
 
 import {CheckLinkedDomain, validateLinkedDomainWithDid} from '../../src/main';
-import {IVerifyCredentialResult} from "@sphereon/wellknown-dids-client";
+import {ISignedDomainLinkageCredential, IVerifyCallbackArgs, IVerifyCredentialResult, VerifyCallback} from "@sphereon/wellknown-dids-client";
+import {getResolver} from "@sphereon/ssi-sdk-bls-did-resolver-key";
+import {
+  LdCredentialModule,
+  SphereonBbsBlsSignature2020, SphereonEcdsaSecp256k1RecoverySignature2020,
+  SphereonEd25519Signature2018,
+  SphereonEd25519Signature2020
+} from "@sphereon/jsonld-vc-verifier";
+import {LdDefaultContexts} from "@sphereon/jsonld-vc-verifier/dist/src/ld-default-contexts";
+import {LdContextLoader} from "@sphereon/jsonld-vc-verifier/dist/src/ld-context-loader";
+import {LdSuiteLoader} from "@sphereon/jsonld-vc-verifier/dist/src/ld-suite-loader";
+import {DIDResolver} from "@sphereon/jsonld-vc-verifier/dist/src/resolver";
+import {Resolver} from "did-resolver";
+import {AssertionProofPurpose} from "@sphereon/jsonld-vc-verifier/dist/src/types/types";
 
-const verifyCallback = async (): Promise<IVerifyCredentialResult> => {
-  return { verified: true };
+let ldCredentialModule: LdCredentialModule
+let didResolver: DIDResolver
+let verifyCallback: VerifyCallback
+
+beforeAll(() => {
+  ldCredentialModule = new LdCredentialModule({
+    ldContextLoader: new LdContextLoader({
+      contextsPaths: [LdDefaultContexts],
+    }),
+    ldSuiteLoader: new LdSuiteLoader({
+      ldSignatureSuites: [
+        new SphereonBbsBlsSignature2020(),
+        new SphereonEd25519Signature2018(),
+        new SphereonEd25519Signature2020(),
+        new SphereonEcdsaSecp256k1RecoverySignature2020(),
+      ],
+    }),
+  });
+  didResolver = new DIDResolver({
+    resolver: new Resolver({ ...getResolver() }),
+  });
+})
+
+verifyCallback = async (args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => {
+  if (typeof args.credential === 'string') {
+     args.credential = JSON.parse(args.credential)
+  }
+  const verified = await ldCredentialModule.verifyCredential(args.credential as ISignedDomainLinkageCredential, didResolver, true, new AssertionProofPurpose())
+  return { verified }
 };
 
 describe('validateLinkedDomainWithDid should', () => {
