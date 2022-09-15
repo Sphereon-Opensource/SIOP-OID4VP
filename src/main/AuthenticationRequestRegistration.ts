@@ -63,7 +63,6 @@ function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): 
     response_types_supported: opts.responseTypesSupported,
     scopes_supported: opts.scopesSupported,
     subject_types_supported: opts.subjectTypesSupported,
-    // TODO: @Niels do we need the default did-methods?
     subject_syntax_types_supported: opts.subjectSyntaxTypesSupported || ['did:web:', 'did:ion:'],
     vp_formats: opts.vpFormatsSupported,
   };
