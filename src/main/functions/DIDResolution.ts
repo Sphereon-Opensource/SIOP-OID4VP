@@ -18,6 +18,9 @@ export function getResolver(opts: ResolveOpts): Resolvable {
   }[] = [];
   if (opts.subjectSyntaxTypesSupported.indexOf(SubjectIdentifierType.DID) === -1) {
     const specificDidMethods = opts.subjectSyntaxTypesSupported.filter((sst) => sst.includes('did:'));
+    if (!specificDidMethods.length) {
+      throw new Error(SIOPErrors.NO_DID_METHOD_FOUND);
+    }
     for (const didMethod of specificDidMethods) {
       const uniResolver = getUniResolver(getMethodFromDid(didMethod), { resolveUrl: opts.resolveUrl });
       uniResolvers.push(uniResolver);
