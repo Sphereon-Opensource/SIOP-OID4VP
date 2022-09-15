@@ -253,14 +253,12 @@ async function createSIOPResponsePayload(
   // *********************************************************************************
 
   const { verifiable_presentations, vp_token } = extractPresentations(resOpts);
-  return {
+  const authenticationResponsePayload: AuthenticationResponsePayload = {
     iss: ResponseIss.SELF_ISSUED_V2,
     sub: supportedDidMethods.length && resOpts.did ? resOpts.did : thumbprint,
     aud: verifiedJwt.payload.redirect_uri,
     did: resOpts.did,
     sub_type: supportedDidMethods.length && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
-    //FIXME: @Niels I'm not sure about this, but since we don't want jwk if we're supporting any did method, this seemed right.
-    sub_jwk: supportedDidMethods.length && resOpts.did ? undefined : subJwk,
     state,
     nonce,
     iat: Date.now() / 1000,
@@ -269,6 +267,10 @@ async function createSIOPResponsePayload(
     vp_token,
     verifiable_presentations,
   };
+  if (supportedDidMethods.length && resOpts.did) {
+    authenticationResponsePayload.sub_jwk = subJwk;
+  }
+  return authenticationResponsePayload;
 }
 
 function assertValidResponseOpts(opts: AuthenticationResponseOpts) {

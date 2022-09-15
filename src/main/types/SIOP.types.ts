@@ -92,7 +92,7 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   iss: ResponseIss.SELF_ISSUED_V2 | string; // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
   sub: string; // did (or thumbprint of sub_jwk key when type is jkt)
   // sub_type: SubjectIdentifierType;
-  sub_jwk: JWK;
+  sub_jwk?: JWK;
   aud: string; // redirect_uri from request
   exp: number; // Expiration time
   iat: number; // Issued at time
