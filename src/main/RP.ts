@@ -139,6 +139,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
               : opts.builder.requestRegistration.subjectSyntaxTypesSupported,
             resolvers:
               //TODO: discuss this with Niels
+              //https://sphereon.atlassian.net/browse/VDX-139
               opts.builder.resolvers && opts.builder.resolvers.size
                 ? opts.builder.resolvers
                 : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),

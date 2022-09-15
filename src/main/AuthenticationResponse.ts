@@ -247,6 +247,7 @@ async function createSIOPResponsePayload(
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
 
+  //https://sphereon.atlassian.net/browse/VDX-140
   // *********************************************************************************
   // todo We are missing a wrapper object. Actually the current object is the id_token
   // *********************************************************************************

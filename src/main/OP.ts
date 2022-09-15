@@ -245,6 +245,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
             subjectSyntaxTypesSupported: subjectSyntaxTypesSupported,
             resolvers:
               //TODO: discuss this with Niels
+              //https://sphereon.atlassian.net/browse/VDX-139
               opts.builder.resolvers && opts.builder.resolvers.size
                 ? opts.builder.resolvers
                 : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
