@@ -114,7 +114,7 @@ describe('RP and OP interaction should', () => {
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
-      .addDidMethod('did:ethr')
+      .addDidMethod('ethr')
       .registrationBy({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -186,7 +186,7 @@ describe('RP and OP interaction should', () => {
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
-      .addDidMethod('did:ethr')
+      .addDidMethod('ethr')
       .registrationBy({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -200,7 +200,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
-      .addDidMethod('did:ethr')
+      .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -260,7 +260,7 @@ describe('RP and OP interaction should', () => {
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
-      .addDidMethod('did:ethr')
+      .addDidMethod('ethr')
       .registrationBy({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -278,7 +278,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
-      .addDidMethod('did:ethr')
+      .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -331,7 +331,7 @@ describe('RP and OP interaction should', () => {
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .addDidMethod('did:ethr')
+      .addDidMethod('ethr')
       .registrationBy({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -349,7 +349,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
-      .addDidMethod('did:ethr')
+      .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -617,7 +617,7 @@ describe('RP and OP interaction should', () => {
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .addDidMethod('did:ethr')
+      .addDidMethod('ethr')
       .registrationBy({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -636,7 +636,7 @@ describe('RP and OP interaction should', () => {
     const op = OP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withExpiresIn(1000)
-      .addDidMethod('did:ethr')
+      .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',

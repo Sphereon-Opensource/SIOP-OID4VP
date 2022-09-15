@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { getResolver, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
+import { getResolver, postAuthenticationResponse, postAuthenticationResponseJwt, toSIOPRegistrationDidMethod } from './functions';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
@@ -160,7 +160,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
     }
     const unionSubjectSyntaxTypes = new Set();
     opts.builder.responseRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
-    opts.builder.didMethods.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
+    opts.builder.didMethods.forEach((didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
     opts.builder.responseRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
   }
   const responseOpts: AuthenticationResponseOpts = opts.builder
@@ -243,6 +243,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
             subjectSyntaxTypesSupported: subjectSyntaxTypesSupported,
+            resolver: opts.builder.resolver,
             resolvers:
               //TODO: discuss this with Niels
               //https://sphereon.atlassian.net/browse/VDX-139

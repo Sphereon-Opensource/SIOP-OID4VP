@@ -242,7 +242,7 @@ async function createSIOPResponsePayload(
   const supportedDidMethods = verifiedJwt.payload.registration?.subject_syntax_types_supported?.filter((sst) =>
     sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
   );
-  const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
+
   const state = resOpts.state || getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
@@ -255,7 +255,7 @@ async function createSIOPResponsePayload(
   const { verifiable_presentations, vp_token } = extractPresentations(resOpts);
   const authenticationResponsePayload: AuthenticationResponsePayload = {
     iss: ResponseIss.SELF_ISSUED_V2,
-    sub: supportedDidMethods.length && resOpts.did ? resOpts.did : thumbprint,
+    sub: resOpts.did,
     aud: verifiedJwt.payload.redirect_uri,
     did: resOpts.did,
     sub_type: supportedDidMethods.length && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
@@ -268,7 +268,9 @@ async function createSIOPResponsePayload(
     verifiable_presentations,
   };
   if (supportedDidMethods.length && resOpts.did) {
+    const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
     authenticationResponsePayload.sub_jwk = subJwk;
+    authenticationResponsePayload.sub = thumbprint;
   }
   return authenticationResponsePayload;
 }

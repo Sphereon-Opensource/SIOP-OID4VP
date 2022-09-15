@@ -3,6 +3,7 @@ import { JWK } from 'jose';
 
 export interface ResolveOpts {
   resolver?: Resolvable;
+  resolvers?: Map<string, Resolvable>;
   resolveUrl?: string;
   subjectSyntaxTypesSupported?: string[];
 }

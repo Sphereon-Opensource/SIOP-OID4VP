@@ -28,8 +28,13 @@ export default class OPBuilder {
   didMethods: string[] = [];
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
-    this.addResolver(didMethod, new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
-    this.didMethods.push(didMethod);
+    if (didMethod.startsWith('did:')) {
+      this.addResolver(getMethodFromDid(didMethod), new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
+      this.didMethods.push(getMethodFromDid(didMethod));
+    } else {
+      this.addResolver(didMethod, new Resolver(getUniResolver(didMethod, { ...opts })));
+      this.didMethods.push(didMethod);
+    }
     return this;
   }
 

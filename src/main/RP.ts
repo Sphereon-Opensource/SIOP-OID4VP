@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 
-import { getNonce, getResolver, getState } from './functions';
+import { getNonce, getResolver, getState, toSIOPRegistrationDidMethod } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -125,7 +125,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
     }
     const unionSubjectSyntaxTypes = new Set();
     opts.builder.requestRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
-    opts.builder.didMethods.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
+    opts.builder.didMethods.forEach((didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
     opts.builder.requestRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
   }
   return opts.builder
@@ -134,9 +134,8 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
-            subjectSyntaxTypesSupported: !opts.builder.requestRegistration.subjectSyntaxTypesSupported
-              ? []
-              : opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+            subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+            resolver: opts.builder.resolver,
             resolvers:
               //TODO: discuss this with Niels
               //https://sphereon.atlassian.net/browse/VDX-139
@@ -144,7 +143,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
                 ? opts.builder.resolvers
                 : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
           },
-        },
+        } as InternalVerification,
       }
     : opts.verifyOpts;
 }

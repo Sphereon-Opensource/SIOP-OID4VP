@@ -66,8 +66,13 @@ export default class RPBuilder {
   }
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): RPBuilder {
-    this.addResolver(didMethod, new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
-    this.didMethods.push(didMethod);
+    if (didMethod.startsWith('did:')) {
+      this.addResolver(getMethodFromDid(didMethod), new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
+      this.didMethods.push(getMethodFromDid(didMethod));
+    } else {
+      this.addResolver(didMethod, new Resolver(getUniResolver(didMethod, { ...opts })));
+      this.didMethods.push(didMethod);
+    }
     return this;
   }
 
