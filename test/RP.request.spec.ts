@@ -241,7 +241,7 @@ describe('RP should', () => {
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
       })
-      .addDidMethod('ethr')
+      .addDidMethod('did:ethr')
       .build()
 
       .createAuthenticationRequest({
