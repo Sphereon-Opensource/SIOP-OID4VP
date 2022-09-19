@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { getResolver, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
+import { getResolver, postAuthenticationResponse, postAuthenticationResponseJwt, toSIOPRegistrationDidMethod } from './functions';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
@@ -154,6 +154,15 @@ async function parseAndResolveUri(encodedUri: string) {
 }
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {
+  if (opts?.builder?.didMethods.length && opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
+    if (!Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
+      opts.builder.responseRegistration.subjectSyntaxTypesSupported = [opts.builder.responseRegistration.subjectSyntaxTypesSupported];
+    }
+    const unionSubjectSyntaxTypes = new Set();
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
+    opts.builder.didMethods.forEach((didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
+  }
   const responseOpts: AuthenticationResponseOpts = opts.builder
     ? {
         registration: {
@@ -212,13 +221,22 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
   return responseOpts;
 }
 
-function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; verifyOpts?: Partial<VerifyAuthenticationRequestOpts> }) {
+function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
+  builder?: OPBuilder;
+  verifyOpts?: VerifyAuthenticationRequestOpts;
+}): VerifyAuthenticationRequestOpts {
   const subjectSyntaxTypesSupported = [];
   if (opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
     if (Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
       subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
     } else {
-      subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
+      subjectSyntaxTypesSupported.push(opts.builder.responseRegistration.subjectSyntaxTypesSupported);
+    }
+  } else if (opts?.verifyOpts?.verification?.resolveOpts?.subjectSyntaxTypesSupported) {
+    if (Array.isArray(opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported)) {
+      subjectSyntaxTypesSupported.push(...opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported);
+    } else {
+      subjectSyntaxTypesSupported.push(opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported);
     }
   }
   return opts.builder
@@ -227,14 +245,16 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
-            //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
-            didMethods: subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
-            resolver: opts.builder.resolvers
-              ? //TODO: discuss this with Niels
-                getResolver({ resolver: opts.builder.resolvers.values().next().value })
-              : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
+            subjectSyntaxTypesSupported: subjectSyntaxTypesSupported,
+            resolver: opts.builder.resolver,
+            resolvers:
+              //TODO: discuss this with Niels
+              //https://sphereon.atlassian.net/browse/VDX-139
+              opts.builder.resolvers && opts.builder.resolvers.size
+                ? opts.builder.resolvers
+                : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
           },
-        },
+        } as InternalVerification,
       }
     : opts.verifyOpts;
 }
