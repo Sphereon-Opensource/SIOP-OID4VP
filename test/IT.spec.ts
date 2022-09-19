@@ -130,7 +130,6 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
-      .addDidMethod('ethr')
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
       .registrationBy({
@@ -142,7 +141,7 @@ describe('RP and OP interaction should', () => {
         vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
-        subjectSyntaxTypesSupported: [],
+        subjectSyntaxTypesSupported: ['did:ethr'],
         registrationBy: { type: PassBy.VALUE },
       })
       .build();
@@ -428,7 +427,6 @@ describe('RP and OP interaction should', () => {
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .addDidMethod('ethr')
       .registrationBy({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -447,7 +445,6 @@ describe('RP and OP interaction should', () => {
     const op = OP.builder()
       .withExpiresIn(1000)
       .addVerifyCallback(verifyCallback)
-      .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -458,7 +455,7 @@ describe('RP and OP interaction should', () => {
         vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
-        subjectSyntaxTypesSupported: [],
+        subjectSyntaxTypesSupported: ['did'],
         registrationBy: { type: PassBy.VALUE },
       })
       .build();
@@ -522,7 +519,6 @@ describe('RP and OP interaction should', () => {
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .addDidMethod('ion')
       .registrationBy({
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -546,7 +542,6 @@ describe('RP and OP interaction should', () => {
     const op = OP.builder()
       .addVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
-      .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -562,7 +557,7 @@ describe('RP and OP interaction should', () => {
         },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
-        subjectSyntaxTypesSupported: [],
+        subjectSyntaxTypesSupported: ['did:ethr'],
         registrationBy: { type: PassBy.VALUE },
       })
       .build();

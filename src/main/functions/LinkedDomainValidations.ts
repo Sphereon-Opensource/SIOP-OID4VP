@@ -3,7 +3,7 @@ import { IDomainLinkageValidation, ValidationStatusEnum, VerifyCallback, WDCErro
 import { CheckLinkedDomain, DIDDocument } from '../types';
 
 import { resolveDidDocument } from './DIDResolution';
-import { getMethodFromDid } from './DidJWT';
+import { getMethodFromDid, toSIOPRegistrationDidMethod } from './DidJWT';
 
 function getValidationErrorMessages(validationResult: IDomainLinkageValidation): string[] {
   const messages = [];
@@ -51,7 +51,7 @@ function checkInvalidMessages(validationErrorMessages: string[]): { status: bool
 }
 
 export async function validateLinkedDomainWithDid(did: string, verifyCallback: VerifyCallback, checkLinkedDomain: CheckLinkedDomain) {
-  const didDocument = await resolveDidDocument(did, { subjectSyntaxTypesSupported: [getMethodFromDid(did)] });
+  const didDocument = await resolveDidDocument(did, { subjectSyntaxTypesSupported: [toSIOPRegistrationDidMethod(getMethodFromDid(did))] });
   try {
     const validationResult = await checkWellKnownDid({ didDocument, verifyCallback });
     if (validationResult.status === ValidationStatusEnum.INVALID) {

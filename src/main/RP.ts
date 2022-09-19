@@ -1,7 +1,7 @@
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 
-import { getNonce, getResolver, getState } from './functions';
+import { getNonce, getResolver, getState, toSIOPRegistrationDidMethod } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -124,6 +124,15 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
 }
 
 function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: Partial<VerifyAuthenticationResponseOpts> }) {
+  if (opts?.builder?.didMethods.length && opts.builder?.requestRegistration?.subjectSyntaxTypesSupported) {
+    if (!Array.isArray(opts.builder.requestRegistration.subjectSyntaxTypesSupported)) {
+      opts.builder.requestRegistration.subjectSyntaxTypesSupported = [opts.builder.requestRegistration.subjectSyntaxTypesSupported];
+    }
+    const unionSubjectSyntaxTypes = new Set();
+    opts.builder.requestRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
+    opts.builder.didMethods.forEach((didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
+    opts.builder.requestRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
+  }
   return opts.builder
     ? {
         verification: {
@@ -131,16 +140,16 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           verifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
-            //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
-            didMethods: !opts.builder.requestRegistration.subjectSyntaxTypesSupported
-              ? []
-              : opts.builder.requestRegistration.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
-            resolver: opts.builder.resolvers
-              ? //TODO: discuss this with Niels
-                getResolver({ resolver: opts.builder.resolvers.values().next().value })
-              : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
+            subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+            resolver: opts.builder.resolver,
+            resolvers:
+              //TODO: discuss this with Niels
+              //https://sphereon.atlassian.net/browse/VDX-139
+              opts.builder.resolvers && opts.builder.resolvers.size
+                ? opts.builder.resolvers
+                : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
           },
-        },
+        } as InternalVerification,
       }
     : opts.verifyOpts;
 }

@@ -17,7 +17,7 @@ import {
   ResponseType,
   Scope,
   SigningAlgo,
-  SubjectIdentifierType,
+  SubjectSyntaxTypesSupportedValues,
   SubjectType,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
@@ -59,7 +59,7 @@ describe('SIOP Request Validation', () => {
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         response_types_supported: [ResponseType.ID_TOKEN],
         scopes_supported: [Scope.OPENID],
-        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
         subject_types_supported: [SubjectType.PAIRWISE],
         vp_formats: {
           ldp_vc: {
@@ -80,7 +80,7 @@ describe('SIOP Request Validation', () => {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          subjectSyntaxTypesSupported: ['ethr'],
+          subjectSyntaxTypesSupported: ['did:ethr'],
         },
       },
       verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
@@ -128,7 +128,7 @@ describe('verifyJWT should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
         vpFormatsSupported: {
           ldp_vc: {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
@@ -195,7 +195,7 @@ describe('verifyJWT should', () => {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          subjectSyntaxTypesSupported: ['ethr'],
+          subjectSyntaxTypesSupported: ['did:ethr'],
         },
       },
       verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
@@ -216,7 +216,7 @@ describe('OP and RP communication should', () => {
           proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
         },
       },
-      subject_syntax_types_supported: [SubjectIdentifierType.DID, 'did:web'],
+      subject_syntax_types_supported: ['did:web'],
     });
   });
 
@@ -226,9 +226,9 @@ describe('OP and RP communication should', () => {
         proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
       },
     };
-    metadata.rpMetadata.subject_syntax_types_supported = ['did:web', SubjectIdentifierType.DID];
+    metadata.rpMetadata.subject_syntax_types_supported = ['did:web'];
     expect(metadata.verify()).toEqual({
-      subject_syntax_types_supported: ['did:web', SubjectIdentifierType.DID],
+      subject_syntax_types_supported: ['did:web'],
       vp_formats: {
         ldp_vc: {
           proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
@@ -244,7 +244,6 @@ describe('OP and RP communication should', () => {
       },
     };
     const result = metadata.verify();
-    expect(result['subject_syntax_types_supported']).toContain(SubjectIdentifierType.DID);
     expect(result['subject_syntax_types_supported']).toContain('did:web');
     expect(result['vp_formats']).toStrictEqual({
       ldp_vc: {
@@ -254,7 +253,7 @@ describe('OP and RP communication should', () => {
   });
 
   it('not work if RP does not support any OP did method', () => {
-    metadata.rpMetadata.subject_syntax_types_supported = ['did:notsupported:', SubjectIdentifierType.DID];
+    metadata.rpMetadata.subject_syntax_types_supported = ['did:notsupported'];
     expect(() => metadata.verify()).toThrowError(SIOPErrors.DID_METHODS_NOT_SUPORTED);
   });
 

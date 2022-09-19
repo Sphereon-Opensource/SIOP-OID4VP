@@ -93,7 +93,7 @@ export interface AuthenticationResponsePayload extends JWTPayload {
   iss: ResponseIss.SELF_ISSUED_V2 | string; // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
   sub: string; // did (or thumbprint of sub_jwk key when type is jkt)
   // sub_type: SubjectIdentifierType;
-  sub_jwk: JWK;
+  sub_jwk?: JWK;
   aud: string; // redirect_uri from request
   exp: number; // Expiration time
   iat: number; // Issued at time
@@ -465,12 +465,10 @@ export type InternalVerification = Verification;
 export interface ExternalVerification extends Verification {
   verifyUri: string; // url to call to verify the id_token signature
   authZToken?: string; // Optional: bearer token to use to the call
-  resolveOpts: ResolveOpts;
 }
 
 export interface VerifyAuthenticationRequestOpts {
   verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
-  checkLinkedDomain?: CheckLinkedDomain;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // If provided the nonce in the request needs to match
   // redirectUri?: string;
@@ -479,7 +477,6 @@ export interface VerifyAuthenticationRequestOpts {
 
 export interface VerifyAuthenticationResponseOpts {
   verification: InternalVerification | ExternalVerification;
-  checkLinkedDomain?: CheckLinkedDomain;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // mandatory? // To verify the response against the supplied nonce
   state?: string; // mandatory? // To verify the response against the supplied state
@@ -596,6 +593,11 @@ export enum ResponseType {
 export enum SubjectIdentifierType {
   JKT = 'jkt',
   DID = 'did',
+}
+
+export enum SubjectSyntaxTypesSupportedValues {
+  DID = 'did',
+  JWK_THUMBPRINT = 'urn:ietf:params:oauth:jwk-thumbprint',
 }
 
 export enum CredentialFormat {

@@ -21,7 +21,7 @@ import {
   RPRegistrationMetadataPayload,
   Scope,
   SigningAlgo,
-  SubjectIdentifierType,
+  SubjectSyntaxTypesSupportedValues,
   SubjectType,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
@@ -227,7 +227,7 @@ export const metadata: {
   opMetadata: {
     issuer: ResponseIss.SELF_ISSUED_V2,
     authorization_endpoint: 'http://test.com',
-    subject_syntax_types_supported: ['did:web', SubjectIdentifierType.DID],
+    subject_syntax_types_supported: ['did:web'],
     id_token_signing_alg_values_supported: undefined,
     request_object_signing_alg_values_supported: [SigningAlgo.EDDSA],
     response_types_supported: ResponseType.ID_TOKEN,
@@ -247,7 +247,7 @@ export const metadata: {
     request_object_signing_alg_values_supported: [SigningAlgo.EDDSA],
     response_types_supported: [ResponseType.ID_TOKEN],
     scopes_supported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
-    subject_syntax_types_supported: [SubjectIdentifierType.DID, 'did:web', 'did:key'],
+    subject_syntax_types_supported: [SubjectSyntaxTypesSupportedValues.DID.valueOf(), 'did:web', 'did:key'],
     subject_types_supported: [SubjectType.PAIRWISE],
     vp_formats: {
       ldp_vc: {
