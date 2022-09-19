@@ -35,7 +35,7 @@ describe('validateLinkedDomainWithDid should', () => {
       ],
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(1).reply(200, DID_CONFIGURATION);
-    await expect(validateLinkedDomainWithDid(did, verifyCallbackFalsy, CheckLinkedDomain.ALWAYS)).resolves.toThrow();
+    await expect(validateLinkedDomainWithDid(did, verifyCallbackFalsy, CheckLinkedDomain.ALWAYS)).rejects.toThrow();
   });
 
   it('should fail with ion did and CheckLinkedDomain.ALWAYS', async () => {
