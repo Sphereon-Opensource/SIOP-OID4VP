@@ -20,12 +20,10 @@ export async function postWithBearerToken(url: string, body: JWTPayload, bearerT
   }
 }
 
-// TODO SK Can you please put some documentation on it?
 export async function postAuthenticationResponse(url: string, body: AuthenticationResponseWithJWT): Promise<Response> {
   return postAuthenticationResponseJwt(url, body.jwt);
 }
 
-// TODO SK Can you please put some documentation on it?
 export async function postAuthenticationResponseJwt(url: string, jwt: string): Promise<Response> {
   try {
     const response = await fetch(url, {
