@@ -701,9 +701,6 @@ export const AuthenticationResponseOptsSchema = {
     "IPresentation": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
         "@context": {
           "anyOf": [
             {
@@ -848,6 +845,7 @@ export const AuthenticationResponseOptsSchema = {
       "required": [
         "@context",
         "credentialSubject",
+        "id",
         "issuanceDate",
         "issuer",
         "proof",
