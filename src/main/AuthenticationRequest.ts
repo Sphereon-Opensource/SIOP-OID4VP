@@ -275,7 +275,6 @@ function createClaimsPayload(opts: ClaimOpts, nonce: string): ClaimPayload {
           throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
         } else {
           vp_token = {
-            //TODO: nonce should be initialized correctly
             nonce: nonce,
             presentation_definition: def.definition,
             response_type: PresentationLocation.VP_TOKEN,

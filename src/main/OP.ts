@@ -32,7 +32,7 @@ export class OP {
 
   public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts; verifyOpts?: VerifyAuthenticationRequestOpts }) {
     this._authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
-    this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) } as Partial<VerifyAuthenticationRequestOpts>;
+    this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
   }
 
   get authResponseOpts(): AuthenticationResponseOpts {
@@ -221,7 +221,10 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
   return responseOpts;
 }
 
-function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; verifyOpts?: Partial<VerifyAuthenticationRequestOpts> }) {
+function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
+  builder?: OPBuilder;
+  verifyOpts?: VerifyAuthenticationRequestOpts;
+}): VerifyAuthenticationRequestOpts {
   const subjectSyntaxTypesSupported = [];
   if (opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
     if (Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
@@ -251,7 +254,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBu
                 ? opts.builder.resolvers
                 : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
           },
-        },
+        } as InternalVerification,
       }
     : opts.verifyOpts;
 }
