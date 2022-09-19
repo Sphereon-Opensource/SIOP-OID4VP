@@ -157,7 +157,7 @@ describe('OP should', () => {
 
     const requestURI = await RP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-      .withAuthorizationEndpoint('www.muauthorizationendpoint.com')
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .redirect(EXAMPLE_REFERENCE_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
