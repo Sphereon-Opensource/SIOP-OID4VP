@@ -1,30 +1,4 @@
-import {
-  LdCredentialModule,
-  SphereonBbsBlsSignature2020,
-  SphereonEcdsaSecp256k1RecoverySignature2020,
-  SphereonEd25519Signature2018,
-  SphereonEd25519Signature2020,
-} from '@sphereon/jsonld-vc-verifier';
-import { LdContextLoader } from '@sphereon/jsonld-vc-verifier/dist/src/ld-context-loader';
-import { LdDefaultContexts } from '@sphereon/jsonld-vc-verifier/dist/src/ld-default-contexts';
-import { LdSuiteLoader } from '@sphereon/jsonld-vc-verifier/dist/src/ld-suite-loader';
-import { DIDResolver } from '@sphereon/jsonld-vc-verifier/dist/src/resolver';
-import { AssertionProofPurpose } from '@sphereon/jsonld-vc-verifier/dist/src/types/types';
-import { getResolver } from '@sphereon/ssi-sdk-bls-did-resolver-key';
-import {
-  IDomainLinkageValidation,
-  ISignedDomainLinkageCredential,
-  IVerifyCallbackArgs,
-  IVerifyCredentialResult,
-  ProofFormatTypesEnum,
-  ValidationStatusEnum,
-  VerifyCallback,
-  WDCErrors,
-  WellKnownDidVerifier,
-} from '@sphereon/wellknown-dids-client';
-import { verifyCredential } from 'did-jwt-vc';
-import { JWT } from 'did-jwt-vc/lib/types';
-import { Resolver } from 'did-resolver';
+import { IDomainLinkageValidation, ValidationStatusEnum, VerifyCallback, WDCErrors, WellKnownDidVerifier } from '@sphereon/wellknown-dids-client';
 
 import { CheckLinkedDomain, DIDDocument } from '../types';
 
@@ -107,46 +81,3 @@ async function checkWellKnownDid(args: CheckWellKnownDidArgs): Promise<IDomainLi
   });
   return await verifier.verifyDomainLinkage({ didDocument: args.didDocument });
 }
-
-export const verifyCallback = async (args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => {
-  try {
-    if (args?.proofFormat === ProofFormatTypesEnum.JSON_WEB_TOKEN && typeof args.credential === 'string') {
-      return verifyJsonWebTokenVC(args as JWT);
-    } else if (args?.proofFormat === ProofFormatTypesEnum.JSON_LD) {
-      return verifyJsonLdVC(args);
-    }
-  } catch (error: unknown) {
-    throw new Error(`The verifiable credential is invalid ${error}`);
-  }
-};
-
-const verifyJsonWebTokenVC = async (credential: JWT): Promise<IVerifyCredentialResult> => {
-  await verifyCredential(credential, new Resolver({ ...getResolver() }));
-  return { verified: true };
-};
-
-const verifyJsonLdVC = async (args: Pick<IVerifyCallbackArgs, 'credential'>): Promise<IVerifyCredentialResult> => {
-  const ldCredentialModule = new LdCredentialModule({
-    ldContextLoader: new LdContextLoader({
-      contextsPaths: [LdDefaultContexts],
-    }),
-    ldSuiteLoader: new LdSuiteLoader({
-      ldSignatureSuites: [
-        new SphereonBbsBlsSignature2020(),
-        new SphereonEd25519Signature2018(),
-        new SphereonEd25519Signature2020(),
-        new SphereonEcdsaSecp256k1RecoverySignature2020(),
-      ],
-    }),
-  });
-  const didResolver = new DIDResolver({
-    resolver: new Resolver({ ...getResolver() }),
-  });
-  const verified = await ldCredentialModule.verifyCredential(
-    args.credential as ISignedDomainLinkageCredential,
-    didResolver,
-    true,
-    new AssertionProofPurpose()
-  );
-  return { verified };
-};
