@@ -37,6 +37,11 @@ const validButExpiredJWT =
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 
 describe('create JWT from Request JWT should', () => {
+
+  afterAll(async () => {
+    await new Promise(resolve => setTimeout(() => resolve(0), 10000));
+  });
+
   const responseOpts: AuthenticationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
