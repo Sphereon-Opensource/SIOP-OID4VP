@@ -134,6 +134,8 @@ export default class AuthenticationRequest {
     }
     if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
       await validateLinkedDomainWithDid(verPayload.iss, opts.verification.checkLinkedDomain);
+    } else if (!opts.verification.checkLinkedDomain) {
+      await validateLinkedDomainWithDid(verPayload.iss, CheckLinkedDomain.IF_PRESENT);
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
