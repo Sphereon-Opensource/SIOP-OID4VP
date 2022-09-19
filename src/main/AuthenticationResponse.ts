@@ -269,7 +269,7 @@ async function createSIOPResponsePayload(
     vp_token,
     verifiable_presentations,
   };
-  if (!supportedDidMethods.length && !resOpts.did) {
+  if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
     authenticationResponsePayload.sub_jwk = subJwk;
     authenticationResponsePayload.sub = thumbprint;
