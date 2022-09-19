@@ -1,4 +1,5 @@
 import { IProofType } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 import * as dotenv from 'dotenv';
 import { importJWK, SignJWT } from 'jose';
 
@@ -82,6 +83,7 @@ describe('SIOP Request Validation', () => {
           subjectSyntaxTypesSupported: ['ethr'],
         },
       },
+      verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     };
     await expect(AuthenticationRequest.verifyJWT(jwt, optsVerify)).resolves.toBeDefined();
   });
@@ -148,6 +150,7 @@ describe('verifyJWT should', () => {
         },
       },
       nonce: 'This nonce is different and should throw error',
+      verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     };
 
     // expect.assertions(1);
@@ -195,6 +198,7 @@ describe('verifyJWT should', () => {
           subjectSyntaxTypesSupported: ['ethr'],
         },
       },
+      verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     };
 
     const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);

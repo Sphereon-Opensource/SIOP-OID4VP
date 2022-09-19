@@ -20,7 +20,7 @@
     "test": "run-s build test:*",
     "test:lint": "eslint . --ext .ts",
     "test:prettier": "prettier \"{src,test}/**/*.ts\" --list-different",
-    "test:cov": "jest --ci --coverage && codecov",
+    "test:cov": "jest --detectOpenHandles --ci --coverage && codecov",
     "uninstall": "rimraf dist coverage node_modules"
   },
   "engines": {

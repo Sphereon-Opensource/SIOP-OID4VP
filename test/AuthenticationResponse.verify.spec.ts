@@ -1,3 +1,5 @@
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
+
 import { AuthenticationResponse, VerificationMode, VerifyAuthenticationResponseOpts } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -16,6 +18,7 @@ describe('verify JWT from Request JWT should', () => {
       },
       mode: VerificationMode.INTERNAL,
     },
+    verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
   };
 
   it('throw NO_JWT when no jwt is passed', async () => {

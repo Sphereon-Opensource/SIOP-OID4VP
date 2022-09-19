@@ -1,4 +1,5 @@
 import { getUniResolver } from '@sphereon/did-uni-client';
+import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';
@@ -25,6 +26,7 @@ export default class OPBuilder {
   resolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
+  verifyCallback?: VerifyCallback;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     this.addResolver(didMethod, new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
@@ -99,6 +101,11 @@ export default class OPBuilder {
 
   suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): OPBuilder {
     this.signature({ signature, did, kid });
+    return this;
+  }
+
+  addVerifyCallback(verifyCallback: VerifyCallback) {
+    this.verifyCallback = verifyCallback;
     return this;
   }
 
