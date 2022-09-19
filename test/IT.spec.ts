@@ -111,8 +111,11 @@ describe('RP and OP interaction should', () => {
     const rpMockEntity = await mockedGetEnterpriseAuthToken('ACME RP');
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
+    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
+      .addVerifyCallback(verifyCallback)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
@@ -130,6 +133,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .addVerifyCallback(verifyCallback)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
       .registrationBy({
@@ -184,8 +188,11 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
     };
 
+    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
+      .addVerifyCallback(verifyCallback)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
@@ -202,6 +209,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
@@ -258,8 +266,11 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
     };
 
+    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
+      .addVerifyCallback(verifyCallback)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
@@ -280,6 +291,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
@@ -328,8 +340,11 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
     };
 
+    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
+      .addVerifyCallback(verifyCallback)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
@@ -351,6 +366,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
