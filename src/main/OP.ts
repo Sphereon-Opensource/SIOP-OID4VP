@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { getResolver, postAuthenticationResponse, postAuthenticationResponseJwt, toSIOPRegistrationDidMethod } from './functions';
+import { getResolverUnion, postAuthenticationResponse, postAuthenticationResponseJwt, toSIOPRegistrationDidMethod } from './functions';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
@@ -246,13 +246,9 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
             subjectSyntaxTypesSupported: subjectSyntaxTypesSupported,
-            resolver: opts.builder.resolver,
-            resolvers:
-              //TODO: discuss this with Niels
-              //https://sphereon.atlassian.net/browse/VDX-139
-              opts.builder.resolvers && opts.builder.resolvers.size
-                ? opts.builder.resolvers
-                : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
+            resolver: opts.builder.customResolver
+              ? opts.builder.customResolver
+              : getResolverUnion(opts.builder.responseRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers),
           },
         } as InternalVerification,
       }

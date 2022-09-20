@@ -24,7 +24,7 @@ export default class RPBuilder {
   authorizationEndpoint: string;
   issuer: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-  resolver?: Resolvable;
+  customResolver?: Resolvable;
   requestRegistration: Partial<RequestRegistrationOpts> = {};
   redirectUri: string;
   requestObjectBy: ObjectBy;
@@ -41,8 +41,8 @@ export default class RPBuilder {
     return this;
   }
 
-  defaultResolver(resolver: Resolvable): RPBuilder {
-    this.resolver = resolver;
+  withCustomResolver(resolver: Resolvable): RPBuilder {
+    this.customResolver = resolver;
     return this;
   }
 

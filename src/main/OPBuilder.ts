@@ -22,7 +22,7 @@ export default class OPBuilder {
   responseRegistration: Partial<ResponseRegistrationOpts> = {};
   // did: string;
   // vp?: VerifiablePresentation;
-  resolver?: Resolvable;
+  customResolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
   didMethods: string[] = [];
@@ -43,8 +43,8 @@ export default class OPBuilder {
     return this;
   }
 
-  defaultResolver(resolver: Resolvable): OPBuilder {
-    this.resolver = resolver;
+  withCustomResolver(resolver: Resolvable): OPBuilder {
+    this.customResolver = resolver;
     return this;
   }
 

@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 
-import { getNonce, getResolver, getState, toSIOPRegistrationDidMethod } from './functions';
+import { getNonce, getResolverUnion, getState, toSIOPRegistrationDidMethod } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -28,6 +28,7 @@ export class RP {
     const claims = opts.builder?.claims;
     this._authRequestOpts = { claims, ...createRequestOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthResponseOpts = { claims, ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
+    console.log('RP:31: ', this._verifyAuthResponseOpts);
   }
 
   get authRequestOpts(): AuthenticationRequestOpts {
@@ -118,7 +119,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
   return requestOpts;
 }
 
-function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: Partial<VerifyAuthenticationResponseOpts> }) {
+function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthenticationResponseOpts }) {
   if (opts?.builder?.didMethods.length && opts.builder?.requestRegistration?.subjectSyntaxTypesSupported) {
     if (!Array.isArray(opts.builder.requestRegistration.subjectSyntaxTypesSupported)) {
       opts.builder.requestRegistration.subjectSyntaxTypesSupported = [opts.builder.requestRegistration.subjectSyntaxTypesSupported];
@@ -135,13 +136,9 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
-            resolver: opts.builder.resolver,
-            resolvers:
-              //TODO: discuss this with Niels
-              //https://sphereon.atlassian.net/browse/VDX-139
-              opts.builder.resolvers && opts.builder.resolvers.size
-                ? opts.builder.resolvers
-                : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
+            resolver: opts.builder.customResolver
+              ? opts.builder.customResolver
+              : getResolverUnion(opts.builder.requestRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers),
           },
         } as InternalVerification,
       }
