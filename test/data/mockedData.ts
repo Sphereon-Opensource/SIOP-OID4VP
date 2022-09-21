@@ -1,4 +1,5 @@
 import { IProofType } from '@sphereon/ssi-types';
+import { ServiceTypesEnum } from '@sphereon/wellknown-dids-client';
 import { JWTHeader } from 'did-jwt';
 import { DIDDocument } from 'did-resolver';
 
@@ -127,4 +128,80 @@ export const DID_DOCUMENT_PUBKEY_JWK: DIDDocument = {
       },
     },
   ],
+};
+
+export const DID_KEY = 'did:key:z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM';
+
+export const DID_KEY_ORIGIN = 'https://example.com';
+
+export const DID_KEY_DOCUMENT = {
+  '@context': [
+    'https://www.w3.org/ns/did/v1',
+    {
+      Ed25519VerificationKey2018: 'https://w3id.org/security#Ed25519VerificationKey2018',
+      publicKeyJwk: {
+        '@id': 'https://w3id.org/security#publicKeyJwk',
+        '@type': '@json',
+      },
+    },
+  ],
+  id: DID_KEY,
+  verificationMethod: [
+    {
+      id: `${DID_KEY}#z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM`,
+      type: 'Ed25519VerificationKey2018',
+      controller: DID_KEY,
+      publicKeyJwk: {
+        kty: 'OKP',
+        crv: 'Ed25519',
+        x: 'hbtAIehGcx_wXTFzIYJzrHOwl8IGV8EzRgx__FUEnso',
+      },
+    },
+  ],
+  authentication: [`${DID_KEY}#z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM`],
+  assertionMethod: [`${DID_KEY}#z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM`],
+  service: [
+    {
+      id: `${DID_KEY}#z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM`,
+      type: ServiceTypesEnum.LINKED_DOMAINS,
+      serviceEndpoint: DID_KEY_ORIGIN,
+    },
+  ],
+};
+
+export const DID_ION =
+  'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19';
+
+export const DID_ION_ORIGIN = 'https://ldtest.sphereon.com';
+
+export const DID_ION_DOCUMENT = {
+  id: DID_ION,
+  '@context': [
+    'https://www.w3.org/ns/did/v1',
+    {
+      '@base': DID_ION,
+    },
+  ],
+  service: [
+    {
+      id: '#ld',
+      type: 'LinkedDomains',
+      serviceEndpoint: DID_ION_ORIGIN,
+    },
+  ],
+  verificationMethod: [
+    {
+      id: '#key1',
+      controller: DID_ION,
+      type: 'EcdsaSecp256k1VerificationKey2019',
+      publicKeyJwk: {
+        kty: 'EC',
+        crv: 'secp256k1',
+        x: '-LlsiAY9orf1zJBRNWCn7Di5Jhb_-cla6V9GzGkqfHU',
+        y: 'EpHSnFdt6eNeFBDg3U5QHT14MTl4vHsHy5diYOCXK5M',
+      },
+    },
+  ],
+  authentication: ['#key1'],
+  assertionMethod: ['#key1'],
 };
