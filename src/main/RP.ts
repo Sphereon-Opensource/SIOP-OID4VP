@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 
-import { getNonce, getResolverUnion, getState, toQualifiedDidMethod } from './functions';
+import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -120,13 +120,10 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
 
 function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthenticationResponseOpts }) {
   if (opts?.builder?.resolvers.size && opts.builder?.requestRegistration?.subjectSyntaxTypesSupported) {
-    if (!Array.isArray(opts.builder.requestRegistration.subjectSyntaxTypesSupported)) {
-      opts.builder.requestRegistration.subjectSyntaxTypesSupported = [opts.builder.requestRegistration.subjectSyntaxTypesSupported];
-    }
-    const unionSubjectSyntaxTypes = new Set();
-    opts.builder.requestRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
-    opts.builder.resolvers.forEach((_value, didMethod) => unionSubjectSyntaxTypes.add(toQualifiedDidMethod(didMethod)));
-    opts.builder.requestRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
+    opts.builder.requestRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+      opts.builder.resolvers
+    );
   }
   return opts.builder
     ? {

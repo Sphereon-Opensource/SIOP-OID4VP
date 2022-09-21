@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { getResolverUnion, postAuthenticationResponse, postAuthenticationResponseJwt, toQualifiedDidMethod } from './functions';
+import { getResolverUnion, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
@@ -155,13 +155,10 @@ async function parseAndResolveUri(encodedUri: string) {
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {
   if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
-    if (!Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
-      opts.builder.responseRegistration.subjectSyntaxTypesSupported = [opts.builder.responseRegistration.subjectSyntaxTypesSupported];
-    }
-    const unionSubjectSyntaxTypes = new Set();
-    opts.builder.responseRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
-    opts.builder.resolvers.forEach((_value, didMethod) => unionSubjectSyntaxTypes.add(toQualifiedDidMethod(didMethod)));
-    opts.builder.responseRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+      opts.builder.resolvers
+    );
   }
   const responseOpts: AuthenticationResponseOpts = opts.builder
     ? {
