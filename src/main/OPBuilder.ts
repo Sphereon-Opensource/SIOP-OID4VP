@@ -2,7 +2,7 @@ import { getUniResolver } from '@sphereon/did-uni-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';
-import { getMethodFromDid, toSIOPRegistrationDidMethod } from './functions';
+import { getMethodFromDid } from './functions';
 import {
   CheckLinkedDomain,
   EcdsaSignature,
@@ -25,16 +25,12 @@ export default class OPBuilder {
   customResolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
-  didMethods: string[] = [];
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
-    if (didMethod.startsWith('did:')) {
-      this.addResolver(getMethodFromDid(didMethod), new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
-      this.didMethods.push(getMethodFromDid(didMethod));
-    } else {
-      this.addResolver(didMethod, new Resolver(getUniResolver(didMethod, { ...opts })));
-      this.didMethods.push(didMethod);
-    }
+    const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
+    opts
+      ? this.addResolver(getMethodFromDid(didMethod), new Resolver(getUniResolver(qualifiedDidMethod, { ...opts })))
+      : this.addResolver(qualifiedDidMethod, null);
     return this;
   }
 
@@ -49,13 +45,8 @@ export default class OPBuilder {
   }
 
   addResolver(didMethod: string, resolver: Resolvable): OPBuilder {
-    if (!this.responseRegistration.subjectSyntaxTypesSupported || !this.responseRegistration.subjectSyntaxTypesSupported.length) {
-      this.responseRegistration.subjectSyntaxTypesSupported = [];
-    }
-    Array.isArray(this.responseRegistration.subjectSyntaxTypesSupported)
-      ? this.responseRegistration.subjectSyntaxTypesSupported.push(toSIOPRegistrationDidMethod(didMethod))
-      : (this.responseRegistration.subjectSyntaxTypesSupported = toSIOPRegistrationDidMethod(didMethod));
-    this.resolvers.set(getMethodFromDid(didMethod), resolver);
+    const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
+    this.resolvers.set(qualifiedDidMethod, resolver);
     return this;
   }
 

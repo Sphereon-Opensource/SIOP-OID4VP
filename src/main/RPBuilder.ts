@@ -2,7 +2,7 @@ import { getUniResolver } from '@sphereon/did-uni-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
-import { getMethodFromDid, toSIOPRegistrationDidMethod } from './functions';
+import { getMethodFromDid } from './functions';
 import {
   CheckLinkedDomain,
   ClaimOpts,
@@ -33,7 +33,6 @@ export default class RPBuilder {
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
   checkLinkedDomain?: CheckLinkedDomain;
-  didMethods: string[] = [];
   // claims?: ClaimPayload;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
@@ -47,11 +46,8 @@ export default class RPBuilder {
   }
 
   addResolver(didMethod: string, resolver: Resolvable): RPBuilder {
-    if (!this.requestRegistration.subjectSyntaxTypesSupported || !this.requestRegistration.subjectSyntaxTypesSupported.length) {
-      this.requestRegistration.subjectSyntaxTypesSupported = [];
-    }
-    this.requestRegistration.subjectSyntaxTypesSupported.push(toSIOPRegistrationDidMethod(didMethod));
-    this.resolvers.set(getMethodFromDid(didMethod), resolver);
+    const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
+    this.resolvers.set(qualifiedDidMethod, resolver);
     return this;
   }
 
@@ -66,13 +62,10 @@ export default class RPBuilder {
   }
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): RPBuilder {
-    if (didMethod.startsWith('did:')) {
-      this.addResolver(getMethodFromDid(didMethod), new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
-      this.didMethods.push(getMethodFromDid(didMethod));
-    } else {
-      this.addResolver(didMethod, new Resolver(getUniResolver(didMethod, { ...opts })));
-      this.didMethods.push(didMethod);
-    }
+    const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
+    opts
+      ? this.addResolver(getMethodFromDid(didMethod), new Resolver(getUniResolver(qualifiedDidMethod, { ...opts })))
+      : this.addResolver(qualifiedDidMethod, null);
     return this;
   }
 

@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 
-import { getNonce, getResolverUnion, getState, toSIOPRegistrationDidMethod } from './functions';
+import { getNonce, getResolverUnion, getState, toQualifiedDidMethod } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -28,7 +28,6 @@ export class RP {
     const claims = opts.builder?.claims;
     this._authRequestOpts = { claims, ...createRequestOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthResponseOpts = { claims, ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
-    console.log('RP:31: ', this._verifyAuthResponseOpts);
   }
 
   get authRequestOpts(): AuthenticationRequestOpts {
@@ -120,13 +119,13 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
 }
 
 function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthenticationResponseOpts }) {
-  if (opts?.builder?.didMethods.length && opts.builder?.requestRegistration?.subjectSyntaxTypesSupported) {
+  if (opts?.builder?.resolvers.size && opts.builder?.requestRegistration?.subjectSyntaxTypesSupported) {
     if (!Array.isArray(opts.builder.requestRegistration.subjectSyntaxTypesSupported)) {
       opts.builder.requestRegistration.subjectSyntaxTypesSupported = [opts.builder.requestRegistration.subjectSyntaxTypesSupported];
     }
     const unionSubjectSyntaxTypes = new Set();
     opts.builder.requestRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
-    opts.builder.didMethods.forEach((didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
+    opts.builder.resolvers.forEach((_value, didMethod) => unionSubjectSyntaxTypes.add(toQualifiedDidMethod(didMethod)));
     opts.builder.requestRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
   }
   return opts.builder
