@@ -271,14 +271,5 @@ export function toSIOPRegistrationDidMethod(didOrMethod: string) {
     prefix = 'did:' + didOrMethod;
   }
   const split = prefix.split(':');
-  return `${split[0]}:${split[1]}:`;
-}
-
-export function toQualifiedDidMethod(didOrMethod: string) {
-  let prefix = didOrMethod;
-  if (!didOrMethod.startsWith('did:')) {
-    prefix = 'did:' + didOrMethod;
-  }
-  const split = prefix.split(':');
   return `${split[0]}:${split[1]}`;
 }

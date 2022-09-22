@@ -3,7 +3,7 @@ import { DIDResolutionOptions, DIDResolutionResult, ParsedDID, Resolvable, Resol
 
 import { DIDDocument, ResolveOpts, SIOPErrors, SubjectIdentifierType, SubjectSyntaxTypesSupportedValues } from '../types';
 
-import { getMethodFromDid, toQualifiedDidMethod } from './';
+import { getMethodFromDid, toSIOPRegistrationDidMethod } from './';
 
 export function getResolver(opts: ResolveOpts): Resolvable {
   if (opts && opts.resolver) {
@@ -73,7 +73,7 @@ export function mergeAllDidMethods(subjectSyntaxTypesSupported: string | string[
   }
   const unionSubjectSyntaxTypes = new Set();
   subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
-  resolvers.forEach((_value, didMethod) => unionSubjectSyntaxTypes.add(toQualifiedDidMethod(didMethod)));
+  resolvers.forEach((_value, didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
   return Array.from(unionSubjectSyntaxTypes) as string[];
 }
 
