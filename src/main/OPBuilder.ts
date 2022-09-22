@@ -27,7 +27,6 @@ export default class OPBuilder {
   customResolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
-  didMethods: string[] = [];
   verifyCallback?: VerifyCallback;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
