@@ -188,7 +188,7 @@ describe('RP should', () => {
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         response_types_supported: [ResponseType.ID_TOKEN],
         scopes_supported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-        subject_syntax_types_supported: ['did:ethr:'],
+        subject_syntax_types_supported: ['did:ethr'],
         subject_types_supported: [SubjectType.PAIRWISE],
         vp_formats: {
           jwt: {
@@ -210,9 +210,10 @@ describe('RP should', () => {
       'AZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%7B%22id_token_signing_alg_values_supported%22%3A%5B%22EdDSA%22%' +
       '5D%2C%22request_object_signing_alg_values_supported%22%3A%5B%22EdDSA%22%2C%22ES256%22%5D%2C%22response_types_supported%22%3A%5B%22id_toke' +
       'n%22%5D%2C%22scopes_supported%22%3A%5B%22openid%20did_authn%22%2C%22openid%22%5D%2C%22subject_types_supported%22%3A%5B%22pairwise%22%5D%2' +
-      'C%22subject_syntax_types_supported%22%3A%5B%22did%3Aethr%3A%22%5D%2C%22vp_formats%22%3A%7B%22jwt%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22' +
-      'ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vp%22%3A%7B%22al' +
-      'g%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
+      'C%22subject_syntax_types_supported%22%3A%5B%22did%3Aethr%22%5D%2C%22vp_formats%22%3A%7B%22jwt%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES2' +
+      '56K%22%2C%22ES256%22%5D%7D%2C%22jwt_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vp%22%3A%7B%22alg%2' +
+      '2%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
+
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
 

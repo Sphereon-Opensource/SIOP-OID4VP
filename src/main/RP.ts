@@ -1,7 +1,8 @@
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
+import { Resolvable } from 'did-resolver';
 
-import { getNonce, getResolver, getState, toSIOPRegistrationDidMethod } from './functions';
+import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -123,15 +124,16 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
   return requestOpts;
 }
 
-function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: Partial<VerifyAuthenticationResponseOpts> }) {
-  if (opts?.builder?.didMethods.length && opts.builder?.requestRegistration?.subjectSyntaxTypesSupported) {
-    if (!Array.isArray(opts.builder.requestRegistration.subjectSyntaxTypesSupported)) {
-      opts.builder.requestRegistration.subjectSyntaxTypesSupported = [opts.builder.requestRegistration.subjectSyntaxTypesSupported];
-    }
-    const unionSubjectSyntaxTypes = new Set();
-    opts.builder.requestRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
-    opts.builder.didMethods.forEach((didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
-    opts.builder.requestRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
+function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthenticationResponseOpts }) {
+  if (opts?.builder?.resolvers.size && opts.builder?.requestRegistration) {
+    opts.builder.requestRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+      opts.builder.resolvers
+    );
+  }
+  let resolver: Resolvable;
+  if (opts.builder) {
+    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.requestRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers);
   }
   return opts.builder
     ? {
@@ -141,13 +143,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           verifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
-            resolver: opts.builder.resolver,
-            resolvers:
-              //TODO: discuss this with Niels
-              //https://sphereon.atlassian.net/browse/VDX-139
-              opts.builder.resolvers && opts.builder.resolvers.size
-                ? opts.builder.resolvers
-                : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
+            resolver: resolver,
           },
         } as InternalVerification,
       }

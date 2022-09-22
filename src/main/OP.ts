@@ -1,11 +1,12 @@
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import fetch from 'cross-fetch';
+import { Resolvable } from 'did-resolver';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { getResolver, postAuthenticationResponse, postAuthenticationResponseJwt, toSIOPRegistrationDidMethod } from './functions';
+import { getResolverUnion, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
@@ -158,14 +159,11 @@ async function parseAndResolveUri(encodedUri: string) {
 }
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {
-  if (opts?.builder?.didMethods.length && opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
-    if (!Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
-      opts.builder.responseRegistration.subjectSyntaxTypesSupported = [opts.builder.responseRegistration.subjectSyntaxTypesSupported];
-    }
-    const unionSubjectSyntaxTypes = new Set();
-    opts.builder.responseRegistration.subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
-    opts.builder.didMethods.forEach((didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
-    opts.builder.responseRegistration.subjectSyntaxTypesSupported = Array.from(unionSubjectSyntaxTypes) as string[];
+  if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+      opts.builder.resolvers
+    );
   }
   const responseOpts: AuthenticationResponseOpts = opts.builder
     ? {
@@ -229,19 +227,15 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
   builder?: OPBuilder;
   verifyOpts?: VerifyAuthenticationRequestOpts;
 }): VerifyAuthenticationRequestOpts {
-  const subjectSyntaxTypesSupported = [];
-  if (opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
-    if (Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
-      subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
-    } else {
-      subjectSyntaxTypesSupported.push(opts.builder.responseRegistration.subjectSyntaxTypesSupported);
-    }
-  } else if (opts?.verifyOpts?.verification?.resolveOpts?.subjectSyntaxTypesSupported) {
-    if (Array.isArray(opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported)) {
-      subjectSyntaxTypesSupported.push(...opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported);
-    } else {
-      subjectSyntaxTypesSupported.push(opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported);
-    }
+  if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration) {
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+      opts.builder.resolvers
+    );
+  }
+  let resolver: Resolvable;
+  if (opts.builder) {
+    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.responseRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers);
   }
   return opts.builder
     ? {
@@ -250,14 +244,8 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           verifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
-            subjectSyntaxTypesSupported: subjectSyntaxTypesSupported,
-            resolver: opts.builder.resolver,
-            resolvers:
-              //TODO: discuss this with Niels
-              //https://sphereon.atlassian.net/browse/VDX-139
-              opts.builder.resolvers && opts.builder.resolvers.size
-                ? opts.builder.resolvers
-                : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
+            subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+            resolver: resolver,
           },
         } as InternalVerification,
       }
