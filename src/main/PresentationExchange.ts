@@ -9,7 +9,13 @@ import {
   Status,
 } from '@sphereon/pex';
 import { PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmission } from '@sphereon/pex-models';
-import { IPresentation, IProofPurpose, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import {
+  IPresentation,
+  IProofPurpose,
+  IProofType,
+  IVerifiablePresentation,
+  W3CVerifiableCredential,
+} from '@sphereon/ssi-types';
 
 import { extractDataFromPath, getWithUrl } from './functions';
 import {
@@ -17,16 +23,15 @@ import {
   PresentationDefinitionWithLocation,
   PresentationLocation,
   SIOPErrors,
-  VerifiablePresentationPayload,
-  VerifiablePresentationTypeFormat,
+  VerifiablePresentationPayload
 } from './types';
 
 export class PresentationExchange {
   readonly pex = new PEX();
-  readonly allVerifiableCredentials: IVerifiableCredential[];
+  readonly allVerifiableCredentials: W3CVerifiableCredential[];
   readonly did;
 
-  constructor(opts: { did: string; allVerifiableCredentials: IVerifiableCredential[] }) {
+  constructor(opts: { did: string; allVerifiableCredentials: W3CVerifiableCredential[] }) {
     this.did = opts.did;
     this.allVerifiableCredentials = opts.allVerifiableCredentials;
   }
@@ -38,7 +43,7 @@ export class PresentationExchange {
    */
   public async submissionFrom(
     presentationDefinition: IPresentationDefinition,
-    selectedCredentials: IVerifiableCredential[],
+    selectedCredentials: W3CVerifiableCredential[],
     options?: { nonce?: string; domain?: string }
   ): Promise<IVerifiablePresentation> {
     if (!presentationDefinition) {
@@ -222,11 +227,7 @@ export class PresentationExchange {
 
   private static async validatePayloadAgainstDefinitions(definition: IPresentationDefinition, vpPayloads: VerifiablePresentationPayload[]) {
     function filterValidPresentations() {
-      const checkedPresentations: VerifiablePresentationPayload[] = vpPayloads.filter((vpw) => {
-        if (vpw.format !== VerifiablePresentationTypeFormat.LDP_VP) {
-          throw new Error(`${SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED}`);
-        }
-
+      const checkedPresentations: VerifiablePresentationPayload[] = vpPayloads.filter((vpw: VerifiablePresentationPayload) => {
         const presentation = vpw.presentation;
         // fixme: Limited disclosure suites
         const evaluationResults = new PEX().evaluatePresentation(definition, presentation, []);
@@ -243,8 +244,6 @@ export class PresentationExchange {
 
     if (!checkedPresentations.length || checkedPresentations.length != 1) {
       throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}`);
-    } else if (checkedPresentations[0].format !== VerifiablePresentationTypeFormat.LDP_VP) {
-      throw new Error(`${SIOPErrors.VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED}`);
     }
     const presentation: IPresentation = checkedPresentations[0].presentation;
     // fixme: Limited disclosure suites

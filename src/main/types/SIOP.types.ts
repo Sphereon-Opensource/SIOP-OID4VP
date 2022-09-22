@@ -1,8 +1,8 @@
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import {
   IPresentation as PEPresentation,
-  IVerifiableCredential,
-  IVerifiablePresentation as PEVerifiablePresentation
+  IVerifiablePresentation as PEVerifiablePresentation,
+  W3CVerifiableCredential
 } from '@sphereon/ssi-types';
 import {DIDDocument as DIFDIDDocument, VerificationMethod} from 'did-resolver';
 import { JWK } from 'jose';
@@ -403,6 +403,11 @@ export enum VerifiablePresentationTypeFormat {
   LDP_VP = 'ldp_vp',
 }
 
+export enum VerifiableCredentialTypeFormat {
+  LDP_VC = 'ldp_vc',
+  JWT_VC = 'jwt_vc',
+}
+
 export enum EncSymmetricAlgorithmCode {
   XC20P = 'XC20P', // default
 }
@@ -669,7 +674,7 @@ export enum RevocationVcType { // TODO this enum is already somewhere
   JWT_VC = 'jwt_vc',
 }
 
-export type RevocationVerificationCallback = (vc: IVerifiableCredential, type: RevocationVcType) => Promise<IRevocationVerificationStatus>
+export type RevocationVerificationCallback = (vc: W3CVerifiableCredential, type: VerifiableCredentialTypeFormat) => Promise<IRevocationVerificationStatus>
 
 export enum RevocationVerification {
   NEVER = 'never', // We don't want to verify revocation

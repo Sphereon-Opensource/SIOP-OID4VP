@@ -139,8 +139,11 @@ export default class AuthenticationResponse {
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
 
     if (verifyOpts.verification.revocationOpts && verifyOpts.verification.revocationOpts.revocationVerification !== RevocationVerification.NEVER) {
-      // TODO if present
-      await verifyRevocation(verPayload.vp_token, verifyOpts.verification.revocationOpts.revocationVerificationCallback)
+      await verifyRevocation(
+          verPayload.vp_token,
+          verifyOpts.verification.revocationOpts.revocationVerificationCallback,
+          verifyOpts.verification.revocationOpts.revocationVerification
+      )
     }
 
     return {
