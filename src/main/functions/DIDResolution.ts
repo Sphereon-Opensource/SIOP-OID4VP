@@ -65,13 +65,13 @@ export function getResolverUnion(
   }
   const specificDidMethods = subjectTypes.filter((sst) => !!sst && sst.startsWith('did:'));
   specificDidMethods.forEach((dm) => {
-    let uniResolver;
-    if (!resolverMap.has(dm)) {
-      uniResolver = getUniResolver(getMethodFromDid(dm));
+    let methodResolver;
+    if (!resolverMap.has(dm) || resolverMap.get(dm) === null) {
+      methodResolver = getUniResolver(getMethodFromDid(dm));
     } else {
-      uniResolver = getUniResolver(getMethodFromDid(dm), resolverMap.get(dm));
+      methodResolver = resolverMap.get(dm);
     }
-    uniResolvers.push(uniResolver);
+    uniResolvers.push(methodResolver);
   });
   return subjectTypes.indexOf(SubjectSyntaxTypesSupportedValues.DID.valueOf()) !== -1
     ? new Resolver(...{ fallbackResolver, ...uniResolvers })
