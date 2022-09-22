@@ -1,4 +1,5 @@
 import Ajv from 'ajv';
+import { Resolvable } from 'did-resolver';
 
 import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
@@ -119,11 +120,15 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
 }
 
 function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthenticationResponseOpts }) {
-  if (opts?.builder?.resolvers.size && opts.builder?.requestRegistration?.subjectSyntaxTypesSupported) {
+  if (opts?.builder?.resolvers.size && opts.builder?.requestRegistration) {
     opts.builder.requestRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
       opts.builder.requestRegistration.subjectSyntaxTypesSupported,
       opts.builder.resolvers
     );
+  }
+  let resolver: Resolvable;
+  if (opts.builder) {
+    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.requestRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers);
   }
   return opts.builder
     ? {
@@ -132,9 +137,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
-            resolver: opts.builder.customResolver
-              ? opts.builder.customResolver
-              : getResolverUnion(opts.builder.requestRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers),
+            resolver: resolver,
           },
         } as InternalVerification,
       }

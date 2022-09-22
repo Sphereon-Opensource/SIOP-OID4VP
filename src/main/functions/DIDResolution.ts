@@ -31,7 +31,15 @@ export function getResolver(opts: ResolveOpts): Resolvable {
   }
 }
 
-export function getResolverUnion(subjectSyntaxTypesSupported: string[] | string, resolverMap: Map<string, Resolvable>): Resolvable {
+export function getResolverUnion(
+  customResolver: Resolvable,
+  subjectSyntaxTypesSupported: string[] | string,
+  resolverMap: Map<string, Resolvable>
+): Resolvable {
+  if (customResolver) {
+    return customResolver;
+  }
+  const fallbackResolver: Resolvable = customResolver ? customResolver : new UniResolver();
   const uniResolvers: {
     [p: string]: (did: string, _parsed: ParsedDID, _didResolver: Resolver, _options: DIDResolutionOptions) => Promise<DIDResolutionResult>;
   }[] = [];
@@ -42,9 +50,9 @@ export function getResolverUnion(subjectSyntaxTypesSupported: string[] | string,
       : subjectTypes.push(...subjectSyntaxTypesSupported);
   }
   if (subjectTypes.indexOf(SubjectSyntaxTypesSupportedValues.DID.valueOf()) !== -1) {
-    return new UniResolver();
+    return customResolver ? customResolver : new UniResolver();
   }
-  const specificDidMethods = subjectTypes.filter((sst) => sst.startsWith('did:'));
+  const specificDidMethods = subjectTypes.filter((sst) => !!sst && sst.startsWith('did:'));
   specificDidMethods.forEach((dm) => {
     let uniResolver;
     if (!resolverMap.has(dm)) {
@@ -54,7 +62,9 @@ export function getResolverUnion(subjectSyntaxTypesSupported: string[] | string,
     }
     uniResolvers.push(uniResolver);
   });
-  return new Resolver(...uniResolvers);
+  return subjectTypes.indexOf(SubjectSyntaxTypesSupportedValues.DID.valueOf()) !== -1
+    ? new Resolver(...{ fallbackResolver, ...uniResolvers })
+    : new Resolver(...uniResolvers);
 }
 
 export function mergeAllDidMethods(subjectSyntaxTypesSupported: string | string[], resolvers: Map<string, Resolvable>): string[] {

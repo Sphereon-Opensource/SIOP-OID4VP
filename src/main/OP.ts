@@ -1,5 +1,6 @@
 import Ajv from 'ajv';
 import fetch from 'cross-fetch';
+import { Resolvable } from 'did-resolver';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
@@ -222,19 +223,15 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
   builder?: OPBuilder;
   verifyOpts?: VerifyAuthenticationRequestOpts;
 }): VerifyAuthenticationRequestOpts {
-  const subjectSyntaxTypesSupported = [];
-  if (opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
-    if (Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
-      subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
-    } else {
-      subjectSyntaxTypesSupported.push(opts.builder.responseRegistration.subjectSyntaxTypesSupported);
-    }
-  } else if (opts?.verifyOpts?.verification?.resolveOpts?.subjectSyntaxTypesSupported) {
-    if (Array.isArray(opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported)) {
-      subjectSyntaxTypesSupported.push(...opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported);
-    } else {
-      subjectSyntaxTypesSupported.push(opts.verifyOpts.verification.resolveOpts.subjectSyntaxTypesSupported);
-    }
+  if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration) {
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+      opts.builder.resolvers
+    );
+  }
+  let resolver: Resolvable;
+  if (opts.builder) {
+    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.responseRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers);
   }
   return opts.builder
     ? {
@@ -242,10 +239,8 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           resolveOpts: {
-            subjectSyntaxTypesSupported: subjectSyntaxTypesSupported,
-            resolver: opts.builder.customResolver
-              ? opts.builder.customResolver
-              : getResolverUnion(opts.builder.responseRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers),
+            subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+            resolver: resolver,
           },
         } as InternalVerification,
       }

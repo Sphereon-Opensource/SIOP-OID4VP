@@ -1,4 +1,4 @@
-import { getUniResolver } from '@sphereon/did-uni-client';
+import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';
@@ -11,6 +11,7 @@ import {
   ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,
+  SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
 } from './types';
 
@@ -27,10 +28,11 @@ export default class OPBuilder {
   checkLinkedDomain?: CheckLinkedDomain;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
-    const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
-    opts
-      ? this.addResolver(getMethodFromDid(didMethod), new Resolver(getUniResolver(qualifiedDidMethod, { ...opts })))
-      : this.addResolver(qualifiedDidMethod, null);
+    const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
+    if (method === SubjectSyntaxTypesSupportedValues.DID.valueOf()) {
+      opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
+    }
+    opts ? this.addResolver(method, new Resolver(getUniResolver(method, { ...opts }))) : this.addResolver(method, null);
     return this;
   }
 
