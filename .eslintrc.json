@@ -28,13 +28,5 @@
       "error",
       { "ignoreDeclarationSort": true, "ignoreCase": true }
     ]
-  },
-  "overrides": [
-    {
-      "files": ["**/[^_]*.ts"],
-      "rules": {
-        "@typescript-eslint/no-unused-vars": "off"
-      }
-    }
-  ]
+  }
 }

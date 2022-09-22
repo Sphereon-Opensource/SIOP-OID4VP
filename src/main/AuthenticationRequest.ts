@@ -226,6 +226,7 @@ async function createURIFromJWT(
   throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function assertValidRequestJWT(_header: JWTHeader, _payload: JWTPayload) {
   /*console.log(_header);
     console.log(_payload);*/

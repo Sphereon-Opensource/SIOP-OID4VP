@@ -72,6 +72,7 @@ describe('create JWT from Request JWT should', () => {
       },
       mode: VerificationMode.INTERNAL,
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
   };
 

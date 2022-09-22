@@ -18,6 +18,7 @@ import { DID_ION_DOCUMENT, DID_ION_ORIGIN, DID_KEY, DID_KEY_DOCUMENT, DID_KEY_OR
 
 jest.setTimeout(300000);
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const verifyCallbackTruthy = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
 
 let config;
