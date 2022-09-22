@@ -1,8 +1,8 @@
-import { getUniResolver } from '@sphereon/did-uni-client';
+import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
-import { getMethodFromDid, toSIOPRegistrationDidMethod } from './functions';
+import { getMethodFromDid } from './functions';
 import {
   CheckLinkedDomain,
   ClaimOpts,
@@ -17,6 +17,7 @@ import {
   ResponseContext,
   ResponseIss,
   ResponseMode,
+  SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
 } from './types';
 
@@ -24,7 +25,7 @@ export default class RPBuilder {
   authorizationEndpoint: string;
   issuer: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-  resolver?: Resolvable;
+  customResolver?: Resolvable;
   requestRegistration: Partial<RequestRegistrationOpts> = {};
   redirectUri: string;
   requestObjectBy: ObjectBy;
@@ -33,7 +34,6 @@ export default class RPBuilder {
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
   checkLinkedDomain?: CheckLinkedDomain;
-  didMethods: string[] = [];
   // claims?: ClaimPayload;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
@@ -41,17 +41,14 @@ export default class RPBuilder {
     return this;
   }
 
-  defaultResolver(resolver: Resolvable): RPBuilder {
-    this.resolver = resolver;
+  withCustomResolver(resolver: Resolvable): RPBuilder {
+    this.customResolver = resolver;
     return this;
   }
 
   addResolver(didMethod: string, resolver: Resolvable): RPBuilder {
-    if (!this.requestRegistration.subjectSyntaxTypesSupported || !this.requestRegistration.subjectSyntaxTypesSupported.length) {
-      this.requestRegistration.subjectSyntaxTypesSupported = [];
-    }
-    this.requestRegistration.subjectSyntaxTypesSupported.push(toSIOPRegistrationDidMethod(didMethod));
-    this.resolvers.set(getMethodFromDid(didMethod), resolver);
+    const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
+    this.resolvers.set(qualifiedDidMethod, resolver);
     return this;
   }
 
@@ -66,13 +63,11 @@ export default class RPBuilder {
   }
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): RPBuilder {
-    if (didMethod.startsWith('did:')) {
-      this.addResolver(getMethodFromDid(didMethod), new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
-      this.didMethods.push(getMethodFromDid(didMethod));
-    } else {
-      this.addResolver(didMethod, new Resolver(getUniResolver(didMethod, { ...opts })));
-      this.didMethods.push(didMethod);
+    const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
+    if (method === SubjectSyntaxTypesSupportedValues.DID.valueOf()) {
+      opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
     }
+    opts ? this.addResolver(method, new Resolver(getUniResolver(method, { ...opts }))) : this.addResolver(method, null);
     return this;
   }
 
