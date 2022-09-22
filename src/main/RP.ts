@@ -1,3 +1,4 @@
+import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
@@ -11,6 +12,7 @@ import {
   ExternalVerification,
   InternalVerification,
   RequestRegistrationOpts,
+  Verification,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
   VerifyAuthenticationResponseOpts,
@@ -54,7 +56,8 @@ export class RP {
       checkLinkedDomain?: CheckLinkedDomain;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
-    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
+    const verifyCallback = (this._verifyAuthResponseOpts.verification as Verification).verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
+    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback }));
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
@@ -74,6 +77,7 @@ export class RP {
     claims?: ClaimOpts;
     audience: string;
     checkLinkedDomain?: CheckLinkedDomain;
+    verifyCallback?: VerifyCallback;
   }): VerifyAuthenticationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
@@ -82,6 +86,7 @@ export class RP {
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
       claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
+      verifyCallback: opts?.verifyCallback,
     };
   }
 
@@ -135,6 +140,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
         verification: {
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
+          verifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,

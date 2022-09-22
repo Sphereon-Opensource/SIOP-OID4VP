@@ -1,4 +1,5 @@
 import { IProofType } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
   AuthenticationRequestOpts,
@@ -90,6 +91,8 @@ describe('OP should', () => {
       },
     },
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
   };
 
   it('throw Error when build from request opts without enough params', async () => {

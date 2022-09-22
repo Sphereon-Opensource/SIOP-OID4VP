@@ -1,10 +1,4 @@
-import {
-  IDomainLinkageValidation,
-  IVerifyCredentialResult,
-  ValidationStatusEnum,
-  WDCErrors,
-  WellKnownDidVerifier,
-} from '@sphereon/wellknown-dids-client';
+import { IDomainLinkageValidation, ValidationStatusEnum, VerifyCallback, WDCErrors, WellKnownDidVerifier } from '@sphereon/wellknown-dids-client';
 
 import { CheckLinkedDomain, DIDDocument } from '../types';
 
@@ -56,10 +50,10 @@ function checkInvalidMessages(validationErrorMessages: string[]): { status: bool
   return { status: true };
 }
 
-export async function validateLinkedDomainWithDid(did: string, checkLinkedDomain: CheckLinkedDomain) {
+export async function validateLinkedDomainWithDid(did: string, verifyCallback: VerifyCallback, checkLinkedDomain: CheckLinkedDomain) {
   const didDocument = await resolveDidDocument(did, { subjectSyntaxTypesSupported: [toSIOPRegistrationDidMethod(getMethodFromDid(did))] });
   try {
-    const validationResult = await checkWellknownDid(didDocument);
+    const validationResult = await checkWellKnownDid({ didDocument, verifyCallback });
     if (validationResult.status === ValidationStatusEnum.INVALID) {
       const validationErrorMessages = getValidationErrorMessages(validationResult);
       const messageCondition: { status: boolean; message?: string } = checkInvalidMessages(validationErrorMessages);
@@ -75,13 +69,15 @@ export async function validateLinkedDomainWithDid(did: string, checkLinkedDomain
   }
 }
 
-async function checkWellknownDid(didDocument: DIDDocument): Promise<IDomainLinkageValidation> {
-  const verifyCallback = async (): Promise<IVerifyCredentialResult> => {
-    return { verified: true };
-  };
+interface CheckWellKnownDidArgs {
+  didDocument: DIDDocument;
+  verifyCallback: VerifyCallback;
+}
+
+async function checkWellKnownDid(args: CheckWellKnownDidArgs): Promise<IDomainLinkageValidation> {
   const verifier = new WellKnownDidVerifier({
-    verifySignatureCallback: () => verifyCallback(),
+    verifySignatureCallback: args.verifyCallback,
     onlyVerifyServiceDid: false,
   });
-  return await verifier.verifyDomainLinkage({ didDocument: didDocument });
+  return await verifier.verifyDomainLinkage({ didDocument: args.didDocument });
 }

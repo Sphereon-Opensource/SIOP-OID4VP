@@ -133,9 +133,9 @@ export default class AuthenticationRequest {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
     if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(verPayload.iss, opts.verification.checkLinkedDomain);
+      await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, opts.verification.checkLinkedDomain);
     } else if (!opts.verification.checkLinkedDomain) {
-      await validateLinkedDomainWithDid(verPayload.iss, CheckLinkedDomain.IF_PRESENT);
+      await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
@@ -226,6 +226,7 @@ async function createURIFromJWT(
   throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function assertValidRequestJWT(_header: JWTHeader, _payload: JWTPayload) {
   /*console.log(_header);
     console.log(_payload);*/

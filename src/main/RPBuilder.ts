@@ -1,4 +1,5 @@
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
+import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
@@ -35,6 +36,7 @@ export default class RPBuilder {
   claims?: ClaimOpts;
   checkLinkedDomain?: CheckLinkedDomain;
   // claims?: ClaimPayload;
+  verifyCallback?: VerifyCallback;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
@@ -120,6 +122,11 @@ export default class RPBuilder {
     } else {
       this.claims.presentationDefinitions.push(definitionOpt);
     }
+    return this;
+  }
+
+  addVerifyCallback(verifyCallback: VerifyCallback): RPBuilder {
+    this.verifyCallback = verifyCallback;
     return this;
   }
 

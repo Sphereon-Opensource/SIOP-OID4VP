@@ -1,3 +1,4 @@
+import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import fetch from 'cross-fetch';
 import { Resolvable } from 'did-resolver';
@@ -17,6 +18,7 @@ import {
   SIOPErrors,
   UrlEncodingFormat,
   VerifiablePresentationResponseOpts,
+  Verification,
   VerificationMode,
   VerifiedAuthenticationRequestWithJWT,
   VerifyAuthenticationRequestOpts,
@@ -53,9 +55,9 @@ export class OP {
     requestJwtOrUri: string,
     opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
+    const verifyCallback = (this._verifyAuthRequestOpts.verification as Verification).verifyCallback || this._verifyAuthRequestOpts.verifyCallback;
     const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
-    const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts }));
-    return verifiedJwt;
+    return AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
   }
 
   public async createAuthenticationResponse(
@@ -122,11 +124,13 @@ export class OP {
   public newVerifyAuthenticationRequestOpts(opts?: {
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
+    verifyCallback?: VerifyCallback;
   }): VerifyAuthenticationRequestOpts {
     return {
       ...this._verifyAuthRequestOpts,
       nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
       verification: opts?.verification || this._verifyAuthRequestOpts.verification,
+      verifyCallback: opts?.verifyCallback,
     };
   }
 
@@ -238,6 +242,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
         verification: {
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
+          verifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,
