@@ -84,7 +84,7 @@ export function mergeAllDidMethods(subjectSyntaxTypesSupported: string | string[
   }
   const unionSubjectSyntaxTypes = new Set();
   subjectSyntaxTypesSupported.forEach((sst) => unionSubjectSyntaxTypes.add(sst));
-  resolvers.forEach((_value, didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
+  resolvers.forEach((_, didMethod) => unionSubjectSyntaxTypes.add(toSIOPRegistrationDidMethod(didMethod)));
   return Array.from(unionSubjectSyntaxTypes) as string[];
 }
 
