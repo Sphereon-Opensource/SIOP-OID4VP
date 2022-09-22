@@ -130,7 +130,7 @@ export const DID_DOCUMENT_PUBKEY_JWK: DIDDocument = {
   ],
 };
 
-export const DID_KEY = 'did:key:z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM';
+export const DID_KEY = 'did:key:z6MktwS79rvBjzRX8a8PPiURqG7HMJAfACTiozFkPJeJHRxS';
 
 export const DID_KEY_ORIGIN = 'https://example.com';
 
@@ -148,25 +148,33 @@ export const DID_KEY_DOCUMENT = {
   id: DID_KEY,
   verificationMethod: [
     {
-      id: `${DID_KEY}#z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM`,
+      id: `${DID_KEY}#z6MktwS79rvBjzRX8a8PPiURqG7HMJAfACTiozFkPJeJHRxS`,
       type: 'Ed25519VerificationKey2018',
       controller: DID_KEY,
       publicKeyJwk: {
         kty: 'OKP',
         crv: 'Ed25519',
-        x: 'hbtAIehGcx_wXTFzIYJzrHOwl8IGV8EzRgx__FUEnso',
+        x: '1ztBkC3x-8Eu8uPNTkTgH1Q0tkuO8v8RJDqfqWFl1N8',
       },
     },
   ],
-  authentication: [`${DID_KEY}#z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM`],
-  assertionMethod: [`${DID_KEY}#z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM`],
+  authentication: [`${DID_KEY}#z6MktwS79rvBjzRX8a8PPiURqG7HMJAfACTiozFkPJeJHRxS`],
+  assertionMethod: [`${DID_KEY}#z6MktwS79rvBjzRX8a8PPiURqG7HMJAfACTiozFkPJeJHRxS`],
   service: [
     {
-      id: `${DID_KEY}#z6MkoTHsgNNrby8JzCNQ1iRLyW5QQ6R8Xuu6AA8igGrMVPUM`,
+      id: `${DID_KEY}#z6MktwS79rvBjzRX8a8PPiURqG7HMJAfACTiozFkPJeJHRxS`,
       type: ServiceTypesEnum.LINKED_DOMAINS,
       serviceEndpoint: DID_KEY_ORIGIN,
     },
   ],
+};
+
+export const VC_KEY_PAIR = {
+  type: 'Ed25519VerificationKey2020',
+  id: `${DID_KEY}#z6MktwS79rvBjzRX8a8PPiURqG7HMJAfACTiozFkPJeJHRxS`,
+  controller: `${DID_KEY_ORIGIN}/1234`,
+  publicKeyMultibase: 'z6MktwS79rvBjzRX8a8PPiURqG7HMJAfACTiozFkPJeJHRxS',
+  privateKeyMultibase: 'zrv4UTisGEUxoZr1enXeC7NMVapzq48KkS1rLSpBvpTyg1v3cLo7g5SnprD1eD4bdKdYHHMu5feATzatSAkbhgXgtZU',
 };
 
 export const DID_ION =
