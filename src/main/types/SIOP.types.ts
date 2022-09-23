@@ -464,8 +464,6 @@ export enum VerificationMode {
 
 export interface InternalVerification {
   mode: VerificationMode;
-  /*registry?: string;
-        rpcUrl?: string;*/
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts
 }
@@ -495,7 +493,6 @@ export interface VerifyAuthenticationResponseOpts {
   state?: string; // mandatory? // To verify the response against the supplied state
   audience: string; // The audience/redirect_uri
   claims?: ClaimOpts; // The claims, typically the same values used during request creation
-  //revocationVerificationCallback: RevocationVerificationCallback
 }
 
 export interface ResponseClaims {
@@ -667,11 +664,6 @@ export enum RevocationStatus {
 export interface IRevocationVerificationStatus {
   status: RevocationStatus
   error?: string
-}
-
-export enum RevocationVcType { // TODO this enum is already somewhere
-  LDP_VC = 'ldp_vc',
-  JWT_VC = 'jwt_vc',
 }
 
 export type RevocationVerificationCallback = (vc: W3CVerifiableCredential, type: VerifiableCredentialTypeFormat) => Promise<IRevocationVerificationStatus>

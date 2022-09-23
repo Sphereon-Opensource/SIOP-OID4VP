@@ -51,7 +51,6 @@ export class RP {
       verification?: InternalVerification | ExternalVerification;
       claims?: ClaimOpts;
       checkLinkedDomain?: CheckLinkedDomain;
-      // revocationVerificationCallback?: RevocationVerificationCallback;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
@@ -74,7 +73,6 @@ export class RP {
     claims?: ClaimOpts;
     audience: string;
     checkLinkedDomain?: CheckLinkedDomain;
-    // revocationVerificationCallback?: RevocationVerificationCallback;
   }): VerifyAuthenticationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
@@ -83,8 +81,7 @@ export class RP {
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
       claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
-      checkLinkedDomain: opts?.checkLinkedDomain || this._verifyAuthResponseOpts.checkLinkedDomain, //_authRequestOpts //_verifyAuthResponseOpts
-      //revocationVerificationCallback: opts?.revocationVerificationCallback || this._verifyAuthResponseOpts.revocationVerificationCallback
+      checkLinkedDomain: opts?.checkLinkedDomain || this._verifyAuthResponseOpts.checkLinkedDomain,
     };
   }
 
