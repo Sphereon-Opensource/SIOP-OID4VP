@@ -930,8 +930,7 @@ export const AuthenticationResponseOptsSchema = {
         "created",
         "proofPurpose",
         "verificationMethod"
-      ],
-      "additionalProperties": false
+      ]
     },
     "IProofType": {
       "type": "string",

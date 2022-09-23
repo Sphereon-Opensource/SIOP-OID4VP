@@ -11,7 +11,6 @@ import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
-  CheckLinkedDomain,
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
@@ -54,11 +53,7 @@ export class OP {
 
   public async verifyAuthenticationRequest(
     requestJwtOrUri: string,
-    opts?: {
-      nonce?: string
-      verification?: InternalVerification | ExternalVerification
-      checkLinkedDomain?: CheckLinkedDomain
-    }
+    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
     const verifyCallback = (this._verifyAuthRequestOpts.verification as Verification).verifyCallback || this._verifyAuthRequestOpts.verifyCallback;
     const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
@@ -216,7 +211,6 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
         },
         did: opts.builder.signatureType.did,
         expiresIn: opts.builder.expiresIn,
-        checkLinkedDomain: opts.builder.checkLinkedDomain,
         signatureType: opts.builder.signatureType,
         responseMode: opts.builder.responseMode,
       }
@@ -247,6 +241,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
     ? {
         verification: {
           mode: VerificationMode.INTERNAL,
+          checkLinkedDomain: opts.builder.checkLinkedDomain,
           verifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,

@@ -137,7 +137,6 @@ export default class AuthenticationRequest {
     } else if (!opts.verification.checkLinkedDomain) {
       await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
     }
-
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
       ...verifiedJWT,

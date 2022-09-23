@@ -447,45 +447,44 @@ describe('RP and OP interaction should', () => {
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
 
     const rp = RP.builder()
-    .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
-    .addVerifyCallback(verifyCallback)
-    .withRevocationVerification(RevocationVerification.NEVER)
-    .redirect(EXAMPLE_REDIRECT_URL)
-    .requestBy(PassBy.VALUE)
-    .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
-    .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-    .registrationBy({
-      idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      responseTypesSupported: [ResponseType.ID_TOKEN],
-      vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
-      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-      subjectTypesSupported: [SubjectType.PAIRWISE],
-      subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-      registrationBy: { type: PassBy.VALUE },
-    })
-    .addPresentationDefinitionClaim({
-      definition: getPresentationDefinition(),
-      location: PresentationLocation.VP_TOKEN,
-    })
-    .build();
+      .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
+      .addVerifyCallback(verifyCallback)
+      .redirect(EXAMPLE_REDIRECT_URL)
+      .requestBy(PassBy.VALUE)
+      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+        registrationBy: { type: PassBy.VALUE },
+      })
+      .addPresentationDefinitionClaim({
+        definition: getPresentationDefinition(),
+        location: PresentationLocation.VP_TOKEN,
+      })
+      .build();
     const op = OP.builder()
-    .withExpiresIn(1000)
-    .addVerifyCallback(verifyCallback)
-    .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
-    .registrationBy({
-      authorizationEndpoint: 'www.myauthorizationendpoint.com',
-      idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
-      issuer: ResponseIss.SELF_ISSUED_V2,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      responseTypesSupported: [ResponseType.ID_TOKEN],
-      vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
-      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-      subjectTypesSupported: [SubjectType.PAIRWISE],
-      subjectSyntaxTypesSupported: ['did'],
-      registrationBy: { type: PassBy.VALUE },
-    })
-    .build();
+      .withExpiresIn(1000)
+      .addVerifyCallback(verifyCallback)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .registrationBy({
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did'],
+        registrationBy: { type: PassBy.VALUE },
+      })
+      .build();
 
     const requestURI = await rp.createAuthenticationRequest({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
@@ -517,13 +516,13 @@ describe('RP and OP interaction should', () => {
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
     await expect(
-        rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
-          audience: EXAMPLE_REDIRECT_URL,
-        })
+      rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+        audience: EXAMPLE_REDIRECT_URL,
+      })
     ).rejects.toThrow(new Error(WDCErrors.PROPERTY_SERVICE_NOT_PRESENT));
   }, 10000);
 
-  it('succeed when calling with LinkedDomainValidationMode.ALWAYS', async () => {
+  it('succeed when calling with CheckLinkedDomain.ALWAYS', async () => {
     const rpMockEntity = {
       hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
       did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
@@ -554,7 +553,6 @@ describe('RP and OP interaction should', () => {
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormatsSupported: {
           jwt_vc: { alg: [KeyAlgo.EDDSA] },
-          jwt_vp: { alg: [KeyAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -581,7 +579,6 @@ describe('RP and OP interaction should', () => {
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormats: {
           jwt_vc: { alg: [KeyAlgo.EDDSA] },
-          jwt_vp: { alg: [KeyAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -604,7 +601,7 @@ describe('RP and OP interaction should', () => {
     expect(parsedAuthReqURI.jwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt); //, rp.authRequestOpts
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
@@ -629,6 +626,7 @@ describe('RP and OP interaction should', () => {
         'eyJhbGciOiJSUzI1NiIsImtpZCI6ImRpZDprZXk6ejZNa29USHNnTk5yYnk4SnpDTlExaVJMeVc1UVE2UjhYdXU2QUE4aWdHck1WUFVNI3o2TWtvVEhzZ05OcmJ5OEp6Q05RMWlSTHlXNVFRNlI4WHV1NkFBOGlnR3JNVlBVTSJ9.eyJleHAiOjE3NjQ4NzkxMzksImlzcyI6ImRpZDprZXk6b3RoZXIiLCJuYmYiOjE2MDcxMTI3MzksInN1YiI6ImRpZDprZXk6b3RoZXIiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vaWRlbnRpdHkuZm91bmRhdGlvbi8ud2VsbC1rbm93bi9kaWQtY29uZmlndXJhdGlvbi92MSJdLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDprZXk6b3RoZXIiLCJvcmlnaW4iOiJodHRwczovL2lkZW50aXR5LmZvdW5kYXRpb24ifSwiZXhwaXJhdGlvbkRhdGUiOiIyMDI1LTEyLTA0VDE0OjEyOjE5LTA2OjAwIiwiaXNzdWFuY2VEYXRlIjoiMjAyMC0xMi0wNFQxNDoxMjoxOS0wNjowMCIsImlzc3VlciI6ImRpZDprZXk6b3RoZXIiLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiRG9tYWluTGlua2FnZUNyZWRlbnRpYWwiXX19.rRuc-ojuEgyq8p_tBYK7BayuiNTBeXNyAnC14Rnjs-jsnhae4_E1Q12W99K2NGCGBi5KjNsBcZmdNJPxejiKPrjjcB99poFCgTY8tuRzDjVo0lIeBwfx9qqjKHTRTUR8FGM_imlOpVfBF4AHYxjkHvZn6c9lYvatYcDpB2UfH4BNXkdSVrUXy_kYjpMpAdRtyCAnD_isN1YpEHBqBmnfuVUbYcQK5kk6eiokRFDtWruL1OEeJMYPqjuBSd2m-H54tSM84Oic_pg2zXDjjBlXNelat6MPNT2QxmkwJg7oyewQWX2Ot2yyhSp9WyAQWMlQIe2x84R0lADUmZ1TPQchNw',
       ],
     };
+    expect(rp.verifyAuthResponseOpts.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
     const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
       audience: EXAMPLE_REDIRECT_URL,

@@ -114,8 +114,6 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
-        checkLinkedDomain: opts.builder.checkLinkedDomain,
-        revocationVerificationCallback: opts.builder.revocationVerificationCallback
       }
     : opts.requestOpts;
 
@@ -141,6 +139,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
     ? {
         verification: {
           mode: VerificationMode.INTERNAL,
+          checkLinkedDomain: opts.builder.checkLinkedDomain,
           verifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,

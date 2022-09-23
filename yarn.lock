@@ -1677,12 +1677,13 @@
   resolved "https://registry.yarnpkg.com/@sphereon/pex-models/-/pex-models-1.1.0.tgz#716898344fd07400bbffaa0c34a1f7ecdda14166"
   integrity sha512-kMslWspdqwuXGBFxOPXTAK8HlIHycBR/locYHMlYmyvdnau6bp40JXk2zviBRVOPfe8N3Dv2p5IPAjMk3pT77A==
 
-"@sphereon/pex@file:sphereon-pex-v1.1.7.tgz":
-  version "1.1.7"
-  resolved "file:sphereon-pex-v1.1.7.tgz#df7f2404f31cf493c27b9ff1643158f1bc92510e"
+"@sphereon/pex@^2.0.0-unstable.1":
+  version "2.0.0-unstable.1"
+  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-2.0.0-unstable.1.tgz#b8bea28d677a34cf2209aa51221c54e7bda9084b"
+  integrity sha512-xIN/eE3t4gQ8vhQ9qt0SWkxqYvQAM1wL9rrjXXk85oALraWMSPjsC/lBQ7wAFnumbaqiG48pvkLPNz0FgtOcGA==
   dependencies:
     "@sphereon/pex-models" "^1.1.0"
-    "@sphereon/ssi-types" "file:../pe-js/sphereon-ssi-types-v0.8.2.tgz"
+    "@sphereon/ssi-types" "0.8.1-next.20"
     ajv "^8.11.0"
     ajv-formats "^2.1.1"
     jsonpath "^1.1.1"
@@ -1697,16 +1698,17 @@
   dependencies:
     jwt-decode "^3.1.2"
 
+"@sphereon/ssi-types@^0.8.1-next.20":
+  version "0.8.1-unstable.11"
+  resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.8.1-unstable.11.tgz#548c56c83beff6498d29430b5b7975ee63d138bc"
+  integrity sha512-qkGaezGNfRVs37gPo7HsF8tFDc5rAFtvygsTZmVZG8n1Qu+SglWC3a+VLIA44U/fadFFKb34LSC5obS4YjEAiA==
+  dependencies:
+    jwt-decode "^3.1.2"
+
 "@sphereon/ssi-types@^0.8.1-next.3":
   version "0.8.1-next.3"
   resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.8.1-next.3.tgz#f2618c6ebe33c653031c6b87fd519c7ce3fa4d15"
   integrity sha512-QN6PyIsmSJ9jUYi8rPwUsXZMmN6pzCkw0FGpRM6DEavWE3X4lm9USXnpdSYxFP7jRIZCm6bQfVAjUBmWmwG7dw==
-
-"@sphereon/ssi-types@file:../pe-js/sphereon-ssi-types-v0.8.2.tgz":
-  version "0.8.2"
-  resolved "file:../pe-js/sphereon-ssi-types-v0.8.2.tgz#b11fc211db9960b7b66ad8e12b4ac41c1bd37490"
-  dependencies:
-    jwt-decode "^3.1.2"
 
 "@sphereon/wellknown-dids-client@^0.1.3-unstable.1":
   version "0.1.3-unstable.1"

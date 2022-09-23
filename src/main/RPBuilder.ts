@@ -17,7 +17,9 @@ import {
   RequestRegistrationOpts,
   ResponseContext,
   ResponseIss,
-  ResponseMode, RevocationVerification, RevocationVerificationCallback,
+  ResponseMode, 
+  RevocationVerification, 
+  RevocationVerificationCallback,
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
 } from './types';
