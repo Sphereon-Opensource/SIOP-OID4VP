@@ -1,10 +1,12 @@
+import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import fetch from 'cross-fetch';
+import { Resolvable } from 'did-resolver';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { getResolver, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
+import { getResolverUnion, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
@@ -17,6 +19,7 @@ import {
   SIOPErrors,
   UrlEncodingFormat,
   VerifiablePresentationResponseOpts,
+  Verification,
   VerificationMode,
   VerifiedAuthenticationRequestWithJWT,
   VerifyAuthenticationRequestOpts,
@@ -57,9 +60,9 @@ export class OP {
       checkLinkedDomain?: CheckLinkedDomain
     }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
+    const verifyCallback = (this._verifyAuthRequestOpts.verification as Verification).verifyCallback || this._verifyAuthRequestOpts.verifyCallback;
     const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
-    const verifiedJwt = AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts }));
-    return verifiedJwt;
+    return AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
   }
 
   public async createAuthenticationResponse(
@@ -126,13 +129,13 @@ export class OP {
   public newVerifyAuthenticationRequestOpts(opts?: {
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
-    checkLinkedDomain?: CheckLinkedDomain;
+    verifyCallback?: VerifyCallback;
   }): VerifyAuthenticationRequestOpts {
     return {
       ...this._verifyAuthRequestOpts,
-      checkLinkedDomain: opts?.checkLinkedDomain,
       nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
-      verification: opts?.verification || this._verifyAuthRequestOpts.verification
+      verification: opts?.verification || this._verifyAuthRequestOpts.verification,
+      verifyCallback: opts?.verifyCallback,
     };
   }
 
@@ -161,6 +164,12 @@ async function parseAndResolveUri(encodedUri: string) {
 }
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {
+  if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+      opts.builder.resolvers
+    );
+  }
   const responseOpts: AuthenticationResponseOpts = opts.builder
     ? {
         registration: {
@@ -220,28 +229,30 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
   return responseOpts;
 }
 
-function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; verifyOpts?: Partial<VerifyAuthenticationRequestOpts> }) {
-  const subjectSyntaxTypesSupported = [];
-  if (opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
-    if (Array.isArray(opts.builder.responseRegistration.subjectSyntaxTypesSupported)) {
-      subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
-    } else {
-      subjectSyntaxTypesSupported.push(...opts.builder.responseRegistration.subjectSyntaxTypesSupported);
-    }
+function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
+  builder?: OPBuilder;
+  verifyOpts?: VerifyAuthenticationRequestOpts;
+}): VerifyAuthenticationRequestOpts {
+  if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration) {
+    opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+      opts.builder.resolvers
+    );
+  }
+  let resolver: Resolvable;
+  if (opts.builder) {
+    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.responseRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers);
   }
   return opts.builder
     ? {
         verification: {
           mode: VerificationMode.INTERNAL,
+          verifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
-            //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
-            didMethods: subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
-            resolver: opts.builder.resolvers
-              ? //TODO: discuss this with Niels
-                getResolver({ resolver: opts.builder.resolvers.values().next().value })
-              : getResolver({ subjectSyntaxTypesSupported: subjectSyntaxTypesSupported }),
+            subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+            resolver: resolver,
           },
-        },
+        } as InternalVerification,
       }
     : opts.verifyOpts;
 }

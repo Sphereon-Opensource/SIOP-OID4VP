@@ -33,6 +33,7 @@ import {
   RevocationVerification,
   SIOPErrors,
   SubjectIdentifierType,
+  SubjectSyntaxTypesSupportedValues,
   VerifiablePresentationPayload,
   VerifiedAuthenticationRequestWithJWT,
   VerifiedAuthenticationResponseWithJWT,
@@ -128,9 +129,10 @@ export default class AuthenticationResponse {
     });
 
     const issuerDid = getIssuerDidFromPayload(payload);
-
-    if (verifyOpts.checkLinkedDomain && verifyOpts.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.checkLinkedDomain);
+    if (verifyOpts.verification.checkLinkedDomain && verifyOpts.verification.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, verifyOpts.verification.checkLinkedDomain);
+    } else if (!verifyOpts.verification.checkLinkedDomain) {
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
     }
 
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
@@ -138,11 +140,13 @@ export default class AuthenticationResponse {
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
 
-    if (verifyOpts.verification.revocationOpts && verifyOpts.verification.revocationOpts.revocationVerification !== RevocationVerification.NEVER) {
+
+    const revocationVerification = verifyOpts.verification.revocationOpts ? verifyOpts.verification.revocationOpts.revocationVerification : RevocationVerification.IF_PRESENT
+    if (revocationVerification !== RevocationVerification.NEVER) {
       await verifyRevocation(
           verPayload.vp_token,
           verifyOpts.verification.revocationOpts.revocationVerificationCallback,
-          verifyOpts.verification.revocationOpts.revocationVerification
+          revocationVerification
       )
     }
 
@@ -250,28 +254,26 @@ async function createSIOPResponsePayload(
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
-  // fixme: This is not according to spec. It is not only did:, but can also be one or more did:<method> instead of did: alone
-  // see: https://sphereon.atlassian.net/browse/VDX-137
-  const isDidSupported = verifiedJwt.payload.registration?.subject_syntax_types_supported?.includes(SubjectIdentifierType.DID);
-  // todo: We should look at whether we can use a DID from the OP and the RP supporting it, or whether we can use a thumbprint according to OP and RP
-  // see: https://sphereon.atlassian.net/browse/VDX-137
-  const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
+  const supportedDidMethods = verifiedJwt.payload.registration?.subject_syntax_types_supported?.filter((sst) =>
+    sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
+  );
+
   const state = resOpts.state || getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
 
+  //https://sphereon.atlassian.net/browse/VDX-140
   // *********************************************************************************
   // todo We are missing a wrapper object. Actually the current object is the id_token
   // *********************************************************************************
 
   const { verifiable_presentations, vp_token } = extractPresentations(resOpts);
-  return {
+  const authenticationResponsePayload: AuthenticationResponsePayload = {
     iss: ResponseIss.SELF_ISSUED_V2,
-    sub: isDidSupported && resOpts.did ? resOpts.did : thumbprint,
+    sub: resOpts.did,
     aud: verifiedJwt.payload.redirect_uri,
     did: resOpts.did,
-    sub_type: isDidSupported && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
-    sub_jwk: subJwk,
+    sub_type: supportedDidMethods.length && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
     state,
     nonce,
     iat: Date.now() / 1000,
@@ -280,6 +282,12 @@ async function createSIOPResponsePayload(
     vp_token,
     verifiable_presentations,
   };
+  if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
+    const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
+    authenticationResponsePayload.sub_jwk = subJwk;
+    authenticationResponsePayload.sub = thumbprint;
+  }
+  return authenticationResponsePayload;
 }
 
 function assertValidResponseOpts(opts: AuthenticationResponseOpts) {

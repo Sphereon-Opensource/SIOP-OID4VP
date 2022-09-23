@@ -1,15 +1,20 @@
 import { Format } from '@sphereon/pex-models';
 
-import { CommonSupportedMetadata, DiscoveryMetadataPayload, RPRegistrationMetadataPayload, SIOPErrors, SubjectIdentifierType } from '../types';
+import {
+  CommonSupportedMetadata,
+  DiscoveryMetadataPayload,
+  RPRegistrationMetadataPayload,
+  SIOPErrors,
+  SubjectSyntaxTypesSupportedValues,
+} from '../types';
 
-//TODO, since syntax_types_Supported can contain non DIDs, fix it in the VDX-126
 export function assertValidMetadata(opMetadata: DiscoveryMetadataPayload, rpMetadata: RPRegistrationMetadataPayload): CommonSupportedMetadata {
   let subjectSyntaxTypesSupported = [];
   const credentials = supportedCredentialsFormats(rpMetadata.vp_formats, opMetadata.vp_formats);
-  const isDid = verifySubjectIdentifiers(rpMetadata.subject_syntax_types_supported);
-  if (isDid && rpMetadata.subject_syntax_types_supported) {
-    subjectSyntaxTypesSupported = supportedDidMethods(rpMetadata.subject_syntax_types_supported, opMetadata.subject_syntax_types_supported);
-  } else if (isDid && (!rpMetadata.subject_syntax_types_supported || !rpMetadata.subject_syntax_types_supported.length)) {
+  const isValidSubjectSyntax = verifySubjectSyntaxes(rpMetadata.subject_syntax_types_supported);
+  if (isValidSubjectSyntax && rpMetadata.subject_syntax_types_supported) {
+    subjectSyntaxTypesSupported = supportedSubjectSyntaxTypes(rpMetadata.subject_syntax_types_supported, opMetadata.subject_syntax_types_supported);
+  } else if (isValidSubjectSyntax && (!rpMetadata.subject_syntax_types_supported || !rpMetadata.subject_syntax_types_supported.length)) {
     if (opMetadata.subject_syntax_types_supported || opMetadata.subject_syntax_types_supported.length) {
       subjectSyntaxTypesSupported = [...opMetadata.subject_syntax_types_supported];
     }
@@ -32,21 +37,50 @@ function getIntersection<T>(rpMetadata: Array<T> | T, opMetadata: Array<T> | T):
   return arrayA.filter((value) => arrayB.includes(value));
 }
 
-function verifySubjectIdentifiers(subjectSyntaxTypesSupported: string[]): boolean {
+function verifySubjectSyntaxes(subjectSyntaxTypesSupported: string[]): boolean {
   if (subjectSyntaxTypesSupported.length) {
     if (Array.isArray(subjectSyntaxTypesSupported)) {
-      return subjectSyntaxTypesSupported.includes(SubjectIdentifierType.DID);
+      if (
+        subjectSyntaxTypesSupported.length ===
+        subjectSyntaxTypesSupported.filter(
+          (sst) => sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf()) || sst === SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT.valueOf()
+        ).length
+      ) {
+        return true;
+      }
     }
   }
   return false;
 }
 
-function supportedDidMethods(rpMethods: string[] | string, opMethods: string[] | string): Array<string> {
-  const supportedDidMethods = getIntersection(rpMethods, opMethods);
-  if (!supportedDidMethods.length || (supportedDidMethods.length === 1 && supportedDidMethods[0] === SubjectIdentifierType.DID)) {
+function supportedSubjectSyntaxTypes(rpMethods: string[] | string, opMethods: string[] | string): Array<string> {
+  const rpMethodsList = Array.isArray(rpMethods) ? rpMethods : [rpMethods];
+  const opMethodsList = Array.isArray(opMethods) ? opMethods : [opMethods];
+  const supportedSubjectSyntaxTypes = getIntersection(rpMethodsList, opMethodsList);
+  if (supportedSubjectSyntaxTypes.indexOf(SubjectSyntaxTypesSupportedValues.DID.valueOf()) !== -1) {
+    return [SubjectSyntaxTypesSupportedValues.DID.valueOf()];
+  }
+  if (rpMethodsList.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())) {
+    const supportedExtendedDids: string[] = opMethodsList.filter((method) => method.startsWith('did:'));
+    if (supportedExtendedDids.length) {
+      return supportedExtendedDids;
+    }
+  }
+  if (opMethodsList.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())) {
+    const supportedExtendedDids: string[] = rpMethodsList.filter((method) => method.startsWith('did:'));
+    if (supportedExtendedDids.length) {
+      return supportedExtendedDids;
+    }
+  }
+
+  if (!supportedSubjectSyntaxTypes.length) {
     throw Error(SIOPErrors.DID_METHODS_NOT_SUPORTED);
   }
-  return supportedDidMethods;
+  const supportedDidMethods = supportedSubjectSyntaxTypes.filter((sst) => sst.includes('did:'));
+  if (supportedDidMethods.length) {
+    return supportedDidMethods;
+  }
+  return supportedSubjectSyntaxTypes;
 }
 
 function getFormatIntersection(rpFormat: Format, opFormat: Format) {

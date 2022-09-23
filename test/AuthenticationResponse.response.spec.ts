@@ -1,5 +1,6 @@
 import { IPresentationDefinition } from '@sphereon/pex';
 import { ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
   AuthenticationRequest,
@@ -24,6 +25,8 @@ import {
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
+
+jest.setTimeout(30000);
 
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 const HEX_KEY = 'f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f';
@@ -65,10 +68,12 @@ describe('create JWT from Request JWT should', () => {
   const verifyOpts: VerifyAuthenticationRequestOpts = {
     verification: {
       resolveOpts: {
-        subjectSyntaxTypesSupported: ['ethr'],
+        subjectSyntaxTypesSupported: ['did:ethr'],
       },
       mode: VerificationMode.INTERNAL,
     },
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
   };
 
   it('throw NO_JWT when no jwt is passed', async () => {

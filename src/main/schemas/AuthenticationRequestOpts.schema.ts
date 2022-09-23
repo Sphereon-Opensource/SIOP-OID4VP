@@ -77,7 +77,7 @@ export const AuthenticationRequestOptsSchema = {
         },
         "revocationVerificationCallback": {
           "$ref": "#/definitions/RevocationVerificationCallback"
-        },
+        }
       },
       "required": [
         "redirectUri",

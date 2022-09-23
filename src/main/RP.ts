@@ -1,6 +1,8 @@
+import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
+import { Resolvable } from 'did-resolver';
 
-import { getNonce, getResolver, getState } from './functions';
+import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -10,6 +12,7 @@ import {
   ExternalVerification,
   InternalVerification,
   RequestRegistrationOpts,
+  Verification,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
   VerifyAuthenticationResponseOpts,
@@ -53,7 +56,8 @@ export class RP {
       checkLinkedDomain?: CheckLinkedDomain;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
-    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts(opts));
+    const verifyCallback = (this._verifyAuthResponseOpts.verification as Verification).verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
+    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback }));
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
@@ -73,6 +77,7 @@ export class RP {
     claims?: ClaimOpts;
     audience: string;
     checkLinkedDomain?: CheckLinkedDomain;
+    verifyCallback?: VerifyCallback;
   }): VerifyAuthenticationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
@@ -81,7 +86,7 @@ export class RP {
       nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
       claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
-      checkLinkedDomain: opts?.checkLinkedDomain || this._verifyAuthResponseOpts.checkLinkedDomain,
+      verifyCallback: opts?.verifyCallback,
     };
   }
 
@@ -121,27 +126,31 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
   return requestOpts;
 }
 
-function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: Partial<VerifyAuthenticationResponseOpts> }) {
+function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthenticationResponseOpts }) {
+  if (opts?.builder?.resolvers.size && opts.builder?.requestRegistration) {
+    opts.builder.requestRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+      opts.builder.resolvers
+    );
+  }
+  let resolver: Resolvable;
+  if (opts.builder) {
+    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.requestRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers);
+  }
   return opts.builder
     ? {
         verification: {
           mode: VerificationMode.INTERNAL,
+          verifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
-            //TODO: https://sphereon.atlassian.net/browse/VDX-126 add support of other subjectSyntaxTypes
-            didMethods: !opts.builder.requestRegistration.subjectSyntaxTypesSupported
-              ? []
-              : opts.builder.requestRegistration.subjectSyntaxTypesSupported.filter((t) => t.startsWith('did:')),
-            resolver: opts.builder.resolvers
-              ? //TODO: discuss this with Niels
-                getResolver({ resolver: opts.builder.resolvers.values().next().value })
-              : getResolver({ subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported }),
+            subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+            resolver: resolver,
           },
           revocationOpts: {
             revocationVerification: opts.builder.revocationVerification,
             revocationVerificationCallback: opts.builder.revocationVerificationCallback
           }
-        },
-        revocationVerificationCallback: opts.builder.revocationVerificationCallback
+        } as InternalVerification
       }
     : opts.verifyOpts;
 }

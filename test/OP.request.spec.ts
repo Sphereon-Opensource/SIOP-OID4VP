@@ -1,4 +1,5 @@
 import { IProofType } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
   AuthenticationRequestOpts,
@@ -86,10 +87,12 @@ describe('OP should', () => {
     verification: {
       mode: VerificationMode.INTERNAL,
       resolveOpts: {
-        subjectSyntaxTypesSupported: ['ethr'],
+        subjectSyntaxTypesSupported: ['did:ethr'],
       },
     },
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
   };
 
   it('throw Error when build from request opts without enough params', async () => {
@@ -119,7 +122,7 @@ describe('OP should', () => {
       },
       registration: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
@@ -157,7 +160,7 @@ describe('OP should', () => {
 
     const requestURI = await RP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-      .withAuthorizationEndpoint('www.muauthorizationendpoint.com')
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .redirect(EXAMPLE_REFERENCE_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)

@@ -1,8 +1,9 @@
-import { getUniResolver } from '@sphereon/did-uni-client';
+import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
+import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
-import { getMethodFromDid, toSIOPRegistrationDidMethod } from './functions';
+import { getMethodFromDid } from './functions';
 import {
   CheckLinkedDomain,
   ClaimOpts,
@@ -16,9 +17,8 @@ import {
   RequestRegistrationOpts,
   ResponseContext,
   ResponseIss,
-  ResponseMode,
-  RevocationVerification,
-  RevocationVerificationCallback,
+  ResponseMode, RevocationVerification, RevocationVerificationCallback,
+  SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
 } from './types';
 
@@ -26,7 +26,7 @@ export default class RPBuilder {
   authorizationEndpoint: string;
   issuer: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-  resolver?: Resolvable;
+  customResolver?: Resolvable;
   requestRegistration: Partial<RequestRegistrationOpts> = {};
   redirectUri: string;
   requestObjectBy: ObjectBy;
@@ -35,27 +35,34 @@ export default class RPBuilder {
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
   checkLinkedDomain?: CheckLinkedDomain;
+  // claims?: ClaimPayload;
+  verifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
-
-  // claims?: ClaimPayload;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
     return this;
   }
 
-  defaultResolver(resolver: Resolvable): RPBuilder {
-    this.resolver = resolver;
+  withRevocationVerification(mode: RevocationVerification): RPBuilder {
+    this.revocationVerification = mode
+    return this
+  }
+
+  withRevocationVerificationCallback(callback: RevocationVerificationCallback): RPBuilder {
+    this.revocationVerificationCallback = callback
+    return this
+  }
+
+  withCustomResolver(resolver: Resolvable): RPBuilder {
+    this.customResolver = resolver;
     return this;
   }
 
   addResolver(didMethod: string, resolver: Resolvable): RPBuilder {
-    if (!this.requestRegistration.subjectSyntaxTypesSupported || !this.requestRegistration.subjectSyntaxTypesSupported.length) {
-      this.requestRegistration.subjectSyntaxTypesSupported = [];
-    }
-    this.requestRegistration.subjectSyntaxTypesSupported.push(toSIOPRegistrationDidMethod(didMethod));
-    this.resolvers.set(getMethodFromDid(didMethod), resolver);
+    const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
+    this.resolvers.set(qualifiedDidMethod, resolver);
     return this;
   }
 
@@ -70,7 +77,11 @@ export default class RPBuilder {
   }
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): RPBuilder {
-    this.addResolver(didMethod, new Resolver(getUniResolver(getMethodFromDid(didMethod), { ...opts })));
+    const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
+    if (method === SubjectSyntaxTypesSupportedValues.DID.valueOf()) {
+      opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
+    }
+    opts ? this.addResolver(method, new Resolver(getUniResolver(method, { ...opts }))) : this.addResolver(method, null);
     return this;
   }
 
@@ -126,14 +137,9 @@ export default class RPBuilder {
     return this;
   }
 
-  withRevocationVerification(mode: RevocationVerification): RPBuilder {
-    this.revocationVerification = mode
-    return this
-  }
-
-  withRevocationVerificationCallback(callback: RevocationVerificationCallback): RPBuilder {
-    this.revocationVerificationCallback = callback
-    return this
+  addVerifyCallback(verifyCallback: VerifyCallback): RPBuilder {
+    this.verifyCallback = verifyCallback;
+    return this;
   }
 
   build(): RP {

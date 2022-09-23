@@ -119,12 +119,12 @@ describe('DidJWT ', () => {
 
   it('toSIOPRegistrationDidMethod: should pass if fails', async function () {
     const result = toSIOPRegistrationDidMethod('pid:ethr:0x226e2e2223333c2e4c65652e452d412d50611111');
-    expect(result).toBe('did:pid:');
+    expect(result).toBe('did:pid');
   });
 
   it('toSIOPRegistrationDidMethod: should pass if', async function () {
     const result = toSIOPRegistrationDidMethod('did:ethr:0x226e2e2223333c2e4c65652e452d412d50611111');
-    expect(result).toBe('did:ethr:');
+    expect(result).toBe('did:ethr');
   });
 
   it('is ED25519 Did key', async function () {

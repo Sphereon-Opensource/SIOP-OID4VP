@@ -132,8 +132,10 @@ export default class AuthenticationRequest {
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
-    if (opts.checkLinkedDomain && opts.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(verPayload.iss, opts.checkLinkedDomain);
+    if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
+      await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, opts.verification.checkLinkedDomain);
+    } else if (!opts.verification.checkLinkedDomain) {
+      await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
     }
 
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
@@ -225,6 +227,7 @@ async function createURIFromJWT(
   throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function assertValidRequestJWT(_header: JWTHeader, _payload: JWTPayload) {
   /*console.log(_header);
     console.log(_payload);*/
@@ -249,7 +252,7 @@ function assertValidRequestOpts(opts: AuthenticationRequestOpts) {
   assertValidRequestRegistrationOpts(opts.registration);
 }
 
-function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
+function createClaimsPayload(opts: ClaimOpts, nonce: string): ClaimPayload {
   if (!opts || !opts.presentationDefinitions || opts.presentationDefinitions.length == 0) {
     return undefined;
   }
@@ -276,8 +279,7 @@ function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
           throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
         } else {
           vp_token = {
-            //TODO: nonce should be initialized correctly
-            nonce: 'NONCE_STRING',
+            nonce: nonce,
             presentation_definition: def.definition,
             response_type: PresentationLocation.VP_TOKEN,
           };
@@ -297,7 +299,7 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
   assertValidRequestOpts(opts);
   const state = getState(opts.state);
   const registration = await createRequestRegistration(opts.registration);
-  const claims = createClaimsPayload(opts.claims);
+  const claims = createClaimsPayload(opts.claims, opts.nonce);
 
   return {
     response_type: ResponseType.ID_TOKEN,

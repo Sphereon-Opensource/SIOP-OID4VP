@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@sphereon/did-uni-client": "^0.4.0",
-    "@sphereon/ssi-types": "C:\\Git\\Sphereon-Opensource\\did-auth-siop\\sphereon-ssi-types-v0.8.2.tgz",
+    "@sphereon/ssi-types": "0.8.1-next.20",
     "@sphereon/pex": "C:\\Git\\Sphereon-Opensource\\did-auth-siop\\sphereon-pex-v1.1.7.tgz",
     "@sphereon/pex-models": "^1.1.0",
     "@sphereon/wellknown-dids-client": "^0.1.3-unstable.1",
@@ -57,6 +57,9 @@
   },
   "devDependencies": {
     "@digitalcredentials/did-method-key": "^2.0.3",
+    "@digitalcredentials/ed25519-signature-2020": "^3.0.2",
+    "@digitalcredentials/jsonld-signatures": "^9.3.1",
+    "@digitalcredentials/vc": "^4.1.1",
     "@types/jest": "^28.1.8",
     "@typescript-eslint/eslint-plugin": "^5.36.1",
     "@typescript-eslint/parser": "^5.36.1",
