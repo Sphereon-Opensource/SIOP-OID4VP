@@ -15,6 +15,7 @@ import {
   signDidJwtPayload,
   validateLinkedDomainWithDid,
   verifyDidJWT,
+  verifyRevocation,
 } from './functions';
 import {
   AuthenticationResponseOpts,
@@ -30,6 +31,7 @@ import {
   PresentationDefinitionWithLocation,
   PresentationLocation,
   ResponseIss,
+  RevocationVerification,
   SIOPErrors,
   SubjectIdentifierType,
   SubjectSyntaxTypesSupportedValues,
@@ -136,6 +138,13 @@ export default class AuthenticationResponse {
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
+
+    const revocationVerification = verifyOpts.verification.revocationOpts
+      ? verifyOpts.verification.revocationOpts.revocationVerification
+      : RevocationVerification.IF_PRESENT;
+    if (revocationVerification !== RevocationVerification.NEVER) {
+      await verifyRevocation(verPayload.vp_token, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
+    }
 
     return {
       signer: verifiedJWT.signer,

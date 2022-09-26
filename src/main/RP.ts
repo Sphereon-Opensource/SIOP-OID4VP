@@ -145,6 +145,10 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,
           },
+          revocationOpts: {
+            revocationVerification: opts.builder.revocationVerification,
+            revocationVerificationCallback: opts.builder.revocationVerificationCallback,
+          },
         } as InternalVerification,
       }
     : opts.verifyOpts;

@@ -1,5 +1,5 @@
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
-import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation } from '@sphereon/ssi-types';
+import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation, W3CVerifiableCredential } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose';
@@ -25,6 +25,7 @@ export interface AuthenticationRequestOpts {
   scopesSupported?: Scope[];
   subjectTypesSupported?: SubjectType[];
   requestObjectSigningAlgValuesSupported?: SigningAlgo[];
+  revocationVerificationCallback?: RevocationVerificationCallback;
   // slint-disable-next-line @typescript-eslint/no-explicit-any
   // [x: string]: any;
 }
@@ -399,6 +400,11 @@ export enum VerifiablePresentationTypeFormat {
   LDP_VP = 'ldp_vp',
 }
 
+export enum VerifiableCredentialTypeFormat {
+  LDP_VC = 'ldp_vc',
+  JWT_VC = 'jwt_vc',
+}
+
 export enum EncSymmetricAlgorithmCode {
   XC20P = 'XC20P', // default
 }
@@ -458,6 +464,7 @@ export interface Verification {
   verifyCallback?: VerifyCallback;
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
+  revocationOpts?: RevocationOpts;
 }
 
 export type InternalVerification = Verification;
@@ -650,3 +657,29 @@ export const isExternalVerification = (object: InternalVerification | ExternalVe
 
 export const isVP = (object: PEVerifiablePresentation | PEPresentation): object is PEVerifiablePresentation => 'presentation' in object;
 export const isPresentation = (object: PEVerifiablePresentation | PEPresentation): object is PEPresentation => 'presentation_submission' in object;
+
+export enum RevocationStatus {
+  VALID = 'valid',
+  INVALID = 'invalid',
+}
+
+export interface IRevocationVerificationStatus {
+  status: RevocationStatus;
+  error?: string;
+}
+
+export type RevocationVerificationCallback = (
+  vc: W3CVerifiableCredential,
+  type: VerifiableCredentialTypeFormat
+) => Promise<IRevocationVerificationStatus>;
+
+export enum RevocationVerification {
+  NEVER = 'never', // We don't want to verify revocation
+  IF_PRESENT = 'if_present', // If credentialStatus is present, did-auth-siop will verify revocation. If present and not valid an exception is thrown
+  ALWAYS = 'always', // We'll always check the revocation, if not present or not valid, throws an exception
+}
+
+export interface RevocationOpts {
+  revocationVerification: RevocationVerification;
+  revocationVerificationCallback?: RevocationVerificationCallback;
+}

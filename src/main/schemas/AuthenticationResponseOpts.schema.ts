@@ -658,6 +658,14 @@ export const AuthenticationResponseOptsSchema = {
     "SuppliedSignature": {
       "type": "object",
       "properties": {
+        "signature": {
+          "properties": {
+            "isFunction": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
         "did": {
           "type": "string"
         },
@@ -666,10 +674,11 @@ export const AuthenticationResponseOptsSchema = {
         }
       },
       "required": [
+        "signature",
         "did",
         "kid"
       ],
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "VerifiablePresentationResponseOpts": {
       "type": "object",
@@ -701,6 +710,9 @@ export const AuthenticationResponseOptsSchema = {
     "IPresentation": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string"
+        },
         "@context": {
           "anyOf": [
             {
@@ -723,7 +735,7 @@ export const AuthenticationResponseOptsSchema = {
         "verifiableCredential": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/IVerifiableCredential"
+            "$ref": "#/definitions/W3CVerifiableCredential"
           }
         },
         "presentation_submission": {
@@ -737,30 +749,36 @@ export const AuthenticationResponseOptsSchema = {
         "@context",
         "type",
         "verifiableCredential"
-      ],
-      "additionalProperties": false
+      ]
     },
     "ICredentialContextType": {
       "anyOf": [
         {
-          "$ref": "#/definitions/ICredentialContext"
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "did": {
+              "type": "string"
+            }
+          }
         },
         {
           "type": "string"
         }
       ]
     },
-    "ICredentialContext": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
+    "W3CVerifiableCredential": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/IVerifiableCredential"
         },
-        "did": {
-          "type": "string"
+        {
+          "$ref": "#/definitions/CompactJWT"
         }
-      },
-      "additionalProperties": {}
+      ],
+      "description": "Represents a signed Verifiable Credential (includes proof), in either JSON or compact JWT format. See  {@link  https://www.w3.org/TR/vc-data-model/#credentials | VC data model } \nSee  {@link  https://www.w3.org/TR/vc-data-model/#proof-formats | proof formats }"
     },
     "IVerifiableCredential": {
       "type": "object",
@@ -795,7 +813,12 @@ export const AuthenticationResponseOptsSchema = {
           "type": "string"
         },
         "credentialSubject": {
-          "$ref": "#/definitions/ICredentialSubject"
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          }
         },
         "id": {
           "type": "string"
@@ -845,7 +868,6 @@ export const AuthenticationResponseOptsSchema = {
       "required": [
         "@context",
         "credentialSubject",
-        "id",
         "issuanceDate",
         "issuer",
         "proof",
@@ -908,23 +930,7 @@ export const AuthenticationResponseOptsSchema = {
         "created",
         "proofPurpose",
         "verificationMethod"
-      ],
-      "additionalProperties": {
-        "anyOf": [
-          {
-            "type": "string"
-          },
-          {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          {
-            "not": {}
-          }
-        ]
-      }
+      ]
     },
     "IProofType": {
       "type": "string",
@@ -962,17 +968,7 @@ export const AuthenticationResponseOptsSchema = {
       },
       "required": [
         "id"
-      ],
-      "additionalProperties": {}
-    },
-    "ICredentialSubject": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": {}
+      ]
     },
     "ICredentialStatus": {
       "type": "object",
@@ -1015,6 +1011,10 @@ export const AuthenticationResponseOptsSchema = {
       ],
       "additionalProperties": false
     },
+    "CompactJWT": {
+      "type": "string",
+      "description": "Represents a Json Web Token in compact form."
+    },
     "PresentationSubmission": {
       "type": "object",
       "properties": {
@@ -1040,7 +1040,7 @@ export const AuthenticationResponseOptsSchema = {
         "descriptor_map"
       ],
       "additionalProperties": false,
-      "description": "It express how the inputs presented as proofs to a Verifier."
+      "description": "It expresses how the inputs are presented as proofs to a Verifier."
     },
     "Descriptor": {
       "type": "object",

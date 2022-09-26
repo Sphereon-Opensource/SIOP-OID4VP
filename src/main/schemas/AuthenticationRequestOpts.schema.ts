@@ -74,6 +74,9 @@ export const AuthenticationRequestOptsSchema = {
           "items": {
             "$ref": "#/definitions/SigningAlgo"
           }
+        },
+        "revocationVerificationCallback": {
+          "$ref": "#/definitions/RevocationVerificationCallback"
         }
       },
       "required": [
@@ -150,6 +153,14 @@ export const AuthenticationRequestOptsSchema = {
     "SuppliedSignature": {
       "type": "object",
       "properties": {
+        "signature": {
+          "properties": {
+            "isFunction": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
         "did": {
           "type": "string"
         },
@@ -158,10 +169,11 @@ export const AuthenticationRequestOptsSchema = {
         }
       },
       "required": [
+        "signature",
         "did",
         "kid"
       ],
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "NoSignature": {
       "type": "object",
@@ -936,6 +948,14 @@ export const AuthenticationRequestOptsSchema = {
     "EncSymmetricAlgorithmCode": {
       "type": "string",
       "const": "XC20P"
+    },
+    "RevocationVerificationCallback": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
+        }
+      }
     }
   }
 };
