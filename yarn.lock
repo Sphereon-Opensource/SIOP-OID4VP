@@ -1698,13 +1698,6 @@
   dependencies:
     jwt-decode "^3.1.2"
 
-"@sphereon/ssi-types@^0.8.1-next.20":
-  version "0.8.1-unstable.11"
-  resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.8.1-unstable.11.tgz#548c56c83beff6498d29430b5b7975ee63d138bc"
-  integrity sha512-qkGaezGNfRVs37gPo7HsF8tFDc5rAFtvygsTZmVZG8n1Qu+SglWC3a+VLIA44U/fadFFKb34LSC5obS4YjEAiA==
-  dependencies:
-    jwt-decode "^3.1.2"
-
 "@sphereon/ssi-types@^0.8.1-next.3":
   version "0.8.1-next.3"
   resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.8.1-next.3.tgz#f2618c6ebe33c653031c6b87fd519c7ce3fa4d15"

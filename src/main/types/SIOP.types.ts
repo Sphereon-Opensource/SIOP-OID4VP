@@ -1,11 +1,7 @@
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
-import {
-  IPresentation as PEPresentation,
-  IVerifiablePresentation as PEVerifiablePresentation,
-  W3CVerifiableCredential
-} from '@sphereon/ssi-types';
-import {DIDDocument as DIFDIDDocument, VerificationMethod} from 'did-resolver';
+import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation, W3CVerifiableCredential } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
+import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose';
 
 import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
@@ -29,7 +25,7 @@ export interface AuthenticationRequestOpts {
   scopesSupported?: Scope[];
   subjectTypesSupported?: SubjectType[];
   requestObjectSigningAlgValuesSupported?: SigningAlgo[];
-  revocationVerificationCallback?: RevocationVerificationCallback
+  revocationVerificationCallback?: RevocationVerificationCallback;
   // slint-disable-next-line @typescript-eslint/no-explicit-any
   // [x: string]: any;
 }
@@ -468,7 +464,7 @@ export interface Verification {
   verifyCallback?: VerifyCallback;
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
-  revocationOpts?: RevocationOpts
+  revocationOpts?: RevocationOpts;
 }
 
 export type InternalVerification = Verification;
@@ -664,15 +660,18 @@ export const isPresentation = (object: PEVerifiablePresentation | PEPresentation
 
 export enum RevocationStatus {
   VALID = 'valid',
-  INVALID = 'invalid'
+  INVALID = 'invalid',
 }
 
 export interface IRevocationVerificationStatus {
-  status: RevocationStatus
-  error?: string
+  status: RevocationStatus;
+  error?: string;
 }
 
-export type RevocationVerificationCallback = (vc: W3CVerifiableCredential, type: VerifiableCredentialTypeFormat) => Promise<IRevocationVerificationStatus>
+export type RevocationVerificationCallback = (
+  vc: W3CVerifiableCredential,
+  type: VerifiableCredentialTypeFormat
+) => Promise<IRevocationVerificationStatus>;
 
 export enum RevocationVerification {
   NEVER = 'never', // We don't want to verify revocation
@@ -681,6 +680,6 @@ export enum RevocationVerification {
 }
 
 export interface RevocationOpts {
-  revocationVerification: RevocationVerification,
+  revocationVerification: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
 }

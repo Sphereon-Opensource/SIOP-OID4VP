@@ -12,7 +12,9 @@ import {
   PresentationExchange,
   PresentationLocation,
   ResponseIss,
-  ResponseType, RevocationStatus, RevocationVerification,
+  ResponseType,
+  RevocationStatus,
+  RevocationVerification,
   RP,
   Scope,
   SigningAlgo,
@@ -744,7 +746,7 @@ describe('RP and OP interaction should', () => {
       hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
       did: 'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19',
       didKey:
-          'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19#key1',
+        'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19#key1',
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -754,7 +756,9 @@ describe('RP and OP interaction should', () => {
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .addVerifyCallback(verifyCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-      .withRevocationVerificationCallback(async () => { return { status: RevocationStatus.VALID } })
+      .withRevocationVerificationCallback(async () => {
+        return { status: RevocationStatus.VALID };
+      })
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -857,164 +861,146 @@ describe('RP and OP interaction should', () => {
 
   it('should verify revocation ldp_vp with RevocationVerification.ALWAYS', async () => {
     const vpToken = {
-      "presentation": {
-        "@context": [
-          "https://www.w3.org/2018/credentials/v1",
-          "https://identity.foundation/presentation-exchange/submission/v1"
-        ],
-        "type": [
-          "VerifiablePresentation",
-          "PresentationSubmission"
-        ],
-        "presentation_submission": {
-          "id": "K7Zu3C6yJv3TGXYCB3B3n",
-          "definition_id": "Insurance Plans",
-          "descriptor_map": [
+      presentation: {
+        '@context': ['https://www.w3.org/2018/credentials/v1', 'https://identity.foundation/presentation-exchange/submission/v1'],
+        type: ['VerifiablePresentation', 'PresentationSubmission'],
+        presentation_submission: {
+          id: 'K7Zu3C6yJv3TGXYCB3B3n',
+          definition_id: 'Insurance Plans',
+          descriptor_map: [
             {
-              "id": "Ontario Health Insurance Plan",
-              "format": "ldp_vc",
-              "path": "$.verifiableCredential[0]"
-            }
-          ]
+              id: 'Ontario Health Insurance Plan',
+              format: 'ldp_vc',
+              path: '$.verifiableCredential[0]',
+            },
+          ],
         },
-        "verifiableCredential": [
+        verifiableCredential: [
           {
-            "identifier": "83627465",
-            "name": "Permanent Resident Card",
-            "type": [
-              "PermanentResidentCard",
-              "verifiableCredential"
-            ],
-            "id": "https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd",
-            "credentialSubject": {
-              "birthCountry": "Bahamas",
-              "id": "did:example:b34ca6cd37bbf23",
-              "type": [
-                "PermanentResident",
-                "Person"
-              ],
-              "gender": "Female",
-              "familyName": "SMITH",
-              "givenName": "JANE",
-              "residentSince": "2015-01-01",
-              "lprNumber": "999-999-999",
-              "birthDate": "1958-07-17",
-              "commuterClassification": "C1",
-              "lprCategory": "C09",
-              "image": "data:image/png;base64,iVBORw0KGgokJggg=="
+            identifier: '83627465',
+            name: 'Permanent Resident Card',
+            type: ['PermanentResidentCard', 'verifiableCredential'],
+            id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
+            credentialSubject: {
+              birthCountry: 'Bahamas',
+              id: 'did:example:b34ca6cd37bbf23',
+              type: ['PermanentResident', 'Person'],
+              gender: 'Female',
+              familyName: 'SMITH',
+              givenName: 'JANE',
+              residentSince: '2015-01-01',
+              lprNumber: '999-999-999',
+              birthDate: '1958-07-17',
+              commuterClassification: 'C1',
+              lprCategory: 'C09',
+              image: 'data:image/png;base64,iVBORw0KGgokJggg==',
             },
-            "expirationDate": "2029-12-03T12:19:52Z",
-            "description": "Government of Example Permanent Resident Card.",
-            "issuanceDate": "2019-12-03T12:19:52Z",
-            "@context": [
-              "https://www.w3.org/2018/credentials/v1",
-              "https://www.w3.org/2018/credentials/examples/v1"
-            ],
-            "issuer": {
-              "id": "did:example:issuer"
+            expirationDate: '2029-12-03T12:19:52Z',
+            description: 'Government of Example Permanent Resident Card.',
+            issuanceDate: '2019-12-03T12:19:52Z',
+            '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1'],
+            issuer: {
+              id: 'did:example:issuer',
             },
-            "proof": {
-              "type": "BbsBlsSignatureProof2020",
-              "created": "2020-04-25",
-              "verificationMethod": "did:example:489398593#test",
-              "proofPurpose": "assertionMethod",
-              "proofValue": "kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=",
-              "nonce": "6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY="
-            }
-          }
-        ]
+            proof: {
+              type: 'BbsBlsSignatureProof2020',
+              created: '2020-04-25',
+              verificationMethod: 'did:example:489398593#test',
+              proofPurpose: 'assertionMethod',
+              proofValue:
+                'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
+              nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
+            },
+          },
+        ],
       },
-      "format": VerifiablePresentationTypeFormat.LDP_VP
-    }
+      format: VerifiablePresentationTypeFormat.LDP_VP,
+    };
 
     await expect(
-        verifyRevocation(vpToken, async () => { return { status: RevocationStatus.VALID } }, RevocationVerification.ALWAYS)
+      verifyRevocation(
+        vpToken,
+        async () => {
+          return { status: RevocationStatus.VALID };
+        },
+        RevocationVerification.ALWAYS
+      )
     ).resolves.not.toThrow();
   });
 
   it('should verify revocation ldp_vp with RevocationVerification.IF_PRESENT', async () => {
     const vpToken = {
-      "presentation": {
-        "@context": [
-          "https://www.w3.org/2018/credentials/v1",
-          "https://identity.foundation/presentation-exchange/submission/v1"
-        ],
-        "type": [
-          "VerifiablePresentation",
-          "PresentationSubmission"
-        ],
-        "presentation_submission": {
-          "id": "K7Zu3C6yJv3TGXYCB3B3n",
-          "definition_id": "Insurance Plans",
-          "descriptor_map": [
+      presentation: {
+        '@context': ['https://www.w3.org/2018/credentials/v1', 'https://identity.foundation/presentation-exchange/submission/v1'],
+        type: ['VerifiablePresentation', 'PresentationSubmission'],
+        presentation_submission: {
+          id: 'K7Zu3C6yJv3TGXYCB3B3n',
+          definition_id: 'Insurance Plans',
+          descriptor_map: [
             {
-              "id": "Ontario Health Insurance Plan",
-              "format": "ldp_vc",
-              "path": "$.verifiableCredential[0]"
-            }
-          ]
+              id: 'Ontario Health Insurance Plan',
+              format: 'ldp_vc',
+              path: '$.verifiableCredential[0]',
+            },
+          ],
         },
-        "verifiableCredential": [
+        verifiableCredential: [
           {
-            "identifier": "83627465",
-            "name": "Permanent Resident Card",
-            "type": [
-              "PermanentResidentCard",
-              "verifiableCredential"
-            ],
-            "id": "https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd",
-            "credentialSubject": {
-              "birthCountry": "Bahamas",
-              "id": "did:example:b34ca6cd37bbf23",
-              "type": [
-                "PermanentResident",
-                "Person"
-              ],
-              "gender": "Female",
-              "familyName": "SMITH",
-              "givenName": "JANE",
-              "residentSince": "2015-01-01",
-              "lprNumber": "999-999-999",
-              "birthDate": "1958-07-17",
-              "commuterClassification": "C1",
-              "lprCategory": "C09",
-              "image": "data:image/png;base64,iVBORw0KGgokJggg=="
+            identifier: '83627465',
+            name: 'Permanent Resident Card',
+            type: ['PermanentResidentCard', 'verifiableCredential'],
+            id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
+            credentialSubject: {
+              birthCountry: 'Bahamas',
+              id: 'did:example:b34ca6cd37bbf23',
+              type: ['PermanentResident', 'Person'],
+              gender: 'Female',
+              familyName: 'SMITH',
+              givenName: 'JANE',
+              residentSince: '2015-01-01',
+              lprNumber: '999-999-999',
+              birthDate: '1958-07-17',
+              commuterClassification: 'C1',
+              lprCategory: 'C09',
+              image: 'data:image/png;base64,iVBORw0KGgokJggg==',
             },
-            "credentialStatus": {
-              "id": "https://example.com/credentials/status/3#94567",
-              "type": "StatusList2021Entry",
-              "statusPurpose": "revocation",
-              "statusListIndex": "94567",
-              "statusListCredential": "https://example.com/credentials/status/3"
+            credentialStatus: {
+              id: 'https://example.com/credentials/status/3#94567',
+              type: 'StatusList2021Entry',
+              statusPurpose: 'revocation',
+              statusListIndex: '94567',
+              statusListCredential: 'https://example.com/credentials/status/3',
             },
-            "expirationDate": "2029-12-03T12:19:52Z",
-            "description": "Government of Example Permanent Resident Card.",
-            "issuanceDate": "2019-12-03T12:19:52Z",
-            "@context": [
-              "https://www.w3.org/2018/credentials/v1",
-              "https://www.w3.org/2018/credentials/examples/v1"
-            ],
-            "issuer": {
-              "id": "did:example:issuer"
+            expirationDate: '2029-12-03T12:19:52Z',
+            description: 'Government of Example Permanent Resident Card.',
+            issuanceDate: '2019-12-03T12:19:52Z',
+            '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1'],
+            issuer: {
+              id: 'did:example:issuer',
             },
-            "proof": {
-              "type": "BbsBlsSignatureProof2020",
-              "created": "2020-04-25",
-              "verificationMethod": "did:example:489398593#test",
-              "proofPurpose": "assertionMethod",
-              "proofValue": "kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=",
-              "nonce": "6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY="
-            }
-          }
-        ]
+            proof: {
+              type: 'BbsBlsSignatureProof2020',
+              created: '2020-04-25',
+              verificationMethod: 'did:example:489398593#test',
+              proofPurpose: 'assertionMethod',
+              proofValue:
+                'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
+              nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
+            },
+          },
+        ],
       },
-      "format": VerifiablePresentationTypeFormat.LDP_VP
-    }
+      format: VerifiablePresentationTypeFormat.LDP_VP,
+    };
 
     await expect(
-        verifyRevocation(vpToken, async () => { return { status: RevocationStatus.VALID } }, RevocationVerification.ALWAYS)
+      verifyRevocation(
+        vpToken,
+        async () => {
+          return { status: RevocationStatus.VALID };
+        },
+        RevocationVerification.ALWAYS
+      )
     ).resolves.not.toThrow();
   });
-
-
 });

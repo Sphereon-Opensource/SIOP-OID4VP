@@ -17,8 +17,8 @@ import {
   RequestRegistrationOpts,
   ResponseContext,
   ResponseIss,
-  ResponseMode, 
-  RevocationVerification, 
+  ResponseMode,
+  RevocationVerification,
   RevocationVerificationCallback,
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
@@ -48,13 +48,13 @@ export default class RPBuilder {
   }
 
   withRevocationVerification(mode: RevocationVerification): RPBuilder {
-    this.revocationVerification = mode
-    return this
+    this.revocationVerification = mode;
+    return this;
   }
 
   withRevocationVerificationCallback(callback: RevocationVerificationCallback): RPBuilder {
-    this.revocationVerificationCallback = callback
-    return this
+    this.revocationVerificationCallback = callback;
+    return this;
   }
 
   withCustomResolver(resolver: Resolvable): RPBuilder {

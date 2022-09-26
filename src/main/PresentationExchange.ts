@@ -9,22 +9,10 @@ import {
   Status,
 } from '@sphereon/pex';
 import { PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmission } from '@sphereon/pex-models';
-import {
-  IPresentation,
-  IProofPurpose,
-  IProofType,
-  IVerifiablePresentation,
-  W3CVerifiableCredential,
-} from '@sphereon/ssi-types';
+import { IPresentation, IProofPurpose, IProofType, IVerifiablePresentation, W3CVerifiableCredential } from '@sphereon/ssi-types';
 
 import { extractDataFromPath, getWithUrl } from './functions';
-import {
-  JWTPayload,
-  PresentationDefinitionWithLocation,
-  PresentationLocation,
-  SIOPErrors,
-  VerifiablePresentationPayload
-} from './types';
+import { JWTPayload, PresentationDefinitionWithLocation, PresentationLocation, SIOPErrors, VerifiablePresentationPayload } from './types';
 
 export class PresentationExchange {
   readonly pex = new PEX();

@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@sphereon/did-uni-client": "^0.4.0",
-    "@sphereon/ssi-types": "^0.8.1-next.20",
+    "@sphereon/ssi-types": "0.8.1-next.20",
     "@sphereon/pex": "^2.0.0-unstable.1",
     "@sphereon/pex-models": "^1.1.0",
     "@sphereon/wellknown-dids-client": "^0.1.3-unstable.1",

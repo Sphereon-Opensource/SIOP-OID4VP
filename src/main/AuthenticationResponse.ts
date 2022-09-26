@@ -1,8 +1,9 @@
-import {JWTHeader} from 'did-jwt';
-import {JWK} from 'jose';
+import { JWTHeader } from 'did-jwt';
+import { JWK } from 'jose';
+
 import AuthenticationRequest from './AuthenticationRequest';
-import {createDiscoveryMetadataPayload} from './AuthenticationResponseRegistration';
-import {PresentationExchange} from './PresentationExchange';
+import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
+import { PresentationExchange } from './PresentationExchange';
 import {
   getIssuerDidFromPayload,
   getNonce,
@@ -138,14 +139,11 @@ export default class AuthenticationResponse {
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
 
-
-    const revocationVerification = verifyOpts.verification.revocationOpts ? verifyOpts.verification.revocationOpts.revocationVerification : RevocationVerification.IF_PRESENT
+    const revocationVerification = verifyOpts.verification.revocationOpts
+      ? verifyOpts.verification.revocationOpts.revocationVerification
+      : RevocationVerification.IF_PRESENT;
     if (revocationVerification !== RevocationVerification.NEVER) {
-      await verifyRevocation(
-          verPayload.vp_token,
-          verifyOpts.verification.revocationOpts.revocationVerificationCallback,
-          revocationVerification
-      )
+      await verifyRevocation(verPayload.vp_token, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
     }
 
     return {
