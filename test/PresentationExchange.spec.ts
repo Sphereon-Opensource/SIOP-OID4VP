@@ -358,20 +358,4 @@ describe('presentation exchange manager tests', () => {
       console.log(e);
     }
   });
-
-  it('should not validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
-    const vcs = getVCs();
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
-    await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.submissionFrom(pd[0].definition, vcs);
-    const vpw: VerifiablePresentationPayload = {
-      presentation: vp,
-      format: VerifiablePresentationTypeFormat.JWT_VP,
-    };
-    await expect(PresentationExchange.validatePayloadsAgainstDefinitions(pd, [vpw])).rejects.toThrow(
-      Error("This type of verifiable presentation isn't supported in this version")
-    );
-  });
 });
