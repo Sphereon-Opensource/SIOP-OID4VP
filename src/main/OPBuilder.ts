@@ -9,7 +9,7 @@ import {
   EcdsaSignature,
   ExternalSignature,
   InternalSignature,
-  Profile,
+  SupportedVersions,
   ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,
@@ -29,7 +29,7 @@ export default class OPBuilder {
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
-  profiles: Array<Profile>;
+  supportedVersions: Array<SupportedVersions>;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
@@ -112,25 +112,25 @@ export default class OPBuilder {
   }
 
   private initProfiles() {
-    if (!this.profiles) {
-      this.profiles = [];
+    if (!this.supportedVersions) {
+      this.supportedVersions = [];
     }
   }
 
   withProfileStr(profileStr: string): OPBuilder {
     this.initProfiles();
-    this.profiles.push(Profile[profileStr]);
+    this.supportedVersions.push(SupportedVersions[profileStr]);
     return this;
   }
 
-  addProfile(profile: Profile): OPBuilder {
+  addProfile(profile: SupportedVersions): OPBuilder {
     this.initProfiles();
-    this.profiles.push(profile);
+    this.supportedVersions.push(profile);
     return this;
   }
 
-  withProfiles(profiles: Array<Profile>): OPBuilder {
-    this.profiles = profiles;
+  withProfiles(profiles: Array<SupportedVersions>): OPBuilder {
+    this.supportedVersions = profiles;
     return this;
   }
 

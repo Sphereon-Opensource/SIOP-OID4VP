@@ -14,7 +14,7 @@ import {
   ObjectBy,
   PassBy,
   PresentationDefinitionWithLocation,
-  Profile,
+  SupportedVersions,
   RequestRegistrationOpts,
   ResponseContext,
   ResponseIss,
@@ -42,7 +42,7 @@ export default class RPBuilder {
   verifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
-  profiles: Array<Profile>;
+  supportedVersions: Array<SupportedVersions>;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
@@ -146,25 +146,25 @@ export default class RPBuilder {
     return this;
   }
   private initProfiles() {
-    if (!this.profiles) {
-      this.profiles = [];
+    if (!this.supportedVersions) {
+      this.supportedVersions = [];
     }
   }
 
   withProfileStr(profileStr: string): RPBuilder {
     this.initProfiles();
-    this.profiles.push(Profile[profileStr]);
+    this.supportedVersions.push(SupportedVersions[profileStr]);
     return this;
   }
 
-  addProfile(profile: Profile): RPBuilder {
+  addProfile(profile: SupportedVersions): RPBuilder {
     this.initProfiles();
-    this.profiles.push(profile);
+    this.supportedVersions.push(profile);
     return this;
   }
 
-  withProfiles(profiles: Array<Profile>): RPBuilder {
-    this.profiles = profiles;
+  withProfiles(profiles: Array<SupportedVersions>): RPBuilder {
+    this.supportedVersions = profiles;
     return this;
   }
 

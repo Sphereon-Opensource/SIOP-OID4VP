@@ -11,7 +11,7 @@ import {
   ClaimOpts,
   ExternalVerification,
   InternalVerification,
-  Profile,
+  SupportedVersions,
   RequestRegistrationOpts,
   Verification,
   VerificationMode,
@@ -27,7 +27,7 @@ const validate = ajv.compile(AuthenticationRequestOptsSchema);
 export class RP {
   private readonly _authRequestOpts: AuthenticationRequestOpts;
   private readonly _verifyAuthResponseOpts: Partial<VerifyAuthenticationResponseOpts>;
-  private readonly _profiles: Array<Profile>;
+  private readonly _supportedVersions: Array<SupportedVersions>;
 
   public constructor(opts: { builder?: RPBuilder; requestOpts?: AuthenticationRequestOpts; verifyOpts?: VerifyAuthenticationResponseOpts }) {
     const claims = opts.builder?.claims;
@@ -96,8 +96,8 @@ export class RP {
     return new RP({ requestOpts: opts });
   }
 
-  get profiles(): Array<Profile> {
-    return this._profiles;
+  get supportedVersions(): Array<SupportedVersions> {
+    return this._supportedVersions;
   }
 
   public static builder() {
