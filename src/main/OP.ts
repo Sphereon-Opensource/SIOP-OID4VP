@@ -15,6 +15,7 @@ import {
   InternalVerification,
   ParsedAuthenticationRequestURI,
   ResponseMode,
+  SignatureVerificationCallback,
   SIOPErrors,
   UrlEncodingFormat,
   VerifiablePresentationResponseOpts,
@@ -57,7 +58,10 @@ export class OP {
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
     const verifyCallback = (this._verifyAuthRequestOpts.verification as Verification).verifyCallback || this._verifyAuthRequestOpts.verifyCallback;
     const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
-    return AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
+    const signatureVerificationCallback =
+      (this._verifyAuthRequestOpts.verification as Verification).signatureVerificationCallback ||
+      this._verifyAuthRequestOpts.signatureVerificationCallback;
+    return AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback, signatureVerificationCallback }));
   }
 
   public async createAuthenticationResponse(
@@ -125,12 +129,14 @@ export class OP {
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
     verifyCallback?: VerifyCallback;
+    signatureVerificationCallback?: SignatureVerificationCallback;
   }): VerifyAuthenticationRequestOpts {
     return {
       ...this._verifyAuthRequestOpts,
       nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
       verification: opts?.verification || this._verifyAuthRequestOpts.verification,
       verifyCallback: opts?.verifyCallback,
+      signatureVerificationCallback: opts?.signatureVerificationCallback,
     };
   }
 
@@ -243,6 +249,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           verifyCallback: opts.builder.verifyCallback,
+          signatureVerificationCallback: opts.builder.signatureVerificationCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,

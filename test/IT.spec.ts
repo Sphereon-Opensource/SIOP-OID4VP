@@ -1,10 +1,12 @@
-import { IPresentationDefinition } from '@sphereon/pex';
-import { IProofType, IVerifiableCredential } from '@sphereon/ssi-types';
-import { IVerifyCallbackArgs, IVerifyCredentialResult, WDCErrors } from '@sphereon/wellknown-dids-client';
+import {IPresentationDefinition} from '@sphereon/pex';
+import {IProofType, IVerifiableCredential} from '@sphereon/ssi-types';
+import {IVerifyCallbackArgs, IVerifyCredentialResult, WDCErrors} from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
 import {
   CheckLinkedDomain,
+  getResolver,
+  IJWTSignatureVerificationArgs,
   KeyAlgo,
   OP,
   PassBy,
@@ -17,13 +19,16 @@ import {
   RevocationVerification,
   RP,
   Scope,
+  SignatureVerificationArgs,
+  SignatureVerificationResult,
   SigningAlgo,
   SubjectType,
   VerifiablePresentationTypeFormat,
+  verifyDidJWT,
   verifyRevocation,
 } from '../src/main';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import {mockedGetEnterpriseAuthToken} from './TestUtils';
 
 jest.setTimeout(30000);
 
@@ -116,9 +121,13 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
@@ -138,6 +147,8 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .withSignatureVerification(async (args) => verify(args))
+      .addDidMethod('ethr')
       .addVerifyCallback(verifyCallback)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
@@ -195,10 +206,15 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
 
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
+      .withSignatureVerification(async (args) => verify(args))
       .withRevocationVerification(RevocationVerification.NEVER)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -216,6 +232,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -275,10 +292,14 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
+      .withSignatureVerification(async (args) => verify(args))
       .withRevocationVerification(RevocationVerification.NEVER)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -300,6 +321,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -351,9 +373,13 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .requestBy(PassBy.VALUE)
@@ -377,6 +403,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -447,9 +474,13 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const rp = RP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
@@ -472,6 +503,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
@@ -540,9 +572,13 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const rp = RP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
@@ -571,6 +607,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .addVerifyCallback(verifyCallback)
+      .withSignatureVerification(async (args) => verify(args))
       .withExpiresIn(1000)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .registrationBy({
@@ -653,9 +690,13 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const rp = RP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
+      .withSignatureVerification(async (args) => verify(args))
       .withRevocationVerification(RevocationVerification.NEVER)
       .addVerifyCallback(verifyCallback)
       .redirect(EXAMPLE_REDIRECT_URL)
@@ -680,6 +721,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
@@ -751,9 +793,13 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const rp = RP.builder()
       .withRevocationVerification(RevocationVerification.ALWAYS)
+      .withSignatureVerification(async (args) => verify(args))
       .addVerifyCallback(verifyCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withRevocationVerificationCallback(async () => {
@@ -789,6 +835,7 @@ describe('RP and OP interaction should', () => {
     const op = OP.builder()
       .withExpiresIn(1000)
       .addDidMethod('ethr')
+      .withSignatureVerification(async (args) => verify(args))
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .addVerifyCallback(verifyCallback)

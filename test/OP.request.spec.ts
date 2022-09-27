@@ -1,10 +1,12 @@
-import { IProofType } from '@sphereon/ssi-types';
-import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
+import {IProofType} from '@sphereon/ssi-types';
+import {IVerifyCallbackArgs, IVerifyCredentialResult} from '@sphereon/wellknown-dids-client';
 
 import {
   AuthenticationRequestOpts,
   AuthenticationResponseOpts,
   CheckLinkedDomain,
+  getResolver,
+  IJWTSignatureVerificationArgs,
   KeyAlgo,
   OP,
   OPBuilder,
@@ -14,14 +16,17 @@ import {
   ResponseType,
   RP,
   Scope,
+  SignatureVerificationArgs,
+  SignatureVerificationResult,
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
+  verifyDidJWT,
 } from '../src/main';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import {mockedGetEnterpriseAuthToken} from './TestUtils';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -55,6 +60,10 @@ describe('OP Builder should', () => {
 });
 
 describe('OP should', () => {
+  const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+    const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+    return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+  };
   const responseOpts: AuthenticationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
@@ -93,6 +102,7 @@ describe('OP should', () => {
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+    signatureVerificationCallback: async (args) => verify(args),
   };
 
   it('throw Error when build from request opts without enough params', async () => {
@@ -157,8 +167,12 @@ describe('OP should', () => {
   it('succeed from builder when all params are set', async () => {
     const rpMockEntity = await mockedGetEnterpriseAuthToken('ACME RP');
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
-
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const requestURI = await RP.builder()
+      .withSignatureVerification(async (args) => verify(args))
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .redirect(EXAMPLE_REFERENCE_URL)
@@ -183,6 +197,7 @@ describe('OP should', () => {
       });
 
     const verifiedRequest = await OP.builder()
+      .withSignatureVerification(async (args) => verify(args))
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withExpiresIn(1000)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)

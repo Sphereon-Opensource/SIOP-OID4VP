@@ -20,6 +20,7 @@ import {
   ResponseMode,
   RevocationVerification,
   RevocationVerificationCallback,
+  SignatureVerificationCallback,
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
 } from './types';
@@ -41,9 +42,15 @@ export default class RPBuilder {
   verifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
+  signatureVerificationCallback?: SignatureVerificationCallback;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
+    return this;
+  }
+
+  withSignatureVerification(signatureVerificationCallback: SignatureVerificationCallback): RPBuilder {
+    this.signatureVerificationCallback = signatureVerificationCallback;
     return this;
   }
 

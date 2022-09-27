@@ -1,6 +1,7 @@
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation, W3CVerifiableCredential } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
+import { JWTVerifyOptions } from 'did-jwt';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose';
 
@@ -462,6 +463,7 @@ export enum VerificationMode {
 export interface Verification {
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
+  signatureVerificationCallback?: SignatureVerificationCallback;
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
@@ -480,6 +482,7 @@ export interface VerifyAuthenticationRequestOpts {
   nonce?: string; // If provided the nonce in the request needs to match
   // redirectUri?: string;
   verifyCallback?: VerifyCallback;
+  signatureVerificationCallback?: SignatureVerificationCallback;
 }
 
 export interface VerifyAuthenticationResponseOpts {
@@ -490,6 +493,7 @@ export interface VerifyAuthenticationResponseOpts {
   audience: string; // The audience/redirect_uri
   claims?: ClaimOpts; // The claims, typically the same values used during request creation
   verifyCallback?: VerifyCallback;
+  signatureVerificationCallback?: SignatureVerificationCallback;
 }
 
 export interface ResponseClaims {
@@ -672,6 +676,22 @@ export type RevocationVerificationCallback = (
   vc: W3CVerifiableCredential,
   type: VerifiableCredentialTypeFormat
 ) => Promise<IRevocationVerificationStatus>;
+
+export type SignatureVerificationResult = VerifiedJWT;
+
+export type SignatureVerificationArgs = IJsonLDSignatureVerificationArgs | IJWTSignatureVerificationArgs;
+
+export interface IJWTSignatureVerificationArgs {
+  jwt: string;
+  resolveOpts: ResolveOpts;
+  options: JWTVerifyOptions;
+}
+
+export interface IJsonLDSignatureVerificationArgs {
+  test: string;
+}
+
+export type SignatureVerificationCallback = (args: SignatureVerificationArgs) => Promise<SignatureVerificationResult>;
 
 export enum RevocationVerification {
   NEVER = 'never', // We don't want to verify revocation

@@ -1,6 +1,6 @@
-import { IPresentationDefinition } from '@sphereon/pex';
-import { ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
-import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
+import {IPresentationDefinition} from '@sphereon/pex';
+import {ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation} from '@sphereon/ssi-types';
+import {IVerifyCallbackArgs, IVerifyCredentialResult} from '@sphereon/wellknown-dids-client';
 
 import {
   AuthenticationRequest,
@@ -8,6 +8,8 @@ import {
   AuthenticationResponse,
   AuthenticationResponseOpts,
   CheckLinkedDomain,
+  getResolver,
+  IJWTSignatureVerificationArgs,
   PassBy,
   PresentationExchange,
   PresentationLocation,
@@ -15,16 +17,19 @@ import {
   ResponseMode,
   ResponseType,
   Scope,
+  SignatureVerificationArgs,
+  SignatureVerificationResult,
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
   VerifiablePresentationTypeFormat,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
+  verifyDidJWT,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import {mockedGetEnterpriseAuthToken} from './TestUtils';
 
 jest.setTimeout(30000);
 
@@ -39,6 +44,10 @@ const validButExpiredJWT =
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 
 describe('create JWT from Request JWT should', () => {
+  const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+    const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+    return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+  };
   const responseOpts: AuthenticationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
@@ -74,6 +83,7 @@ describe('create JWT from Request JWT should', () => {
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+    signatureVerificationCallback: async (args) => verify(args),
   };
 
   it('throw NO_JWT when no jwt is passed', async () => {

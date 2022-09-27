@@ -1,7 +1,7 @@
-import { IProofType } from '@sphereon/ssi-types';
-import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
+import {IProofType} from '@sphereon/ssi-types';
+import {IVerifyCallbackArgs, IVerifyCredentialResult} from '@sphereon/wellknown-dids-client';
 import * as dotenv from 'dotenv';
-import { importJWK, SignJWT } from 'jose';
+import {importJWK, SignJWT} from 'jose';
 
 import {
   AuthenticationRequest,
@@ -9,22 +9,27 @@ import {
   AuthenticationRequestPayload,
   CheckLinkedDomain,
   getNonce,
+  getResolver,
   getState,
+  IJWTSignatureVerificationArgs,
   KeyAlgo,
   PassBy,
   ResponseContext,
   ResponseMode,
   ResponseType,
   Scope,
+  SignatureVerificationArgs,
+  SignatureVerificationResult,
   SigningAlgo,
   SubjectSyntaxTypesSupportedValues,
   SubjectType,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
+  verifyDidJWT,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
+import {metadata, mockedGetEnterpriseAuthToken} from './TestUtils';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -76,6 +81,10 @@ describe('SIOP Request Validation', () => {
     const privateKey = await importJWK(mockEntity.jwk, KeyAlgo.ES256K);
     const jwt = await new SignJWT(payload).setProtectedHeader(header).sign(privateKey);
 
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const optsVerify: VerifyAuthenticationRequestOpts = {
       verification: {
         mode: VerificationMode.INTERNAL,
@@ -83,6 +92,7 @@ describe('SIOP Request Validation', () => {
           subjectSyntaxTypesSupported: ['did:ethr'],
         },
       },
+      signatureVerificationCallback: async (args) => verify(args),
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     };
@@ -143,6 +153,10 @@ describe('verifyJWT should', () => {
 
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
 
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const verifyOpts: VerifyAuthenticationRequestOpts = {
       verification: {
         mode: VerificationMode.INTERNAL,
@@ -153,6 +167,7 @@ describe('verifyJWT should', () => {
       nonce: 'This nonce is different and should throw error',
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+      signatureVerificationCallback: async (args) => verify(args),
     };
 
     // expect.assertions(1);
@@ -193,6 +208,10 @@ describe('verifyJWT should', () => {
     };
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
 
+    const verify = async (args: SignatureVerificationArgs): Promise<SignatureVerificationResult> => {
+      const { jwt, resolveOpts, options } = args as IJWTSignatureVerificationArgs;
+      return await verifyDidJWT(jwt, getResolver(resolveOpts), options);
+    };
     const verifyOpts: VerifyAuthenticationRequestOpts = {
       verification: {
         mode: VerificationMode.INTERNAL,
@@ -202,6 +221,7 @@ describe('verifyJWT should', () => {
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+      signatureVerificationCallback: async (args) => verify(args),
     };
 
     const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);

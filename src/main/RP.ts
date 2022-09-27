@@ -12,6 +12,7 @@ import {
   ExternalVerification,
   InternalVerification,
   RequestRegistrationOpts,
+  SignatureVerificationCallback,
   Verification,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
@@ -57,7 +58,13 @@ export class RP {
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
     const verifyCallback = (this._verifyAuthResponseOpts.verification as Verification).verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
-    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback }));
+    const signatureVerificationCallback =
+      (this._verifyAuthResponseOpts.verification as Verification).signatureVerificationCallback ||
+      this.verifyAuthResponseOpts.signatureVerificationCallback;
+    return AuthenticationResponse.verifyJWT(
+      jwt,
+      this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, signatureVerificationCallback })
+    );
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
@@ -78,6 +85,7 @@ export class RP {
     audience: string;
     checkLinkedDomain?: CheckLinkedDomain;
     verifyCallback?: VerifyCallback;
+    signatureVerificationCallback?: SignatureVerificationCallback;
   }): VerifyAuthenticationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
@@ -87,6 +95,7 @@ export class RP {
       claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
       verifyCallback: opts?.verifyCallback,
+      signatureVerificationCallback: opts?.signatureVerificationCallback,
     };
   }
 
@@ -141,6 +150,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           verifyCallback: opts.builder.verifyCallback,
+          signatureVerificationCallback: opts.builder.signatureVerificationCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,

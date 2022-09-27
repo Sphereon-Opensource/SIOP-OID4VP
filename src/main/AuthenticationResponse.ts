@@ -8,13 +8,11 @@ import {
   getIssuerDidFromPayload,
   getNonce,
   getPublicJWKFromHexPrivateKey,
-  getResolver,
   getState,
   getThumbprint,
   parseJWT,
   signDidJwtPayload,
   validateLinkedDomainWithDid,
-  verifyDidJWT,
   verifyRevocation,
 } from './functions';
 import {
@@ -38,6 +36,7 @@ import {
   VerifiablePresentationPayload,
   VerifiedAuthenticationRequestWithJWT,
   VerifiedAuthenticationResponseWithJWT,
+  VerifiedJWT,
   VerifyAuthenticationRequestOpts,
   VerifyAuthenticationResponseOpts,
 } from './types';
@@ -125,8 +124,10 @@ export default class AuthenticationResponse {
     const { header, payload } = parseJWT(jwt);
     assertValidResponseJWT({ header, payload });
 
-    const verifiedJWT = await verifyDidJWT(jwt, getResolver(verifyOpts.verification.resolveOpts), {
-      audience: verifyOpts.audience,
+    const verifiedJWT: VerifiedJWT = await verifyOpts.signatureVerificationCallback({
+      jwt,
+      resolveOpts: verifyOpts.verification.resolveOpts,
+      options: { audience: verifyOpts.audience },
     });
 
     const issuerDid = getIssuerDidFromPayload(payload);
@@ -295,7 +296,12 @@ function assertValidResponseOpts(opts: AuthenticationResponseOpts) {
 }
 
 function assertValidVerifyOpts(opts: VerifyAuthenticationResponseOpts) {
-  if (!opts || !opts.verification || (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))) {
+  if (
+    !opts ||
+    !opts.verification ||
+    !opts.signatureVerificationCallback ||
+    (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))
+  ) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
 }

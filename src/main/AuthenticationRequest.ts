@@ -1,23 +1,21 @@
-import { PEX } from '@sphereon/pex';
+import {PEX} from '@sphereon/pex';
 import Ajv from 'ajv';
-import { JWTHeader } from 'did-jwt';
+import {JWTHeader} from 'did-jwt';
 
-import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
-import { PresentationExchange } from './PresentationExchange';
+import {assertValidRequestRegistrationOpts, createRequestRegistration} from './AuthenticationRequestRegistration';
+import {PresentationExchange} from './PresentationExchange';
 import {
   decodeUriAsJson,
   encodeJsonAsURI,
   getAudience,
   getNonce,
-  getResolver,
   getState,
   getWithUrl,
   parseJWT,
   signDidJwtPayload,
   validateLinkedDomainWithDid,
-  verifyDidJWT,
 } from './functions';
-import { RPRegistrationMetadataPayloadSchema } from './schemas';
+import {RPRegistrationMetadataPayloadSchema} from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestPayload,
@@ -128,7 +126,7 @@ export default class AuthenticationRequest {
     const registrationMetadata = await AuthenticationRequest.getRegistrationObj(verPayload.registration_uri, verPayload.registration);
     AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
-    const verifiedJWT = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
+    const verifiedJWT = await opts.signatureVerificationCallback({ jwt, resolveOpts: opts.verification.resolveOpts, options });
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
@@ -233,7 +231,12 @@ function assertValidRequestJWT(_header: JWTHeader, _payload: JWTPayload) {
 }
 
 function assertValidVerifyOpts(opts: VerifyAuthenticationRequestOpts) {
-  if (!opts || !opts.verification || (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))) {
+  if (
+    !opts ||
+    !opts.verification ||
+    !opts.signatureVerificationCallback ||
+    (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))
+  ) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
 }
@@ -287,11 +290,10 @@ function createClaimsPayload(opts: ClaimOpts, nonce: string): ClaimPayload {
       }
     }
   });
-  const payload: ClaimPayload = {
+  return {
     id_token,
     vp_token,
   };
-  return payload;
 }
 
 async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestPayload> {

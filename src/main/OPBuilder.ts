@@ -12,6 +12,7 @@ import {
   ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,
+  SignatureVerificationCallback,
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
 } from './types';
@@ -28,6 +29,7 @@ export default class OPBuilder {
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
+  signatureVerificationCallback?: SignatureVerificationCallback;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
@@ -35,6 +37,11 @@ export default class OPBuilder {
       opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
     }
     opts ? this.addResolver(method, new Resolver(getUniResolver(method, { ...opts }))) : this.addResolver(method, null);
+    return this;
+  }
+
+  withSignatureVerification(signatureVerificationCallback: SignatureVerificationCallback): OPBuilder {
+    this.signatureVerificationCallback = signatureVerificationCallback;
     return this;
   }
 
