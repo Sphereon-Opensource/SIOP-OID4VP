@@ -14,7 +14,7 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
-  SupportedVersion
+  SupportedVersion,
 } from '../src/main';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';

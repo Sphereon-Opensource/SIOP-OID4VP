@@ -19,7 +19,7 @@ import {
   SubjectType,
   SupportedVersion,
   VerificationMode,
-  VerifyAuthenticationRequestOpts
+  VerifyAuthenticationRequestOpts,
 } from '../src/main';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
@@ -176,7 +176,8 @@ describe('OP should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
-      }).withSupportedVersions(['SIOPv2_ID1'])
+      })
+      .withSupportedVersions(['SIOPv2_ID1'])
       .build()
 
       .createAuthenticationRequest({
@@ -199,7 +200,8 @@ describe('OP should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
-      }).withSupportedVersions([SupportedVersion.SIOPv2_ID1])
+      })
+      .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .build()
 
       .verifyAuthenticationRequest(requestURI.jwt);
@@ -212,5 +214,4 @@ describe('OP should', () => {
     });
     expect(verifiedRequest.jwt).toBeDefined();
   });
-
 });
