@@ -11,8 +11,8 @@ import {
   ClaimOpts,
   ExternalVerification,
   InternalVerification,
-  SupportedVersions,
   RequestRegistrationOpts,
+  SupportedVersion,
   Verification,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
@@ -27,10 +27,11 @@ const validate = ajv.compile(AuthenticationRequestOptsSchema);
 export class RP {
   private readonly _authRequestOpts: AuthenticationRequestOpts;
   private readonly _verifyAuthResponseOpts: Partial<VerifyAuthenticationResponseOpts>;
-  private readonly _supportedVersions: Array<SupportedVersions>;
+  private readonly _supportedVersions: Array<SupportedVersion>;
 
   public constructor(opts: { builder?: RPBuilder; requestOpts?: AuthenticationRequestOpts; verifyOpts?: VerifyAuthenticationResponseOpts }) {
     const claims = opts.builder?.claims;
+    this._supportedVersions = opts?.builder?.supportedVersions;
     this._authRequestOpts = { claims, ...createRequestOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthResponseOpts = { claims, ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
   }
@@ -96,7 +97,7 @@ export class RP {
     return new RP({ requestOpts: opts });
   }
 
-  get supportedVersions(): Array<SupportedVersions> {
+  get supportedVersions(): Array<SupportedVersion> {
     return this._supportedVersions;
   }
 

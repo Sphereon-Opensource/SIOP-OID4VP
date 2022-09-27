@@ -14,7 +14,6 @@ import {
   ObjectBy,
   PassBy,
   PresentationDefinitionWithLocation,
-  SupportedVersions,
   RequestRegistrationOpts,
   ResponseContext,
   ResponseIss,
@@ -23,6 +22,7 @@ import {
   RevocationVerificationCallback,
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
+  SupportedVersion,
 } from './types';
 
 export default class RPBuilder {
@@ -42,7 +42,7 @@ export default class RPBuilder {
   verifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
-  supportedVersions: Array<SupportedVersions>;
+  supportedVersions: Array<SupportedVersion>;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
@@ -145,26 +145,28 @@ export default class RPBuilder {
     this.verifyCallback = verifyCallback;
     return this;
   }
-  private initProfiles() {
+
+  private initSupportedVersions() {
     if (!this.supportedVersions) {
       this.supportedVersions = [];
     }
   }
 
-  withProfileStr(profileStr: string): RPBuilder {
-    this.initProfiles();
-    this.supportedVersions.push(SupportedVersions[profileStr]);
+  withSupportedVersions(supportedVersions: Array<string | SupportedVersion>): RPBuilder {
+    this.initSupportedVersions();
+    for (const supportedVersion of supportedVersions) {
+      this.addSupportedVersion(supportedVersion);
+    }
     return this;
   }
 
-  addProfile(profile: SupportedVersions): RPBuilder {
-    this.initProfiles();
-    this.supportedVersions.push(profile);
-    return this;
-  }
-
-  withProfiles(profiles: Array<SupportedVersions>): RPBuilder {
-    this.supportedVersions = profiles;
+  addSupportedVersion(supportedVersion: string | SupportedVersion): RPBuilder {
+    this.initSupportedVersions();
+    if (typeof supportedVersion === 'string') {
+      this.supportedVersions.push(SupportedVersion[supportedVersion]);
+    } else if (Array.isArray(supportedVersion)) {
+      this.supportedVersions.push(supportedVersion as SupportedVersion);
+    }
     return this;
   }
 

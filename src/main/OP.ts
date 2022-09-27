@@ -14,9 +14,9 @@ import {
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
-  SupportedVersions,
   ResponseMode,
   SIOPErrors,
+  SupportedVersion,
   UrlEncodingFormat,
   VerifiablePresentationResponseOpts,
   Verification,
@@ -33,7 +33,7 @@ const validate = ajv.compile(AuthenticationResponseOptsSchema);
 export class OP {
   private readonly _authResponseOpts: AuthenticationResponseOpts;
   private readonly _verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
-  private readonly _supportedVersions: Array<SupportedVersions>;
+  private readonly _supportedVersions: Array<SupportedVersion>;
 
   public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts; verifyOpts?: VerifyAuthenticationRequestOpts }) {
     this._supportedVersions = opts?.builder?.supportedVersions;
@@ -141,7 +141,7 @@ export class OP {
     return new OP({ responseOpts, verifyOpts });
   }
 
-  get supportedVersions(): Array<SupportedVersions> {
+  get supportedVersions(): Array<SupportedVersion> {
     return this._supportedVersions;
   }
 

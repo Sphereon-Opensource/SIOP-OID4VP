@@ -9,12 +9,12 @@ import {
   EcdsaSignature,
   ExternalSignature,
   InternalSignature,
-  SupportedVersions,
   ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
+  SupportedVersion,
 } from './types';
 
 export default class OPBuilder {
@@ -29,7 +29,7 @@ export default class OPBuilder {
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
-  supportedVersions: Array<SupportedVersions>;
+  supportedVersions: Array<SupportedVersion>;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
@@ -111,26 +111,27 @@ export default class OPBuilder {
     return this;
   }
 
-  private initProfiles() {
+  private initSupportedVersions() {
     if (!this.supportedVersions) {
       this.supportedVersions = [];
     }
   }
 
-  withProfileStr(profileStr: string): OPBuilder {
-    this.initProfiles();
-    this.supportedVersions.push(SupportedVersions[profileStr]);
+  withSupportedVersions(supportedVersions: Array<string | SupportedVersion>): OPBuilder {
+    this.initSupportedVersions();
+    for (const supportedVersion of supportedVersions) {
+      this.addSupportedVersion(supportedVersion);
+    }
     return this;
   }
 
-  addProfile(profile: SupportedVersions): OPBuilder {
-    this.initProfiles();
-    this.supportedVersions.push(profile);
-    return this;
-  }
-
-  withProfiles(profiles: Array<SupportedVersions>): OPBuilder {
-    this.supportedVersions = profiles;
+  addSupportedVersion(supportedVersion: string | SupportedVersion): OPBuilder {
+    this.initSupportedVersions();
+    if (typeof supportedVersion === 'string') {
+      this.supportedVersions.push(SupportedVersion[supportedVersion]);
+    } else if (Array.isArray(supportedVersion)) {
+      this.supportedVersions.push(supportedVersion as SupportedVersion);
+    }
     return this;
   }
 
