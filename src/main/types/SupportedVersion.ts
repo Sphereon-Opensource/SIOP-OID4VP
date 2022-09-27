@@ -1,5 +1,0 @@
-export enum SupportedVersion {
-  SIOPv2_ID1 = 'SIOPv2_ID1',
-  SIOPv2_D11 = 'SIOPv2_D11',
-  JWT_VC_PRESENTATION_PROFILE_v1 = 'JWT_VC_PRESENTATION_PROFILE_v1',
-}
