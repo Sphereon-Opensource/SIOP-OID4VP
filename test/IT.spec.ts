@@ -1,6 +1,6 @@
-import {IPresentationDefinition} from '@sphereon/pex';
-import {IProofType, IVerifiableCredential} from '@sphereon/ssi-types';
-import {IVerifyCallbackArgs, IVerifyCredentialResult, WDCErrors} from '@sphereon/wellknown-dids-client';
+import { IPresentationDefinition } from '@sphereon/pex';
+import { IProofType, IVerifiableCredential } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult, WDCErrors } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
 import {
@@ -28,7 +28,7 @@ import {
   verifyRevocation,
 } from '../src/main';
 
-import {mockedGetEnterpriseAuthToken} from './TestUtils';
+import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
 jest.setTimeout(30000);
 

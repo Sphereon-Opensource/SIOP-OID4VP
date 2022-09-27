@@ -1,9 +1,9 @@
-import {PEX} from '@sphereon/pex';
+import { PEX } from '@sphereon/pex';
 import Ajv from 'ajv';
-import {JWTHeader} from 'did-jwt';
+import { JWTHeader } from 'did-jwt';
 
-import {assertValidRequestRegistrationOpts, createRequestRegistration} from './AuthenticationRequestRegistration';
-import {PresentationExchange} from './PresentationExchange';
+import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
+import { PresentationExchange } from './PresentationExchange';
 import {
   decodeUriAsJson,
   encodeJsonAsURI,
@@ -15,7 +15,7 @@ import {
   signDidJwtPayload,
   validateLinkedDomainWithDid,
 } from './functions';
-import {RPRegistrationMetadataPayloadSchema} from './schemas';
+import { RPRegistrationMetadataPayloadSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestPayload,

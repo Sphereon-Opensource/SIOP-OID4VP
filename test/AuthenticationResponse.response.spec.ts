@@ -1,6 +1,6 @@
-import {IPresentationDefinition} from '@sphereon/pex';
-import {ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation} from '@sphereon/ssi-types';
-import {IVerifyCallbackArgs, IVerifyCredentialResult} from '@sphereon/wellknown-dids-client';
+import { IPresentationDefinition } from '@sphereon/pex';
+import { ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
   AuthenticationRequest,
@@ -29,7 +29,7 @@ import {
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import {mockedGetEnterpriseAuthToken} from './TestUtils';
+import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
 jest.setTimeout(30000);
 

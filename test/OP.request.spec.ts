@@ -1,5 +1,5 @@
-import {IProofType} from '@sphereon/ssi-types';
-import {IVerifyCallbackArgs, IVerifyCredentialResult} from '@sphereon/wellknown-dids-client';
+import { IProofType } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
   AuthenticationRequestOpts,
@@ -26,7 +26,7 @@ import {
   verifyDidJWT,
 } from '../src/main';
 
-import {mockedGetEnterpriseAuthToken} from './TestUtils';
+import { mockedGetEnterpriseAuthToken } from './TestUtils';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';

@@ -1,7 +1,7 @@
-import {IProofType} from '@sphereon/ssi-types';
-import {IVerifyCallbackArgs, IVerifyCredentialResult} from '@sphereon/wellknown-dids-client';
+import { IProofType } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 import * as dotenv from 'dotenv';
-import {importJWK, SignJWT} from 'jose';
+import { importJWK, SignJWT } from 'jose';
 
 import {
   AuthenticationRequest,
@@ -29,7 +29,7 @@ import {
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import {metadata, mockedGetEnterpriseAuthToken} from './TestUtils';
+import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
