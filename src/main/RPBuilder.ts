@@ -14,6 +14,7 @@ import {
   ObjectBy,
   PassBy,
   PresentationDefinitionWithLocation,
+  Profile,
   RequestRegistrationOpts,
   ResponseContext,
   ResponseIss,
@@ -41,6 +42,7 @@ export default class RPBuilder {
   verifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
+  profiles: Array<Profile>;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
@@ -141,6 +143,28 @@ export default class RPBuilder {
 
   addVerifyCallback(verifyCallback: VerifyCallback): RPBuilder {
     this.verifyCallback = verifyCallback;
+    return this;
+  }
+  private initProfiles() {
+    if (!this.profiles) {
+      this.profiles = [];
+    }
+  }
+
+  withProfileStr(profileStr: string): RPBuilder {
+    this.initProfiles();
+    this.profiles.push(Profile[profileStr]);
+    return this;
+  }
+
+  addProfile(profile: Profile): RPBuilder {
+    this.initProfiles();
+    this.profiles.push(profile);
+    return this;
+  }
+
+  withProfiles(profiles: Array<Profile>): RPBuilder {
+    this.profiles = profiles;
     return this;
   }
 

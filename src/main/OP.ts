@@ -14,6 +14,7 @@ import {
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
+  Profile,
   ResponseMode,
   SIOPErrors,
   UrlEncodingFormat,
@@ -32,8 +33,10 @@ const validate = ajv.compile(AuthenticationResponseOptsSchema);
 export class OP {
   private readonly _authResponseOpts: AuthenticationResponseOpts;
   private readonly _verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
+  private readonly _profiles: Array<Profile>;
 
   public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts; verifyOpts?: VerifyAuthenticationRequestOpts }) {
+    this._profiles = opts?.builder?.profiles;
     this._authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
   }
@@ -136,6 +139,10 @@ export class OP {
 
   public static fromOpts(responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts): OP {
     return new OP({ responseOpts, verifyOpts });
+  }
+
+  get profiles(): Array<Profile> {
+    return this._profiles;
   }
 
   public static builder() {
