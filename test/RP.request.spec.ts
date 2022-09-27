@@ -14,6 +14,7 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
+  SupportedVersion
 } from '../src/main';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
@@ -46,6 +47,7 @@ describe('RP Builder should', () => {
           },
         })
         .internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
+        .withSupportedVersions(['SIOPv2_ID1'])
         .build()
     ).toBeInstanceOf(RP);
   });
@@ -243,6 +245,7 @@ describe('RP should', () => {
         registrationBy: { type: PassBy.VALUE },
       })
       .addDidMethod('did:ethr')
+      .withSupportedVersions([SupportedVersion.SIOPv2_D11])
       .build()
 
       .createAuthenticationRequest({
