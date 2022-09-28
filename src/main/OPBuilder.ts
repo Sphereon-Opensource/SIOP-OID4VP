@@ -14,6 +14,7 @@ import {
   ResponseRegistrationOpts,
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
+  SupportedVersion,
 } from './types';
 
 export default class OPBuilder {
@@ -28,6 +29,7 @@ export default class OPBuilder {
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
+  supportedVersions: Array<SupportedVersion>;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
@@ -106,6 +108,30 @@ export default class OPBuilder {
 
   addVerifyCallback(verifyCallback: VerifyCallback) {
     this.verifyCallback = verifyCallback;
+    return this;
+  }
+
+  private initSupportedVersions() {
+    if (!this.supportedVersions) {
+      this.supportedVersions = [];
+    }
+  }
+
+  withSupportedVersions(supportedVersions: Array<string | SupportedVersion>): OPBuilder {
+    this.initSupportedVersions();
+    for (const supportedVersion of supportedVersions) {
+      this.addSupportedVersion(supportedVersion);
+    }
+    return this;
+  }
+
+  addSupportedVersion(supportedVersion: string | SupportedVersion): OPBuilder {
+    this.initSupportedVersions();
+    if (typeof supportedVersion === 'string') {
+      this.supportedVersions.push(SupportedVersion[supportedVersion]);
+    } else if (Array.isArray(supportedVersion)) {
+      this.supportedVersions.push(supportedVersion as SupportedVersion);
+    }
     return this;
   }
 

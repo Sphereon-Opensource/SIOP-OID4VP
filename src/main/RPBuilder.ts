@@ -23,6 +23,7 @@ import {
   RevocationVerificationCallback,
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
+  SupportedVersion,
 } from './types';
 
 export default class RPBuilder {
@@ -43,6 +44,7 @@ export default class RPBuilder {
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
+  supportedVersions: Array<SupportedVersion>;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
@@ -148,6 +150,30 @@ export default class RPBuilder {
 
   addVerifyCallback(verifyCallback: VerifyCallback): RPBuilder {
     this.verifyCallback = verifyCallback;
+    return this;
+  }
+
+  private initSupportedVersions() {
+    if (!this.supportedVersions) {
+      this.supportedVersions = [];
+    }
+  }
+
+  withSupportedVersions(supportedVersions: Array<string | SupportedVersion>): RPBuilder {
+    this.initSupportedVersions();
+    for (const supportedVersion of supportedVersions) {
+      this.addSupportedVersion(supportedVersion);
+    }
+    return this;
+  }
+
+  addSupportedVersion(supportedVersion: string | SupportedVersion): RPBuilder {
+    this.initSupportedVersions();
+    if (typeof supportedVersion === 'string') {
+      this.supportedVersions.push(SupportedVersion[supportedVersion]);
+    } else if (Array.isArray(supportedVersion)) {
+      this.supportedVersions.push(supportedVersion as SupportedVersion);
+    }
     return this;
   }
 

@@ -17,6 +17,7 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
+  SupportedVersion,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
 } from '../src/main';
@@ -49,6 +50,7 @@ describe('OP Builder should', () => {
         })
         .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
         .withExpiresIn(1000)
+        .withSupportedVersions(['SIOPv2_ID1'])
         .build()
     ).toBeInstanceOf(OP);
   });
@@ -175,6 +177,7 @@ describe('OP should', () => {
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
       })
+      .withSupportedVersions(['SIOPv2_ID1'])
       .build()
 
       .createAuthenticationRequest({
@@ -198,6 +201,7 @@ describe('OP should', () => {
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
       })
+      .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .build()
 
       .verifyAuthenticationRequest(requestURI.jwt);
