@@ -23,6 +23,7 @@ import {
 import { SIOPErrors } from '../src/main/types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
 
 const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
 const EXAMPLE_PD_URL = 'http://my_own_pd.com/pd/';
@@ -57,6 +58,9 @@ async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
           alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
         },
       },
+      client_name: VERIFIER_NAME_FOR_CLIENT,
+      logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+      client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
     },
     claims: {
       id_token: {
@@ -129,6 +133,9 @@ async function getPayloadPdRef(): Promise<AuthenticationRequestPayload> {
           alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
         },
       },
+      client_name: VERIFIER_NAME_FOR_CLIENT,
+      logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+      client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
     },
     claims: {
       id_token: {

@@ -23,6 +23,7 @@ import {
 } from '../src/main';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -47,6 +48,9 @@ describe('OP Builder should', () => {
         .response(ResponseMode.POST)
         .registrationBy({
           registrationBy: { type: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         })
         .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
         .withExpiresIn(1000)
@@ -74,6 +78,9 @@ describe('OP should', () => {
           proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
         },
       },
+      clientName: VERIFIER_NAME_FOR_CLIENT,
+      logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       //TODO: fill it up with actual value
       issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
@@ -137,6 +144,9 @@ describe('OP should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -176,6 +186,9 @@ describe('OP should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .withSupportedVersions(['SIOPv2_ID1'])
       .build()
@@ -200,6 +213,9 @@ describe('OP should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .build()

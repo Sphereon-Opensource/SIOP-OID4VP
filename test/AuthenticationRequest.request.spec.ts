@@ -17,6 +17,8 @@ import {
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
+import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 const HEX_KEY = 'f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f';
@@ -95,6 +97,9 @@ describe('create Request Uri should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -147,6 +152,9 @@ describe('create Request Uri should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -188,6 +196,9 @@ describe('create Request Uri should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -371,6 +382,9 @@ describe('create Request JWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -456,6 +470,9 @@ describe('create Request JWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
       claims: {
         presentationDefinitions: [
@@ -514,6 +531,9 @@ describe('create Request JWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
       claims: {
         presentationDefinitions: [

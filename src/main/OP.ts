@@ -215,6 +215,9 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
 
           vpFormats: opts.builder.responseRegistration.vpFormats,
           idTokenTypesSupported: opts.builder.responseRegistration.idTokenTypesSupported,
+          clientName: opts.builder.responseRegistration.clientName,
+          logoUri: opts.builder.responseRegistration.logoUri,
+          clientPurpose: opts.builder.responseRegistration.clientPurpose,
         },
         did: opts.builder.signatureType.did,
         expiresIn: opts.builder.expiresIn,

@@ -17,6 +17,8 @@ import {
   SupportedVersion,
 } from '../src/main';
 
+import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 const HEX_KEY = 'f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f';
@@ -45,7 +47,11 @@ describe('RP Builder should', () => {
             type: PassBy.REFERENCE,
             referenceUri: 'https://registration.here',
           },
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         })
+
         .internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
         .withSupportedVersions(['SIOPv2_ID1'])
         .build()
@@ -88,6 +94,9 @@ describe('RP should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -124,6 +133,9 @@ describe('RP should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -164,8 +176,10 @@ describe('RP should', () => {
       'd%22%3A%5B%22pairwise%22%5D%2C%22subject_syntax_types_supported%22%3A%5B%22did%3Aethr%22%2C%22did%22%5D%2C%22vp_formats%22%3A%7B%22jwt' +
       '_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vp%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%2' +
       '2%2C%22ES256%22%5D%7D%2C%22jwt%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22ldp_vc%22%3A%7B%22proof_type' +
-      '%22%3A%5B%22EcdsaSecp256k1Signature2019%22%2C%22EcdsaSecp256k1Signature2019%22%5D%7D%7D%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsio' +
-      'p%2Fjwts';
+      '%22%3A%5B%22EcdsaSecp256k1Signature2019%22%2C%22EcdsaSecp256k1Signature2019%22%5D%7D%7D%2C%22client_name%22%3A%22Client%20Verifier%20R' +
+      'elying%20Party%20Sphereon%20B.V.%22%2C%22logo_uri%22%3A%22https%3A%2F%2Fsphereon.com%2Fcontent%2Fthemes%2Fsphereon%2Fassets%2Ffavicons' +
+      '%2Fsafari-pinned-tab.svg%22%2C%22client_purpose%22%3A%22To%20request%2C%20receive%20and%20verify%20your%20credential%20about%20the%20t' +
+      'he%20valid%20subject.%22%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.ey.*$/;
 
@@ -214,7 +228,10 @@ describe('RP should', () => {
       'n%22%5D%2C%22scopes_supported%22%3A%5B%22openid%20did_authn%22%2C%22openid%22%5D%2C%22subject_types_supported%22%3A%5B%22pairwise%22%5D%2' +
       'C%22subject_syntax_types_supported%22%3A%5B%22did%3Aethr%22%5D%2C%22vp_formats%22%3A%7B%22jwt%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES2' +
       '56K%22%2C%22ES256%22%5D%7D%2C%22jwt_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vp%22%3A%7B%22alg%2' +
-      '2%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
+      '2%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%2C%22client_name%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%2' +
+      '2%2C%22logo_uri%22%3A%22https%3A%2F%2Fsphereon.com%2Fcontent%2Fthemes%2Fsphereon%2Fassets%2Ffavicons%2Fsafari-pinned-tab.svg%22%2C%22clie' +
+      'nt_purpose%22%3A%22To%20request%2C%20receive%20and%20verify%20your%20credential%20about%20the%20the%20valid%20subject.%22%7D&request_uri=' +
+      'https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
 
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
@@ -243,6 +260,9 @@ describe('RP should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addDidMethod('did:ethr')
       .withSupportedVersions([SupportedVersion.SIOPv2_D11])

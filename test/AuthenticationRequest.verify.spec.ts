@@ -25,6 +25,7 @@ import {
 import SIOPErrors from '../src/main/types/Errors';
 
 import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
+import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -66,6 +67,9 @@ describe('SIOP Request Validation', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
+        client_name: VERIFIER_NAME_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+        client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
       /*registration: {
           jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did}`,
@@ -138,6 +142,9 @@ describe('verifyJWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        clientName: 'Sphereon B.V.',
+        logoUri: 'https://sphereon.com/content/themes/sphereon/assets/favicons/safari-pinned-tab.svg',
+        clientPurpose: 'To request, receive and verify your credential about the the valid subject.',
       },
     };
 
@@ -189,6 +196,9 @@ describe('verifyJWT should', () => {
           },
         },
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);

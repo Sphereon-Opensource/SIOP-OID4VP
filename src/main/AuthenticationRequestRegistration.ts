@@ -65,5 +65,8 @@ function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): 
     subject_types_supported: opts.subjectTypesSupported,
     subject_syntax_types_supported: opts.subjectSyntaxTypesSupported || ['did:web:', 'did:ion:'],
     vp_formats: opts.vpFormatsSupported,
+    client_name: opts.clientName,
+    logo_uri: opts.logoUri,
+    client_purpose: opts.clientPurpose,
   };
 }

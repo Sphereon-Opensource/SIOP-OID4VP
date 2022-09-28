@@ -40,5 +40,8 @@ export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): Dis
     op_tos_uri: opts.opTosUri,
     id_token_types_supported: opts.idTokenTypesSupported,
     vp_formats: opts.vpFormats,
+    client_name: opts.clientName,
+    logo_uri: opts.logoUri,
+    client_purpose: opts.clientPurpose,
   };
 }

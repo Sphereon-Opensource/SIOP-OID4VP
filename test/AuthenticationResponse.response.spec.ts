@@ -25,6 +25,7 @@ import {
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
 
 jest.setTimeout(30000);
 
@@ -56,6 +57,9 @@ describe('create JWT from Request JWT should', () => {
         type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
+      clientName: VERIFIER_NAME_FOR_CLIENT,
+      logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
     },
     signatureType: {
       did: DID,
@@ -119,6 +123,9 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
@@ -139,6 +146,9 @@ describe('create JWT from Request JWT should', () => {
           type: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
       signatureType: {
         did: mockResEntity.did,
@@ -187,6 +197,9 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
@@ -207,6 +220,9 @@ describe('create JWT from Request JWT should', () => {
           type: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
       signatureType: {
         did: mockResEntity.did,
@@ -275,6 +291,9 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
       claims: {
         presentationDefinitions: [
@@ -344,6 +363,9 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       },
       signatureType: {
         did: mockResEntity.did,

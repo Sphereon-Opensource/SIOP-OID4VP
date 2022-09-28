@@ -409,11 +409,23 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
+        "clientName": {
+          "type": "string"
+        },
+        "logoUri": {
+          "type": "string"
+        },
+        "clientPurpose": {
+          "type": "string"
+        },
         "registrationBy": {
           "$ref": "#/definitions/RegistrationType"
         }
       },
       "required": [
+        "clientName",
+        "clientPurpose",
+        "logoUri",
         "registrationBy"
       ],
       "additionalProperties": false

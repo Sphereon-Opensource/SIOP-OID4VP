@@ -24,6 +24,7 @@ import {
 } from '../src/main';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
 
 jest.setTimeout(30000);
 
@@ -134,6 +135,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
     const op = OP.builder()
@@ -152,6 +156,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did:ethr'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 
@@ -212,6 +219,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
     const op = OP.builder()
@@ -230,6 +240,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 
@@ -292,6 +305,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -314,6 +330,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 
@@ -369,6 +388,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -391,6 +413,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 
@@ -464,6 +489,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -485,6 +513,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 
@@ -563,6 +594,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ion'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -585,6 +619,9 @@ describe('RP and OP interaction should', () => {
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
         },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did:ethr'],
@@ -672,6 +709,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -695,6 +735,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 
@@ -779,6 +822,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ion'],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -809,6 +855,9 @@ describe('RP and OP interaction should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 

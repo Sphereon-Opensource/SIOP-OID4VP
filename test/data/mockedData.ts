@@ -23,6 +23,10 @@ export const DIDAUTH_HEADER: JWTHeader = {
   kid: 'did:ethr:0x416e6e6162656c2e4c65652e452d412d506f652e#key1',
 };
 
+export const VERIFIER_NAME_FOR_CLIENT = 'Client Verifier Relying Party Sphereon B.V.';
+export const VERIFIER_LOGO_FOR_CLIENT = 'https://sphereon.com/content/themes/sphereon/assets/favicons/safari-pinned-tab.svg';
+export const VERIFIERZ_PURPOSE_TO_VERIFY = 'To request, receive and verify your credential about the the valid subject.';
+
 export const DIDAUTH_REQUEST_PAYLOAD: AuthenticationRequestPayload = {
   iss: 'did:ethr:0x416e6e6162656c2e4c65652e452d412d506f652e', // DIDres of the RP (kid must point to a key in this DIDres Document)
   scope: Scope.OPENID, // MUST be "openid did_authn"
@@ -49,6 +53,9 @@ export const DIDAUTH_REQUEST_PAYLOAD: AuthenticationRequestPayload = {
         alg: [KeyAlgo.EDDSA],
       },
     },
+    client_name: VERIFIER_NAME_FOR_CLIENT,
+    logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+    client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
   },
   /*registration: {
       subject_types_supported: SubjectType.PAIRWISE,

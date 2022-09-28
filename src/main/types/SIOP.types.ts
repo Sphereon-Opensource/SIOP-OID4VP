@@ -243,6 +243,9 @@ export interface DiscoveryMetadataOpts {
   //TODO add the check: Mandatory if PassBy.Value
   subjectSyntaxTypesSupported?: string[] | string;
   idTokenTypesSupported?: IdTokenType[] | IdTokenType;
+  clientName: string;
+  logoUri: string;
+  clientPurpose: string;
 
   // didsSupported?: boolean;
   // didMethodsSupported?: string[] | string;
@@ -315,6 +318,9 @@ export interface DiscoveryMetadataPayload {
   subject_syntax_types_supported: string[] | string;
   id_token_types_supported?: IdTokenType[] | IdTokenType;
   vp_formats: Format;
+  client_name: string;
+  logo_uri: string;
+  client_purpose: string;
   // dids_supported: boolean;
   // did_methods_supported: string[] | string;
   // credential_supported: boolean;
@@ -351,6 +357,9 @@ export interface RPRegistrationMetadataOpts {
   // subjectIdentifiersSupported: SubjectIdentifierType[] | SubjectIdentifierType;
   // didMethodsSupported?: string[] | string;
   // credentialFormatsSupported: CredentialFormat[] | CredentialFormat;
+  clientName: string;
+  logoUri: string;
+  clientPurpose: string;
 }
 
 export interface RPRegistrationMetadataPayload {
@@ -362,6 +371,9 @@ export interface RPRegistrationMetadataPayload {
   subject_syntax_types_supported: string[];
   subject_types_supported: SubjectType[];
   vp_formats: Format;
+  client_name: string;
+  logo_uri: string;
+  client_purpose: string;
 }
 
 export interface CommonSupportedMetadata {

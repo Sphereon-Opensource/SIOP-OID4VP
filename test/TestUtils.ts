@@ -26,7 +26,13 @@ import {
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
+import {
+  DID_DOCUMENT_PUBKEY_B58,
+  DID_DOCUMENT_PUBKEY_JWK,
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+} from './data/mockedData';
 
 export interface TESTKEY {
   key: JWK;
@@ -241,6 +247,9 @@ export const metadata: {
         alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
       },
     },
+    client_name: VERIFIER_NAME_FOR_CLIENT,
+    logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+    client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
   },
   rpMetadata: {
     id_token_signing_alg_values_supported: [],
@@ -257,6 +266,9 @@ export const metadata: {
         alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
       },
     },
+    client_name: VERIFIER_NAME_FOR_CLIENT,
+    logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+    client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
   },
   verify() {
     return assertValidMetadata(this.opMetadata, this.rpMetadata);
