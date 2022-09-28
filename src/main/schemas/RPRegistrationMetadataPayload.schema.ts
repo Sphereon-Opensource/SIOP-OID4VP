@@ -68,8 +68,7 @@ export const RPRegistrationMetadataPayloadSchema = {
         "subject_syntax_types_supported",
         "subject_types_supported",
         "vp_formats"
-      ],
-      "additionalProperties": false
+      ]
     },
     "SigningAlgo": {
       "type": "string",

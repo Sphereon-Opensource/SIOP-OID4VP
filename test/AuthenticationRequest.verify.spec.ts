@@ -142,9 +142,11 @@ describe('verifyJWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        clientName: 'Sphereon B.V.',
-        logoUri: 'https://sphereon.com/content/themes/sphereon/assets/favicons/safari-pinned-tab.svg',
-        clientPurpose: 'To request, receive and verify your credential about the the valid subject.',
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -196,9 +198,11 @@ describe('verifyJWT should', () => {
           },
         },
         registrationBy: { type: PassBy.VALUE },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);

@@ -1,5 +1,6 @@
 import Ajv from 'ajv';
 
+import LanguageTagUtils from './LanguageTagUtils';
 import { getWithUrl } from './functions';
 import { RPRegistrationMetadataPayloadSchema } from './schemas';
 import {
@@ -57,7 +58,7 @@ export async function createRequestRegistration(opts: RequestRegistrationOpts): 
 }
 
 function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): RPRegistrationMetadataPayload {
-  return {
+  const rpRegistrationMetadataPayload = {
     id_token_signing_alg_values_supported: opts.idTokenSigningAlgValuesSupported,
     request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported,
     response_types_supported: opts.responseTypesSupported,
@@ -68,5 +69,14 @@ function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): 
     client_name: opts.clientName,
     logo_uri: opts.logoUri,
     client_purpose: opts.clientPurpose,
+  };
+
+  const targetFieldNames = new Map<string, string>();
+  targetFieldNames.set('clientName', 'client_name');
+  targetFieldNames.set('clientPurpose', 'client_purpose');
+
+  return {
+    ...rpRegistrationMetadataPayload,
+    ...LanguageTagUtils.getLanguageTaggedPropertiesMapped(opts, targetFieldNames),
   };
 }

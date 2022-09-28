@@ -424,8 +424,7 @@ export const AuthenticationResponseOptsSchema = {
       },
       "required": [
         "registrationBy"
-      ],
-      "additionalProperties": false
+      ]
     },
     "Format": {
       "type": "object",

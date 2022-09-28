@@ -894,8 +894,7 @@ export const AuthenticationRequestOptsSchema = {
       },
       "required": [
         "registrationBy"
-      ],
-      "additionalProperties": false
+      ]
     },
     "SigningAlgo": {
       "type": "string",

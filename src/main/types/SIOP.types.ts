@@ -246,6 +246,7 @@ export interface DiscoveryMetadataOpts {
   clientName?: string;
   logoUri?: string;
   clientPurpose?: string;
+  [x: string]: any;
 
   // didsSupported?: boolean;
   // didMethodsSupported?: string[] | string;
@@ -329,7 +330,7 @@ export interface DiscoveryMetadataPayload {
   // credential_claims_supported: string[] | string;
   // credential_name: string;
   // slint-disable-next-line @typescript-eslint/no-explicit-any
-  // [x: string]: any;
+  [x: string]: any;
 }
 
 export interface ResponseRegistrationOpts extends DiscoveryMetadataOpts {
@@ -360,6 +361,7 @@ export interface RPRegistrationMetadataOpts {
   clientName?: string;
   logoUri?: string;
   clientPurpose?: string;
+  [x: string]: any;
 }
 
 export interface RPRegistrationMetadataPayload {
@@ -374,6 +376,7 @@ export interface RPRegistrationMetadataPayload {
   client_name?: string;
   logo_uri?: string;
   client_purpose?: string;
+  [x: string]: any;
 }
 
 export interface CommonSupportedMetadata {

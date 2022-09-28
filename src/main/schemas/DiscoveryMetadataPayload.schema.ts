@@ -387,8 +387,7 @@ export const DiscoveryMetadataPayloadSchema = {
         "subject_types_supported",
         "subject_syntax_types_supported",
         "vp_formats"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AuthenticationContextReferences": {
       "type": "string",

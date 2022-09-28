@@ -5,6 +5,7 @@ import { Resolvable } from 'did-resolver';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
+import LanguageTagUtils from './LanguageTagUtils';
 import OPBuilder from './OPBuilder';
 import { getResolverUnion, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { AuthenticationResponseOptsSchema } from './schemas';
@@ -172,6 +173,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
       opts.builder.resolvers
     );
   }
+
   const responseOpts: AuthenticationResponseOpts = opts.builder
     ? {
         registration: {
@@ -218,6 +220,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
           clientName: opts.builder.responseRegistration.clientName,
           logoUri: opts.builder.responseRegistration.logoUri,
           clientPurpose: opts.builder.responseRegistration.clientPurpose,
+          ...LanguageTagUtils.getLanguageTaggedProperties(opts.builder.responseRegistration, ['clientName', 'clientPurpose']),
         },
         did: opts.builder.signatureType.did,
         expiresIn: opts.builder.expiresIn,

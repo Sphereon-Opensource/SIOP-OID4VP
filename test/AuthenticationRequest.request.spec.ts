@@ -97,9 +97,11 @@ describe('create Request Uri should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -107,6 +109,7 @@ describe('create Request Uri should', () => {
     expect(uriRequest).toBeDefined();
     expect(uriRequest).toHaveProperty('encodedUri');
     expect(uriRequest).toHaveProperty('encodingFormat');
+    expect(uriRequest).toHaveProperty('clientPurpose#fr-FR');
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`openid://`);
@@ -114,9 +117,11 @@ describe('create Request Uri should', () => {
     expect(uriDecoded).toContain(`&redirect_uri=${opts.redirectUri}`);
     expect(uriDecoded).toContain(`&scope=${Scope.OPENID}`);
     expect(uriDecoded).toContain(`&request_uri=`);
+    expect(uriDecoded).toContain(`clientPurpose#fr-FR=`);
 
     const data = parse(uriDecoded);
     expect(data.request_uri).toStrictEqual(opts.requestBy.referenceUri);
+    expect('').toStrictEqual(opts.registration['clientPurpose#fr-FR']);
     expect(uriRequest).toHaveProperty('jwt');
     expect(uriRequest.jwt).toBeDefined();
   });
@@ -152,9 +157,11 @@ describe('create Request Uri should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -196,9 +203,11 @@ describe('create Request Uri should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -382,9 +391,11 @@ describe('create Request JWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -470,9 +481,11 @@ describe('create Request JWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
       claims: {
         presentationDefinitions: [
@@ -531,9 +544,11 @@ describe('create Request JWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
       claims: {
         presentationDefinitions: [

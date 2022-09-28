@@ -94,9 +94,11 @@ describe('RP should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -133,9 +135,11 @@ describe('RP should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -260,9 +264,11 @@ describe('RP should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
-        clientName: VERIFIER_NAME_FOR_CLIENT,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addDidMethod('did:ethr')
       .withSupportedVersions([SupportedVersion.SIOPv2_D11])
