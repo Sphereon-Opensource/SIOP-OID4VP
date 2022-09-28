@@ -460,9 +460,12 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
+      .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.VALUE)
@@ -552,10 +555,12 @@ describe('RP and OP interaction should', () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });// eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
+      .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
@@ -666,9 +671,12 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
+      .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .addVerifyCallback(verifyCallback)
       .redirect(EXAMPLE_REDIRECT_URL)
@@ -764,9 +772,12 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
       .withRevocationVerification(RevocationVerification.ALWAYS)
+      .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withRevocationVerificationCallback(async () => {
