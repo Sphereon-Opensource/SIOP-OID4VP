@@ -14,6 +14,9 @@ export const AuthenticationResponseOptsSchema = {
         "checkLinkedDomain": {
           "$ref": "#/definitions/CheckLinkedDomain"
         },
+        "presentationVerificationCallback": {
+          "$ref": "#/definitions/PresentationVerificationCallback"
+        },
         "signatureType": {
           "anyOf": [
             {
@@ -611,6 +614,14 @@ export const AuthenticationResponseOptsSchema = {
         "always"
       ]
     },
+    "PresentationVerificationCallback": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
     "InternalSignature": {
       "type": "object",
       "properties": {
@@ -687,7 +698,7 @@ export const AuthenticationResponseOptsSchema = {
           "$ref": "#/definitions/VerifiablePresentationTypeFormat"
         },
         "presentation": {
-          "$ref": "#/definitions/IPresentation"
+          "$ref": "#/definitions/IVerifiablePresentation"
         },
         "location": {
           "$ref": "#/definitions/PresentationLocation"
@@ -707,9 +718,22 @@ export const AuthenticationResponseOptsSchema = {
         "ldp_vp"
       ]
     },
-    "IPresentation": {
+    "IVerifiablePresentation": {
       "type": "object",
       "properties": {
+        "proof": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IProof"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/IProof"
+              }
+            }
+          ]
+        },
         "id": {
           "type": "string"
         },
@@ -747,8 +771,94 @@ export const AuthenticationResponseOptsSchema = {
       },
       "required": [
         "@context",
+        "proof",
         "type",
         "verifiableCredential"
+      ]
+    },
+    "IProof": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IProofType"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "created": {
+          "type": "string"
+        },
+        "proofPurpose": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IProofPurpose"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "verificationMethod": {
+          "type": "string"
+        },
+        "challenge": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "proofValue": {
+          "type": "string"
+        },
+        "jws": {
+          "type": "string"
+        },
+        "nonce": {
+          "type": "string"
+        },
+        "requiredRevealStatements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "type",
+        "created",
+        "proofPurpose",
+        "verificationMethod"
+      ]
+    },
+    "IProofType": {
+      "type": "string",
+      "enum": [
+        "Ed25519Signature2018",
+        "Ed25519Signature2020",
+        "EcdsaSecp256k1Signature2019",
+        "EcdsaSecp256k1RecoverySignature2020",
+        "JsonWebSignature2020",
+        "RsaSignature2018",
+        "GpgSignature2020",
+        "JcsEd25519Signature2020",
+        "BbsBlsSignatureProof2020",
+        "BbsBlsBoundSignatureProof2020"
+      ]
+    },
+    "IProofPurpose": {
+      "type": "string",
+      "enum": [
+        "verificationMethod",
+        "assertionMethod",
+        "authentication",
+        "keyAgreement",
+        "contactAgreement",
+        "capabilityInvocation",
+        "capabilityDelegation"
       ]
     },
     "ICredentialContextType": {
@@ -872,91 +982,6 @@ export const AuthenticationResponseOptsSchema = {
         "issuer",
         "proof",
         "type"
-      ]
-    },
-    "IProof": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/IProofType"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "created": {
-          "type": "string"
-        },
-        "proofPurpose": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/IProofPurpose"
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "verificationMethod": {
-          "type": "string"
-        },
-        "challenge": {
-          "type": "string"
-        },
-        "domain": {
-          "type": "string"
-        },
-        "proofValue": {
-          "type": "string"
-        },
-        "jws": {
-          "type": "string"
-        },
-        "nonce": {
-          "type": "string"
-        },
-        "requiredRevealStatements": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "type",
-        "created",
-        "proofPurpose",
-        "verificationMethod"
-      ]
-    },
-    "IProofType": {
-      "type": "string",
-      "enum": [
-        "Ed25519Signature2018",
-        "Ed25519Signature2020",
-        "EcdsaSecp256k1Signature2019",
-        "EcdsaSecp256k1RecoverySignature2020",
-        "JsonWebSignature2020",
-        "RsaSignature2018",
-        "GpgSignature2020",
-        "JcsEd25519Signature2020",
-        "BbsBlsSignatureProof2020",
-        "BbsBlsBoundSignatureProof2020"
-      ]
-    },
-    "IProofPurpose": {
-      "type": "string",
-      "enum": [
-        "verificationMethod",
-        "assertionMethod",
-        "authentication",
-        "keyAgreement",
-        "contactAgreement",
-        "capabilityInvocation",
-        "capabilityDelegation"
       ]
     },
     "IIssuer": {

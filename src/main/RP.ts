@@ -11,6 +11,7 @@ import {
   ClaimOpts,
   ExternalVerification,
   InternalVerification,
+  PresentationVerificationCallback,
   RequestRegistrationOpts,
   Verification,
   VerificationMode,
@@ -56,8 +57,14 @@ export class RP {
       checkLinkedDomain?: CheckLinkedDomain;
     }
   ): Promise<VerifiedAuthenticationResponseWithJWT> {
-    const verifyCallback = (this._verifyAuthResponseOpts.verification as Verification).verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
-    return AuthenticationResponse.verifyJWT(jwt, this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback }));
+    const verification: Verification = this._verifyAuthResponseOpts.verification;
+    const verifyCallback = verification.verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
+    const presentationVerificationCallback =
+      verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
+    return AuthenticationResponse.verifyJWT(
+      jwt,
+      this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback })
+    );
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
@@ -78,6 +85,7 @@ export class RP {
     audience: string;
     checkLinkedDomain?: CheckLinkedDomain;
     verifyCallback?: VerifyCallback;
+    presentationVerificationCallback?: PresentationVerificationCallback;
   }): VerifyAuthenticationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
@@ -87,6 +95,7 @@ export class RP {
       claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
       verification: opts?.verification || this._verifyAuthResponseOpts.verification,
       verifyCallback: opts?.verifyCallback,
+      presentationVerificationCallback: opts?.presentationVerificationCallback,
     };
   }
 
@@ -141,6 +150,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           verifyCallback: opts.builder.verifyCallback,
+          presentationVerificationCallback: opts.builder.presentationVerificationCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,

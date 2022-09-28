@@ -55,6 +55,7 @@ enum SIOPErrors {
   VERIFICATION_METHOD_NOT_SUPPORTED = 'Verification method not supported',
   VERIFICATION_METHOD_NO_MATCH = "The verification method from the RP's DID Document does NOT match the kid of the SIOP Request",
   VERIFY_BAD_PARAMS = 'Verify bad parameters',
+  VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID = 'The signature of the verifiable presentation is not valid',
 }
 
 export default SIOPErrors;

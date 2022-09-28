@@ -30,6 +30,7 @@ import {
   JWTPayload,
   PresentationDefinitionWithLocation,
   PresentationLocation,
+  PresentationVerificationCallback,
   ResponseIss,
   RevocationVerification,
   SIOPErrors,
@@ -69,7 +70,11 @@ export default class AuthenticationResponse {
     responseOpts: AuthenticationResponseOpts
   ): Promise<AuthenticationResponseWithJWT> {
     const payload = await createSIOPResponsePayload(verifiedJwt, responseOpts);
-    await assertValidVerifiablePresentations(verifiedJwt.presentationDefinitions, payload);
+    await assertValidVerifiablePresentations({
+      definitions: verifiedJwt.presentationDefinitions,
+      verPayload: payload,
+      presentationVerificationCallback: responseOpts.presentationVerificationCallback,
+    });
     const jwt = await signDidJwtPayload(payload, responseOpts);
     return {
       jwt,
@@ -137,7 +142,11 @@ export default class AuthenticationResponse {
     }
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
-    await assertValidVerifiablePresentations(verifyOpts?.claims?.presentationDefinitions, verPayload);
+    await assertValidVerifiablePresentations({
+      definitions: verifyOpts?.claims?.presentationDefinitions,
+      verPayload,
+      presentationVerificationCallback: verifyOpts?.presentationVerificationCallback,
+    });
 
     const revocationVerification = verifyOpts.verification.revocationOpts
       ? verifyOpts.verification.revocationOpts.revocationVerification
@@ -278,6 +287,7 @@ async function createSIOPResponsePayload(
     vp_token,
     verifiable_presentations,
   };
+
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
     authenticationResponsePayload.sub_jwk = subJwk;
@@ -300,35 +310,38 @@ function assertValidVerifyOpts(opts: VerifyAuthenticationResponseOpts) {
   }
 }
 
-async function assertValidVerifiablePresentations(definitions: PresentationDefinitionWithLocation[], verPayload: AuthenticationResponsePayload) {
-  if ((!definitions || definitions.length == 0) && !verPayload) {
+async function assertValidVerifiablePresentations(args: {
+  definitions: PresentationDefinitionWithLocation[];
+  verPayload: AuthenticationResponsePayload;
+  presentationVerificationCallback?: PresentationVerificationCallback;
+}) {
+  if ((!args.definitions || args.definitions.length == 0) && !args.verPayload) {
     return;
   }
 
   // const definitions: PresentationDefinitionWithLocation[] = verifyOpts?.claims?.presentationDefinitions;
-  PresentationExchange.assertValidPresentationDefinitionWithLocations(definitions);
+  PresentationExchange.assertValidPresentationDefinitionWithLocations(args.definitions);
   let presentationPayloads: VerifiablePresentationPayload[];
-
-  if (verPayload.verifiable_presentations && verPayload.verifiable_presentations.length > 0) {
-    presentationPayloads = verPayload.verifiable_presentations;
+  if (args.verPayload.verifiable_presentations && args.verPayload.verifiable_presentations.length > 0) {
+    presentationPayloads = args.verPayload.verifiable_presentations;
   }
-  if (verPayload.vp_token) {
+  if (args.verPayload.vp_token) {
     if (!presentationPayloads) {
-      presentationPayloads = [verPayload.vp_token];
+      presentationPayloads = [args.verPayload.vp_token];
     } else {
-      presentationPayloads.push(verPayload.vp_token);
+      presentationPayloads.push(args.verPayload.vp_token);
     }
   }
 
   /*console.log('pd:', JSON.stringify(definitions));
   console.log('vps:', JSON.stringify(presentationPayloads));*/
-  if (definitions && definitions.length && !presentationPayloads) {
+  if (args.definitions && args.definitions.length && !presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
-  } else if (!definitions && presentationPayloads) {
+  } else if (!args.definitions && presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
-  } else if (definitions && presentationPayloads && definitions.length != presentationPayloads.length) {
+  } else if (args.definitions && presentationPayloads && args.definitions.length != presentationPayloads.length) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
-  } else if (definitions && presentationPayloads) {
-    await PresentationExchange.validatePayloadsAgainstDefinitions(definitions, presentationPayloads);
+  } else if (args.definitions && presentationPayloads) {
+    await PresentationExchange.validatePayloadsAgainstDefinitions(args.definitions, presentationPayloads, args.presentationVerificationCallback);
   }
 }
