@@ -555,7 +555,8 @@ describe('RP and OP interaction should', () => {
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });// eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()

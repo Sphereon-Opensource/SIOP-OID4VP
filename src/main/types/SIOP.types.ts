@@ -77,7 +77,7 @@ export interface AuthenticationRequestWithJWT {
   opts: AuthenticationRequestOpts;
 }
 
-export type PresentationVerificationResult = { verified: true };
+export type PresentationVerificationResult = { verified: boolean };
 
 export type PresentationVerificationCallback = (args: VerifiablePresentationPayload) => Promise<PresentationVerificationResult>;
 
