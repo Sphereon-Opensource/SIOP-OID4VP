@@ -67,10 +67,7 @@ export const RPRegistrationMetadataPayloadSchema = {
         "scopes_supported",
         "subject_syntax_types_supported",
         "subject_types_supported",
-        "vp_formats",
-        "client_name",
-        "logo_uri",
-        "client_purpose"
+        "vp_formats"
       ],
       "additionalProperties": false
     },

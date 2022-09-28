@@ -423,9 +423,6 @@ export const AuthenticationResponseOptsSchema = {
         }
       },
       "required": [
-        "clientName",
-        "clientPurpose",
-        "logoUri",
         "registrationBy"
       ],
       "additionalProperties": false

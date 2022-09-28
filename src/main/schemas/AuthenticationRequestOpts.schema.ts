@@ -893,9 +893,6 @@ export const AuthenticationRequestOptsSchema = {
         }
       },
       "required": [
-        "clientName",
-        "clientPurpose",
-        "logoUri",
         "registrationBy"
       ],
       "additionalProperties": false
