@@ -46,12 +46,12 @@ export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): Dis
     client_purpose: opts.clientPurpose,
   };
 
-  const targetFieldNames = new Map<string, string>();
-  targetFieldNames.set('clientName', 'client_name');
-  targetFieldNames.set('clientPurpose', 'client_purpose');
+  const languageTagEnabledFieldsNamesMapping = new Map<string, string>();
+  languageTagEnabledFieldsNamesMapping.set('clientName', 'client_name');
+  languageTagEnabledFieldsNamesMapping.set('clientPurpose', 'client_purpose');
 
   return {
     ...discoveryMetadataPayload,
-    ...LanguageTagUtils.getLanguageTaggedPropertiesMapped(opts, targetFieldNames),
+    ...LanguageTagUtils.getLanguageTaggedPropertiesMapped(opts, languageTagEnabledFieldsNamesMapping),
   };
 }
