@@ -267,12 +267,7 @@ describe('OP and RP communication should', () => {
       vp_formats: {
         ldp_vc: {
           proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
-        },
-        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
-        client_name: VERIFIER_NAME_FOR_CLIENT,
-        'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
-        client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+        }
       },
     });
   });
