@@ -33,65 +33,69 @@ const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 dotenv.config();
 
 describe('SIOP Request Validation', () => {
-  it('should verify', async () => {
-    // const mockVerifyJwt = verifyJWT as jest.Mock;
-    // const mockDecodeJWT = decodeJWT as jest.Mock;
-    expect.assertions(1);
-    const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-    const header = {
-      alg: KeyAlgo.ES256K,
-      typ: 'JWT',
-      kid: `${mockEntity.did}#controller`,
-    };
-    const state = getState();
-    const payload: AuthenticationRequestPayload = {
-      iss: mockEntity.did,
-      aud: 'test',
-      response_mode: ResponseMode.POST,
-      response_context: ResponseContext.RP,
-      redirect_uri: '',
-      scope: Scope.OPENID,
-      response_type: ResponseType.ID_TOKEN,
-      client_id: 'http://localhost:8080/test',
-      state,
-      nonce: getNonce(state),
-      registration: {
-        id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        response_types_supported: [ResponseType.ID_TOKEN],
-        scopes_supported: [Scope.OPENID],
-        subject_syntax_types_supported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
-        subject_types_supported: [SubjectType.PAIRWISE],
-        vp_formats: {
-          ldp_vc: {
-            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+  it(
+    'should verify',
+    async () => {
+      // const mockVerifyJwt = verifyJWT as jest.Mock;
+      // const mockDecodeJWT = decodeJWT as jest.Mock;
+      expect.assertions(1);
+      const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
+      const header = {
+        alg: KeyAlgo.ES256K,
+        typ: 'JWT',
+        kid: `${mockEntity.did}#controller`,
+      };
+      const state = getState();
+      const payload: AuthenticationRequestPayload = {
+        iss: mockEntity.did,
+        aud: 'test',
+        response_mode: ResponseMode.POST,
+        response_context: ResponseContext.RP,
+        redirect_uri: '',
+        scope: Scope.OPENID,
+        response_type: ResponseType.ID_TOKEN,
+        client_id: 'http://localhost:8080/test',
+        state,
+        nonce: getNonce(state),
+        registration: {
+          id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+          response_types_supported: [ResponseType.ID_TOKEN],
+          scopes_supported: [Scope.OPENID],
+          subject_syntax_types_supported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
+          subject_types_supported: [SubjectType.PAIRWISE],
+          vp_formats: {
+            ldp_vc: {
+              proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+            },
           },
+          client_name: VERIFIER_NAME_FOR_CLIENT,
+          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+          client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         },
-        client_name: VERIFIER_NAME_FOR_CLIENT,
-        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
-        client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-      },
-      /*registration: {
+        /*registration: {
           jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did}`,
           // jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did};transform-keys=jwks`,
           id_token_signed_response_alg: KeyAlgo.ES256K,
       },*/
-    };
-    const privateKey = await importJWK(mockEntity.jwk, KeyAlgo.ES256K);
-    const jwt = await new SignJWT(payload).setProtectedHeader(header).sign(privateKey);
+      };
+      const privateKey = await importJWK(mockEntity.jwk, KeyAlgo.ES256K);
+      const jwt = await new SignJWT(payload).setProtectedHeader(header).sign(privateKey);
 
-    const optsVerify: VerifyAuthenticationRequestOpts = {
-      verification: {
-        mode: VerificationMode.INTERNAL,
-        resolveOpts: {
-          subjectSyntaxTypesSupported: ['did:ethr'],
+      const optsVerify: VerifyAuthenticationRequestOpts = {
+        verification: {
+          mode: VerificationMode.INTERNAL,
+          resolveOpts: {
+            subjectSyntaxTypesSupported: ['did:ethr'],
+          },
         },
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
-    };
-    await expect(AuthenticationRequest.verifyJWT(jwt, optsVerify)).resolves.toBeDefined();
-  }, UNIT_TEST_TIMEOUT);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+      };
+      await expect(AuthenticationRequest.verifyJWT(jwt, optsVerify)).resolves.toBeDefined();
+    },
+    UNIT_TEST_TIMEOUT
+  );
 });
 
 describe('verifyJWT should', () => {
@@ -167,60 +171,64 @@ describe('verifyJWT should', () => {
     // expect.assertions(1);
     await expect(AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
   });
-  it('succeed if a valid JWT is passed', async () => {
-    const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-    /*const header = {
+  it(
+    'succeed if a valid JWT is passed',
+    async () => {
+      const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
+      /*const header = {
         alg: KeyAlgo.ES256K,
         typ: "JWT",
         kid: `${mockEntity.did}#controller`,
     };
     const state = State.getState();*/
-    const requestOpts: AuthenticationRequestOpts = {
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      authorizationEndpoint: '',
-      redirectUri: 'https://acme.com/hello',
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
-      signatureType: {
-        hexPrivateKey: mockEntity.hexPrivateKey,
-        did: mockEntity.did,
-        kid: `${mockEntity.did}#controller`,
-      },
-      registration: {
-        responseTypesSupported: [ResponseType.ID_TOKEN],
-        scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
-        subjectTypesSupported: [SubjectType.PAIRWISE],
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        subjectSyntaxTypesSupported: ['did:ethr:'],
-        vpFormatsSupported: {
-          ldp_vc: {
-            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+      const requestOpts: AuthenticationRequestOpts = {
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        authorizationEndpoint: '',
+        redirectUri: 'https://acme.com/hello',
+        requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+        signatureType: {
+          hexPrivateKey: mockEntity.hexPrivateKey,
+          did: mockEntity.did,
+          kid: `${mockEntity.did}#controller`,
+        },
+        registration: {
+          responseTypesSupported: [ResponseType.ID_TOKEN],
+          scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+          subjectTypesSupported: [SubjectType.PAIRWISE],
+          idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+          requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+          subjectSyntaxTypesSupported: ['did:ethr:'],
+          vpFormatsSupported: {
+            ldp_vc: {
+              proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+            },
+          },
+          registrationBy: { type: PassBy.VALUE },
+          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+          clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        },
+      };
+      const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+
+      const verifyOpts: VerifyAuthenticationRequestOpts = {
+        verification: {
+          mode: VerificationMode.INTERNAL,
+          resolveOpts: {
+            subjectSyntaxTypesSupported: ['did:ethr'],
           },
         },
-        registrationBy: { type: PassBy.VALUE },
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
-        clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
-        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
-      },
-    };
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+      };
 
-    const verifyOpts: VerifyAuthenticationRequestOpts = {
-      verification: {
-        mode: VerificationMode.INTERNAL,
-        resolveOpts: {
-          subjectSyntaxTypesSupported: ['did:ethr'],
-        },
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
-    };
-
-    const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);
-    expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
-  }, UNIT_TEST_TIMEOUT);
+      const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);
+      expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
+    },
+    UNIT_TEST_TIMEOUT
+  );
 });
 
 describe('OP and RP communication should', () => {

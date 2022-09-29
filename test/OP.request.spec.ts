@@ -115,58 +115,62 @@ describe('OP should', () => {
     expect(OP.fromOpts(responseOpts, verifyOpts)).toBeInstanceOf(OP);
   });
 
-  it('succeed from request opts when all params are set', async () => {
-    const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
-    const requestOpts: AuthenticationRequestOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
-      signatureType: {
-        hexPrivateKey: mockEntity.hexPrivateKey,
-        did: mockEntity.did,
-        kid: `${mockEntity.did}#controller`,
-      },
-      registration: {
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        responseTypesSupported: [ResponseType.ID_TOKEN],
-        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-        subjectTypesSupported: [SubjectType.PAIRWISE],
-        vpFormatsSupported: {
-          jwt_vc: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
-          jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
-          jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+  it(
+    'succeed from request opts when all params are set',
+    async () => {
+      const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
+      const requestOpts: AuthenticationRequestOpts = {
+        checkLinkedDomain: CheckLinkedDomain.NEVER,
+        redirectUri: EXAMPLE_REDIRECT_URL,
+        requestBy: {
+          type: PassBy.REFERENCE,
+          referenceUri: EXAMPLE_REFERENCE_URL,
         },
-        registrationBy: {
-          type: PassBy.VALUE,
+        signatureType: {
+          hexPrivateKey: mockEntity.hexPrivateKey,
+          did: mockEntity.did,
+          kid: `${mockEntity.did}#controller`,
         },
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
-        clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
-        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
-      },
-    };
+        registration: {
+          idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
+          requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          responseTypesSupported: [ResponseType.ID_TOKEN],
+          scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+          subjectTypesSupported: [SubjectType.PAIRWISE],
+          vpFormatsSupported: {
+            jwt_vc: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+            jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+            jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
+          },
+          registrationBy: {
+            type: PassBy.VALUE,
+          },
+          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+          clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        },
+      };
 
-    const requestURI = await RP.fromRequestOpts(requestOpts).createAuthenticationRequest({
-      nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
-      state: 'b32f0087fc9816eb813fd11f',
-    });
+      const requestURI = await RP.fromRequestOpts(requestOpts).createAuthenticationRequest({
+        nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+        state: 'b32f0087fc9816eb813fd11f',
+      });
 
-    const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.jwt);
-    console.log(JSON.stringify(verifiedRequest));
-    expect(verifiedRequest.issuer).toMatch(mockEntity.did);
-    expect(verifiedRequest.signer).toMatchObject({
-      id: `${mockEntity.did}#controller`,
-      type: 'EcdsaSecp256k1RecoveryMethod2020',
-      controller: `${mockEntity.did}`,
-    });
-    expect(verifiedRequest.jwt).toBeDefined();
-  }, UNIT_TEST_TIMEOUT);
+      const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.jwt);
+      console.log(JSON.stringify(verifiedRequest));
+      expect(verifiedRequest.issuer).toMatch(mockEntity.did);
+      expect(verifiedRequest.signer).toMatchObject({
+        id: `${mockEntity.did}#controller`,
+        type: 'EcdsaSecp256k1RecoveryMethod2020',
+        controller: `${mockEntity.did}`,
+      });
+      expect(verifiedRequest.jwt).toBeDefined();
+    },
+    UNIT_TEST_TIMEOUT
+  );
 
   it('succeed from builder when all params are set', async () => {
     const rpMockEntity = await mockedGetEnterpriseAuthToken('ACME RP');

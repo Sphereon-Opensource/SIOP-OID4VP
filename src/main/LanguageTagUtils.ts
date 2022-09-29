@@ -5,23 +5,33 @@ import { SIOPErrors } from './types';
 export default class LanguageTagUtils {
   private static readonly LANGUAGE_TAG_SEPARATOR = '#';
 
-  static getLanguageTaggedProperties(source: any, languageTagEnabledFieldsNames: Array<string>): any {
+  static getAllLanguageTaggedProperties(source: unknown): any {
+    return this.getLanguageTaggedPropertiesMapped(source, undefined);
+  }
+
+  static getLanguageTaggedProperties(source: unknown, languageTagEnabledFieldsNames: Array<string>): any {
     const languageTagEnabledFieldsNamesMapping: Map<string, string> = new Map<string, string>();
     languageTagEnabledFieldsNames.forEach((value) => languageTagEnabledFieldsNamesMapping.set(value, value));
     return this.getLanguageTaggedPropertiesMapped(source, languageTagEnabledFieldsNamesMapping);
   }
 
-  static getLanguageTaggedPropertiesMapped(source: any, languageTagEnabledFieldsNamesMapping: Map<string, string>): any {
+  static getLanguageTaggedPropertiesMapped(source: unknown, languageTagEnabledFieldsNamesMapping: Map<string, string>): any {
     this.assertSourceIsWorthChecking(source);
     this.assertValidTargetFieldNames(languageTagEnabledFieldsNamesMapping);
 
-    const discoveredLanguageTaggedFields = [];
+    const discoveredLanguageTaggedFields: unknown = {};
 
     Object.entries(source).forEach(([key, value]) => {
       const languageTagSeparatorIndexInKey = key.indexOf(this.LANGUAGE_TAG_SEPARATOR);
 
       if (this.isFieldLanguageTagged(languageTagSeparatorIndexInKey)) {
-        this.extractLanguageTaggedField(key, value as string, languageTagSeparatorIndexInKey, languageTagEnabledFieldsNamesMapping, discoveredLanguageTaggedFields);
+        this.extractLanguageTaggedField(
+          key,
+          value as string,
+          languageTagSeparatorIndexInKey,
+          languageTagEnabledFieldsNamesMapping,
+          discoveredLanguageTaggedFields
+        );
       }
     });
 
@@ -33,20 +43,24 @@ export default class LanguageTagUtils {
     value: string,
     languageTagSeparatorIndexInKey: number,
     languageTagEnabledFieldsNamesMapping: Map<string, string>,
-    languageTaggedFields: any[]
+    languageTaggedFields: unknown
   ) {
-    this.assertFieldNameShouldBeNonEmpty(key, languageTagSeparatorIndexInKey);
     const fieldName = this.getFieldName(key, languageTagSeparatorIndexInKey);
-    if (languageTagEnabledFieldsNamesMapping.has(fieldName)) {
-      const languageTag = this.getLanguageTag(key, languageTagSeparatorIndexInKey);
-      if (Tags.check(languageTag)) {
-        languageTaggedFields[this.getMappedFieldName(languageTagEnabledFieldsNamesMapping, fieldName, languageTag)] = value;
+
+    const languageTag = this.getLanguageTag(key, languageTagSeparatorIndexInKey);
+    if (Tags.check(languageTag)) {
+      if (languageTagEnabledFieldsNamesMapping?.size) {
+        if (languageTagEnabledFieldsNamesMapping.has(fieldName)) {
+          languageTaggedFields[this.getMappedFieldName(languageTagEnabledFieldsNamesMapping, fieldName, languageTag)] = value;
+        }
+      } else {
+        languageTaggedFields[key] = value;
       }
     }
   }
 
   private static getMappedFieldName(languageTagEnabledFieldsNamesMapping: Map<string, string>, fieldName: string, languageTag: string) {
-    return languageTagEnabledFieldsNamesMapping.get(fieldName) + '#' + languageTag;
+    return languageTagEnabledFieldsNamesMapping.get(fieldName) + this.LANGUAGE_TAG_SEPARATOR + languageTag;
   }
 
   private static getLanguageTag(key: string, languageTagSeparatorIndex: number) {
@@ -67,22 +81,24 @@ export default class LanguageTagUtils {
     return languageTagSeparatorIndex > 0;
   }
 
-  private static assertFieldNameShouldBeNonEmpty(key, languageTagSeparatorIndex) {
-    if (languageTagSeparatorIndex < 1) {
-      throw new Error(SIOPErrors.BAD_PARAMS + ' Field name not found in the key name: ' + key);
-    }
-  }
-
   private static assertValidTargetFieldNames(languageTagEnabledFieldsNamesMapping: Map<string, string>) {
-    if (!languageTagEnabledFieldsNamesMapping?.size) {
-      throw new Error(SIOPErrors.BAD_PARAMS + ' LanguageTagEnabledFieldsNamesMapping must be non-null or non-empty');
-    } else {
-      for (const entry of languageTagEnabledFieldsNamesMapping.entries()) {
-        if (!entry[0]?.length || !entry[1]?.length) {
-          throw new Error(SIOPErrors.BAD_PARAMS + '. languageTagEnabledFieldsName must be non-null or non-empty');
+    if (languageTagEnabledFieldsNamesMapping) {
+      if (!languageTagEnabledFieldsNamesMapping.size) {
+        throw new Error(SIOPErrors.BAD_PARAMS + ' LanguageTagEnabledFieldsNamesMapping must be non-null or non-empty');
+      } else {
+        for (const entry of languageTagEnabledFieldsNamesMapping.entries()) {
+          const key = entry[0];
+          const value = entry[1];
+          if (this.isStringNullOrEmpty(key) || this.isStringNullOrEmpty(value)) {
+            throw new Error(SIOPErrors.BAD_PARAMS + '. languageTagEnabledFieldsName must be non-null or non-empty');
+          }
         }
       }
     }
+  }
+
+  private static isStringNullOrEmpty(key: string) {
+    return !key || !key.length;
   }
 
   private static assertSourceIsWorthChecking(source: any) {
