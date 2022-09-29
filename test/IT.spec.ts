@@ -139,9 +139,9 @@ describe('RP and OP interaction should', () => {
           registrationBy: { type: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
         })
         .build();
       const op = OP.builder()
@@ -162,9 +162,9 @@ describe('RP and OP interaction should', () => {
           registrationBy: { type: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
         })
         .build();
 
@@ -229,9 +229,9 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
     const op = OP.builder()
@@ -252,9 +252,9 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 
@@ -319,9 +319,9 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -346,9 +346,9 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 
@@ -406,9 +406,9 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -433,9 +433,9 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 
@@ -513,9 +513,9 @@ describe('RP and OP interaction should', () => {
           registrationBy: { type: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
         })
         .addPresentationDefinitionClaim({
           definition: getPresentationDefinition(),
@@ -539,9 +539,9 @@ describe('RP and OP interaction should', () => {
           registrationBy: { type: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
         })
         .build();
 
@@ -624,9 +624,9 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -651,9 +651,9 @@ describe('RP and OP interaction should', () => {
         },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did:ethr'],
@@ -745,9 +745,9 @@ describe('RP and OP interaction should', () => {
           registrationBy: { type: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
         })
         .addPresentationDefinitionClaim({
           definition: getPresentationDefinition(),
@@ -773,9 +773,9 @@ describe('RP and OP interaction should', () => {
           registrationBy: { type: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
         })
         .build();
 
@@ -864,9 +864,9 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
@@ -899,9 +899,9 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .build();
 

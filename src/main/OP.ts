@@ -174,65 +174,80 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
     );
   }
 
-  const responseOpts: AuthenticationResponseOpts = opts.builder
-    ? {
-        registration: {
-          issuer: opts.builder.issuer,
-          authorizationEndpoint: opts.builder.responseRegistration.authorizationEndpoint,
-          tokenEndpoint: opts.builder.responseRegistration.tokenEndpoint,
-          userinfoEndpoint: opts.builder.responseRegistration.userinfoEndpoint,
-          jwksUri: opts.builder.responseRegistration.jwksUri,
-          registrationEndpoint: opts.builder.responseRegistration.registrationEndpoint,
-          scopesSupported: opts.builder.responseRegistration.scopesSupported,
-          responseTypesSupported: opts.builder.responseRegistration.responseTypesSupported,
-          responseModesSupported: opts.builder.responseRegistration.responseModesSupported,
-          grantTypesSupported: opts.builder.responseRegistration.grantTypesSupported,
-          acrValuesSupported: opts.builder.responseRegistration.acrValuesSupported,
-          subjectTypesSupported: opts.builder.responseRegistration.subjectTypesSupported,
-          idTokenSigningAlgValuesSupported: opts.builder.responseRegistration.idTokenSigningAlgValuesSupported,
-          idTokenEncryptionAlgValuesSupported: opts.builder.responseRegistration.idTokenEncryptionAlgValuesSupported,
-          idTokenEncryptionEncValuesSupported: opts.builder.responseRegistration.idTokenEncryptionEncValuesSupported,
-          userinfoSigningAlgValuesSupported: opts.builder.responseRegistration.userinfoSigningAlgValuesSupported,
-          userinfoEncryptionAlgValuesSupported: opts.builder.responseRegistration.userinfoEncryptionAlgValuesSupported,
-          userinfoEncryptionEncValuesSupported: opts.builder.responseRegistration.userinfoEncryptionEncValuesSupported,
-          requestObjectSigningAlgValuesSupported: opts.builder.responseRegistration.requestObjectSigningAlgValuesSupported,
-          requestObjectEncryptionAlgValuesSupported: opts.builder.responseRegistration.requestObjectEncryptionAlgValuesSupported,
-          requestObjectEncryptionEncValuesSupported: opts.builder.responseRegistration.requestObjectEncryptionEncValuesSupported,
-          tokenEndpointAuthMethodsSupported: opts.builder.responseRegistration.tokenEndpointAuthMethodsSupported,
-          tokenEndpointAuthSigningAlgValuesSupported: opts.builder.responseRegistration.tokenEndpointAuthSigningAlgValuesSupported,
-          displayValuesSupported: opts.builder.responseRegistration.displayValuesSupported,
-          claimTypesSupported: opts.builder.responseRegistration.claimTypesSupported,
-          claimsSupported: opts.builder.responseRegistration.claimsSupported,
-          serviceDocumentation: opts.builder.responseRegistration.serviceDocumentation,
-          claimsLocalesSupported: opts.builder.responseRegistration.claimsLocalesSupported,
-          uiLocalesSupported: opts.builder.responseRegistration.uiLocalesSupported,
-          claimsParameterSupported: opts.builder.responseRegistration.claimsParameterSupported,
-          requestParameterSupported: opts.builder.responseRegistration.requestParameterSupported,
-          requestUriParameterSupported: opts.builder.responseRegistration.requestUriParameterSupported,
-          requireRequestUriRegistration: opts.builder.responseRegistration.requireRequestUriRegistration,
-          opPolicyUri: opts.builder.responseRegistration.opPolicyUri,
-          opTosUri: opts.builder.responseRegistration.opTosUri,
-          registrationBy: opts.builder.responseRegistration.registrationBy,
-          subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+  let responseOpts: AuthenticationResponseOpts;
 
-          vpFormats: opts.builder.responseRegistration.vpFormats,
-          idTokenTypesSupported: opts.builder.responseRegistration.idTokenTypesSupported,
-          clientName: opts.builder.responseRegistration.clientName,
-          logoUri: opts.builder.responseRegistration.logoUri,
-          clientPurpose: opts.builder.responseRegistration.clientPurpose,
-          ...LanguageTagUtils.getLanguageTaggedProperties(opts.builder.responseRegistration, ['clientName', 'clientPurpose']),
-        },
-        did: opts.builder.signatureType.did,
-        expiresIn: opts.builder.expiresIn,
-        signatureType: opts.builder.signatureType,
-        responseMode: opts.builder.responseMode,
-      }
-    : { ...opts.responseOpts };
+  if (opts.builder) {
+    responseOpts = {
+      registration: {
+        issuer: opts.builder.issuer,
+        authorizationEndpoint: opts.builder.responseRegistration.authorizationEndpoint,
+        tokenEndpoint: opts.builder.responseRegistration.tokenEndpoint,
+        userinfoEndpoint: opts.builder.responseRegistration.userinfoEndpoint,
+        jwksUri: opts.builder.responseRegistration.jwksUri,
+        registrationEndpoint: opts.builder.responseRegistration.registrationEndpoint,
+        scopesSupported: opts.builder.responseRegistration.scopesSupported,
+        responseTypesSupported: opts.builder.responseRegistration.responseTypesSupported,
+        responseModesSupported: opts.builder.responseRegistration.responseModesSupported,
+        grantTypesSupported: opts.builder.responseRegistration.grantTypesSupported,
+        acrValuesSupported: opts.builder.responseRegistration.acrValuesSupported,
+        subjectTypesSupported: opts.builder.responseRegistration.subjectTypesSupported,
+        idTokenSigningAlgValuesSupported: opts.builder.responseRegistration.idTokenSigningAlgValuesSupported,
+        idTokenEncryptionAlgValuesSupported: opts.builder.responseRegistration.idTokenEncryptionAlgValuesSupported,
+        idTokenEncryptionEncValuesSupported: opts.builder.responseRegistration.idTokenEncryptionEncValuesSupported,
+        userinfoSigningAlgValuesSupported: opts.builder.responseRegistration.userinfoSigningAlgValuesSupported,
+        userinfoEncryptionAlgValuesSupported: opts.builder.responseRegistration.userinfoEncryptionAlgValuesSupported,
+        userinfoEncryptionEncValuesSupported: opts.builder.responseRegistration.userinfoEncryptionEncValuesSupported,
+        requestObjectSigningAlgValuesSupported: opts.builder.responseRegistration.requestObjectSigningAlgValuesSupported,
+        requestObjectEncryptionAlgValuesSupported: opts.builder.responseRegistration.requestObjectEncryptionAlgValuesSupported,
+        requestObjectEncryptionEncValuesSupported: opts.builder.responseRegistration.requestObjectEncryptionEncValuesSupported,
+        tokenEndpointAuthMethodsSupported: opts.builder.responseRegistration.tokenEndpointAuthMethodsSupported,
+        tokenEndpointAuthSigningAlgValuesSupported: opts.builder.responseRegistration.tokenEndpointAuthSigningAlgValuesSupported,
+        displayValuesSupported: opts.builder.responseRegistration.displayValuesSupported,
+        claimTypesSupported: opts.builder.responseRegistration.claimTypesSupported,
+        claimsSupported: opts.builder.responseRegistration.claimsSupported,
+        serviceDocumentation: opts.builder.responseRegistration.serviceDocumentation,
+        claimsLocalesSupported: opts.builder.responseRegistration.claimsLocalesSupported,
+        uiLocalesSupported: opts.builder.responseRegistration.uiLocalesSupported,
+        claimsParameterSupported: opts.builder.responseRegistration.claimsParameterSupported,
+        requestParameterSupported: opts.builder.responseRegistration.requestParameterSupported,
+        requestUriParameterSupported: opts.builder.responseRegistration.requestUriParameterSupported,
+        requireRequestUriRegistration: opts.builder.responseRegistration.requireRequestUriRegistration,
+        opPolicyUri: opts.builder.responseRegistration.opPolicyUri,
+        opTosUri: opts.builder.responseRegistration.opTosUri,
+        registrationBy: opts.builder.responseRegistration.registrationBy,
+        subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+        vpFormats: opts.builder.responseRegistration.vpFormats,
+        idTokenTypesSupported: opts.builder.responseRegistration.idTokenTypesSupported,
+        clientName: opts.builder.responseRegistration.clientName,
+        logoUri: opts.builder.responseRegistration.logoUri,
+        clientPurpose: opts.builder.responseRegistration.clientPurpose,
+      },
+      did: opts.builder.signatureType.did,
+      expiresIn: opts.builder.expiresIn,
+      signatureType: opts.builder.signatureType,
+      responseMode: opts.builder.responseMode,
+    };
+
+    const languageTagEnabledFieldsNames = ['clientName', 'clientPurpose'];
+    const languageTaggedFields: Map<string, string> = LanguageTagUtils.getLanguageTaggedProperties(
+      opts.builder.responseRegistration,
+      languageTagEnabledFieldsNames
+    );
+
+    languageTaggedFields.forEach((value: string, key: string) => {
+      responseOpts.registration[key] = value;
+    });
+  } else {
+    responseOpts = {
+      ...opts.responseOpts,
+    };
+  }
 
   const valid = validate(responseOpts);
   if (!valid) {
     throw new Error('OP builder validation error: ' + JSON.stringify(validate.errors));
   }
+
   return responseOpts;
 }
 

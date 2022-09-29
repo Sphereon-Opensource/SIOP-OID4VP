@@ -96,9 +96,9 @@ describe('RP should', () => {
         },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -137,9 +137,9 @@ describe('RP should', () => {
         },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       },
     };
 
@@ -183,8 +183,8 @@ describe('RP should', () => {
       '%22%3A%5B%22EcdsaSecp256k1Signature2019%22%2C%22EcdsaSecp256k1Signature2019%22%5D%7D%7D%2C%22client_name%22%3A%22Client%20Verifier%20R' +
       'elying%20Party%20Sphereon%20B.V.%22%2C%22logo_uri%22%3A%22https%3A%2F%2Fsphereon.com%2Fcontent%2Fthemes%2Fsphereon%2Fassets%2Ffavicons' +
       '%2Fsafari-pinned-tab.svg%22%2C%22client_purpose%22%3A%22To%20request%2C%20receive%20and%20verify%20your%20credential%20about%20the%20t' +
-      'he%20valid%20subject.%22%2C%22client_name%23fr-FR%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%22%2C%22client_purpose' +
-      '%23fr-FR%22%3A%22To%20request%2C%20receive%20and%20verify%20your%20credential%20about%20the%20the%20valid%20subject.%22%7D&request_uri' +
+      'he%20valid%20subject.%22%2C%22client_name%23nl-NL%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%22%2C%22client_purpose' +
+      '%23nl-NL%22%3A%22To%20request%2C%20receive%20and%20verify%20your%20credential%20about%20the%20the%20valid%20subject.%22%7D&request_uri' +
       '=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.ey.*$/;
@@ -237,7 +237,7 @@ describe('RP should', () => {
       '2%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%2C%22client_name%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%2' +
       '2%2C%22logo_uri%22%3A%22https%3A%2F%2Fsphereon.com%2Fcontent%2Fthemes%2Fsphereon%2Fassets%2Ffavicons%2Fsafari-pinned-tab.svg%22%2C%22clie' +
       'nt_purpose%22%3A%22To%20request%2C%20receive%20and%20verify%20your%20credential%20about%20the%20the%20valid%20subject.%22%2C%22client_nam' +
-      'e%23fr-FR%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%22%2C%22client_purpose%23fr-FR%22%3A%22To%20request%2C%20receive%' +
+      'e%23nl-NL%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%22%2C%22client_purpose%23nl-NL%22%3A%22To%20request%2C%20receive%' +
       '20and%20verify%20your%20credential%20about%20the%20the%20valid%20subject.%22%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
 
     const expectedJwtRegex =
@@ -269,9 +269,9 @@ describe('RP should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#fr-FR': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#fr-FR': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addDidMethod('did:ethr')
       .withSupportedVersions([SupportedVersion.SIOPv2_D11])

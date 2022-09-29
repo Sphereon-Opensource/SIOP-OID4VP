@@ -50,8 +50,10 @@ export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): Dis
   languageTagEnabledFieldsNamesMapping.set('clientName', 'client_name');
   languageTagEnabledFieldsNamesMapping.set('clientPurpose', 'client_purpose');
 
-  return {
-    ...discoveryMetadataPayload,
-    ...LanguageTagUtils.getLanguageTaggedPropertiesMapped(opts, languageTagEnabledFieldsNamesMapping),
-  };
+  const languageTaggedFields: Map<string, string> = LanguageTagUtils.getLanguageTaggedPropertiesMapped(opts, languageTagEnabledFieldsNamesMapping);
+  languageTaggedFields.forEach((value: string, key: string) => {
+    discoveryMetadataPayload[key] = value;
+  });
+
+  return discoveryMetadataPayload;
 }

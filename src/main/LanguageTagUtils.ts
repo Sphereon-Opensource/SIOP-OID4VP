@@ -5,21 +5,21 @@ import { SIOPErrors } from './types';
 export default class LanguageTagUtils {
   private static readonly LANGUAGE_TAG_SEPARATOR = '#';
 
-  static getAllLanguageTaggedProperties(source: unknown): any {
+  static getAllLanguageTaggedProperties(source: unknown): Map<string, string> {
     return this.getLanguageTaggedPropertiesMapped(source, undefined);
   }
 
-  static getLanguageTaggedProperties(source: unknown, languageTagEnabledFieldsNames: Array<string>): any {
+  static getLanguageTaggedProperties(source: unknown, languageTagEnabledFieldsNames: Array<string>): Map<string, string> {
     const languageTagEnabledFieldsNamesMapping: Map<string, string> = new Map<string, string>();
     languageTagEnabledFieldsNames.forEach((value) => languageTagEnabledFieldsNamesMapping.set(value, value));
     return this.getLanguageTaggedPropertiesMapped(source, languageTagEnabledFieldsNamesMapping);
   }
 
-  static getLanguageTaggedPropertiesMapped(source: unknown, languageTagEnabledFieldsNamesMapping: Map<string, string>): any {
+  static getLanguageTaggedPropertiesMapped(source: unknown, languageTagEnabledFieldsNamesMapping: Map<string, string>): Map<string, string> {
     this.assertSourceIsWorthChecking(source);
     this.assertValidTargetFieldNames(languageTagEnabledFieldsNamesMapping);
 
-    const discoveredLanguageTaggedFields: unknown = {};
+    const discoveredLanguageTaggedFields: Map<string, string> = new Map<string, string>();
 
     Object.entries(source).forEach(([key, value]) => {
       const languageTagSeparatorIndexInKey = key.indexOf(this.LANGUAGE_TAG_SEPARATOR);
@@ -43,7 +43,7 @@ export default class LanguageTagUtils {
     value: string,
     languageTagSeparatorIndexInKey: number,
     languageTagEnabledFieldsNamesMapping: Map<string, string>,
-    languageTaggedFields: unknown
+    languageTaggedFields: Map<string, string>
   ) {
     const fieldName = this.getFieldName(key, languageTagSeparatorIndexInKey);
 
@@ -51,10 +51,10 @@ export default class LanguageTagUtils {
     if (Tags.check(languageTag)) {
       if (languageTagEnabledFieldsNamesMapping?.size) {
         if (languageTagEnabledFieldsNamesMapping.has(fieldName)) {
-          languageTaggedFields[this.getMappedFieldName(languageTagEnabledFieldsNamesMapping, fieldName, languageTag)] = value;
+          languageTaggedFields.set(this.getMappedFieldName(languageTagEnabledFieldsNamesMapping, fieldName, languageTag), value);
         }
       } else {
-        languageTaggedFields[key] = value;
+        languageTaggedFields.set(key, value);
       }
     }
   }
@@ -101,7 +101,7 @@ export default class LanguageTagUtils {
     return !key || !key.length;
   }
 
-  private static assertSourceIsWorthChecking(source: any) {
+  private static assertSourceIsWorthChecking(source: unknown) {
     if (!source) {
       throw new Error(SIOPErrors.BAD_PARAMS + ' Source must be non-null i.e. not-initialized.');
     }

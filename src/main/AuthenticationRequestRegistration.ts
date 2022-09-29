@@ -75,8 +75,11 @@ function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): 
   languageTagEnabledFieldsNamesMapping.set('clientName', 'client_name');
   languageTagEnabledFieldsNamesMapping.set('clientPurpose', 'client_purpose');
 
-  return {
-    ...rpRegistrationMetadataPayload,
-    ...LanguageTagUtils.getLanguageTaggedPropertiesMapped(opts, languageTagEnabledFieldsNamesMapping),
-  };
+  const languageTaggedFields: Map<string, string> = LanguageTagUtils.getLanguageTaggedPropertiesMapped(opts, languageTagEnabledFieldsNamesMapping);
+
+  languageTaggedFields.forEach((value: string, key: string) => {
+    rpRegistrationMetadataPayload[key] = value;
+  });
+
+  return rpRegistrationMetadataPayload;
 }

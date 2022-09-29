@@ -4,7 +4,7 @@ describe('Language tag util should', () => {
   it('return no lingually tagged fields if there are no lingually tagged fields in the source object', async () => {
     expect.assertions(1);
     const source = { nonLanguageTaggedFieldName: 'value' };
-    expect(LanguageTagUtils.getAllLanguageTaggedProperties(source)).toEqual({});
+    expect(LanguageTagUtils.getAllLanguageTaggedProperties(source)).toEqual(new Map<string, string>());
   });
 
   it('return all lingually tagged fields if there are lingually tagged fields in the source object', async () => {
@@ -14,10 +14,11 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag#nl-NL': 'dutchValue',
       'FieldNameWithLanguageTag#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'FieldNameWithLanguageTag#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag#en-US': 'englishValue',
-    };
+
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('FieldNameWithLanguageTag#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag#en-US', 'englishValue');
+
     const allLanguageTaggedProperties = LanguageTagUtils.getAllLanguageTaggedProperties(source);
     expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
   });
@@ -29,10 +30,11 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag#nl-nl': 'dutchValue',
       'FieldNameWithLanguageTag#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'FieldNameWithLanguageTag#nl-nl': 'dutchValue',
-      'FieldNameWithLanguageTag#en-US': 'englishValue',
-    };
+
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('FieldNameWithLanguageTag#nl-nl', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag#en-US', 'englishValue');
+
     const allLanguageTaggedProperties = LanguageTagUtils.getAllLanguageTaggedProperties(source);
     expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
   });
@@ -43,10 +45,10 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag#nl-NL': 'dutchValue',
       'FieldNameWithLanguageTag#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'FieldNameWithLanguageTag#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag#en-US': 'englishValue',
-    };
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('FieldNameWithLanguageTag#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag#en-US', 'englishValue');
+
     const allLanguageTaggedProperties = LanguageTagUtils.getAllLanguageTaggedProperties(source);
     expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
   });
@@ -57,10 +59,10 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag1#nl-NL': 'dutchValue',
       'FieldNameWithLanguageTag2#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'FieldNameWithLanguageTag1#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag2#en-US': 'englishValue',
-    };
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag2#en-US', 'englishValue');
+
     const allLanguageTaggedProperties = LanguageTagUtils.getAllLanguageTaggedProperties(source);
     expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
   });
@@ -73,12 +75,12 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
       'FieldNameWithLanguageTag2#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'FieldNameWithLanguageTag1#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag1#en-US': 'englishValue',
-      'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag2#en-US': 'englishValue',
-    };
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#en-US', 'englishValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag2#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag2#en-US', 'englishValue');
+
     const allLanguageTaggedProperties = LanguageTagUtils.getAllLanguageTaggedProperties(source);
     expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
   });
@@ -92,12 +94,12 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
       'FieldNameWithLanguageTag2#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'FieldNameWithLanguageTag1#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag1#en-US': 'englishValue',
-      'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag2#en-US': 'englishValue',
-    };
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#en-US', 'englishValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag2#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag2#en-US', 'englishValue');
+
     const allLanguageTaggedProperties = LanguageTagUtils.getAllLanguageTaggedProperties(source);
     expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
   });
@@ -112,12 +114,13 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
       'FieldNameWithLanguageTag2#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'FieldNameWithLanguageTag1#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag1#en-US': 'englishValue',
-      'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag2#en-US': 'englishValue',
-    };
+
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#en-US', 'englishValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag2#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag2#en-US', 'englishValue');
+
     const allLanguageTaggedProperties = LanguageTagUtils.getAllLanguageTaggedProperties(source);
     expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
   });
@@ -129,7 +132,7 @@ describe('Language tag util should', () => {
     };
 
     const allLanguageTaggedProperties = LanguageTagUtils.getAllLanguageTaggedProperties(source);
-    expect(allLanguageTaggedProperties).toEqual({});
+    expect(allLanguageTaggedProperties).toEqual(new Map<string, string>());
   });
 
   it('return non-mapped lingually tagged fields if there are multiple lingually tagged fields in multiple languages in the source object but there are non-lingually tagged fields as well', async () => {
@@ -142,12 +145,12 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
       'FieldNameWithLanguageTag2#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'FieldNameWithLanguageTag1#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag1#en-US': 'englishValue',
-      'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag2#en-US': 'englishValue',
-    };
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#en-US', 'englishValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag2#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag2#en-US', 'englishValue');
+
     const allLanguageTaggedProperties = LanguageTagUtils.getLanguageTaggedProperties(source, [
       'FieldNameWithLanguageTag1',
       'FieldNameWithLanguageTag2',
@@ -165,10 +168,10 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
       'FieldNameWithLanguageTag2#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'FieldNameWithLanguageTag1#nl-NL': 'dutchValue',
-      'FieldNameWithLanguageTag1#en-US': 'englishValue',
-    };
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('FieldNameWithLanguageTag1#en-US', 'englishValue');
+
     const allLanguageTaggedProperties = LanguageTagUtils.getLanguageTaggedProperties(source, ['FieldNameWithLanguageTag1']);
     expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
   });
@@ -183,10 +186,9 @@ describe('Language tag util should', () => {
       'FieldNameWithLanguageTag2#nl-NL': 'dutchValue',
       'FieldNameWithLanguageTag2#en-US': 'englishValue',
     };
-    const expectedTaggedFields = {
-      'field_name_with_Language_tag_1#nl-NL': 'dutchValue',
-      'field_name_with_Language_tag_1#en-US': 'englishValue',
-    };
+    const expectedTaggedFields = new Map<string, string>();
+    expectedTaggedFields.set('field_name_with_Language_tag_1#nl-NL', 'dutchValue');
+    expectedTaggedFields.set('field_name_with_Language_tag_1#en-US', 'englishValue');
 
     const languageTagEnabledFieldsNamesMapping = new Map<string, string>();
     languageTagEnabledFieldsNamesMapping.set('FieldNameWithLanguageTag1', 'field_name_with_Language_tag_1');
@@ -217,7 +219,7 @@ describe('Language tag util should', () => {
 
   it('do not throw error if mapping is null', async () => {
     expect.assertions(1);
-    expect(LanguageTagUtils.getLanguageTaggedPropertiesMapped({}, null)).toEqual({});
+    expect(LanguageTagUtils.getLanguageTaggedPropertiesMapped({}, null)).toEqual(new Map<string, string>());
   });
 
   it('throw error if mapping is given but not effective', async () => {

@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation, W3CVerifiableCredential } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
@@ -50,7 +52,11 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   // nonce: string;
   // did_doc?: DIDDocument;
   /**
-   * Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if ID token returned based on the comparison of the iss and sub claims values (see(see Section 12.1). In order to preserve compatibility with existing OpenID Connect deployments, the OP MAY return an ID token that does not fulfill the requirements as expressed in this parameter. So the RP SHOULD be prepared to reliably handle such an outcome.
+   * Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed
+   * individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if
+   * ID token returned based on the comparison of the iss and subclaims values (see Section 12.1). In order to preserve compatibility with
+   * existing OpenID Connect deployments, the OP MAY return an ID token that does not fulfill the requirements as expressed in this parameter. So the
+   * RP SHOULD be prepared to reliably handle such an outcome.
    */
   id_token_type?: string;
 }
