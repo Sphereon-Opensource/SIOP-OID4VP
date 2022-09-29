@@ -17,6 +17,8 @@ import {
   SubjectType,
 } from '../../src/main';
 
+export const UNIT_TEST_TIMEOUT: number = 30000;
+
 export const DIDAUTH_HEADER: JWTHeader = {
   typ: 'JWT',
   alg: 'ES256K',

@@ -24,7 +24,7 @@ import {
 } from '../src/main';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
-import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+import { UNIT_TEST_TIMEOUT, VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
 
 jest.setTimeout(30000);
 
@@ -188,7 +188,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
-  }, 10000);
+  }, UNIT_TEST_TIMEOUT);
 
   it('succeed when calling optional steps in the full flow', async () => {
     // expect.assertions(1);
@@ -573,7 +573,7 @@ describe('RP and OP interaction should', () => {
         audience: EXAMPLE_REDIRECT_URL,
       })
     ).rejects.toThrow(new Error(WDCErrors.PROPERTY_SERVICE_NOT_PRESENT));
-  }, 10000);
+  }, UNIT_TEST_TIMEOUT);
 
   it('succeed when calling with CheckLinkedDomain.ALWAYS', async () => {
     const rpMockEntity = {
@@ -804,7 +804,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
-  }, 10000);
+  }, UNIT_TEST_TIMEOUT);
 
   it('succeed when calling with RevocationVerification.ALWAYS with ldp_vp', async () => {
     const rpMockEntity = {

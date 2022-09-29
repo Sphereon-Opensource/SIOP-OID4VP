@@ -25,7 +25,7 @@ import {
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
-import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+import { UNIT_TEST_TIMEOUT, VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
 
 jest.setTimeout(30000);
 
@@ -244,7 +244,7 @@ describe('create JWT from Request JWT should', () => {
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
     console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
     await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
-  }, 10000);
+  }, UNIT_TEST_TIMEOUT);
 
   it('succeed when valid JWT with PD is passed in', async () => {
     expect.assertions(1);

@@ -23,7 +23,7 @@ import {
 } from '../src/main';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
-import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+import { UNIT_TEST_TIMEOUT, VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -166,7 +166,7 @@ describe('OP should', () => {
       controller: `${mockEntity.did}`,
     });
     expect(verifiedRequest.jwt).toBeDefined();
-  });
+  }, UNIT_TEST_TIMEOUT);
 
   it('succeed from builder when all params are set', async () => {
     const rpMockEntity = await mockedGetEnterpriseAuthToken('ACME RP');

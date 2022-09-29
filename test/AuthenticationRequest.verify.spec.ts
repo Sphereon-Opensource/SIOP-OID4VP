@@ -25,7 +25,7 @@ import {
 import SIOPErrors from '../src/main/types/Errors';
 
 import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
-import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+import { UNIT_TEST_TIMEOUT, VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -91,7 +91,7 @@ describe('SIOP Request Validation', () => {
       verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     };
     await expect(AuthenticationRequest.verifyJWT(jwt, optsVerify)).resolves.toBeDefined();
-  });
+  }, UNIT_TEST_TIMEOUT);
 });
 
 describe('verifyJWT should', () => {
@@ -220,7 +220,7 @@ describe('verifyJWT should', () => {
 
     const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);
     expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
-  });
+  }, UNIT_TEST_TIMEOUT);
 });
 
 describe('OP and RP communication should', () => {

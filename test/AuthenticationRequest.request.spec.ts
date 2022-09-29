@@ -68,7 +68,7 @@ describe('create Request Uri should', () => {
   });
 
   it('return a reference url', async () => {
-    expect.assertions(11);
+    expect.assertions(13);
     const opts: AuthenticationRequestOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -109,7 +109,8 @@ describe('create Request Uri should', () => {
     expect(uriRequest).toBeDefined();
     expect(uriRequest).toHaveProperty('encodedUri');
     expect(uriRequest).toHaveProperty('encodingFormat');
-    expect(uriRequest).toHaveProperty('clientPurpose#fr-FR');
+    expect(uriRequest).toHaveProperty('jwt');
+    expect(uriRequest.jwt).toBeDefined();
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`openid://`);
@@ -117,13 +118,11 @@ describe('create Request Uri should', () => {
     expect(uriDecoded).toContain(`&redirect_uri=${opts.redirectUri}`);
     expect(uriDecoded).toContain(`&scope=${Scope.OPENID}`);
     expect(uriDecoded).toContain(`&request_uri=`);
-    expect(uriDecoded).toContain(`clientPurpose#fr-FR=`);
+    expect(uriDecoded).toContain(`client_purpose#fr-FR`);
 
     const data = parse(uriDecoded);
     expect(data.request_uri).toStrictEqual(opts.requestBy.referenceUri);
-    expect('').toStrictEqual(opts.registration['clientPurpose#fr-FR']);
-    expect(uriRequest).toHaveProperty('jwt');
-    expect(uriRequest.jwt).toBeDefined();
+    expect(data.registration).toContain('client_purpose#fr-FR');
   });
 
   it('return a reference url when using did:key', async () => {
