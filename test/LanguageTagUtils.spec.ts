@@ -22,6 +22,21 @@ describe('Language tag util should', () => {
     expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
   });
 
+  it('return all lingually tagged fields regardless of capitalization if there are lingually tagged fields in the source object', async () => {
+    expect.assertions(1);
+    const source = {
+      'FieldNameWithoutLanguageTag': 'value',
+      'FieldNameWithLanguageTag#nl-nl': 'dutchValue',
+      'FieldNameWithLanguageTag#en-US': 'englishValue',
+    };
+    const expectedTaggedFields = {
+      'FieldNameWithLanguageTag#nl-nl': 'dutchValue',
+      'FieldNameWithLanguageTag#en-US': 'englishValue',
+    };
+    const allLanguageTaggedProperties = LanguageTagUtils.getAllLanguageTaggedProperties(source);
+    expect(allLanguageTaggedProperties).toEqual(expectedTaggedFields);
+  });
+
   it('return all lingually tagged fields if there are only lingually tagged fields in the source object', async () => {
     expect.assertions(1);
     const source = {
