@@ -25,7 +25,14 @@ import {
 import SIOPErrors from '../src/main/types/Errors';
 
 import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
-import { UNIT_TEST_TIMEOUT, VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+import {
+  UNIT_TEST_TIMEOUT,
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -69,9 +76,11 @@ describe('SIOP Request Validation', () => {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
             },
           },
-          client_name: VERIFIER_NAME_FOR_CLIENT,
           logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+          client_name: VERIFIER_NAME_FOR_CLIENT,
+          'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
           client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
         /*registration: {
           jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did}`,
@@ -148,9 +157,9 @@ describe('verifyJWT should', () => {
         },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
 
@@ -206,9 +215,9 @@ describe('verifyJWT should', () => {
           registrationBy: { type: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
       };
       const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
@@ -233,8 +242,8 @@ describe('verifyJWT should', () => {
 
 describe('OP and RP communication should', () => {
   it('work if both support the same did methods', () => {
-    metadata.verify();
-    expect(metadata.verify()).toEqual({
+    let actualResult = metadata.verify();
+    const expectedResult = {
       vp_formats: {
         jwt_vc: { alg: [SigningAlgo.ES256, SigningAlgo.ES256K] },
         ldp_vc: {
@@ -242,7 +251,8 @@ describe('OP and RP communication should', () => {
         },
       },
       subject_syntax_types_supported: ['did:web'],
-    });
+    };
+    expect(actualResult).toEqual(expectedResult);
   });
 
   it('work if RP supports any OP did methods', () => {
@@ -258,6 +268,11 @@ describe('OP and RP communication should', () => {
         ldp_vc: {
           proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
         },
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+        client_name: VERIFIER_NAME_FOR_CLIENT,
+        'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     });
   });

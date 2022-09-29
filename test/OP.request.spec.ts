@@ -23,7 +23,14 @@ import {
 } from '../src/main';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
-import { UNIT_TEST_TIMEOUT, VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+import {
+  UNIT_TEST_TIMEOUT,
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -48,9 +55,11 @@ describe('OP Builder should', () => {
         .response(ResponseMode.POST)
         .registrationBy({
           registrationBy: { type: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
-          clientName: VERIFIER_NAME_FOR_CLIENT,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
         .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
         .withExpiresIn(1000)
@@ -78,9 +87,11 @@ describe('OP should', () => {
           proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
         },
       },
-      clientName: VERIFIER_NAME_FOR_CLIENT,
       logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      clientName: VERIFIER_NAME_FOR_CLIENT,
+      'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
       clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       //TODO: fill it up with actual value
       issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
@@ -148,9 +159,9 @@ describe('OP should', () => {
           },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
       };
 
@@ -194,9 +205,9 @@ describe('OP should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
       .withSupportedVersions(['SIOPv2_ID1'])
       .build()
@@ -223,9 +234,9 @@ describe('OP should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .build()

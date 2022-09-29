@@ -17,7 +17,13 @@ import {
   SupportedVersion,
 } from '../src/main';
 
-import { VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+import {
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -47,9 +53,11 @@ describe('RP Builder should', () => {
             type: PassBy.REFERENCE,
             referenceUri: 'https://registration.here',
           },
-          clientName: VERIFIER_NAME_FOR_CLIENT,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
 
         .internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
@@ -96,9 +104,9 @@ describe('RP should', () => {
         },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
 
@@ -135,11 +143,11 @@ describe('RP should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
-        clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
-        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 00',
+        clientName: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 00',
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 00',
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY + ' 2022-09-29 00',
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 00',
       },
     };
 
@@ -168,6 +176,11 @@ describe('RP should', () => {
             alg: ['EdDSA', 'ES256K', 'ES256'],
           },
         },
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 00',
+        client_name: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 00',
+        'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 00',
+        client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY + ' 2022-09-29 00',
+        'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 00',
       },
     };
 
@@ -223,22 +236,41 @@ describe('RP should', () => {
             alg: ['EdDSA', 'ES256K', 'ES256'],
           },
         },
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 01',
+        client_name: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 01',
+        'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 01',
+        client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY + ' 2022-09-29 01',
+        'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 01',
       },
     };
 
     const expectedUri =
-      'openid://?response_type=id_token&scope=openid&client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&redirect_uri=https%3A%2F%2F' +
-      'acme.com%2Fhello&iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&response_mode=post&response_context=rp&nonce=qBrR7mqnY3Qr49d' +
-      'AZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f&registration=%7B%22id_token_signing_alg_values_supported%22%3A%5B%22EdDSA%22%' +
-      '5D%2C%22request_object_signing_alg_values_supported%22%3A%5B%22EdDSA%22%2C%22ES256%22%5D%2C%22response_types_supported%22%3A%5B%22id_toke' +
-      'n%22%5D%2C%22scopes_supported%22%3A%5B%22openid%20did_authn%22%2C%22openid%22%5D%2C%22subject_types_supported%22%3A%5B%22pairwise%22%5D%2' +
-      'C%22subject_syntax_types_supported%22%3A%5B%22did%3Aethr%22%5D%2C%22vp_formats%22%3A%7B%22jwt%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES2' +
-      '56K%22%2C%22ES256%22%5D%7D%2C%22jwt_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22jwt_vp%22%3A%7B%22alg%2' +
-      '2%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%2C%22client_name%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%2' +
-      '2%2C%22logo_uri%22%3A%22https%3A%2F%2Fsphereon.com%2Fcontent%2Fthemes%2Fsphereon%2Fassets%2Ffavicons%2Fsafari-pinned-tab.svg%22%2C%22clie' +
-      'nt_purpose%22%3A%22To%20request%2C%20receive%20and%20verify%20your%20credential%20about%20the%20the%20valid%20subject.%22%2C%22client_nam' +
-      'e%23nl-NL%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%22%2C%22client_purpose%23nl-NL%22%3A%22To%20request%2C%20receive%' +
-      '20and%20verify%20your%20credential%20about%20the%20the%20valid%20subject.%22%7D&request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
+      'openid://?' +
+      'response_type=id_token&' +
+      'scope=openid&' +
+      'client_id=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&' +
+      'redirect_uri=https%3A%2F%2Facme.com%2Fhello&' +
+      'iss=did%3Aethr%3A0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0&' +
+      'response_mode=post&' +
+      'response_context=rp&' +
+      'nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&' +
+      'state=b32f0087fc9816eb813fd11f&' +
+      'registration=%7B%22' +
+      'id_token_signing_alg_values_supported%22%3A%5B%22EdDSA%22%5D%2C%22' +
+      'request_object_signing_alg_values_supported%22%3A%5B%22EdDSA%22%2C%22ES256%22%5D%2C%22' +
+      'response_types_supported%22%3A%5B%22' +
+      'id_token%22%5D%2C%22' +
+      'scopes_supported%22%3A%5B%22openid%20did_authn%22%2C%22openid%22%5D%2C%22' +
+      'subject_types_supported%22%3A%5B%22pairwise%22%5D%2C%22' +
+      'subject_syntax_types_supported%22%3A%5B%22did%3Aethr%22%5D%2C%22' +
+      'vp_formats%22%3A%7B%22jwt%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22' +
+      'jwt_vc%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%2C%22' +
+      'jwt_vp%22%3A%7B%22alg%22%3A%5B%22EdDSA%22%2C%22ES256K%22%2C%22ES256%22%5D%7D%7D%2C' +
+      '%22client_name%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%22%2C%22logo_uri%22%3A%22https%3A%2F%2Fsphereon.com%2Fcontent%2Fthemes%2Fsphereon%2Fassets%2Ffavicons%2Fsafari-pinned-tab.svg%22%2C%22' +
+      'client_purpose%22%3A%22To%20request%2C%20receive%20and%20verify%20your%20credential%20about%20the%20the%20valid%20subject.%22%2C' +
+      '%22client_name%23nl-NL%22%3A%22Client%20Verifier%20Relying%20Party%20Sphereon%20B.V.%22%2C' +
+      '%22client_purpose%23nl-NL%22%3A%22To%20request%2C%20receive%20and%20verify%20your%20credential%20about%20the%20the%20valid%20subject.%22%7D&' +
+      'request_uri=https%3A%2F%2Frp.acme.com%2Fsiop%2Fjwts';
 
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
@@ -267,11 +299,11 @@ describe('RP should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
         registrationBy: { type: PassBy.VALUE },
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
-        clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
-        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 01',
+        clientName: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 01',
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 01',
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY + ' 2022-09-29 01',
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 01',
       })
       .addDidMethod('did:ethr')
       .withSupportedVersions([SupportedVersion.SIOPv2_D11])

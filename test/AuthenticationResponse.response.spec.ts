@@ -25,7 +25,14 @@ import {
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
-import { UNIT_TEST_TIMEOUT, VERIFIER_LOGO_FOR_CLIENT, VERIFIER_NAME_FOR_CLIENT, VERIFIERZ_PURPOSE_TO_VERIFY } from './data/mockedData';
+import {
+  UNIT_TEST_TIMEOUT,
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
 
 jest.setTimeout(30000);
 
@@ -57,9 +64,11 @@ describe('create JWT from Request JWT should', () => {
         type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
-      clientName: VERIFIER_NAME_FOR_CLIENT,
       logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      clientName: VERIFIER_NAME_FOR_CLIENT,
+      'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
       clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
     },
     signatureType: {
       did: DID,
@@ -125,9 +134,9 @@ describe('create JWT from Request JWT should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
@@ -150,9 +159,9 @@ describe('create JWT from Request JWT should', () => {
         },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       signatureType: {
         did: mockResEntity.did,
@@ -205,9 +214,9 @@ describe('create JWT from Request JWT should', () => {
           registrationBy: { type: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
       };
       const responseOpts: AuthenticationResponseOpts = {
@@ -230,9 +239,9 @@ describe('create JWT from Request JWT should', () => {
           },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
         signatureType: {
           did: mockResEntity.did,
@@ -305,9 +314,9 @@ describe('create JWT from Request JWT should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
         presentationDefinitions: [
@@ -379,9 +388,9 @@ describe('create JWT from Request JWT should', () => {
         },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       signatureType: {
         did: mockResEntity.did,
