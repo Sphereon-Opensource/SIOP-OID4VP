@@ -242,7 +242,7 @@ describe('verifyJWT should', () => {
 
 describe('OP and RP communication should', () => {
   it('work if both support the same did methods', () => {
-    let actualResult = metadata.verify();
+    const actualResult = metadata.verify();
     const expectedResult = {
       vp_formats: {
         jwt_vc: { alg: [SigningAlgo.ES256, SigningAlgo.ES256K] },
@@ -267,7 +267,7 @@ describe('OP and RP communication should', () => {
       vp_formats: {
         ldp_vc: {
           proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
-        }
+        },
       },
     });
   });
