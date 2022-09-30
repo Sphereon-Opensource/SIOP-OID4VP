@@ -197,6 +197,8 @@ describe('RP and OP interaction should', () => {
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
       expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
       expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+      expect(verifiedAuthResponseWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
+      expect(verifiedAuthResponseWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL);
     },
     UNIT_TEST_TIMEOUT
   );
@@ -290,6 +292,9 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+    expect(verifiedAuthResponseWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
+    expect(verifiedAuthResponseWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL);
+
   });
 
   it('fail when calling with presentation definitions and without verifiable presentation', async () => {
@@ -376,6 +381,10 @@ describe('RP and OP interaction should', () => {
     await expect(op.createAuthenticationResponse(verifiedAuthReqWithJWT)).rejects.toThrow(
       Error('authentication request expects a verifiable presentation in the response')
     );
+
+    expect(verifiedAuthReqWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
+    expect(verifiedAuthReqWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL);
+
   });
 
   it('succeed when calling with presentation definitions and right verifiable presentation', async () => {
