@@ -26,7 +26,15 @@ import {
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
+import {
+  DID_DOCUMENT_PUBKEY_B58,
+  DID_DOCUMENT_PUBKEY_JWK,
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
 
 export interface TESTKEY {
   key: JWK;
@@ -241,6 +249,11 @@ export const metadata: {
         alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
       },
     },
+    logo_uri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 02',
+    client_name: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 02',
+    'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 02',
+    client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY + ' 2022-09-29 02',
+    'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 02',
   },
   rpMetadata: {
     id_token_signing_alg_values_supported: [],
@@ -257,6 +270,11 @@ export const metadata: {
         alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
       },
     },
+    logo_uri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 03',
+    client_name: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 03',
+    'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 03',
+    client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY + ' 2022-09-29 03',
+    'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 03',
   },
   verify() {
     return assertValidMetadata(this.opMetadata, this.rpMetadata);

@@ -28,6 +28,7 @@ export class PresentationExchange {
    * Construct presentation submission from selected credentials
    * @param presentationDefinition: payload object received by the OP from the RP
    * @param selectedCredentials
+   * @param options
    */
   public async submissionFrom(
     presentationDefinition: IPresentationDefinition,
@@ -214,8 +215,8 @@ export class PresentationExchange {
   }
 
   private static async validatePayloadAgainstDefinitions(definition: IPresentationDefinition, vpPayloads: VerifiablePresentationPayload[]) {
-    function filterValidPresentations() {
-      const checkedPresentations: VerifiablePresentationPayload[] = vpPayloads.filter((vpw: VerifiablePresentationPayload) => {
+    function filterValidPresentations(): VerifiablePresentationPayload[] {
+      return vpPayloads.filter((vpw: VerifiablePresentationPayload) => {
         const presentation = vpw.presentation;
         // fixme: Limited disclosure suites
         const evaluationResults = new PEX().evaluatePresentation(definition, presentation, []);
@@ -225,7 +226,6 @@ export class PresentationExchange {
         }
         return submission && submission.definition_id === definition.id;
       });
-      return checkedPresentations;
     }
 
     const checkedPresentations: VerifiablePresentationPayload[] = filterValidPresentations();

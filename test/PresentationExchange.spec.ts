@@ -23,6 +23,13 @@ import {
 import { SIOPErrors } from '../src/main/types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import {
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
 
 const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
 const EXAMPLE_PD_URL = 'http://my_own_pd.com/pd/';
@@ -57,6 +64,11 @@ async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
           alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
         },
       },
+      logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+      client_name: VERIFIER_NAME_FOR_CLIENT,
+      'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+      client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
     },
     claims: {
       id_token: {
@@ -129,6 +141,11 @@ async function getPayloadPdRef(): Promise<AuthenticationRequestPayload> {
           alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
         },
       },
+      logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+      client_name: VERIFIER_NAME_FOR_CLIENT,
+      'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+      client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
     },
     claims: {
       id_token: {

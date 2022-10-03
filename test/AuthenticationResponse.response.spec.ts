@@ -25,6 +25,14 @@ import {
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import {
+  UNIT_TEST_TIMEOUT,
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
 
 jest.setTimeout(30000);
 
@@ -56,6 +64,11 @@ describe('create JWT from Request JWT should', () => {
         type: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
+      logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      clientName: VERIFIER_NAME_FOR_CLIENT,
+      'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+      clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
     },
     signatureType: {
       did: DID,
@@ -119,6 +132,11 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         registrationBy: { type: PassBy.VALUE },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
     const responseOpts: AuthenticationResponseOpts = {
@@ -139,6 +157,11 @@ describe('create JWT from Request JWT should', () => {
           type: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
         },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       signatureType: {
         did: mockResEntity.did,
@@ -160,67 +183,81 @@ describe('create JWT from Request JWT should', () => {
     );
   });
 
-  it('succeed when valid JWT is passed in', async () => {
-    expect.assertions(1);
+  it(
+    'succeed when valid JWT is passed in',
+    async () => {
+      expect.assertions(1);
 
-    const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
-    const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-    const requestOpts: AuthenticationRequestOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
-      signatureType: {
-        hexPrivateKey: mockReqEntity.hexPrivateKey,
-        did: mockReqEntity.did,
-        kid: `${mockReqEntity.did}#controller`,
-      },
-      registration: {
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        responseTypesSupported: [ResponseType.ID_TOKEN],
-        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-        subjectTypesSupported: [SubjectType.PAIRWISE],
-        vpFormatsSupported: {
-          ldp_vc: {
-            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+      const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
+      const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
+      const requestOpts: AuthenticationRequestOpts = {
+        checkLinkedDomain: CheckLinkedDomain.NEVER,
+        redirectUri: EXAMPLE_REDIRECT_URL,
+        requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+        signatureType: {
+          hexPrivateKey: mockReqEntity.hexPrivateKey,
+          did: mockReqEntity.did,
+          kid: `${mockReqEntity.did}#controller`,
+        },
+        registration: {
+          idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+          requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          responseTypesSupported: [ResponseType.ID_TOKEN],
+          scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+          subjectTypesSupported: [SubjectType.PAIRWISE],
+          vpFormatsSupported: {
+            ldp_vc: {
+              proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+            },
           },
+          registrationBy: { type: PassBy.VALUE },
+          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+          clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
-        registrationBy: { type: PassBy.VALUE },
-      },
-    };
-    const responseOpts: AuthenticationResponseOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      registration: {
-        authorizationEndpoint: 'www.myauthorizationendpoint.com',
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        issuer: ResponseIss.SELF_ISSUED_V2,
-        responseTypesSupported: [ResponseType.ID_TOKEN],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
-        vpFormats: {
-          ldp_vc: {
-            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+      };
+      const responseOpts: AuthenticationResponseOpts = {
+        checkLinkedDomain: CheckLinkedDomain.NEVER,
+        redirectUri: EXAMPLE_REDIRECT_URL,
+        registration: {
+          authorizationEndpoint: 'www.myauthorizationendpoint.com',
+          idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          issuer: ResponseIss.SELF_ISSUED_V2,
+          responseTypesSupported: [ResponseType.ID_TOKEN],
+          subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+          vpFormats: {
+            ldp_vc: {
+              proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+            },
           },
+          registrationBy: {
+            type: PassBy.REFERENCE,
+            referenceUri: EXAMPLE_REFERENCE_URL,
+          },
+          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+          clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
-        registrationBy: {
-          type: PassBy.REFERENCE,
-          referenceUri: EXAMPLE_REFERENCE_URL,
+        signatureType: {
+          did: mockResEntity.did,
+          hexPrivateKey: mockResEntity.hexPrivateKey,
+          kid: `${mockResEntity.did}#controller`,
         },
-      },
-      signatureType: {
-        did: mockResEntity.did,
-        hexPrivateKey: mockResEntity.hexPrivateKey,
-        kid: `${mockResEntity.did}#controller`,
-      },
-      did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
-      responseMode: ResponseMode.POST,
-    };
+        did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
+        responseMode: ResponseMode.POST,
+      };
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-    console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
-  }, 10000);
+      const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+      console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
+      await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
+    },
+    UNIT_TEST_TIMEOUT
+  );
 
   it('succeed when valid JWT with PD is passed in', async () => {
     expect.assertions(1);
@@ -275,6 +312,11 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         registrationBy: { type: PassBy.VALUE },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
         presentationDefinitions: [
@@ -344,6 +386,11 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       signatureType: {
         did: mockResEntity.did,
