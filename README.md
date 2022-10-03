@@ -14,6 +14,7 @@ as specified in the OpenID Connect working group.
 
 ## Introduction
 
+
 SIOP v2 is an extension of OpenID Connect to allow End-users to act as OpenID Providers (OPs) themselves. Using
 Self-Issued OPs, End-users can authenticate themselves and present claims directly to the Relying Parties (RPs),
 typically a webapp, without relying on a third-party Identity Provider. This makes the solution fully self sovereign, as
