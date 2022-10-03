@@ -39,7 +39,7 @@ export function decodeUriAsJson(uri: string) {
   return json;
 }
 
-export function encodeJsonAsURI(json) {
+export function encodeJsonAsURI(json: unknown) {
   if (typeof json === 'string') {
     return encodeJsonAsURI(JSON.parse(json));
   }

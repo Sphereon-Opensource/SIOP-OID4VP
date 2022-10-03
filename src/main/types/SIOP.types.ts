@@ -252,6 +252,7 @@ export interface DiscoveryMetadataOpts {
   clientName?: string;
   logoUri?: string;
   clientPurpose?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 
   // didsSupported?: boolean;
@@ -335,7 +336,7 @@ export interface DiscoveryMetadataPayload {
   // credential_formats_supported: CredentialFormat[] | CredentialFormat;
   // credential_claims_supported: string[] | string;
   // credential_name: string;
-  // slint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
 
@@ -367,6 +368,7 @@ export interface RPRegistrationMetadataOpts {
   clientName?: string;
   logoUri?: string;
   clientPurpose?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
 
@@ -382,6 +384,7 @@ export interface RPRegistrationMetadataPayload {
   client_name?: string;
   logo_uri?: string;
   client_purpose?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
 
