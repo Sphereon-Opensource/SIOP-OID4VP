@@ -1,8 +1,10 @@
 import Tags from 'language-tags';
 
-import { SIOPErrors } from './types';
+import { SIOPErrors } from '../types';
 
-export default class LanguageTagUtils {
+import { isStringNullOrEmpty } from './ObjectUtils';
+
+export class LanguageTagUtils {
   private static readonly LANGUAGE_TAG_SEPARATOR = '#';
 
   /**
@@ -108,16 +110,12 @@ export default class LanguageTagUtils {
         for (const entry of languageTagEnabledFieldsNamesMapping.entries()) {
           const key = entry[0];
           const value = entry[1];
-          if (this.isStringNullOrEmpty(key) || this.isStringNullOrEmpty(value)) {
+          if (isStringNullOrEmpty(key) || isStringNullOrEmpty(value)) {
             throw new Error(SIOPErrors.BAD_PARAMS + '. languageTagEnabledFieldsName must be non-null or non-empty');
           }
         }
       }
     }
-  }
-
-  private static isStringNullOrEmpty(key: string) {
-    return !key || !key.length;
   }
 
   private static assertSourceIsWorthChecking(source: unknown) {

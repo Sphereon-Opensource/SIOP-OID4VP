@@ -1,7 +1,6 @@
 import Ajv from 'ajv';
 
-import LanguageTagUtils from './LanguageTagUtils';
-import { getWithUrl } from './functions';
+import { getWithUrl, LanguageTagUtils } from './functions';
 import { RPRegistrationMetadataPayloadSchema } from './schemas';
 import {
   PassBy,

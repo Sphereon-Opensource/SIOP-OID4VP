@@ -8,7 +8,6 @@ import { RP } from './RP';
 import RPBuilder from './RPBuilder';
 export * from './functions';
 export * from './types';
-export * from './LanguageTagUtils';
 
 export { JWTHeader, JWTPayload, JWTOptions, JWTVerifyOptions } from 'did-jwt';
 export { AuthenticationRequest, AuthenticationResponse, OP, OPBuilder, PresentationExchange, RP, RPBuilder, RPRegistrationMetadata };

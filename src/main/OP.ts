@@ -5,8 +5,8 @@ import { Resolvable } from 'did-resolver';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
-import LanguageTagUtils from './LanguageTagUtils';
 import OPBuilder from './OPBuilder';
+import { LanguageTagUtils } from './functions';
 import { getResolverUnion, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
