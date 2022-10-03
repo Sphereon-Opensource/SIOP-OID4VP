@@ -214,8 +214,8 @@ export class PresentationExchange {
     await Promise.all(definitions.map(async (pd) => await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads)));
   }
 
-  private static async validatePayloadAgainstDefinitions(definition: IPresentationDefinition, vpPayloads: VerifiablePresentationPayload[]): VerifiablePresentationPayload[] {
-    function filterValidPresentations() {
+  private static async validatePayloadAgainstDefinitions(definition: IPresentationDefinition, vpPayloads: VerifiablePresentationPayload[]) {
+    function filterValidPresentations(): VerifiablePresentationPayload[] {
       return vpPayloads.filter((vpw: VerifiablePresentationPayload) => {
         const presentation = vpw.presentation;
         // fixme: Limited disclosure suites
