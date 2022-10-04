@@ -243,6 +243,8 @@ export class PresentationExchange {
           } catch (error: unknown) {
             throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID);
           }
+        } else {
+          throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_VERIFICATION_FUNCTION_MISSING);
         }
         // fixme: Limited disclosure suites
         const evaluationResults = new PEX().evaluatePresentation(definition, presentation, []);
