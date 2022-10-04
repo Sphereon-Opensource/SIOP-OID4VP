@@ -125,10 +125,10 @@ describe('RP and OP interaction should', () => {
       const rpMockEntity = await mockedGetEnterpriseAuthToken('ACME RP');
       const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const verifyCallback: VerifyCallback = async (_args) => ({ verified: true });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const verifyCallback: VerifyCallback = async (_args) => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
         .redirect(EXAMPLE_REDIRECT_URL)
@@ -519,14 +519,14 @@ describe('RP and OP interaction should', () => {
         didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
       };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
-      .withPresentationVerification(presentationVerificationCallback)
+        .withPresentationVerification(presentationVerificationCallback)
         .addVerifyCallback(verifyCallback)
         .redirect(EXAMPLE_REDIRECT_URL)
         .requestBy(PassBy.VALUE)
@@ -755,14 +755,14 @@ describe('RP and OP interaction should', () => {
         didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
       };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
-      .withPresentationVerification(presentationVerificationCallback)
+        .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
         .addVerifyCallback(verifyCallback)
         .redirect(EXAMPLE_REDIRECT_URL)

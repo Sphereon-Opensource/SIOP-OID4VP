@@ -238,8 +238,9 @@ export class PresentationExchange {
       return vpPayloads.filter(async (vpw: VerifiablePresentationPayload) => {
         const presentation = vpw.presentation;
         if (verifyPresentationCallback) {
-          const result = await verifyPresentationCallback({ ...vpw });
-          if (!result.verified) {
+          try {
+            await verifyPresentationCallback({ ...vpw });
+          } catch (error: unknown) {
             throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID);
           }
         }
