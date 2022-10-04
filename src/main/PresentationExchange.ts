@@ -35,6 +35,7 @@ export class PresentationExchange {
    * Construct presentation submission from selected credentials
    * @param presentationDefinition: payload object received by the OP from the RP
    * @param selectedCredentials
+   * @param options
    */
   public async submissionFrom(
     presentationDefinition: IPresentationDefinition,

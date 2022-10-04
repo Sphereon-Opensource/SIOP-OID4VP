@@ -367,6 +367,15 @@ export const DiscoveryMetadataPayloadSchema = {
         },
         "vp_formats": {
           "$ref": "#/definitions/Format"
+        },
+        "client_name": {
+          "type": "string"
+        },
+        "logo_uri": {
+          "type": "string"
+        },
+        "client_purpose": {
+          "type": "string"
         }
       },
       "required": [
@@ -378,8 +387,7 @@ export const DiscoveryMetadataPayloadSchema = {
         "subject_types_supported",
         "subject_syntax_types_supported",
         "vp_formats"
-      ],
-      "additionalProperties": false
+      ]
     },
     "AuthenticationContextReferences": {
       "type": "string",

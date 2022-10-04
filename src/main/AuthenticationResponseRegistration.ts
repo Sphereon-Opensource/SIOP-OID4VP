@@ -1,7 +1,8 @@
+import { LanguageTagUtils } from './functions';
 import { DiscoveryMetadataOpts, DiscoveryMetadataPayload, ResponseIss, ResponseType, Schema, Scope, SigningAlgo, SubjectType } from './types';
 
 export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): DiscoveryMetadataPayload {
-  return {
+  const discoveryMetadataPayload: DiscoveryMetadataPayload = {
     subject_syntax_types_supported: [],
     issuer: ResponseIss.SELF_ISSUED_V2,
     authorization_endpoint: opts.authorizationEndpoint || Schema.OPENID,
@@ -40,5 +41,19 @@ export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): Dis
     op_tos_uri: opts.opTosUri,
     id_token_types_supported: opts.idTokenTypesSupported,
     vp_formats: opts.vpFormats,
+    client_name: opts.clientName,
+    logo_uri: opts.logoUri,
+    client_purpose: opts.clientPurpose,
   };
+
+  const languageTagEnabledFieldsNamesMapping = new Map<string, string>();
+  languageTagEnabledFieldsNamesMapping.set('clientName', 'client_name');
+  languageTagEnabledFieldsNamesMapping.set('clientPurpose', 'client_purpose');
+
+  const languageTaggedFields: Map<string, string> = LanguageTagUtils.getLanguageTaggedPropertiesMapped(opts, languageTagEnabledFieldsNamesMapping);
+  languageTaggedFields.forEach((value: string, key: string) => {
+    discoveryMetadataPayload[key] = value;
+  });
+
+  return discoveryMetadataPayload;
 }
