@@ -49,6 +49,15 @@ export const RPRegistrationMetadataPayloadSchema = {
         },
         "vp_formats": {
           "$ref": "#/definitions/Format"
+        },
+        "client_name": {
+          "type": "string"
+        },
+        "logo_uri": {
+          "type": "string"
+        },
+        "client_purpose": {
+          "type": "string"
         }
       },
       "required": [
@@ -59,8 +68,7 @@ export const RPRegistrationMetadataPayloadSchema = {
         "subject_syntax_types_supported",
         "subject_types_supported",
         "vp_formats"
-      ],
-      "additionalProperties": false
+      ]
     },
     "SigningAlgo": {
       "type": "string",

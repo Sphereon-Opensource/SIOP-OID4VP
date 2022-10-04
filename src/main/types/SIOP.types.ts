@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation, W3CVerifiableCredential } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
@@ -50,7 +52,11 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   // nonce: string;
   // did_doc?: DIDDocument;
   /**
-   * Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if ID token returned based on the comparison of the iss and sub claims values (see(see Section 12.1). In order to preserve compatibility with existing OpenID Connect deployments, the OP MAY return an ID token that does not fulfill the requirements as expressed in this parameter. So the RP SHOULD be prepared to reliably handle such an outcome.
+   * Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed
+   * individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if
+   * ID token returned based on the comparison of the iss and subclaims values (see Section 12.1). In order to preserve compatibility with
+   * existing OpenID Connect deployments, the OP MAY return an ID token that does not fulfill the requirements as expressed in this parameter. So the
+   * RP SHOULD be prepared to reliably handle such an outcome.
    */
   id_token_type?: string;
 }
@@ -243,6 +249,10 @@ export interface DiscoveryMetadataOpts {
   //TODO add the check: Mandatory if PassBy.Value
   subjectSyntaxTypesSupported?: string[] | string;
   idTokenTypesSupported?: IdTokenType[] | IdTokenType;
+  clientName?: string;
+  logoUri?: string;
+  clientPurpose?: string;
+  [x: string]: any;
 
   // didsSupported?: boolean;
   // didMethodsSupported?: string[] | string;
@@ -315,6 +325,9 @@ export interface DiscoveryMetadataPayload {
   subject_syntax_types_supported: string[] | string;
   id_token_types_supported?: IdTokenType[] | IdTokenType;
   vp_formats: Format;
+  client_name?: string;
+  logo_uri?: string;
+  client_purpose?: string;
   // dids_supported: boolean;
   // did_methods_supported: string[] | string;
   // credential_supported: boolean;
@@ -323,7 +336,7 @@ export interface DiscoveryMetadataPayload {
   // credential_claims_supported: string[] | string;
   // credential_name: string;
   // slint-disable-next-line @typescript-eslint/no-explicit-any
-  // [x: string]: any;
+  [x: string]: any;
 }
 
 export interface ResponseRegistrationOpts extends DiscoveryMetadataOpts {
@@ -351,6 +364,10 @@ export interface RPRegistrationMetadataOpts {
   // subjectIdentifiersSupported: SubjectIdentifierType[] | SubjectIdentifierType;
   // didMethodsSupported?: string[] | string;
   // credentialFormatsSupported: CredentialFormat[] | CredentialFormat;
+  clientName?: string;
+  logoUri?: string;
+  clientPurpose?: string;
+  [x: string]: any;
 }
 
 export interface RPRegistrationMetadataPayload {
@@ -362,6 +379,10 @@ export interface RPRegistrationMetadataPayload {
   subject_syntax_types_supported: string[];
   subject_types_supported: SubjectType[];
   vp_formats: Format;
+  client_name?: string;
+  logo_uri?: string;
+  client_purpose?: string;
+  [x: string]: any;
 }
 
 export interface CommonSupportedMetadata {

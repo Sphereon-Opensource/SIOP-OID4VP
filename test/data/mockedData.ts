@@ -17,11 +17,21 @@ import {
   SubjectType,
 } from '../../src/main';
 
+export const UNIT_TEST_TIMEOUT = 30000;
+
 export const DIDAUTH_HEADER: JWTHeader = {
   typ: 'JWT',
   alg: 'ES256K',
   kid: 'did:ethr:0x416e6e6162656c2e4c65652e452d412d506f652e#key1',
 };
+
+export const VERIFIER_LOGO_FOR_CLIENT = 'https://sphereon.com/content/themes/sphereon/assets/favicons/safari-pinned-tab.svg';
+
+export const VERIFIER_NAME_FOR_CLIENT = 'Client Verifier Relying Party Sphereon INC';
+export const VERIFIER_NAME_FOR_CLIENT_NL = ' *** dutch *** Client Verifier Relying Party Sphereon B.V.';
+
+export const VERIFIERZ_PURPOSE_TO_VERIFY = 'To request, receive and verify your credential about the the valid subject.';
+export const VERIFIERZ_PURPOSE_TO_VERIFY_NL = ' *** Dutch *** To request, receive and verify your credential about the the valid subject.';
 
 export const DIDAUTH_REQUEST_PAYLOAD: AuthenticationRequestPayload = {
   iss: 'did:ethr:0x416e6e6162656c2e4c65652e452d412d506f652e', // DIDres of the RP (kid must point to a key in this DIDres Document)
@@ -49,6 +59,11 @@ export const DIDAUTH_REQUEST_PAYLOAD: AuthenticationRequestPayload = {
         alg: [KeyAlgo.EDDSA],
       },
     },
+    logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+    client_name: VERIFIER_NAME_FOR_CLIENT,
+    'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+    client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+    'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
   },
   /*registration: {
       subject_types_supported: SubjectType.PAIRWISE,

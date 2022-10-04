@@ -17,6 +17,14 @@ import {
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
+import {
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
+
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 const HEX_KEY = 'f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f';
@@ -66,7 +74,7 @@ describe('create Request Uri should', () => {
   });
 
   it('return a reference url', async () => {
-    expect.assertions(11);
+    expect.assertions(13);
     const opts: AuthenticationRequestOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -95,6 +103,11 @@ describe('create Request Uri should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
 
@@ -102,6 +115,8 @@ describe('create Request Uri should', () => {
     expect(uriRequest).toBeDefined();
     expect(uriRequest).toHaveProperty('encodedUri');
     expect(uriRequest).toHaveProperty('encodingFormat');
+    expect(uriRequest).toHaveProperty('jwt');
+    expect(uriRequest.jwt).toBeDefined();
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`openid://`);
@@ -109,11 +124,11 @@ describe('create Request Uri should', () => {
     expect(uriDecoded).toContain(`&redirect_uri=${opts.redirectUri}`);
     expect(uriDecoded).toContain(`&scope=${Scope.OPENID}`);
     expect(uriDecoded).toContain(`&request_uri=`);
+    expect(uriDecoded).toContain('client_name#nl-NL');
 
     const data = parse(uriDecoded);
     expect(data.request_uri).toStrictEqual(opts.requestBy.referenceUri);
-    expect(uriRequest).toHaveProperty('jwt');
-    expect(uriRequest.jwt).toBeDefined();
+    expect(data.registration).toContain('client_purpose#nl-NL');
   });
 
   it('return a reference url when using did:key', async () => {
@@ -147,6 +162,11 @@ describe('create Request Uri should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
 
@@ -188,6 +208,11 @@ describe('create Request Uri should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
 
@@ -371,6 +396,11 @@ describe('create Request JWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
 
@@ -395,6 +425,11 @@ describe('create Request JWT should', () => {
               proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
             },
           },
+          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+          client_name: VERIFIER_NAME_FOR_CLIENT,
+          'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+          client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
       },
       opts: {
@@ -456,6 +491,11 @@ describe('create Request JWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
         presentationDefinitions: [
@@ -514,6 +554,11 @@ describe('create Request JWT should', () => {
         registrationBy: {
           type: PassBy.VALUE,
         },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
         presentationDefinitions: [
