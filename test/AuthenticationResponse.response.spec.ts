@@ -414,4 +414,147 @@ describe('create JWT from Request JWT should', () => {
     );*/
     await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
   });
+
+  it('succeed when valid JWT with PD is passed in for id_token', async () => {
+    expect.assertions(1);
+
+    const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
+    const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
+    const definition: IPresentationDefinition = {
+      id: 'Credentials',
+      input_descriptors: [
+        {
+          id: 'ID Card Credential',
+          schema: [
+            {
+              uri: 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential',
+            },
+          ],
+          constraints: {
+            limit_disclosure: 'required',
+            fields: [
+              {
+                path: ['$.issuer.id'],
+                purpose: 'We can only verify bank accounts if they are attested by a source.',
+                filter: {
+                  type: 'string',
+                  pattern: 'did:example:issuer',
+                },
+              },
+            ],
+          },
+        },
+      ],
+    };
+    const requestOpts: AuthenticationRequestOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
+      redirectUri: EXAMPLE_REDIRECT_URL,
+      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+      signatureType: {
+        hexPrivateKey: mockReqEntity.hexPrivateKey,
+        did: mockReqEntity.did,
+        kid: `${mockReqEntity.did}#controller`,
+      },
+      registration: {
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
+        registrationBy: { type: PassBy.VALUE },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+      },
+      claims: {
+        presentationDefinitions: [
+          {
+            location: PresentationLocation.ID_TOKEN,
+            definition: definition,
+          },
+        ],
+      },
+    };
+    const vc: ICredential = {
+      id: 'https://example.com/credentials/1872',
+      type: ['VerifiableCredential', 'IDCardCredential'],
+      '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential'],
+      issuer: {
+        id: 'did:example:issuer',
+      },
+      issuanceDate: '2010-01-01T19:23:24Z',
+      credentialSubject: {
+        given_name: 'Fredrik',
+        family_name: 'Stremberg',
+        birthdate: '1949-01-22',
+      },
+    };
+    const vp: IVerifiablePresentation = {
+      '@context': ['https://www.w3.org/2018/credentials/v1'],
+      presentation_submission: undefined,
+      type: ['verifiablePresentation'],
+      holder: 'did:example:holder',
+      verifiableCredential: [vc as IVerifiableCredential],
+      proof: undefined,
+    };
+
+    const pex = new PresentationExchange({
+      did: 'did:example:holder',
+      allVerifiableCredentials: vp.verifiableCredential,
+    });
+    await pex.selectVerifiableCredentialsForSubmission(definition);
+    const result: IVerifiablePresentation = await pex.submissionFrom(definition, vp.verifiableCredential);
+    const responseOpts: AuthenticationResponseOpts = {
+      checkLinkedDomain: CheckLinkedDomain.NEVER,
+      redirectUri: EXAMPLE_REDIRECT_URL,
+      registration: {
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        registrationBy: {
+          type: PassBy.REFERENCE,
+          referenceUri: EXAMPLE_REFERENCE_URL,
+        },
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormats: {
+          ldp_vc: {
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+      },
+      signatureType: {
+        did: mockResEntity.did,
+        hexPrivateKey: mockResEntity.hexPrivateKey,
+        kid: `${mockResEntity.did}#controller`,
+      },
+      vp: [
+        {
+          location: PresentationLocation.ID_TOKEN,
+          format: VerifiablePresentationTypeFormat.LDP_VP,
+          presentation: result,
+        },
+      ],
+      did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
+      responseMode: ResponseMode.POST,
+    };
+
+    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+    console.log(
+      JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
+    );
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
+  });
 });

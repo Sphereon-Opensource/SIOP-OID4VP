@@ -161,19 +161,32 @@ export class PresentationExchange {
 
     async function extractPDFromOtherTokens() {
       const definitions = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition');
+      const definitionsFromList = extractDataFromPath(obj, '$..verifiable_presentations[*].presentation_definition');
       const definitionRefs = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
-      if (definitions && definitions.length && definitionRefs && definitionRefs.length) {
+      const definitionRefsFromList = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
+      if (definitions && definitions.length===0 && definitionRefs && definitionRefs.length===0 && definitionsFromList && definitionsFromList.length===0 && definitionRefsFromList && definitionRefsFromList.length===0 ) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
-      if (definitions && definitions.length) {
+      if (definitions && definitions.length != 0) {
         definitions.forEach((definition) => {
           addSingleIdTokenPDToPDs(definition);
         });
-      } else if (definitionRefs && definitionRefs.length) {
+      } else if (definitionsFromList && definitionsFromList.length !=0) {
+        definitionsFromList.forEach((definition) => {
+          addSingleIdTokenPDToPDs(definition);
+        });
+      } else if (definitionRefs && definitionRefs.length!=0) {
         for (const definitionRef of definitionRefs) {
           const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef)) as unknown as
             | PresentationDefinitionV1
             | PresentationDefinitionV2;
+          addSingleIdTokenPDToPDs(pd);
+        }
+      } else if (definitionRefsFromList && definitionRefsFromList.length!=0) {
+        for (const definitionRef of definitionRefsFromList) {
+          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef)) as unknown as
+              | PresentationDefinitionV1
+              | PresentationDefinitionV2;
           addSingleIdTokenPDToPDs(pd);
         }
       }
