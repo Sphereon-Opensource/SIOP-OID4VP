@@ -137,9 +137,9 @@ export class PresentationExchange {
     const allDefinitions: PresentationDefinitionWithLocation[] = [];
 
     async function extractPDFromVPToken() {
-      const vpTokens = extractDataFromPath(obj, '$..vp_token.presentation_definition');
-      const vpTokenRef = extractDataFromPath(obj, '$..vp_token.presentation_definition_uri');
-      if (vpTokens && vpTokens.length && vpTokenRef && vpTokenRef.length) {
+      const vpTokens: PresentationDefinitionV1[] | PresentationDefinitionV2[] = extractDataFromPath(obj, '$..vp_token.presentation_definition');
+      const vpTokenRefs = extractDataFromPath(obj, '$..vp_token.presentation_definition_uri');
+      if (vpTokens && vpTokens.length && vpTokenRefs && vpTokenRefs.length) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
       if (vpTokens && vpTokens.length) {
@@ -147,9 +147,9 @@ export class PresentationExchange {
           PresentationExchange.assertValidPresentationDefinition(vpToken.value);
           allDefinitions.push({ definition: vpToken.value, location: PresentationLocation.VP_TOKEN });
         });
-      } else if (vpTokenRef && vpTokenRef.length) {
-        for (const vptr of vpTokenRef) {
-          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(vptr.value)) as unknown as
+      } else if (vpTokenRefs && vpTokenRefs.length) {
+        for (const vpTokenRef of vpTokenRefs) {
+          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(vpTokenRef.value)) as unknown as
             | PresentationDefinitionV1
             | PresentationDefinitionV2;
           PresentationExchange.assertValidPresentationDefinition(pd);
@@ -158,16 +158,16 @@ export class PresentationExchange {
       }
     }
 
-    function addSingleIdTokenPDToPDs(definition) {
-      PresentationExchange.assertValidPresentationDefinition(definition.value);
-      if (!definition.path.includes(PresentationLocation.ID_TOKEN)) {
-        throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-      }
-      allDefinitions.push({ definition: definition.value, location: PresentationLocation.ID_TOKEN });
+    function addSingleIdTokenPDToPDs(definition: IPresentationDefinition): void {
+      PresentationExchange.assertValidPresentationDefinition(definition);
+      allDefinitions.push({ definition: definition, location: PresentationLocation.ID_TOKEN });
     }
 
     async function extractPDFromOtherTokens() {
-      const definitions = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition');
+      const definitions: PresentationDefinitionV1[] | PresentationDefinitionV2[] = extractDataFromPath(
+        obj,
+        '$..verifiable_presentations.presentation_definition'
+      );
       const definitionRefs = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
       if (definitions && definitions.length && definitionRefs && definitionRefs.length) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
@@ -178,7 +178,7 @@ export class PresentationExchange {
         });
       } else if (definitionRefs && definitionRefs.length) {
         for (const definitionRef of definitionRefs) {
-          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef)) as unknown as
+          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef.value)) as unknown as
             | PresentationDefinitionV1
             | PresentationDefinitionV2;
           addSingleIdTokenPDToPDs(pd);
@@ -193,15 +193,15 @@ export class PresentationExchange {
     return allDefinitions;
   }
 
-  public static assertValidPresentationDefinitionWithLocations(defintionWithLocations: PresentationDefinitionWithLocation[]) {
-    if (defintionWithLocations && defintionWithLocations.length > 0) {
-      defintionWithLocations.forEach((definitionWithLocation) =>
+  public static assertValidPresentationDefinitionWithLocations(definitionsWithLocations: PresentationDefinitionWithLocation[]) {
+    if (definitionsWithLocations && definitionsWithLocations.length > 0) {
+      definitionsWithLocations.forEach((definitionWithLocation) =>
         PresentationExchange.assertValidPresentationDefinition(definitionWithLocation.definition)
       );
     }
   }
 
-  public static assertValidPresentationDefintionWithLocation(defintionWithLocation: PresentationDefinitionWithLocation) {
+  public static assertValidPresentationDefinitionWithLocation(defintionWithLocation: PresentationDefinitionWithLocation) {
     if (defintionWithLocation && defintionWithLocation.definition) {
       PresentationExchange.assertValidPresentationDefinition(defintionWithLocation.definition);
     }

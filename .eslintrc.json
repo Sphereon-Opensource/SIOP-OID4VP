@@ -15,6 +15,18 @@
   "globals": { "BigInt": true, "console": true, "WebAssembly": true },
   "rules": {
     "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/typedef": [
+      "error",
+      {
+        "call-signature":  true,
+        "arrow-call-signature":  true,
+        "parameter":  true,
+        "arrow-parameter":  true,
+        "property-declaration":  true,
+        "variable-declaration":  true,
+        "member-variable-declaration":  true
+      }
+    ],
     "eslint-comments/disable-enable-pair": [
       "error",
       { "allowWholeFile": true }

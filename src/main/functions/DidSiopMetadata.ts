@@ -83,13 +83,13 @@ function supportedSubjectSyntaxTypes(rpMethods: string[] | string, opMethods: st
   return supportedSubjectSyntaxTypes;
 }
 
-function getFormatIntersection(rpFormat: Format, opFormat: Format) {
+function getFormatIntersection(rpFormat: Format, opFormat: Format): Format {
   const intersectionFormat: Format = {};
   const supportedCredentials = getIntersection(Object.keys(rpFormat), Object.keys(opFormat));
   if (!supportedCredentials.length) {
     throw new Error(SIOPErrors.CREDENTIAL_FORMATS_NOT_SUPPORTED);
   }
-  supportedCredentials.forEach(function (crFormat) {
+  supportedCredentials.forEach(function (crFormat: string) {
     const rpAlgs = [];
     const opAlgs = [];
     Object.keys(rpFormat[crFormat]).forEach((k) => rpAlgs.push(...rpFormat[crFormat][k]));

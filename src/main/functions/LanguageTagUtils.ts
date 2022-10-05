@@ -43,7 +43,7 @@ export class LanguageTagUtils {
     const discoveredLanguageTaggedFields: Map<string, string> = new Map<string, string>();
 
     Object.entries(source).forEach(([key, value]) => {
-      const languageTagSeparatorIndexInKey = key.indexOf(this.LANGUAGE_TAG_SEPARATOR);
+      const languageTagSeparatorIndexInKey: number = key.indexOf(this.LANGUAGE_TAG_SEPARATOR);
 
       if (this.isFieldLanguageTagged(languageTagSeparatorIndexInKey)) {
         this.extractLanguageTaggedField(
@@ -65,7 +65,7 @@ export class LanguageTagUtils {
     languageTagSeparatorIndexInKey: number,
     languageTagEnabledFieldsNamesMapping: Map<string, string>,
     languageTaggedFields: Map<string, string>
-  ) {
+  ): void {
     const fieldName = this.getFieldName(key, languageTagSeparatorIndexInKey);
 
     const languageTag = this.getLanguageTag(key, languageTagSeparatorIndexInKey);
@@ -80,15 +80,15 @@ export class LanguageTagUtils {
     }
   }
 
-  private static getMappedFieldName(languageTagEnabledFieldsNamesMapping: Map<string, string>, fieldName: string, languageTag: string) {
+  private static getMappedFieldName(languageTagEnabledFieldsNamesMapping: Map<string, string>, fieldName: string, languageTag: string): string {
     return languageTagEnabledFieldsNamesMapping.get(fieldName) + this.LANGUAGE_TAG_SEPARATOR + languageTag;
   }
 
-  private static getLanguageTag(key: string, languageTagSeparatorIndex: number) {
+  private static getLanguageTag(key: string, languageTagSeparatorIndex: number): string {
     return key.substring(languageTagSeparatorIndex + 1);
   }
 
-  private static getFieldName(key: string, languageTagSeparatorIndex: number) {
+  private static getFieldName(key: string, languageTagSeparatorIndex: number): string {
     return key.substring(0, languageTagSeparatorIndex);
   }
 
@@ -98,11 +98,11 @@ export class LanguageTagUtils {
    * @param languageTagSeparatorIndex
    * @private
    */
-  private static isFieldLanguageTagged(languageTagSeparatorIndex) {
+  private static isFieldLanguageTagged(languageTagSeparatorIndex: number): boolean {
     return languageTagSeparatorIndex > 0;
   }
 
-  private static assertValidTargetFieldNames(languageTagEnabledFieldsNamesMapping: Map<string, string>) {
+  private static assertValidTargetFieldNames(languageTagEnabledFieldsNamesMapping: Map<string, string>): void {
     if (languageTagEnabledFieldsNamesMapping) {
       if (!languageTagEnabledFieldsNamesMapping.size) {
         throw new Error(SIOPErrors.BAD_PARAMS + ' LanguageTagEnabledFieldsNamesMapping must be non-null or non-empty');
@@ -118,7 +118,7 @@ export class LanguageTagUtils {
     }
   }
 
-  private static assertSourceIsWorthChecking(source: unknown) {
+  private static assertSourceIsWorthChecking(source: unknown): void {
     if (!source) {
       throw new Error(SIOPErrors.BAD_PARAMS + ' Source must be non-null i.e. not-initialized.');
     }
