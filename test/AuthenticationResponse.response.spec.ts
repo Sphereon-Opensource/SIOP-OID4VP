@@ -552,9 +552,7 @@ describe('create JWT from Request JWT should', () => {
     };
 
     const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-    console.log(
-      JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
-    );
+    console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
     await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 });
