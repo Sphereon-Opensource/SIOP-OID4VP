@@ -164,16 +164,9 @@ export class PresentationExchange {
       const definitionsFromList = extractDataFromPath(obj, '$..verifiable_presentations[*].presentation_definition');
       const definitionRefs = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
       const definitionRefsFromList = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
-      if (
-        definitions &&
-        definitions.length === 0 &&
-        definitionRefs &&
-        definitionRefs.length === 0 &&
-        definitionsFromList &&
-        definitionsFromList.length === 0 &&
-        definitionRefsFromList &&
-        definitionRefsFromList.length === 0
-      ) {
+      const hasPD = (definitions && definitions.length > 0) || (definitionsFromList && definitionsFromList > 0);
+      const hasPdRef = (definitionRefs && definitionRefs.length > 0) || (definitionRefsFromList && definitionsFromList > 0);
+      if (hasPD && hasPdRef) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
       if (definitions && definitions.length != 0) {
