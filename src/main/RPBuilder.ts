@@ -14,6 +14,7 @@ import {
   ObjectBy,
   PassBy,
   PresentationDefinitionWithLocation,
+  PresentationVerificationCallback,
   RequestRegistrationOpts,
   ResponseContext,
   ResponseIss,
@@ -42,10 +43,16 @@ export default class RPBuilder {
   verifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
+  presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: Array<SupportedVersion>;
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
+    return this;
+  }
+
+  withPresentationVerification(presentationVerificationCallback: PresentationVerificationCallback): RPBuilder {
+    this.presentationVerificationCallback = presentationVerificationCallback;
     return this;
   }
 

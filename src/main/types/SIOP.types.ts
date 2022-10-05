@@ -83,10 +83,15 @@ export interface AuthenticationRequestWithJWT {
   opts: AuthenticationRequestOpts;
 }
 
+export type PresentationVerificationResult = { verified: boolean };
+
+export type PresentationVerificationCallback = (args: VerifiablePresentationPayload) => Promise<PresentationVerificationResult>;
+
 export interface AuthenticationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
   registration: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
+  presentationVerificationCallback?: PresentationVerificationCallback;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   nonce?: string;
   state?: string;
@@ -183,7 +188,7 @@ export enum PresentationLocation {
  */
 export interface VerifiablePresentationPayload {
   format: VerifiablePresentationTypeFormat;
-  presentation: PEPresentation;
+  presentation: PEVerifiablePresentation;
 }
 
 /**
@@ -486,6 +491,7 @@ export enum VerificationMode {
 export interface Verification {
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
+  presentationVerificationCallback?: PresentationVerificationCallback;
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
@@ -514,6 +520,7 @@ export interface VerifyAuthenticationResponseOpts {
   audience: string; // The audience/redirect_uri
   claims?: ClaimOpts; // The claims, typically the same values used during request creation
   verifyCallback?: VerifyCallback;
+  presentationVerificationCallback?: PresentationVerificationCallback;
 }
 
 export interface ResponseClaims {

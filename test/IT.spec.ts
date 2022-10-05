@@ -1,6 +1,6 @@
 import { IPresentationDefinition } from '@sphereon/pex';
 import { IProofType, IVerifiableCredential } from '@sphereon/ssi-types';
-import { IVerifyCallbackArgs, IVerifyCredentialResult, WDCErrors } from '@sphereon/wellknown-dids-client';
+import { IVerifyCallbackArgs, IVerifyCredentialResult, VerifyCallback, WDCErrors } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
 import {
@@ -11,6 +11,7 @@ import {
   PresentationDefinitionWithLocation,
   PresentationExchange,
   PresentationLocation,
+  PresentationVerificationCallback,
   ResponseIss,
   ResponseType,
   RevocationStatus,
@@ -125,10 +126,13 @@ describe('RP and OP interaction should', () => {
       const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+      const verifyCallback: VerifyCallback = async (_args) => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
         .redirect(EXAMPLE_REDIRECT_URL)
+        .withPresentationVerification(presentationVerificationCallback)
         .addVerifyCallback(verifyCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
         .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
@@ -219,10 +223,13 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
+      .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -311,10 +318,13 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
+      .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .requestBy(PassBy.VALUE)
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
@@ -400,9 +410,12 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
       .redirect(EXAMPLE_REDIRECT_URL)
+      .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .requestBy(PassBy.VALUE)
@@ -508,9 +521,12 @@ describe('RP and OP interaction should', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
+        .withPresentationVerification(presentationVerificationCallback)
         .addVerifyCallback(verifyCallback)
         .redirect(EXAMPLE_REDIRECT_URL)
         .requestBy(PassBy.VALUE)
@@ -613,9 +629,12 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
+      .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
@@ -738,9 +757,12 @@ describe('RP and OP interaction should', () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
+        .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
         .addVerifyCallback(verifyCallback)
         .redirect(EXAMPLE_REDIRECT_URL)
@@ -848,9 +870,12 @@ describe('RP and OP interaction should', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
       .withRevocationVerification(RevocationVerification.ALWAYS)
+      .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withRevocationVerificationCallback(async () => {
@@ -1020,6 +1045,15 @@ describe('RP and OP interaction should', () => {
             },
           },
         ],
+        proof: {
+          type: 'BbsBlsSignatureProof2020',
+          created: '2020-04-25',
+          verificationMethod: 'did:example:489398593#test',
+          proofPurpose: 'assertionMethod',
+          proofValue:
+            'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
+          nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
+        },
       },
       format: VerifiablePresentationTypeFormat.LDP_VP,
     };
@@ -1096,6 +1130,15 @@ describe('RP and OP interaction should', () => {
             },
           },
         ],
+        proof: {
+          type: 'BbsBlsSignatureProof2020',
+          created: '2020-04-25',
+          verificationMethod: 'did:example:489398593#test',
+          proofPurpose: 'assertionMethod',
+          proofValue:
+            'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
+          nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
+        },
       },
       format: VerifiablePresentationTypeFormat.LDP_VP,
     };
