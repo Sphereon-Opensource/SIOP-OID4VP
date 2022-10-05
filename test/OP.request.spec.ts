@@ -57,7 +57,7 @@ describe('OP Builder should', () => {
           registrationBy: { type: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100332',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
@@ -89,7 +89,7 @@ describe('OP should', () => {
       },
       logoUri: VERIFIER_LOGO_FOR_CLIENT,
       clientName: VERIFIER_NAME_FOR_CLIENT,
-      'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+      'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100333',
       clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       //TODO: fill it up with actual value
@@ -159,7 +159,7 @@ describe('OP should', () => {
           },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
-          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100334',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
@@ -205,7 +205,7 @@ describe('OP should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100335',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
@@ -234,7 +234,7 @@ describe('OP should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100336',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
