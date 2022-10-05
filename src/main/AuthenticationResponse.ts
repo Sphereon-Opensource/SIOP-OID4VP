@@ -142,6 +142,10 @@ export default class AuthenticationResponse {
     }
     const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
+    // Enforces verifyPresentationCallback function on the RP side,
+    if (!verifyOpts?.presentationVerificationCallback) {
+      throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_VERIFICATION_FUNCTION_MISSING);
+    }
     await assertValidVerifiablePresentations({
       definitions: verifyOpts?.claims?.presentationDefinitions,
       verPayload,

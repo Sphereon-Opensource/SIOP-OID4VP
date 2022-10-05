@@ -237,14 +237,14 @@ export class PresentationExchange {
     function filterValidPresentations() {
       return vpPayloads.filter(async (vpw: VerifiablePresentationPayload) => {
         const presentation = vpw.presentation;
+        // The verifyPresentationCallback function is mandatory for RP only,
+        // So the behavior here is to bypass it if not present
         if (verifyPresentationCallback) {
           try {
             await verifyPresentationCallback({ ...vpw });
           } catch (error: unknown) {
             throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID);
           }
-        } else {
-          throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_VERIFICATION_FUNCTION_MISSING);
         }
         // fixme: Limited disclosure suites
         const evaluationResults = new PEX().evaluatePresentation(definition, presentation, []);
