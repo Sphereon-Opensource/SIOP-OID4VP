@@ -12,7 +12,14 @@ import { PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmiss
 import { IPresentation, IProofPurpose, IProofType, IVerifiablePresentation, W3CVerifiableCredential } from '@sphereon/ssi-types';
 
 import { extractDataFromPath, getWithUrl } from './functions';
-import { JWTPayload, PresentationDefinitionWithLocation, PresentationLocation, SIOPErrors, VerifiablePresentationPayload } from './types';
+import {
+  JWTPayload,
+  PresentationDefinitionWithLocation,
+  PresentationLocation,
+  PresentationVerificationCallback,
+  SIOPErrors,
+  VerifiablePresentationPayload,
+} from './types';
 
 export class PresentationExchange {
   readonly pex = new PEX();
@@ -31,9 +38,9 @@ export class PresentationExchange {
    * @param options
    */
   public async submissionFrom(
-    presentationDefinition: IPresentationDefinition,
-    selectedCredentials: W3CVerifiableCredential[],
-    options?: { nonce?: string; domain?: string }
+      presentationDefinition: IPresentationDefinition,
+      selectedCredentials: W3CVerifiableCredential[],
+      options?: { nonce?: string; domain?: string }
   ): Promise<IVerifiablePresentation> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
@@ -80,11 +87,11 @@ export class PresentationExchange {
       throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, no VCs were provided`);
     }
     const selectResults: SelectResults = this.pex.selectFrom(
-      presentationDefinition,
-      // fixme holder dids and limited disclosure
-      this.allVerifiableCredentials,
-      [this.did],
-      []
+        presentationDefinition,
+        // fixme holder dids and limited disclosure
+        this.allVerifiableCredentials,
+        [this.did],
+        []
     );
     if (selectResults.areRequiredCredentialsPresent == Status.ERROR) {
       throw new Error(`message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(selectResults.errors)}`);
@@ -99,8 +106,8 @@ export class PresentationExchange {
    * @param verifiablePresentation:
    */
   public static async validatePresentationAgainstDefinition(
-    presentationDefinition: IPresentationDefinition,
-    verifiablePresentation: IPresentation
+      presentationDefinition: IPresentationDefinition,
+      verifiablePresentation: IPresentation
   ): Promise<EvaluationResults> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
@@ -130,9 +137,9 @@ export class PresentationExchange {
     const allDefinitions: PresentationDefinitionWithLocation[] = [];
 
     async function extractPDFromVPToken() {
-      const vpTokens = extractDataFromPath(obj, '$..vp_token.presentation_definition');
-      const vpTokenRef = extractDataFromPath(obj, '$..vp_token.presentation_definition_uri');
-      if (vpTokens && vpTokens.length && vpTokenRef && vpTokenRef.length) {
+      const vpTokens: PresentationDefinitionV1[] | PresentationDefinitionV2[] = extractDataFromPath(obj, '$..vp_token.presentation_definition');
+      const vpTokenRefs = extractDataFromPath(obj, '$..vp_token.presentation_definition_uri');
+      if (vpTokens && vpTokens.length && vpTokenRefs && vpTokenRefs.length) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
       if (vpTokens && vpTokens.length) {
@@ -140,27 +147,27 @@ export class PresentationExchange {
           PresentationExchange.assertValidPresentationDefinition(vpToken.value);
           allDefinitions.push({ definition: vpToken.value, location: PresentationLocation.VP_TOKEN });
         });
-      } else if (vpTokenRef && vpTokenRef.length) {
-        for (const vptr of vpTokenRef) {
-          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(vptr.value)) as unknown as
-            | PresentationDefinitionV1
-            | PresentationDefinitionV2;
+      } else if (vpTokenRefs && vpTokenRefs.length) {
+        for (const vpTokenRef of vpTokenRefs) {
+          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(vpTokenRef.value)) as unknown as
+              | PresentationDefinitionV1
+              | PresentationDefinitionV2;
           PresentationExchange.assertValidPresentationDefinition(pd);
           allDefinitions.push({ definition: pd, location: PresentationLocation.VP_TOKEN });
         }
       }
     }
 
-    function addSingleIdTokenPDToPDs(definition) {
-      PresentationExchange.assertValidPresentationDefinition(definition.value);
-      if (!definition.path.includes(PresentationLocation.ID_TOKEN)) {
-        throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-      }
-      allDefinitions.push({ definition: definition.value, location: PresentationLocation.ID_TOKEN });
+    function addSingleIdTokenPDToPDs(definition: IPresentationDefinition): void {
+      PresentationExchange.assertValidPresentationDefinition(definition);
+      allDefinitions.push({ definition: definition, location: PresentationLocation.ID_TOKEN });
     }
 
     async function extractPDFromOtherTokens() {
-      const definitions = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition');
+      const definitions: PresentationDefinitionV1[] | PresentationDefinitionV2[] = extractDataFromPath(
+          obj,
+          '$..verifiable_presentations.presentation_definition'
+      );
       const definitionsFromList = extractDataFromPath(obj, '$..verifiable_presentations[*].presentation_definition');
       const definitionRefs = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
       const definitionRefsFromList = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
@@ -169,26 +176,15 @@ export class PresentationExchange {
       if (hasPD && hasPdRef) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
-      if (definitions && definitions.length != 0) {
+      if (definitions && definitions.length) {
         definitions.forEach((definition) => {
           addSingleIdTokenPDToPDs(definition);
         });
-      } else if (definitionsFromList && definitionsFromList.length != 0) {
-        definitionsFromList.forEach((definition) => {
-          addSingleIdTokenPDToPDs(definition);
-        });
-      } else if (definitionRefs && definitionRefs.length != 0) {
+      } else if (definitionRefs && definitionRefs.length) {
         for (const definitionRef of definitionRefs) {
-          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef)) as unknown as
-            | PresentationDefinitionV1
-            | PresentationDefinitionV2;
-          addSingleIdTokenPDToPDs(pd);
-        }
-      } else if (definitionRefsFromList && definitionRefsFromList.length != 0) {
-        for (const definitionRef of definitionRefsFromList) {
-          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef)) as unknown as
-            | PresentationDefinitionV1
-            | PresentationDefinitionV2;
+          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef.value)) as unknown as
+              | PresentationDefinitionV1
+              | PresentationDefinitionV2;
           addSingleIdTokenPDToPDs(pd);
         }
       }
@@ -201,15 +197,15 @@ export class PresentationExchange {
     return allDefinitions;
   }
 
-  public static assertValidPresentationDefinitionWithLocations(defintionWithLocations: PresentationDefinitionWithLocation[]) {
-    if (defintionWithLocations && defintionWithLocations.length > 0) {
-      defintionWithLocations.forEach((definitionWithLocation) =>
-        PresentationExchange.assertValidPresentationDefinition(definitionWithLocation.definition)
+  public static assertValidPresentationDefinitionWithLocations(definitionsWithLocations: PresentationDefinitionWithLocation[]) {
+    if (definitionsWithLocations && definitionsWithLocations.length > 0) {
+      definitionsWithLocations.forEach((definitionWithLocation) =>
+          PresentationExchange.assertValidPresentationDefinition(definitionWithLocation.definition)
       );
     }
   }
 
-  public static assertValidPresentationDefintionWithLocation(defintionWithLocation: PresentationDefinitionWithLocation) {
+  public static assertValidPresentationDefinitionWithLocation(defintionWithLocation: PresentationDefinitionWithLocation) {
     if (defintionWithLocation && defintionWithLocation.definition) {
       PresentationExchange.assertValidPresentationDefinition(defintionWithLocation.definition);
     }
@@ -222,17 +218,38 @@ export class PresentationExchange {
     }
   }
 
-  static async validatePayloadsAgainstDefinitions(definitions: PresentationDefinitionWithLocation[], vpPayloads: VerifiablePresentationPayload[]) {
+  static async validatePayloadsAgainstDefinitions(
+      definitions: PresentationDefinitionWithLocation[],
+      vpPayloads: VerifiablePresentationPayload[],
+      verifyPresentationCallback?: PresentationVerificationCallback
+  ) {
     if (!definitions || !vpPayloads || !definitions.length || definitions.length !== vpPayloads.length) {
       throw new Error(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
-    await Promise.all(definitions.map(async (pd) => await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads)));
+    await Promise.all(
+        definitions.map(
+            async (pd) => await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads, verifyPresentationCallback)
+        )
+    );
   }
 
-  private static async validatePayloadAgainstDefinitions(definition: IPresentationDefinition, vpPayloads: VerifiablePresentationPayload[]) {
-    function filterValidPresentations(): VerifiablePresentationPayload[] {
-      return vpPayloads.filter((vpw: VerifiablePresentationPayload) => {
+  private static async validatePayloadAgainstDefinitions(
+      definition: IPresentationDefinition,
+      vpPayloads: VerifiablePresentationPayload[],
+      verifyPresentationCallback?: PresentationVerificationCallback
+  ) {
+    function filterValidPresentations() {
+      return vpPayloads.filter(async (vpw: VerifiablePresentationPayload) => {
         const presentation = vpw.presentation;
+        // The verifyPresentationCallback function is mandatory for RP only,
+        // So the behavior here is to bypass it if not present
+        if (verifyPresentationCallback) {
+          try {
+            await verifyPresentationCallback({ ...vpw });
+          } catch (error: unknown) {
+            throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID);
+          }
+        }
         // fixme: Limited disclosure suites
         const evaluationResults = new PEX().evaluatePresentation(definition, presentation, []);
         const submission = evaluationResults.value;
