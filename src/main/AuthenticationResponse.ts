@@ -277,6 +277,13 @@ async function createSIOPResponsePayload(
   // *********************************************************************************
 
   const { verifiable_presentations, vp_token } = extractPresentations(resOpts);
+  const verifiablePresentations = [];
+  for (const vpPayload of verifiable_presentations) {
+    verifiablePresentations.push({
+      format: vpPayload.format,
+      presentation: await resOpts.presentationSignCallback(vpPayload.presentation),
+    });
+  }
   const authenticationResponsePayload: AuthenticationResponsePayload = {
     iss: ResponseIss.SELF_ISSUED_V2,
     sub: resOpts.did,
@@ -289,7 +296,7 @@ async function createSIOPResponsePayload(
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
     vp_token,
-    verifiable_presentations,
+    verifiable_presentations: verifiablePresentations,
   };
 
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {

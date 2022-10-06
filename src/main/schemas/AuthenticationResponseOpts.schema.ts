@@ -17,6 +17,9 @@ export const AuthenticationResponseOptsSchema = {
         "presentationVerificationCallback": {
           "$ref": "#/definitions/PresentationVerificationCallback"
         },
+        "presentationSignCallback": {
+          "$ref": "#/definitions/PresentationSignCallback"
+        },
         "signatureType": {
           "anyOf": [
             {
@@ -623,6 +626,14 @@ export const AuthenticationResponseOptsSchema = {
       ]
     },
     "PresentationVerificationCallback": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "PresentationSignCallback": {
       "properties": {
         "isFunction": {
           "type": "boolean",
