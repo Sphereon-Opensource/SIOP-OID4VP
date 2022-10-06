@@ -1,4 +1,4 @@
-````mermaid
+```mermaid
 classDiagram
 
 class RP {
@@ -206,4 +206,4 @@ class VerifiedJWT {
   signer: VerificationMethod;
   jwt: string;
 }
-````
+```
