@@ -290,6 +290,7 @@ async function createSIOPResponsePayload(
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
   };
+  // add support for multiple VPs (VDX-158)
   if (resOpts.vp && resOpts.vp[0].location === PresentationLocation.ID_TOKEN) {
     const id_token = {
       iss: ResponseIss.SELF_ISSUED_V2,

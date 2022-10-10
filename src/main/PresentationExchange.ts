@@ -229,7 +229,7 @@ export class PresentationExchange {
   static async validatePayloadsAgainstDefinitions(
     definitions: PresentationDefinitionWithLocation[],
     vpPayloads: VerifiablePresentationPayload[],
-    presentationSubmission: PresentationSubmission,
+    presentationSubmission?: PresentationSubmission,
     verifyPresentationCallback?: PresentationVerificationCallback
   ) {
     if (!definitions || !vpPayloads || !definitions.length || definitions.length !== vpPayloads.length) {

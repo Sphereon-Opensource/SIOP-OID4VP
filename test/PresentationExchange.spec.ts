@@ -370,7 +370,7 @@ describe('presentation exchange manager tests', () => {
       format: VerifiablePresentationTypeFormat.LDP_VP,
     };
     try {
-      await PresentationExchange.validatePayloadsAgainstDefinitions(pd, [vpw], undefined);
+      await PresentationExchange.validatePayloadsAgainstDefinitions(pd, [vpw]);
     } catch (e) {
       console.log(e);
     }
