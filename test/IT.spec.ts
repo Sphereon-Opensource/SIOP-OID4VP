@@ -210,15 +210,15 @@ describe('RP and OP interaction should', () => {
   it('succeed when calling optional steps in the full flow', async () => {
     // expect.assertions(1);
     const rpMockEntity = {
-      hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-      did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-      didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller2022100301',
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
 
     const opMockEntity = {
-      hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
-      did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
-      didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
+      hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+      did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+      didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -305,15 +305,15 @@ describe('RP and OP interaction should', () => {
 
   it('fail when calling with presentation definitions and without verifiable presentation', async () => {
     const rpMockEntity = {
-      hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-      did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-      didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller2022100302',
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
 
     const opMockEntity = {
-      hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
-      did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
-      didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
+      hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+      did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+      didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -397,15 +397,15 @@ describe('RP and OP interaction should', () => {
 
   it('succeed when calling with presentation definitions and right verifiable presentation', async () => {
     const rpMockEntity = {
-      hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-      did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-      didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller20221003',
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
 
     const opMockEntity = {
-      hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
-      did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
-      didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
+      hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+      did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+      didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -508,15 +508,15 @@ describe('RP and OP interaction should', () => {
     'should fail when calling with CheckLinkedDomain.ALWAYS',
     async () => {
       const rpMockEntity = {
-        hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-        did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-        didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller20221004',
+        hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+        did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+        didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
       };
 
       const opMockEntity = {
-        hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
-        did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
-        didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
+        hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+        did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+        didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
       };
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -615,9 +615,9 @@ describe('RP and OP interaction should', () => {
 
   it('succeed when calling with CheckLinkedDomain.ALWAYS', async () => {
     const rpMockEntity = {
-      hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-      did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-      didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller20221005',
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
 
     const opMockEntity = {
@@ -744,15 +744,15 @@ describe('RP and OP interaction should', () => {
     'should succeed when calling with CheckLinkedDomain.IF_PRESENT',
     async () => {
       const rpMockEntity = {
-        hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-        did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-        didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller20221006',
+        hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+        did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+        didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
       };
 
       const opMockEntity = {
-        hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
-        did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
-        didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
+        hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+        did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+        didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
       };
 
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -856,9 +856,9 @@ describe('RP and OP interaction should', () => {
 
   it('succeed when calling with RevocationVerification.ALWAYS with ldp_vp', async () => {
     const rpMockEntity = {
-      hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-      did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-      didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller20221007',
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
 
     const opMockEntity = {
@@ -1152,5 +1152,119 @@ describe('RP and OP interaction should', () => {
         RevocationVerification.ALWAYS
       )
     ).resolves.not.toThrow();
+  });
+
+  it('should verify revocation ldp_vp with location id_token', async () => {
+    const rpMockEntity = {
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
+    };
+
+    const opMockEntity = {
+      hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+      did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+      didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
+
+    const rp = RP.builder()
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
+      .withPresentationVerification(presentationVerificationCallback)
+      .addVerifyCallback(verifyCallback)
+      .withRevocationVerification(RevocationVerification.NEVER)
+      .redirect(EXAMPLE_REDIRECT_URL)
+      .requestBy(PassBy.VALUE)
+      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
+      .registrationBy({
+        idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: {
+          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+        },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did', 'did:ion'],
+        registrationBy: { type: PassBy.VALUE },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      })
+      .addPresentationDefinitionClaim({
+        definition: getPresentationDefinition(),
+        location: PresentationLocation.VP_TOKEN,
+      })
+      .build();
+    const op = OP.builder()
+      .addVerifyCallback(verifyCallback)
+      .withExpiresIn(1000)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
+      .registrationBy({
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormats: {
+          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+        },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did:ethr'],
+        registrationBy: { type: PassBy.VALUE },
+      })
+      .build();
+
+    const requestURI = await rp.createAuthenticationRequest({
+      nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+      state: 'b32f0087fc9816eb813fd11f',
+    });
+
+    // Let's test the parsing
+    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+    expect(parsedAuthReqURI.requestPayload).toBeDefined();
+    expect(parsedAuthReqURI.jwt).toBeDefined();
+    expect(parsedAuthReqURI.registration).toBeDefined();
+
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    expect(verifiedAuthReqWithJWT.signer).toBeDefined();
+    expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
+    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
+    const vp = await pex.submissionFrom(pd[0].definition, getVCs());
+    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
+      vp: [
+        {
+          presentation: vp,
+          format: VerifiablePresentationTypeFormat.LDP_VP,
+          location: PresentationLocation.ID_TOKEN,
+        },
+      ],
+    });
+    expect(authenticationResponseWithJWT.payload).toBeDefined();
+
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+      audience: EXAMPLE_REDIRECT_URL,
+    });
+    expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
+    expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
+    expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 });

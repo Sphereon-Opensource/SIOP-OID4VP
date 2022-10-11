@@ -229,6 +229,7 @@ export class PresentationExchange {
   static async validatePayloadsAgainstDefinitions(
     definitions: PresentationDefinitionWithLocation[],
     vpPayloads: VerifiablePresentationPayload[],
+    presentationSubmission?: PresentationSubmission,
     verifyPresentationCallback?: PresentationVerificationCallback
   ) {
     if (!definitions || !vpPayloads || !definitions.length || definitions.length !== vpPayloads.length) {
@@ -236,7 +237,8 @@ export class PresentationExchange {
     }
     await Promise.all(
       definitions.map(
-        async (pd) => await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads, verifyPresentationCallback)
+        async (pd) =>
+          await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads, presentationSubmission, verifyPresentationCallback)
       )
     );
   }
@@ -244,9 +246,11 @@ export class PresentationExchange {
   private static async validatePayloadAgainstDefinitions(
     definition: IPresentationDefinition,
     vpPayloads: VerifiablePresentationPayload[],
+    presentationSubmission: PresentationSubmission,
     verifyPresentationCallback?: PresentationVerificationCallback
   ) {
     function filterValidPresentations() {
+      //TODO: add support for multiple VPs here
       return vpPayloads.filter(async (vpw: VerifiablePresentationPayload) => {
         const presentation = vpw.presentation;
         // The verifyPresentationCallback function is mandatory for RP only,
@@ -259,7 +263,9 @@ export class PresentationExchange {
           }
         }
         // fixme: Limited disclosure suites
-        const evaluationResults = new PEX().evaluatePresentation(definition, presentation, []);
+        const evaluationResults = presentationSubmission
+          ? new PEX().evaluatePresentation(definition, { presentationSubmission, ...presentation }, [])
+          : new PEX().evaluatePresentation(definition, { ...presentation }, []);
         const submission = evaluationResults.value;
         if (!presentation || !submission) {
           throw new Error(SIOPErrors.NO_PRESENTATION_SUBMISSION);

@@ -1,3 +1,4 @@
+import { ObjectUtils, PresentationSubmission } from '@sphereon/ssi-types';
 import { JWTHeader } from 'did-jwt';
 import { JWK } from 'jose';
 
@@ -87,32 +88,32 @@ export default class AuthenticationResponse {
     // todo add uri generation support in separate method, like in the AuthRequest class
 
     /*if (isInternalSignature(responseOpts.signatureType)) {
-                                                    return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
-                                                } else if (isExternalSignature(responseOpts.signatureType)) {
-                                                    return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
-                                                } else {
-                                                    throw new Error("INVALID_SIGNATURE_TYPE");
-                                                }*/
+                                                        return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
+                                                    } else if (isExternalSignature(responseOpts.signatureType)) {
+                                                        return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
+                                                    } else {
+                                                        throw new Error("INVALID_SIGNATURE_TYPE");
+                                                    }*/
     /*const params = `id_token=${JWT}`;
-                                                const uriResponse = {
-                                                    encodedUri: "",
-                                                    bodyEncoded: "",
-                                                    encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
-                                                    responseMode: didAuthResponseCall.responseMode
-                                                        ? didAuthResponseCall.responseMode
-                                                        : ResponseMode.FRAGMENT, // FRAGMENT is the default
-                                                };
+                                                    const uriResponse = {
+                                                        encodedUri: "",
+                                                        bodyEncoded: "",
+                                                        encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
+                                                        responseMode: didAuthResponseCall.responseMode
+                                                            ? didAuthResponseCall.responseMode
+                                                            : ResponseMode.FRAGMENT, // FRAGMENT is the default
+                                                    };
 
-                                                if (didAuthResponseCall.responseMode === ResponseMode.FORM_POST) {
-                                                    uriResponse.encodedUri = encodeURI(didAuthResponseCall.redirectUri);
-                                                    uriResponse.bodyEncoded = encodeURI(params);
-                                                } else if (didAuthResponseCall.responseMode === ResponseMode.QUERY) {
-                                                    uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
-                                                } else {
-                                                    uriResponse.responseMode = ResponseMode.FRAGMENT;
-                                                    uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
-                                                }
-                                                return uriResponse;*/
+                                                    if (didAuthResponseCall.responseMode === ResponseMode.FORM_POST) {
+                                                        uriResponse.encodedUri = encodeURI(didAuthResponseCall.redirectUri);
+                                                        uriResponse.bodyEncoded = encodeURI(params);
+                                                    } else if (didAuthResponseCall.responseMode === ResponseMode.QUERY) {
+                                                        uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
+                                                    } else {
+                                                        uriResponse.responseMode = ResponseMode.FRAGMENT;
+                                                        uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
+                                                    }
+                                                    return uriResponse;*/
   }
 
   /**
@@ -190,7 +191,7 @@ function assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload;
     } else if (!opts.verPayload.exp || opts.verPayload.exp < Date.now() / 1000) {
       throw Error(SIOPErrors.EXPIRED);
       /*} else if (!opts.verPayload.iat || opts.verPayload.iat > (Date.now() / 1000)) {
-                  throw Error(SIOPErrors.EXPIRED);*/
+                        throw Error(SIOPErrors.EXPIRED);*/
       // todo: Add iat check
     }
     if ((opts.verPayload.aud && !opts.audience) || (!opts.verPayload.aud && opts.audience)) {
@@ -212,12 +213,12 @@ async function createThumbprintAndJWK(resOpts: AuthenticationResponseOpts): Prom
       resOpts.did
     );
     /*  } else if (isExternalSignature(resOpts.signatureType)) {
-                    const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
-                    if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
-                      throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
-                    }
-                    thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
-                    subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
+                        const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
+                        if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
+                          throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
+                        }
+                        thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
+                        subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
   } else if (isSuppliedSignature(resOpts.signatureType)) {
     // fixme: These are uninitialized. Probably we have to extend the supplied signature to provide these.
     return { thumbprint, subJwk };
@@ -288,14 +289,58 @@ async function createSIOPResponsePayload(
     iat: Date.now() / 1000,
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
-    vp_token,
-    verifiable_presentations,
   };
+  // add support for multiple VPs (VDX-158)
+  if (resOpts.vp && resOpts.vp[0].location === PresentationLocation.ID_TOKEN) {
+    const id_token = {
+      iss: ResponseIss.SELF_ISSUED_V2,
+      aud: verifiedJwt.payload.redirect_uri,
+      iat: Date.now() / 1000,
+      exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
+      sub: resOpts.did,
+      //TODO: We don't have this value in the payload
+      auth_time: verifiedJwt.payload.auth_time,
+      nonce: nonce,
+      _vp_token: {
+        // right now pex doesn't support presentation_submission for multiple VPs (as well as multiple VPs)
+        presentation_submission: verifiable_presentations[0].presentation.presentation_submission,
+      },
+    };
+    let vp_token;
+    if (resOpts.vp.length > 1) {
+      vp_token = [];
+      for (const vptPayload of resOpts.vp) {
+        if (ObjectUtils.isString(vptPayload.presentation)) {
+          vp_token.push({
+            presentation: vptPayload.presentation,
+          });
+        } else {
+          vp_token.push(vptPayload.presentation);
+        }
+      }
+    } else if (resOpts.vp.length === 1) {
+      if (ObjectUtils.isString(resOpts.vp)) {
+        vp_token = { presentation: resOpts.vp };
+      } else {
+        vp_token = resOpts.vp;
+      }
+    }
+    if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
+      const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
+      id_token['sub_jwk'] = subJwk;
+      id_token.sub = thumbprint;
+    }
+    authenticationResponsePayload.id_token = id_token;
+    authenticationResponsePayload.vp_token = vp_token;
+  } else {
+    authenticationResponsePayload.vp_token = vp_token;
+    authenticationResponsePayload.verifiable_presentations = verifiable_presentations;
 
-  if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
-    const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
-    authenticationResponsePayload.sub_jwk = subJwk;
-    authenticationResponsePayload.sub = thumbprint;
+    if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
+      const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
+      authenticationResponsePayload.sub_jwk = subJwk;
+      authenticationResponsePayload.sub = thumbprint;
+    }
   }
   return authenticationResponsePayload;
 }
@@ -319,26 +364,36 @@ async function assertValidVerifiablePresentations(args: {
   verPayload: AuthenticationResponsePayload;
   presentationVerificationCallback?: PresentationVerificationCallback;
 }) {
-  if ((!args.definitions || args.definitions.length == 0) && !args.verPayload) {
+  if ((!args.definitions || args.definitions.length == 0) && !args.verPayload.vp_token) {
     return;
   }
 
   // const definitions: PresentationDefinitionWithLocation[] = verifyOpts?.claims?.presentationDefinitions;
   PresentationExchange.assertValidPresentationDefinitionWithLocations(args.definitions);
-  let presentationPayloads: VerifiablePresentationPayload[];
+  let presentationPayloads: VerifiablePresentationPayload[] = [];
+  let presentationSubmission: PresentationSubmission;
   if (args.verPayload.verifiable_presentations && args.verPayload.verifiable_presentations.length > 0) {
     presentationPayloads = args.verPayload.verifiable_presentations;
   }
   if (args.verPayload.vp_token) {
-    if (!presentationPayloads) {
-      presentationPayloads = [args.verPayload.vp_token];
+    if (Array.isArray(args.verPayload.vp_token)) {
+      if (!presentationPayloads) {
+        presentationPayloads = args.verPayload.vp_token;
+      } else {
+        presentationPayloads.push(...args.verPayload.vp_token);
+      }
     } else {
-      presentationPayloads.push(args.verPayload.vp_token);
+      presentationPayloads = [args.verPayload.vp_token];
+    }
+  }
+  if (args.verPayload.id_token) {
+    if (args.verPayload.id_token._vp_token) {
+      presentationSubmission = args.verPayload.id_token._vp_token;
     }
   }
 
   /*console.log('pd:', JSON.stringify(definitions));
-  console.log('vps:', JSON.stringify(presentationPayloads));*/
+    console.log('vps:', JSON.stringify(presentationPayloads));*/
   if (args.definitions && args.definitions.length && !presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
   } else if (!args.definitions && presentationPayloads) {
@@ -346,6 +401,11 @@ async function assertValidVerifiablePresentations(args: {
   } else if (args.definitions && presentationPayloads && args.definitions.length != presentationPayloads.length) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
   } else if (args.definitions && presentationPayloads) {
-    await PresentationExchange.validatePayloadsAgainstDefinitions(args.definitions, presentationPayloads, args.presentationVerificationCallback);
+    await PresentationExchange.validatePayloadsAgainstDefinitions(
+      args.definitions,
+      presentationPayloads,
+      presentationSubmission,
+      args.presentationVerificationCallback
+    );
   }
 }
