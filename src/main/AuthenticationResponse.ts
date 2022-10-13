@@ -278,11 +278,13 @@ async function createSIOPResponsePayload(
 
   const { verifiable_presentations, vp_token } = extractPresentations(resOpts);
   const verifiablePresentations = [];
-  for (const vpPayload of verifiable_presentations) {
-    verifiablePresentations.push({
-      format: vpPayload.format,
-      presentation: await resOpts.presentationSignCallback(vpPayload.presentation),
-    });
+  if (verifiable_presentations && verifiable_presentations.length > 0) {
+    for (const vpPayload of verifiable_presentations) {
+      verifiablePresentations.push({
+        format: vpPayload.format,
+        presentation: await resOpts.presentationSignCallback(vpPayload.presentation),
+      });
+    }
   }
   const authenticationResponsePayload: AuthenticationResponsePayload = {
     iss: ResponseIss.SELF_ISSUED_V2,
@@ -296,9 +298,10 @@ async function createSIOPResponsePayload(
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     registration,
     vp_token,
-    verifiable_presentations: verifiablePresentations,
   };
-
+  if (verifiablePresentations.length > 0) {
+    authenticationResponsePayload.verifiable_presentations = verifiablePresentations;
+  }
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
     authenticationResponsePayload.sub_jwk = subJwk;
@@ -346,7 +349,7 @@ async function assertValidVerifiablePresentations(args: {
 
   /*console.log('pd:', JSON.stringify(definitions));
   console.log('vps:', JSON.stringify(presentationPayloads));*/
-  if (args.definitions && args.definitions.length && !presentationPayloads) {
+  if (args.definitions && args.definitions.length > 0 && !presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
   } else if (!args.definitions && presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
