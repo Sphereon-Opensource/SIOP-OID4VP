@@ -1,21 +1,13 @@
-import {
-  EvaluationResults,
-  IPresentationDefinition,
-  KeyEncoding,
-  PEX,
-  PresentationSignCallBackParams,
-  PresentationSignOptions,
-  SelectResults,
-  Status,
-} from '@sphereon/pex';
+import { EvaluationResults, IPresentationDefinition, KeyEncoding, PEX, PresentationSignOptions, SelectResults, Status } from '@sphereon/pex';
 import { PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmission } from '@sphereon/pex-models';
-import { IPresentation, IProofPurpose, IProofType, IVerifiablePresentation, W3CVerifiableCredential } from '@sphereon/ssi-types';
+import { IPresentation, IProofPurpose, IProofType, W3CVerifiableCredential, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 
 import { extractDataFromPath, getWithUrl } from './functions';
 import {
   JWTPayload,
   PresentationDefinitionWithLocation,
   PresentationLocation,
+  PresentationSignCallback,
   PresentationVerificationCallback,
   SIOPErrors,
   VerifiablePresentationPayload,
@@ -36,18 +28,16 @@ export class PresentationExchange {
    * @param presentationDefinition: payload object received by the OP from the RP
    * @param selectedCredentials
    * @param options
+   * @param presentationSignCallback
    */
   public async submissionFrom(
     presentationDefinition: IPresentationDefinition,
     selectedCredentials: W3CVerifiableCredential[],
-    options?: { nonce?: string; domain?: string }
-  ): Promise<IVerifiablePresentation> {
+    options?: { nonce?: string; domain?: string },
+    presentationSignCallback?: PresentationSignCallback
+  ): Promise<W3CVerifiablePresentation> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-    }
-
-    function sign(params: PresentationSignCallBackParams): Promise<IVerifiablePresentation> {
-      return Promise.resolve(params.presentation as IVerifiablePresentation);
     }
 
     const challenge: string = options?.nonce;
@@ -67,7 +57,7 @@ export class PresentationExchange {
       },
     };
 
-    return this.pex.verifiablePresentationFromAsync(presentationDefinition, selectedCredentials, sign, signOptions);
+    return this.pex.verifiablePresentationFromAsync(presentationDefinition, selectedCredentials, presentationSignCallback, signOptions);
   }
 
   /**

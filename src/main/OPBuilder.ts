@@ -9,6 +9,7 @@ import {
   EcdsaSignature,
   ExternalSignature,
   InternalSignature,
+  PresentationSignCallback,
   ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,
@@ -29,6 +30,7 @@ export default class OPBuilder {
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
+  presentationSignCallback?: PresentationSignCallback;
   supportedVersions: Array<SupportedVersion>;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
@@ -132,6 +134,11 @@ export default class OPBuilder {
     } else if (Array.isArray(supportedVersion)) {
       this.supportedVersions.push(supportedVersion as SupportedVersion);
     }
+    return this;
+  }
+
+  withPresentationSignCallback(presentationSignCallback: PresentationSignCallback) {
+    this.presentationSignCallback = presentationSignCallback;
     return this;
   }
 

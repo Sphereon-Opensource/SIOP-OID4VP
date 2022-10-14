@@ -166,7 +166,10 @@ async function parseAndResolveUri(encodedUri: string) {
   return { requestPayload, jwt, registrationMetadata };
 }
 
-function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts }) {
+function createResponseOptsFromBuilderOrExistingOpts(opts: {
+  builder?: OPBuilder;
+  responseOpts?: AuthenticationResponseOpts;
+}): AuthenticationResponseOpts {
   if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
     opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
       opts.builder.responseRegistration.subjectSyntaxTypesSupported,
@@ -226,6 +229,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: { builder?: OPBuilder
       expiresIn: opts.builder.expiresIn,
       signatureType: opts.builder.signatureType,
       responseMode: opts.builder.responseMode,
+      presentationSignCallback: opts.builder.presentationSignCallback,
     };
 
     const languageTagEnabledFieldsNames = ['clientName', 'clientPurpose'];

@@ -1,7 +1,13 @@
 // noinspection JSUnusedGlobalSymbols
 
+import { PresentationSignCallBackParams } from '@sphereon/pex';
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
-import { IPresentation as PEPresentation, IVerifiablePresentation as PEVerifiablePresentation, W3CVerifiableCredential } from '@sphereon/ssi-types';
+import {
+  IPresentation as PEPresentation,
+  IVerifiablePresentation as PEVerifiablePresentation,
+  W3CVerifiableCredential,
+  W3CVerifiablePresentation,
+} from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 import { JWK } from 'jose';
@@ -87,11 +93,14 @@ export type PresentationVerificationResult = { verified: boolean };
 
 export type PresentationVerificationCallback = (args: VerifiablePresentationPayload) => Promise<PresentationVerificationResult>;
 
+export type PresentationSignCallback = (args: PresentationSignCallBackParams) => Promise<W3CVerifiablePresentation>;
+
 export interface AuthenticationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
   registration: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
   presentationVerificationCallback?: PresentationVerificationCallback;
+  presentationSignCallback?: PresentationSignCallback;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   nonce?: string;
   state?: string;
