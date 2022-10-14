@@ -925,48 +925,24 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
-        "expirationDate": {
-          "type": "string"
-        },
-        "issuer": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/definitions/IIssuer"
-            }
-          ]
-        },
-        "issuanceDate": {
-          "type": "string"
-        },
-        "credentialSubject": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            }
-          }
-        },
-        "id": {
-          "type": "string"
-        },
         "@context": {
           "anyOf": [
+            {
+              "$ref": "#/definitions/ICredentialContextType"
+            },
             {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/ICredentialContextType"
               }
-            },
-            {
-              "$ref": "#/definitions/ICredentialContextType"
             }
           ]
         },
-        "credentialStatus": {
-          "$ref": "#/definitions/ICredentialStatus"
+        "type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "credentialSchema": {
           "anyOf": [
@@ -981,17 +957,56 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
+        "issuer": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/IIssuerId"
+            },
+            {
+              "$ref": "#/definitions/IIssuer"
+            }
+          ]
+        },
+        "issuanceDate": {
+          "type": "string"
+        },
+        "credentialSubject": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "expirationDate": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "credentialStatus": {
+          "$ref": "#/definitions/ICredentialStatus"
+        },
         "description": {
           "type": "string"
         },
         "name": {
           "type": "string"
-        },
-        "type": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "required": [
@@ -1002,6 +1017,34 @@ export const AuthenticationResponseOptsSchema = {
         "proof",
         "type"
       ]
+    },
+    "ICredentialSchemaType": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ICredentialSchema"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "ICredentialSchema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false
+    },
+    "IIssuerId": {
+      "type": "string"
     },
     "IIssuer": {
       "type": "object",
@@ -1027,31 +1070,6 @@ export const AuthenticationResponseOptsSchema = {
       "required": [
         "id",
         "type"
-      ],
-      "additionalProperties": false
-    },
-    "ICredentialSchemaType": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/ICredentialSchema"
-        },
-        {
-          "type": "string"
-        }
-      ]
-    },
-    "ICredentialSchema": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "id"
       ],
       "additionalProperties": false
     },

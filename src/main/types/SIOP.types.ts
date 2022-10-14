@@ -1,8 +1,8 @@
 // noinspection JSUnusedGlobalSymbols
 
+import { PresentationSignCallBackParams } from '@sphereon/pex';
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import {
-  IPresentation,
   IPresentation as PEPresentation,
   IVerifiablePresentation as PEVerifiablePresentation,
   W3CVerifiableCredential,
@@ -93,7 +93,7 @@ export type PresentationVerificationResult = { verified: boolean };
 
 export type PresentationVerificationCallback = (args: VerifiablePresentationPayload) => Promise<PresentationVerificationResult>;
 
-export type PresentationSignCallback = (args: IPresentation) => Promise<W3CVerifiablePresentation>;
+export type PresentationSignCallback = (args: PresentationSignCallBackParams) => Promise<W3CVerifiablePresentation>;
 
 export interface AuthenticationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.

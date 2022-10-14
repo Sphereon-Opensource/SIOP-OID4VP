@@ -1,5 +1,5 @@
 import { IPresentationDefinition } from '@sphereon/pex';
-import { IProofType, IVerifiableCredential } from '@sphereon/ssi-types';
+import { IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
 import { IVerifyCallbackArgs, IVerifyCredentialResult, VerifyCallback, WDCErrors } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
@@ -41,6 +41,19 @@ const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 
 const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
+
+const presentationSignCallback: PresentationSignCallback = async (_args) => ({
+  ..._args.presentation,
+  proof: {
+    type: 'RsaSignature2018',
+    created: '2018-09-14T21:19:10Z',
+    proofPurpose: 'authentication',
+    verificationMethod: 'did:example:ebfeb1f712ebc6f1c276e12ec21#keys-1',
+    challenge: '1f44d55f-f161-4938-a659-f8026467f126',
+    domain: '4jt78h47fh47',
+    jws: 'eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqsLfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh4vGHSrQyHUGlcTwLtjPAnKb78',
+  },
+});
 
 function getPresentationDefinition(): IPresentationDefinition {
   return {
@@ -157,6 +170,7 @@ describe('RP and OP interaction should', () => {
         })
         .build();
       const op = OP.builder()
+        .withPresentationSignCallback(presentationSignCallback)
         .withExpiresIn(1000)
         .addVerifyCallback(verifyCallback)
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -444,6 +458,7 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
+      .withPresentationSignCallback(presentationSignCallback)
       .withExpiresIn(1000)
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
@@ -484,7 +499,7 @@ describe('RP and OP interaction should', () => {
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.submissionFrom(pd[0].definition, getVCs());
+    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
       vp: [
         {
@@ -554,6 +569,7 @@ describe('RP and OP interaction should', () => {
         })
         .build();
       const op = OP.builder()
+        .withPresentationSignCallback(presentationSignCallback)
         .withExpiresIn(1000)
         .addVerifyCallback(verifyCallback)
         .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -593,7 +609,7 @@ describe('RP and OP interaction should', () => {
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = await pex.submissionFrom(pd[0].definition, getVCs());
+      const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
       const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
         vp: [
           {
@@ -668,6 +684,7 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
+      .withPresentationSignCallback(presentationSignCallback)
       .addVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -712,7 +729,7 @@ describe('RP and OP interaction should', () => {
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.submissionFrom(pd[0].definition, getVCs());
+    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
       vp: [
         {
@@ -792,6 +809,7 @@ describe('RP and OP interaction should', () => {
         })
         .build();
       const op = OP.builder()
+        .withPresentationSignCallback(presentationSignCallback)
         .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addVerifyCallback(verifyCallback)
         .withExpiresIn(1000)
@@ -833,7 +851,7 @@ describe('RP and OP interaction should', () => {
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = await pex.submissionFrom(pd[0].definition, getVCs());
+      const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
       const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
         vp: [
           {
@@ -873,20 +891,6 @@ describe('RP and OP interaction should', () => {
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
-
-    const presentationSignCallback: PresentationSignCallback = async (_args) => ({
-      ..._args,
-      proof: {
-        type: 'RsaSignature2018',
-        created: '2018-09-14T21:19:10Z',
-        proofPurpose: 'authentication',
-        verificationMethod: 'did:example:ebfeb1f712ebc6f1c276e12ec21#keys-1',
-        challenge: '1f44d55f-f161-4938-a659-f8026467f126',
-        domain: '4jt78h47fh47',
-        jws: 'eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqsLfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh4vGHSrQyHUGlcTwLtjPAnKb78',
-      },
-    });
-
     const rp = RP.builder()
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
@@ -928,6 +932,7 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const op = OP.builder()
+      .withPresentationSignCallback(presentationSignCallback)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -977,7 +982,7 @@ describe('RP and OP interaction should', () => {
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.submissionFrom(pd[0].definition, getVCs());
+    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
 
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
       vp: [
@@ -1220,6 +1225,7 @@ describe('RP and OP interaction should', () => {
       })
       .build();
     const op = OP.builder()
+      .withPresentationSignCallback(presentationSignCallback)
       .addVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
@@ -1263,7 +1269,7 @@ describe('RP and OP interaction should', () => {
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.submissionFrom(pd[0].definition, getVCs());
+    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
       vp: [
         {
