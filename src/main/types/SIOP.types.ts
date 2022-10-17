@@ -38,25 +38,21 @@ export interface AuthenticationRequestOpts {
   // [x: string]: any;
 }
 
-// https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
-export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistrationPayload {
+interface ID1AuthenticationRequestPayload extends JWTPayload, RequestRegistrationPayload {
   scope: string;
   response_type: ResponseType;
   client_id: string; // did of RP
   redirect_uri: string;
   id_token_hint?: string; // TODO:  idtokenhint parameter value, as specified in Section 3.1.2. If the ID Token is encrypted to the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
-  // iss: string;
   response_mode: ResponseMode;
   claims?: ClaimPayload; // claims parameter value, as specified in Section 5.5.
   registration?: RPRegistrationMetadataPayload;
   registration_uri?: string;
-  //response_context: ResponseContext;
   request?: string; // TODO Request Object value, as specified in Section 6.1. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
-
   request_uri?: string; //URL where Request Object value can be retrieved from, as specified in Section 6.2.
-  // state?: string;
-  // nonce: string;
-  // did_doc?: DIDDocument;
+}
+
+interface JWTVcPresentationProfileAuthenticationRequestPayload {
   /**
    * Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed
    * individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if
@@ -66,6 +62,9 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
    */
   id_token_type?: string;
 }
+
+// https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
+export type AuthenticationRequestPayload = ID1AuthenticationRequestPayload & JWTVcPresentationProfileAuthenticationRequestPayload;
 
 export interface RequestRegistrationPayload {
   registration?: RPRegistrationMetadataPayload; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
