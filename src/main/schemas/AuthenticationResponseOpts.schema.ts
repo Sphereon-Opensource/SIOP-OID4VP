@@ -65,26 +65,18 @@ export const AuthenticationResponseOptsSchema = {
     "ResponseRegistrationOpts": {
       "type": "object",
       "properties": {
-        "vpFormats": {
-          "$ref": "#/definitions/Format"
-        },
         "authorizationEndpoint": {
           "type": "string"
         },
-        "tokenEndpoint": {
-          "type": "string"
-        },
-        "userinfoEndpoint": {
-          "type": "string"
-        },
         "issuer": {
-          "$ref": "#/definitions/ResponseIss"
-        },
-        "jwksUri": {
-          "type": "string"
-        },
-        "registrationEndpoint": {
-          "type": "string"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ResponseIss"
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "responseTypesSupported": {
           "anyOf": [
@@ -96,45 +88,6 @@ export const AuthenticationResponseOptsSchema = {
             },
             {
               "$ref": "#/definitions/ResponseType"
-            }
-          ]
-        },
-        "responseModesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseMode"
-              }
-            },
-            {
-              "$ref": "#/definitions/ResponseMode"
-            }
-          ]
-        },
-        "grantTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/GrantType"
-              }
-            },
-            {
-              "$ref": "#/definitions/GrantType"
-            }
-          ]
-        },
-        "acrValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/AuthenticationContextReferences"
-              }
-            },
-            {
-              "$ref": "#/definitions/AuthenticationContextReferences"
             }
           ]
         },
@@ -174,6 +127,117 @@ export const AuthenticationResponseOptsSchema = {
             },
             {
               "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "requestObjectSigningAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "subjectSyntaxTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "redirectUris": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "clientName": {
+          "type": "string"
+        },
+        "tokenEndpointAuthMethod": {
+          "type": "string"
+        },
+        "applicationType": {
+          "type": "string"
+        },
+        "responseTypes": {
+          "type": "string"
+        },
+        "grantTypes": {
+          "type": "string"
+        },
+        "vpFormats": {
+          "$ref": "#/definitions/Format"
+        },
+        "tokenEndpoint": {
+          "type": "string"
+        },
+        "userinfoEndpoint": {
+          "type": "string"
+        },
+        "jwksUri": {
+          "type": "string"
+        },
+        "registrationEndpoint": {
+          "type": "string"
+        },
+        "responseModesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseMode"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseMode"
+            }
+          ]
+        },
+        "grantTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GrantType"
+              }
+            },
+            {
+              "$ref": "#/definitions/GrantType"
+            }
+          ]
+        },
+        "acrValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AuthenticationContextReferences"
+              }
+            },
+            {
+              "$ref": "#/definitions/AuthenticationContextReferences"
             }
           ]
         },
@@ -242,19 +306,6 @@ export const AuthenticationResponseOptsSchema = {
             }
           ]
         },
-        "requestObjectSigningAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
         "requestObjectEncryptionAlgValuesSupported": {
           "anyOf": [
             {
@@ -311,9 +362,13 @@ export const AuthenticationResponseOptsSchema = {
           "anyOf": [
             {
               "type": "array",
-              "items": {}
+              "items": {
+                "type": "string"
+              }
             },
-            {}
+            {
+              "type": "string"
+            }
           ]
         },
         "claimTypesSupported": {
@@ -389,47 +444,76 @@ export const AuthenticationResponseOptsSchema = {
         "opTosUri": {
           "type": "string"
         },
-        "subjectSyntaxTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "idTokenTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/IdTokenType"
-              }
-            },
-            {
-              "$ref": "#/definitions/IdTokenType"
-            }
-          ]
-        },
-        "clientName": {
-          "type": "string"
-        },
-        "logoUri": {
-          "type": "string"
-        },
-        "clientPurpose": {
-          "type": "string"
-        },
         "registrationBy": {
           "$ref": "#/definitions/RegistrationType"
         }
       },
       "required": [
-        "registrationBy"
+        "applicationType",
+        "authorizationEndpoint",
+        "clientId",
+        "clientName",
+        "grantTypes",
+        "idTokenSigningAlgValuesSupported",
+        "issuer",
+        "jwksUri",
+        "redirectUris",
+        "registrationBy",
+        "registrationEndpoint",
+        "requestObjectSigningAlgValuesSupported",
+        "responseModesSupported",
+        "responseTypes",
+        "responseTypesSupported",
+        "scopesSupported",
+        "subjectSyntaxTypesSupported",
+        "subjectTypesSupported",
+        "tokenEndpoint",
+        "tokenEndpointAuthMethod",
+        "userinfoEndpoint",
+        "vpFormats"
+      ],
+      "additionalProperties": false
+    },
+    "ResponseIss": {
+      "type": "string",
+      "enum": [
+        "https://self-issued.me",
+        "https://self-issued.me/v2"
+      ]
+    },
+    "ResponseType": {
+      "type": "string",
+      "enum": [
+        "id_token",
+        "vp_token"
+      ]
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "openid",
+        "openid did_authn",
+        "profile",
+        "email",
+        "address",
+        "phone"
+      ]
+    },
+    "SubjectType": {
+      "type": "string",
+      "enum": [
+        "public",
+        "pairwise"
+      ]
+    },
+    "SigningAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K",
+        "none"
       ]
     },
     "Format": {
@@ -486,20 +570,6 @@ export const AuthenticationResponseOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "ResponseIss": {
-      "type": "string",
-      "enum": [
-        "https://self-issued.me",
-        "https://self-issued.me/v2"
-      ]
-    },
-    "ResponseType": {
-      "type": "string",
-      "enum": [
-        "id_token",
-        "vp_token"
-      ]
-    },
     "ResponseMode": {
       "type": "string",
       "enum": [
@@ -521,34 +591,6 @@ export const AuthenticationResponseOptsSchema = {
       "enum": [
         "phr",
         "phrh"
-      ]
-    },
-    "Scope": {
-      "type": "string",
-      "enum": [
-        "openid",
-        "openid did_authn",
-        "profile",
-        "email",
-        "address",
-        "phone"
-      ]
-    },
-    "SubjectType": {
-      "type": "string",
-      "enum": [
-        "public",
-        "pairwise"
-      ]
-    },
-    "SigningAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K",
-        "none"
       ]
     },
     "KeyAlgo": {
@@ -575,13 +617,6 @@ export const AuthenticationResponseOptsSchema = {
         "normal",
         "aggregated",
         "distributed"
-      ]
-    },
-    "IdTokenType": {
-      "type": "string",
-      "enum": [
-        "subject_signed",
-        "attester_signed"
       ]
     },
     "RegistrationType": {

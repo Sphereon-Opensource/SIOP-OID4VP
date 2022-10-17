@@ -219,64 +219,61 @@ export interface RequestRegistrationOpts extends RPRegistrationMetadataOpts {
   // [x: string]: any;
 }
 
-export interface DiscoveryMetadataOpts {
+interface ID1DiscoveryMetadataOpts {
   //TODO add the check: Mandatory if PassBy.Value
-  vpFormats?: Format;
+  authorizationEndpoint: Schema.OPENID | string;
+  // this is a confusion point. In the interop profile it mentions "https://self-issued.me/v2/openid-vc", but in the SIOPv2 it's mentioning "https://self-issued.me/v2"
+  // @Niels also created an issue here: https://github.com/decentralized-identity/jwt-vc-presentation-profile/issues/63 so we can keep an eye on this for clarification
   //TODO add the check: Mandatory if PassBy.Value
-  authorizationEndpoint?: Schema.OPENID | string;
-  tokenEndpoint?: string;
-  userinfoEndpoint?: string;
+  issuer: ResponseIss | string;
   //TODO add the check: Mandatory if PassBy.Value
-  issuer?: ResponseIss;
-  jwksUri?: string;
-  registrationEndpoint?: string;
+  responseTypesSupported: ResponseType[] | ResponseType;
+  scopesSupported: Scope[] | Scope;
+  subjectTypesSupported: SubjectType[] | SubjectType;
+  idTokenSigningAlgValuesSupported: SigningAlgo[] | SigningAlgo;
+  requestObjectSigningAlgValuesSupported: SigningAlgo[] | SigningAlgo;
   //TODO add the check: Mandatory if PassBy.Value
-  responseTypesSupported?: ResponseType[] | ResponseType;
-  responseModesSupported?: ResponseMode[] | ResponseMode;
-  grantTypesSupported?: GrantType[] | GrantType;
-  acrValuesSupported?: AuthenticationContextReferences[] | AuthenticationContextReferences;
-  scopesSupported?: Scope[] | Scope;
-  subjectTypesSupported?: SubjectType[] | SubjectType;
-  idTokenSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  idTokenEncryptionAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
-  idTokenEncryptionEncValuesSupported?: string[] | string;
-  userinfoSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  userinfoEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  userinfoEncryptionEncValuesSupported?: string[] | string;
-  requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  requestObjectEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  requestObjectEncryptionEncValuesSupported?: string[] | string;
-  tokenEndpointAuthMethodsSupported?: TokenEndpointAuthMethod[] | TokenEndpointAuthMethod;
-  tokenEndpointAuthSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  displayValuesSupported?: unknown[] | unknown;
-  claimTypesSupported?: ClaimType[] | ClaimType;
-  claimsSupported?: string[] | string;
-  serviceDocumentation?: string;
-  claimsLocalesSupported?: string[] | string;
-  uiLocalesSupported?: string[] | string;
-  claimsParameterSupported?: boolean;
-  requestParameterSupported?: boolean;
-  requestUriParameterSupported?: boolean;
-  requireRequestUriRegistration?: boolean;
-  opPolicyUri?: string;
-  opTosUri?: string;
+  subjectSyntaxTypesSupported: string[] | string;
+  clientId: string; // from oidc4vp
+  redirectUris: string[] | string; // from oidc4vp
+  clientName: string; // from oidc4vp
+  tokenEndpointAuthMethod: string; // from oidc4vp
+  applicationType: string; // from oidc4vp
+  responseTypes: string; // from oidc4vp, also name suggests array
+  grantTypes: string; // from oidc4vp, also name suggests array
   //TODO add the check: Mandatory if PassBy.Value
-  subjectSyntaxTypesSupported?: string[] | string;
-  idTokenTypesSupported?: IdTokenType[] | IdTokenType;
-  clientName?: string;
-  logoUri?: string;
-  clientPurpose?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [x: string]: any;
-
-  // didsSupported?: boolean;
-  // didMethodsSupported?: string[] | string;
-  // credentialSupported?: boolean;
-  // credentialEndpoint?: string;
-  // credentialFormatsSupported?: CredentialFormat[];
-  // credentialClaimsSupported?: string[] | string;
-  // credentialName?: string;
+  vpFormats: Format; // from oidc4vp
+  tokenEndpoint: string; // from openid connect discovery 1_0
+  userinfoEndpoint: string; // from openid connect discovery 1_0
+  jwksUri: string; // from openid connect discovery 1_0
+  registrationEndpoint: string; // from openid connect discovery 1_0
+  responseModesSupported: ResponseMode[] | ResponseMode; // from openid connect discovery 1_0
+  grantTypesSupported?: GrantType[] | GrantType; // from openid connect discovery 1_0
+  acrValuesSupported?: AuthenticationContextReferences[] | AuthenticationContextReferences; // from openid connect discovery 1_0
+  idTokenEncryptionAlgValuesSupported?: KeyAlgo[] | KeyAlgo; // from openid connect discovery 1_0
+  idTokenEncryptionEncValuesSupported?: string[] | string; // from openid connect discovery 1_0
+  userinfoSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
+  userinfoEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
+  userinfoEncryptionEncValuesSupported?: string[] | string; // from openid connect discovery 1_0
+  requestObjectEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
+  requestObjectEncryptionEncValuesSupported?: string[] | string; // from openid connect discovery 1_0
+  tokenEndpointAuthMethodsSupported?: TokenEndpointAuthMethod[] | TokenEndpointAuthMethod; // from openid connect discovery 1_0
+  tokenEndpointAuthSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
+  displayValuesSupported?: string[] | string; // from openid connect discovery 1_0
+  claimTypesSupported?: ClaimType[] | ClaimType; // from openid connect discovery 1_0
+  claimsSupported?: string[] | string; // recommended, from openid connect discovery 1_0
+  serviceDocumentation?: string; // from openid connect discovery 1_0
+  claimsLocalesSupported?: string[] | string; // from openid connect discovery 1_0
+  uiLocalesSupported?: string[] | string; // from openid connect discovery 1_0
+  claimsParameterSupported?: boolean; // from openid connect discovery 1_0
+  requestParameterSupported?: boolean; // from openid connect discovery 1_0
+  requestUriParameterSupported?: boolean; // from openid connect discovery 1_0
+  requireRequestUriRegistration?: boolean; // from openid connect discovery 1_0
+  opPolicyUri?: string; // from openid connect discovery 1_0
+  opTosUri?: string; // from openid connect discovery 1_0
 }
+
+export type DiscoveryMetadataOpts = ID1DiscoveryMetadataOpts;
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8.2
 // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
