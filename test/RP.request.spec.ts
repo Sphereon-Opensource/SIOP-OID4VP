@@ -42,9 +42,9 @@ describe('RP Builder should', () => {
 
     expect(
       RP.builder()
-        .addClientId('test')
+        .addClientId('test_client_id')
         .addScope('test')
-        .addResponseType('test')
+        .addResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addDidMethod('factom')
         .addResolver('ethr', new Resolver(getUniResolver('ethr')))
@@ -272,9 +272,9 @@ describe('RP should', () => {
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
 
     const request = await RP.builder()
-      .addClientId('test')
+      .addClientId('test_client_id')
       .addScope('test')
-      .addResponseType('test')
+      .addResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)

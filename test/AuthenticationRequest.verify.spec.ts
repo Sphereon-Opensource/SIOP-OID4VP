@@ -126,9 +126,9 @@ describe('verifyJWT should', () => {
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
     const requestOpts: AuthenticationRequestOpts = {
-      clientId: 'test',
+      clientId: 'test_client_id',
       scope: 'test',
-      responseType: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -194,9 +194,9 @@ describe('verifyJWT should', () => {
     };
     const state = State.getState();*/
       const requestOpts: AuthenticationRequestOpts = {
-        clientId: 'test',
+        clientId: 'test_client_id',
         scope: 'test',
-        responseType: 'test',
+        responseType: 'id_token',
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         authorizationEndpoint: '',
         redirectUri: 'https://acme.com/hello',

@@ -163,9 +163,9 @@ describe('OP should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
-        clientId: 'test',
+        clientId: 'test_client_id',
         scope: 'test',
-        responseType: 'test',
+        responseType: 'id_token',
       };
 
       const requestURI = await RP.fromRequestOpts(requestOpts).createAuthenticationRequest({
@@ -191,9 +191,9 @@ describe('OP should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
     const requestURI = await RP.builder()
-      .addClientId('test')
+      .addClientId('test_client_id')
       .addScope('test')
-      .addResponseType('test')
+      .addResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .redirect(EXAMPLE_REFERENCE_URL)
