@@ -3,435 +3,1166 @@ export const DiscoveryMetadataPayloadSchema = {
   "$ref": "#/definitions/DiscoveryMetadataPayload",
   "definitions": {
     "DiscoveryMetadataPayload": {
-      "type": "object",
-      "properties": {
-        "acr_values_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/AuthenticationContextReferences"
-              }
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "authorization_endpoint": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Schema"
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
-            {
-              "$ref": "#/definitions/AuthenticationContextReferences"
-            }
-          ]
-        },
-        "authorization_endpoint": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/Schema"
+            "issuer": {
+              "$ref": "#/definitions/ResponseIss"
             },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "claims_locales_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+            "response_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseType"
+                }
+              ]
             },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "claims_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+            "scopes_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Scope"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/Scope"
+                }
+              ]
             },
-            {
-              "type": "string"
-            }
-          ],
-          "description": "RECOMMENDED. JSON array containing a list of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for. Note that for privacy or other reasons, this might not be an exhaustive list."
-        },
-        "claim_types_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ClaimType"
-              }
+            "subject_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SubjectType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SubjectType"
+                }
+              ]
             },
-            {
-              "$ref": "#/definitions/ClaimType"
-            }
-          ],
-          "description": "OPTIONAL. JSON array containing a list of the Claim Types that the OpenID Provider supports. These Claim Types are described in Section 5.6 of OpenID Connect Core 1.0 [OpenID.Core]. Values defined by this specification are normal, aggregated, and distributed. If omitted, the implementation supports only normal Claims."
-        },
-        "display_values_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {}
+            "id_token_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
             },
-            {}
-          ],
-          "description": "OPTIONAL. JSON array containing a list of the display parameter values that the OpenID Provider supports. These values are described in Section 3.1.2.1 of OpenID Connect Core 1.0 [OpenID.Core]."
-        },
-        "grant_types_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/GrantType"
-              }
+            "request_object_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
             },
-            {
-              "$ref": "#/definitions/GrantType"
-            }
-          ]
-        },
-        "id_token_encryption_alg_values_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/KeyAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/KeyAlgo"
-            }
-          ]
-        },
-        "id_token_encryption_enc_values_supported": {
-          "anyOf": [
-            {
+            "subject_syntax_types_supported": {
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
-            {
+            "token_endpoint": {
               "type": "string"
-            }
-          ],
-          "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for the ID Token to encode the Claims in a JWT [JWT]."
-        },
-        "id_token_signing_alg_values_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "issuer": {
-          "$ref": "#/definitions/ResponseIss"
-        },
-        "jwks_uri": {
-          "type": "string"
-        },
-        "token_endpoint": {
-          "type": "string"
-        },
-        "userinfo_endpoint": {
-          "type": "string"
-        },
-        "registration_endpoint": {
-          "type": "string"
-        },
-        "response_types_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseType"
-              }
+            "userinfo_endpoint": {
+              "type": "string"
             },
-            {
-              "$ref": "#/definitions/ResponseType"
-            }
-          ]
-        },
-        "response_modes_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseMode"
-              }
+            "jwks_uri": {
+              "type": "string"
             },
-            {
-              "$ref": "#/definitions/ResponseMode"
-            }
-          ]
-        },
-        "scopes_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Scope"
-              }
+            "registration_endpoint": {
+              "type": "string"
             },
-            {
-              "$ref": "#/definitions/Scope"
-            }
-          ]
-        },
-        "subject_types_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectType"
-              }
+            "response_modes_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseMode"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseMode"
+                }
+              ]
             },
-            {
-              "$ref": "#/definitions/SubjectType"
-            }
-          ]
-        },
-        "userinfo_signing_alg_values_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
+            "grant_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GrantType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/GrantType"
+                }
+              ]
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "userinfo_encryption_alg_values_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
+            "acr_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/AuthenticationContextReferences"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/AuthenticationContextReferences"
+                }
+              ]
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "request_object_encryption_alg_values_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
+            "id_token_encryption_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeyAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/KeyAlgo"
+                }
+              ]
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "request_object_encryption_enc_values_supported": {
-          "anyOf": [
-            {
+            "id_token_encryption_enc_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for the ID Token to encode the Claims in a JWT [JWT]."
+            },
+            "userinfo_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfo_encryption_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfo_encryption_enc_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) [JWA] supported by the UserInfo Endpoint to encode the Claims in a JWT [JWT]."
+            },
+            "request_object_encryption_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "request_object_encryption_enc_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for Request Objects. These algorithms are used both when the Request Object is passed by value and when it is passed by reference."
+            },
+            "token_endpoint_auth_methods_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/TokenEndpointAuthMethod"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/TokenEndpointAuthMethod"
+                }
+              ]
+            },
+            "token_endpoint_auth_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "display_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {}
+                },
+                {}
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the display parameter values that the OpenID Provider supports. These values are described in Section 3.1.2.1 of OpenID Connect Core 1.0 [OpenID.Core]."
+            },
+            "claim_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ClaimType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ClaimType"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the Claim Types that the OpenID Provider supports. These Claim Types are described in Section 5.6 of OpenID Connect Core 1.0 [OpenID.Core]. Values defined by this specification are normal, aggregated, and distributed. If omitted, the implementation supports only normal Claims."
+            },
+            "claims_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "RECOMMENDED. JSON array containing a list of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for. Note that for privacy or other reasons, this might not be an exhaustive list."
+            },
+            "service_documentation": {
+              "type": "string"
+            },
+            "claims_locales_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "ui_locales_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "claims_parameter_supported": {
+              "type": "boolean"
+            },
+            "request_parameter_supported": {
+              "type": "boolean"
+            },
+            "request_uri_parameter_supported": {
+              "type": "boolean"
+            },
+            "require_request_uri_registration": {
+              "type": "boolean"
+            },
+            "op_policy_uri": {
+              "type": "string"
+            },
+            "op_tos_uri": {
+              "type": "string"
+            },
+            "client_id": {
+              "type": "string"
+            },
+            "redirectUris": {
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
-            {
+            "client_name": {
               "type": "string"
-            }
-          ],
-          "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for Request Objects. These algorithms are used both when the Request Object is passed by value and when it is passed by reference."
-        },
-        "request_object_signing_alg_values_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
+            "token_endpoint_auth_method": {
+              "type": "string"
+            },
+            "application_type": {
+              "type": "string"
+            },
+            "response_types": {
+              "type": "string"
+            },
+            "grant_types": {
+              "type": "string"
+            },
+            "vp_formats": {
+              "$ref": "#/definitions/Format"
             }
+          },
+          "required": [
+            "application_type",
+            "authorization_endpoint",
+            "client_id",
+            "grant_types",
+            "id_token_signing_alg_values_supported",
+            "issuer",
+            "redirectUris",
+            "response_types",
+            "response_types_supported",
+            "scopes_supported",
+            "subject_syntax_types_supported",
+            "subject_types_supported",
+            "token_endpoint_auth_method",
+            "vp_formats"
           ]
         },
-        "token_endpoint_auth_methods_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/TokenEndpointAuthMethod"
-              }
+        {
+          "type": "object",
+          "properties": {
+            "authorization_endpoint": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Schema"
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
-            {
-              "$ref": "#/definitions/TokenEndpointAuthMethod"
-            }
-          ]
-        },
-        "token_endpoint_auth_signing_alg_values_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
+            "issuer": {
+              "$ref": "#/definitions/ResponseIss"
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "userinfo_encryption_enc_values_supported": {
-          "anyOf": [
-            {
+            "response_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseType"
+                }
+              ]
+            },
+            "scopes_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Scope"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/Scope"
+                }
+              ]
+            },
+            "subject_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SubjectType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SubjectType"
+                }
+              ]
+            },
+            "id_token_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "request_object_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "subject_syntax_types_supported": {
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
-            {
+            "token_endpoint": {
               "type": "string"
-            }
-          ],
-          "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) [JWA] supported by the UserInfo Endpoint to encode the Claims in a JWT [JWT]."
-        },
-        "service_documentation": {
-          "type": "string"
-        },
-        "ui_locales_supported": {
-          "anyOf": [
-            {
+            },
+            "userinfo_endpoint": {
+              "type": "string"
+            },
+            "jwks_uri": {
+              "type": "string"
+            },
+            "registration_endpoint": {
+              "type": "string"
+            },
+            "response_modes_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseMode"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseMode"
+                }
+              ]
+            },
+            "grant_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GrantType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/GrantType"
+                }
+              ]
+            },
+            "acr_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/AuthenticationContextReferences"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/AuthenticationContextReferences"
+                }
+              ]
+            },
+            "id_token_encryption_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeyAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/KeyAlgo"
+                }
+              ]
+            },
+            "id_token_encryption_enc_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for the ID Token to encode the Claims in a JWT [JWT]."
+            },
+            "userinfo_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfo_encryption_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfo_encryption_enc_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) [JWA] supported by the UserInfo Endpoint to encode the Claims in a JWT [JWT]."
+            },
+            "request_object_encryption_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "request_object_encryption_enc_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for Request Objects. These algorithms are used both when the Request Object is passed by value and when it is passed by reference."
+            },
+            "token_endpoint_auth_methods_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/TokenEndpointAuthMethod"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/TokenEndpointAuthMethod"
+                }
+              ]
+            },
+            "token_endpoint_auth_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "display_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {}
+                },
+                {}
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the display parameter values that the OpenID Provider supports. These values are described in Section 3.1.2.1 of OpenID Connect Core 1.0 [OpenID.Core]."
+            },
+            "claim_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ClaimType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ClaimType"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the Claim Types that the OpenID Provider supports. These Claim Types are described in Section 5.6 of OpenID Connect Core 1.0 [OpenID.Core]. Values defined by this specification are normal, aggregated, and distributed. If omitted, the implementation supports only normal Claims."
+            },
+            "claims_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "RECOMMENDED. JSON array containing a list of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for. Note that for privacy or other reasons, this might not be an exhaustive list."
+            },
+            "service_documentation": {
+              "type": "string"
+            },
+            "claims_locales_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "ui_locales_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "claims_parameter_supported": {
+              "type": "boolean"
+            },
+            "request_parameter_supported": {
+              "type": "boolean"
+            },
+            "request_uri_parameter_supported": {
+              "type": "boolean"
+            },
+            "require_request_uri_registration": {
+              "type": "boolean"
+            },
+            "op_policy_uri": {
+              "type": "string"
+            },
+            "op_tos_uri": {
+              "type": "string"
+            },
+            "client_id": {
+              "type": "string"
+            },
+            "redirectUris": {
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
-            {
+            "client_name": {
+              "type": "string"
+            },
+            "token_endpoint_auth_method": {
+              "type": "string"
+            },
+            "application_type": {
+              "type": "string"
+            },
+            "response_types": {
+              "type": "string"
+            },
+            "grant_types": {
+              "type": "string"
+            },
+            "vp_formats": {
+              "$ref": "#/definitions/Format"
+            },
+            "logo_uri": {
+              "type": "string"
+            },
+            "client_purpose": {
               "type": "string"
             }
+          },
+          "required": [
+            "application_type",
+            "authorization_endpoint",
+            "client_id",
+            "grant_types",
+            "id_token_signing_alg_values_supported",
+            "issuer",
+            "redirectUris",
+            "response_types",
+            "response_types_supported",
+            "scopes_supported",
+            "subject_syntax_types_supported",
+            "subject_types_supported",
+            "token_endpoint_auth_method",
+            "vp_formats"
           ]
         },
-        "claims_parameter_supported": {
-          "type": "boolean"
-        },
-        "request_parameter_supported": {
-          "type": "boolean"
-        },
-        "request_uri_parameter_supported": {
-          "type": "boolean"
-        },
-        "require_request_uri_registration": {
-          "type": "boolean"
-        },
-        "op_policy_uri": {
-          "type": "string"
-        },
-        "op_tos_uri": {
-          "type": "string"
-        },
-        "subject_syntax_types_supported": {
-          "anyOf": [
-            {
+        {
+          "type": "object",
+          "properties": {
+            "authorization_endpoint": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Schema"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "issuer": {
+              "$ref": "#/definitions/ResponseIss"
+            },
+            "response_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseType"
+                }
+              ]
+            },
+            "scopes_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Scope"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/Scope"
+                }
+              ]
+            },
+            "subject_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SubjectType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SubjectType"
+                }
+              ]
+            },
+            "id_token_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "request_object_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "subject_syntax_types_supported": {
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
-            {
+            "token_endpoint": {
               "type": "string"
-            }
-          ]
-        },
-        "id_token_types_supported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/IdTokenType"
-              }
             },
-            {
-              "$ref": "#/definitions/IdTokenType"
+            "userinfo_endpoint": {
+              "type": "string"
+            },
+            "jwks_uri": {
+              "type": "string"
+            },
+            "registration_endpoint": {
+              "type": "string"
+            },
+            "response_modes_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseMode"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseMode"
+                }
+              ]
+            },
+            "grant_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GrantType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/GrantType"
+                }
+              ]
+            },
+            "acr_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/AuthenticationContextReferences"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/AuthenticationContextReferences"
+                }
+              ]
+            },
+            "id_token_encryption_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeyAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/KeyAlgo"
+                }
+              ]
+            },
+            "id_token_encryption_enc_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for the ID Token to encode the Claims in a JWT [JWT]."
+            },
+            "userinfo_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfo_encryption_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfo_encryption_enc_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) [JWA] supported by the UserInfo Endpoint to encode the Claims in a JWT [JWT]."
+            },
+            "request_object_encryption_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "request_object_encryption_enc_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for Request Objects. These algorithms are used both when the Request Object is passed by value and when it is passed by reference."
+            },
+            "token_endpoint_auth_methods_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/TokenEndpointAuthMethod"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/TokenEndpointAuthMethod"
+                }
+              ]
+            },
+            "token_endpoint_auth_signing_alg_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "display_values_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {}
+                },
+                {}
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the display parameter values that the OpenID Provider supports. These values are described in Section 3.1.2.1 of OpenID Connect Core 1.0 [OpenID.Core]."
+            },
+            "claim_types_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ClaimType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ClaimType"
+                }
+              ],
+              "description": "OPTIONAL. JSON array containing a list of the Claim Types that the OpenID Provider supports. These Claim Types are described in Section 5.6 of OpenID Connect Core 1.0 [OpenID.Core]. Values defined by this specification are normal, aggregated, and distributed. If omitted, the implementation supports only normal Claims."
+            },
+            "claims_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "RECOMMENDED. JSON array containing a list of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for. Note that for privacy or other reasons, this might not be an exhaustive list."
+            },
+            "service_documentation": {
+              "type": "string"
+            },
+            "claims_locales_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "ui_locales_supported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "claims_parameter_supported": {
+              "type": "boolean"
+            },
+            "request_parameter_supported": {
+              "type": "boolean"
+            },
+            "request_uri_parameter_supported": {
+              "type": "boolean"
+            },
+            "require_request_uri_registration": {
+              "type": "boolean"
+            },
+            "op_policy_uri": {
+              "type": "string"
+            },
+            "op_tos_uri": {
+              "type": "string"
+            },
+            "idTokenTypesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/IdTokenType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/IdTokenType"
+                }
+              ]
+            },
+            "vpFormatsSupported": {
+              "$ref": "#/definitions/Format"
             }
+          },
+          "required": [
+            "authorization_endpoint",
+            "id_token_signing_alg_values_supported",
+            "issuer",
+            "response_types_supported",
+            "scopes_supported",
+            "subject_syntax_types_supported",
+            "subject_types_supported"
           ]
-        },
-        "vp_formats": {
-          "$ref": "#/definitions/Format"
-        },
-        "client_name": {
-          "type": "string"
-        },
-        "logo_uri": {
-          "type": "string"
-        },
-        "client_purpose": {
-          "type": "string"
         }
-      },
-      "required": [
-        "authorization_endpoint",
-        "id_token_signing_alg_values_supported",
-        "issuer",
-        "response_types_supported",
-        "scopes_supported",
-        "subject_types_supported",
-        "subject_syntax_types_supported",
-        "vp_formats"
-      ]
-    },
-    "AuthenticationContextReferences": {
-      "type": "string",
-      "enum": [
-        "phr",
-        "phrh"
       ]
     },
     "Schema": {
       "type": "string",
-      "const": "openid:"
-    },
-    "ClaimType": {
-      "type": "string",
       "enum": [
-        "normal",
-        "aggregated",
-        "distributed"
-      ]
-    },
-    "GrantType": {
-      "type": "string",
-      "enum": [
-        "authorization_code",
-        "implicit"
-      ]
-    },
-    "KeyAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K"
-      ]
-    },
-    "SigningAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K",
-        "none"
+        "openid:",
+        "openid-vc:"
       ]
     },
     "ResponseIss": {
@@ -446,15 +1177,6 @@ export const DiscoveryMetadataPayloadSchema = {
       "enum": [
         "id_token",
         "vp_token"
-      ]
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
       ]
     },
     "Scope": {
@@ -475,6 +1197,48 @@ export const DiscoveryMetadataPayloadSchema = {
         "pairwise"
       ]
     },
+    "SigningAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K",
+        "none"
+      ]
+    },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
+    },
+    "GrantType": {
+      "type": "string",
+      "enum": [
+        "authorization_code",
+        "implicit"
+      ]
+    },
+    "AuthenticationContextReferences": {
+      "type": "string",
+      "enum": [
+        "phr",
+        "phrh"
+      ]
+    },
+    "KeyAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K"
+      ]
+    },
     "TokenEndpointAuthMethod": {
       "type": "string",
       "enum": [
@@ -484,11 +1248,12 @@ export const DiscoveryMetadataPayloadSchema = {
         "private_key_jwt"
       ]
     },
-    "IdTokenType": {
+    "ClaimType": {
       "type": "string",
       "enum": [
-        "subject_signed",
-        "attester_signed"
+        "normal",
+        "aggregated",
+        "distributed"
       ]
     },
     "Format": {
@@ -544,6 +1309,13 @@ export const DiscoveryMetadataPayloadSchema = {
         "proof_type"
       ],
       "additionalProperties": false
+    },
+    "IdTokenType": {
+      "type": "string",
+      "enum": [
+        "subject_signed",
+        "attester_signed"
+      ]
     }
   }
 };

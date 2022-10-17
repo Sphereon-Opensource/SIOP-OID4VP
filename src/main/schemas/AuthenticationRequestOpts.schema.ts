@@ -77,6 +77,15 @@ export const AuthenticationRequestOptsSchema = {
         },
         "revocationVerificationCallback": {
           "$ref": "#/definitions/RevocationVerificationCallback"
+        },
+        "idTokenHint": {
+          "type": "string"
+        },
+        "request": {
+          "type": "string"
+        },
+        "requestUri": {
+          "type": "string"
         }
       },
       "required": [
@@ -840,6 +849,22 @@ export const AuthenticationRequestOptsSchema = {
     "RequestRegistrationOpts": {
       "type": "object",
       "properties": {
+        "registrationBy": {
+          "$ref": "#/definitions/RegistrationType"
+        },
+        "idTokenSigningAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
         "requestObjectSigningAlgValuesSupported": {
           "type": "array",
           "items": {
@@ -870,58 +895,41 @@ export const AuthenticationRequestOptsSchema = {
             "type": "string"
           }
         },
-        "idTokenSigningAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
-        },
         "vpFormatsSupported": {
-          "$ref": "#/definitions/Format"
+          "anyOf": [
+            {},
+            {
+              "$ref": "#/definitions/Format"
+            }
+          ]
         },
         "clientName": {
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
         },
         "logoUri": {
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
         },
         "clientPurpose": {
-          "type": "string"
-        },
-        "registrationBy": {
-          "$ref": "#/definitions/RegistrationType"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
         }
       },
       "required": [
         "registrationBy"
-      ]
-    },
-    "SigningAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K",
-        "none"
-      ]
-    },
-    "Scope": {
-      "type": "string",
-      "enum": [
-        "openid",
-        "openid did_authn",
-        "profile",
-        "email",
-        "address",
-        "phone"
-      ]
-    },
-    "SubjectType": {
-      "type": "string",
-      "enum": [
-        "public",
-        "pairwise"
       ]
     },
     "RegistrationType": {
@@ -956,6 +964,34 @@ export const AuthenticationRequestOptsSchema = {
     "EncSymmetricAlgorithmCode": {
       "type": "string",
       "const": "XC20P"
+    },
+    "SigningAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K",
+        "none"
+      ]
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "openid",
+        "openid did_authn",
+        "profile",
+        "email",
+        "address",
+        "phone"
+      ]
+    },
+    "SubjectType": {
+      "type": "string",
+      "enum": [
+        "public",
+        "pairwise"
+      ]
     },
     "RevocationVerificationCallback": {
       "properties": {

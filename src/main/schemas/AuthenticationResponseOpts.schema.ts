@@ -63,419 +63,1121 @@ export const AuthenticationResponseOptsSchema = {
       "additionalProperties": false
     },
     "ResponseRegistrationOpts": {
-      "type": "object",
-      "properties": {
-        "idTokenTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/IdTokenType"
-              }
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "registrationBy": {
+              "$ref": "#/definitions/RegistrationType"
             },
-            {
-              "$ref": "#/definitions/IdTokenType"
-            }
-          ]
-        },
-        "logoUri": {
-          "type": "string"
-        },
-        "clientPurpose": {
-          "type": "string"
-        },
-        "authorizationEndpoint": {
-          "type": "string"
-        },
-        "issuer": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/ResponseIss"
+            "authorizationEndpoint": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Schema"
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "responseTypesSupported": {
-          "anyOf": [
-            {
+            "issuer": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ResponseIss"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "responseTypesSupported": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/ResponseType"
               }
             },
-            {
-              "$ref": "#/definitions/ResponseType"
-            }
-          ]
-        },
-        "scopesSupported": {
-          "anyOf": [
-            {
+            "scopesSupported": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/Scope"
               }
             },
-            {
-              "$ref": "#/definitions/Scope"
-            }
-          ]
-        },
-        "subjectTypesSupported": {
-          "anyOf": [
-            {
+            "subjectTypesSupported": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/SubjectType"
               }
             },
-            {
-              "$ref": "#/definitions/SubjectType"
-            }
-          ]
-        },
-        "idTokenSigningAlgValuesSupported": {
-          "anyOf": [
-            {
+            "idTokenSigningAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "requestObjectSigningAlgValuesSupported": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/SigningAlgo"
               }
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
+            "subjectSyntaxTypesSupported": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "tokenEndpoint": {
+              "type": "string"
+            },
+            "userinfoEndpoint": {
+              "type": "string"
+            },
+            "jwksUri": {
+              "type": "string"
+            },
+            "registrationEndpoint": {
+              "type": "string"
+            },
+            "responseModesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseMode"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseMode"
+                }
+              ]
+            },
+            "grantTypesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GrantType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/GrantType"
+                }
+              ]
+            },
+            "acrValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/AuthenticationContextReferences"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/AuthenticationContextReferences"
+                }
+              ]
+            },
+            "idTokenEncryptionAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeyAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/KeyAlgo"
+                }
+              ]
+            },
+            "idTokenEncryptionEncValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "userinfoSigningAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfoEncryptionAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfoEncryptionEncValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "requestObjectEncryptionAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "requestObjectEncryptionEncValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "tokenEndpointAuthMethodsSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/TokenEndpointAuthMethod"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/TokenEndpointAuthMethod"
+                }
+              ]
+            },
+            "tokenEndpointAuthSigningAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "displayValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "claimTypesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ClaimType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ClaimType"
+                }
+              ]
+            },
+            "claimsSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "serviceDocumentation": {
+              "type": "string"
+            },
+            "claimsLocalesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "uiLocalesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "claimsParameterSupported": {
+              "type": "boolean"
+            },
+            "requestParameterSupported": {
+              "type": "boolean"
+            },
+            "requestUriParameterSupported": {
+              "type": "boolean"
+            },
+            "requireRequestUriRegistration": {
+              "type": "boolean"
+            },
+            "opPolicyUri": {
+              "type": "string"
+            },
+            "opTosUri": {
+              "type": "string"
+            },
+            "clientId": {
+              "type": "string"
+            },
+            "redirectUris": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "clientName": {
+              "type": "string"
+            },
+            "tokenEndpointAuthMethod": {
+              "type": "string"
+            },
+            "applicationType": {
+              "type": "string"
+            },
+            "responseTypes": {
+              "type": "string"
+            },
+            "grantTypes": {
+              "type": "string"
+            },
+            "vpFormats": {
+              "$ref": "#/definitions/Format"
+            },
+            "logoUri": {
+              "type": "string"
+            },
+            "clientPurpose": {
+              "type": "string"
             }
+          },
+          "required": [
+            "registrationBy"
           ]
         },
-        "requestObjectSigningAlgValuesSupported": {
-          "anyOf": [
-            {
+        {
+          "type": "object",
+          "properties": {
+            "registrationBy": {
+              "$ref": "#/definitions/RegistrationType"
+            },
+            "authorizationEndpoint": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Schema"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "issuer": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ResponseIss"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "responseTypesSupported": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            "scopesSupported": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            "subjectTypesSupported": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            "idTokenSigningAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "requestObjectSigningAlgValuesSupported": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/SigningAlgo"
               }
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "subjectSyntaxTypesSupported": {
-          "anyOf": [
-            {
+            "subjectSyntaxTypesSupported": {
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
-            {
+            "tokenEndpoint": {
               "type": "string"
-            }
-          ]
-        },
-        "clientId": {
-          "type": "string"
-        },
-        "redirectUris": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
             },
-            {
+            "userinfoEndpoint": {
               "type": "string"
-            }
-          ]
-        },
-        "clientName": {
-          "type": "string"
-        },
-        "tokenEndpointAuthMethod": {
-          "type": "string"
-        },
-        "applicationType": {
-          "type": "string"
-        },
-        "responseTypes": {
-          "type": "string"
-        },
-        "grantTypes": {
-          "type": "string"
-        },
-        "vpFormats": {
-          "$ref": "#/definitions/Format"
-        },
-        "tokenEndpoint": {
-          "type": "string"
-        },
-        "userinfoEndpoint": {
-          "type": "string"
-        },
-        "jwksUri": {
-          "type": "string"
-        },
-        "registrationEndpoint": {
-          "type": "string"
-        },
-        "responseModesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseMode"
-              }
             },
-            {
-              "$ref": "#/definitions/ResponseMode"
-            }
-          ]
-        },
-        "grantTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/GrantType"
-              }
-            },
-            {
-              "$ref": "#/definitions/GrantType"
-            }
-          ]
-        },
-        "acrValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/AuthenticationContextReferences"
-              }
-            },
-            {
-              "$ref": "#/definitions/AuthenticationContextReferences"
-            }
-          ]
-        },
-        "idTokenEncryptionAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/KeyAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/KeyAlgo"
-            }
-          ]
-        },
-        "idTokenEncryptionEncValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
+            "jwksUri": {
               "type": "string"
+            },
+            "registrationEndpoint": {
+              "type": "string"
+            },
+            "responseModesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseMode"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseMode"
+                }
+              ]
+            },
+            "grantTypesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GrantType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/GrantType"
+                }
+              ]
+            },
+            "acrValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/AuthenticationContextReferences"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/AuthenticationContextReferences"
+                }
+              ]
+            },
+            "idTokenEncryptionAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeyAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/KeyAlgo"
+                }
+              ]
+            },
+            "idTokenEncryptionEncValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "userinfoSigningAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfoEncryptionAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfoEncryptionEncValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "requestObjectEncryptionAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "requestObjectEncryptionEncValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "tokenEndpointAuthMethodsSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/TokenEndpointAuthMethod"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/TokenEndpointAuthMethod"
+                }
+              ]
+            },
+            "tokenEndpointAuthSigningAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "displayValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "claimTypesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ClaimType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ClaimType"
+                }
+              ]
+            },
+            "claimsSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "serviceDocumentation": {
+              "type": "string"
+            },
+            "claimsLocalesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "uiLocalesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "claimsParameterSupported": {
+              "type": "boolean"
+            },
+            "requestParameterSupported": {
+              "type": "boolean"
+            },
+            "requestUriParameterSupported": {
+              "type": "boolean"
+            },
+            "requireRequestUriRegistration": {
+              "type": "boolean"
+            },
+            "opPolicyUri": {
+              "type": "string"
+            },
+            "opTosUri": {
+              "type": "string"
+            },
+            "clientId": {
+              "type": "string"
+            },
+            "redirectUris": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "clientName": {
+              "type": "string"
+            },
+            "tokenEndpointAuthMethod": {
+              "type": "string"
+            },
+            "applicationType": {
+              "type": "string"
+            },
+            "responseTypes": {
+              "type": "string"
+            },
+            "grantTypes": {
+              "type": "string"
+            },
+            "vpFormats": {
+              "$ref": "#/definitions/Format"
             }
+          },
+          "required": [
+            "registrationBy"
           ]
         },
-        "userinfoSigningAlgValuesSupported": {
-          "anyOf": [
-            {
+        {
+          "type": "object",
+          "properties": {
+            "registrationBy": {
+              "$ref": "#/definitions/RegistrationType"
+            },
+            "authorizationEndpoint": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Schema"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "issuer": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ResponseIss"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "responseTypesSupported": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            "scopesSupported": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            "subjectTypesSupported": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            "idTokenSigningAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "requestObjectSigningAlgValuesSupported": {
               "type": "array",
               "items": {
                 "$ref": "#/definitions/SigningAlgo"
               }
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "userinfoEncryptionAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "userinfoEncryptionEncValuesSupported": {
-          "anyOf": [
-            {
+            "subjectSyntaxTypesSupported": {
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
-            {
+            "tokenEndpoint": {
               "type": "string"
-            }
-          ]
-        },
-        "requestObjectEncryptionAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
             },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "requestObjectEncryptionEncValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
+            "userinfoEndpoint": {
               "type": "string"
-            }
-          ]
-        },
-        "tokenEndpointAuthMethodsSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/TokenEndpointAuthMethod"
-              }
             },
-            {
-              "$ref": "#/definitions/TokenEndpointAuthMethod"
-            }
-          ]
-        },
-        "tokenEndpointAuthSigningAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "displayValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
+            "jwksUri": {
               "type": "string"
-            }
-          ]
-        },
-        "claimTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ClaimType"
-              }
             },
-            {
-              "$ref": "#/definitions/ClaimType"
-            }
-          ]
-        },
-        "claimsSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
+            "registrationEndpoint": {
               "type": "string"
-            }
-          ]
-        },
-        "serviceDocumentation": {
-          "type": "string"
-        },
-        "claimsLocalesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
             },
-            {
-              "type": "string"
-            }
-          ]
-        },
-        "uiLocalesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+            "responseModesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseMode"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseMode"
+                }
+              ]
             },
-            {
+            "grantTypesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GrantType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/GrantType"
+                }
+              ]
+            },
+            "acrValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/AuthenticationContextReferences"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/AuthenticationContextReferences"
+                }
+              ]
+            },
+            "idTokenEncryptionAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/KeyAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/KeyAlgo"
+                }
+              ]
+            },
+            "idTokenEncryptionEncValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "userinfoSigningAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfoEncryptionAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "userinfoEncryptionEncValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "requestObjectEncryptionAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "requestObjectEncryptionEncValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "tokenEndpointAuthMethodsSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/TokenEndpointAuthMethod"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/TokenEndpointAuthMethod"
+                }
+              ]
+            },
+            "tokenEndpointAuthSigningAlgValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
+            },
+            "displayValuesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "claimTypesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ClaimType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ClaimType"
+                }
+              ]
+            },
+            "claimsSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "serviceDocumentation": {
               "type": "string"
+            },
+            "claimsLocalesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "uiLocalesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "claimsParameterSupported": {
+              "type": "boolean"
+            },
+            "requestParameterSupported": {
+              "type": "boolean"
+            },
+            "requestUriParameterSupported": {
+              "type": "boolean"
+            },
+            "requireRequestUriRegistration": {
+              "type": "boolean"
+            },
+            "opPolicyUri": {
+              "type": "string"
+            },
+            "opTosUri": {
+              "type": "string"
+            },
+            "idTokenTypesSupported": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/IdTokenType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/IdTokenType"
+                }
+              ]
+            },
+            "vpFormatsSupported": {
+              "$ref": "#/definitions/Format"
             }
+          },
+          "required": [
+            "registrationBy"
           ]
-        },
-        "claimsParameterSupported": {
-          "type": "boolean"
-        },
-        "requestParameterSupported": {
-          "type": "boolean"
-        },
-        "requestUriParameterSupported": {
-          "type": "boolean"
-        },
-        "requireRequestUriRegistration": {
-          "type": "boolean"
-        },
-        "opPolicyUri": {
-          "type": "string"
-        },
-        "opTosUri": {
-          "type": "string"
-        },
-        "registrationBy": {
-          "$ref": "#/definitions/RegistrationType"
         }
-      },
-      "required": [
-        "registrationBy"
       ]
     },
-    "IdTokenType": {
+    "RegistrationType": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "REFERENCE",
+            "VALUE"
+          ]
+        },
+        "referenceUri": {
+          "type": "string"
+        },
+        "id_token_encrypted_response_alg": {
+          "$ref": "#/definitions/EncKeyAlgorithm"
+        },
+        "id_token_encrypted_response_enc": {
+          "$ref": "#/definitions/EncSymmetricAlgorithmCode"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "EncKeyAlgorithm": {
+      "type": "string",
+      "const": "ECDH-ES"
+    },
+    "EncSymmetricAlgorithmCode": {
+      "type": "string",
+      "const": "XC20P"
+    },
+    "Schema": {
       "type": "string",
       "enum": [
-        "subject_signed",
-        "attester_signed"
+        "openid:",
+        "openid-vc:"
       ]
     },
     "ResponseIss": {
@@ -518,6 +1220,55 @@ export const AuthenticationResponseOptsSchema = {
         "ES256",
         "ES256K",
         "none"
+      ]
+    },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
+    },
+    "GrantType": {
+      "type": "string",
+      "enum": [
+        "authorization_code",
+        "implicit"
+      ]
+    },
+    "AuthenticationContextReferences": {
+      "type": "string",
+      "enum": [
+        "phr",
+        "phrh"
+      ]
+    },
+    "KeyAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K"
+      ]
+    },
+    "TokenEndpointAuthMethod": {
+      "type": "string",
+      "enum": [
+        "client_secret_post",
+        "client_secret_basic",
+        "client_secret_jwt",
+        "private_key_jwt"
+      ]
+    },
+    "ClaimType": {
+      "type": "string",
+      "enum": [
+        "normal",
+        "aggregated",
+        "distributed"
       ]
     },
     "Format": {
@@ -574,87 +1325,12 @@ export const AuthenticationResponseOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "ResponseMode": {
+    "IdTokenType": {
       "type": "string",
       "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
+        "subject_signed",
+        "attester_signed"
       ]
-    },
-    "GrantType": {
-      "type": "string",
-      "enum": [
-        "authorization_code",
-        "implicit"
-      ]
-    },
-    "AuthenticationContextReferences": {
-      "type": "string",
-      "enum": [
-        "phr",
-        "phrh"
-      ]
-    },
-    "KeyAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K"
-      ]
-    },
-    "TokenEndpointAuthMethod": {
-      "type": "string",
-      "enum": [
-        "client_secret_post",
-        "client_secret_basic",
-        "client_secret_jwt",
-        "private_key_jwt"
-      ]
-    },
-    "ClaimType": {
-      "type": "string",
-      "enum": [
-        "normal",
-        "aggregated",
-        "distributed"
-      ]
-    },
-    "RegistrationType": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "REFERENCE",
-            "VALUE"
-          ]
-        },
-        "referenceUri": {
-          "type": "string"
-        },
-        "id_token_encrypted_response_alg": {
-          "$ref": "#/definitions/EncKeyAlgorithm"
-        },
-        "id_token_encrypted_response_enc": {
-          "$ref": "#/definitions/EncSymmetricAlgorithmCode"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ]
-    },
-    "EncKeyAlgorithm": {
-      "type": "string",
-      "const": "ECDH-ES"
-    },
-    "EncSymmetricAlgorithmCode": {
-      "type": "string",
-      "const": "XC20P"
     },
     "CheckLinkedDomain": {
       "type": "string",

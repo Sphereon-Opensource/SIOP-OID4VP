@@ -24,8 +24,6 @@ export default class OPBuilder {
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   responseMode?: ResponseMode;
   responseRegistration: Partial<ResponseRegistrationOpts> = {};
-  // did: string;
-  // vp?: VerifiablePresentation;
   customResolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
