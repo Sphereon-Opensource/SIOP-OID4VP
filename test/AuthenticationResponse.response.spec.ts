@@ -474,6 +474,9 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthenticationRequestOpts = {
+      clientId: 'test_client_id',
+      scope: 'test',
+      responseType: 'token_id',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },

@@ -145,9 +145,9 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
-        .addClientId('test')
+        .addClientId('test_client_id')
         .addScope('test')
-        .addResponseType('test')
+        .addResponseType('id_token')
         .redirect(EXAMPLE_REDIRECT_URL)
         .withPresentationVerification(presentationVerificationCallback)
         .addVerifyCallback(verifyCallback)
@@ -245,9 +245,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId('test')
+      .addClientId('test_client_id')
       .addScope('test')
-      .addResponseType('test')
+      .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
@@ -343,9 +343,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId('test')
+      .addClientId('test_client_id')
       .addScope('test')
-      .addResponseType('test')
+      .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
@@ -438,9 +438,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId('test')
+      .addClientId('test_client_id')
       .addScope('test')
-      .addResponseType('test')
+      .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
@@ -552,9 +552,9 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
-        .addClientId('test')
+        .addClientId('test_client_id')
         .addScope('test')
-        .addResponseType('test')
+        .addResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
         .withPresentationVerification(presentationVerificationCallback)
         .addVerifyCallback(verifyCallback)
@@ -652,9 +652,10 @@ describe('RP and OP interaction should', () => {
     };
 
     const opMockEntity = {
-      hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
-      did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
-      didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
+      hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
+      did: 'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19',
+      didKey:
+        'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19#key1',
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -663,9 +664,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId('test')
+      .addClientId('test_client_id')
       .addScope('test')
-      .addResponseType('test')
+      .addResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
@@ -795,9 +796,9 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
-        .addClientId('test')
+        .addClientId('test_client_id')
         .addScope('test')
-        .addResponseType('test')
+        .addResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
         .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
@@ -910,9 +911,9 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
     const rp = RP.builder()
-      .addClientId('test')
+      .addClientId('test_client_id')
       .addScope('test')
-      .addResponseType('test')
+      .addResponseType('id_token')
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
@@ -1214,6 +1215,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId('test_client_id')
+      .addScope('test')
+      .addResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
@@ -1238,7 +1242,7 @@ describe('RP and OP interaction should', () => {
         registrationBy: { type: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY
       })
       .addPresentationDefinitionClaim({
         definition: getPresentationDefinition(),
