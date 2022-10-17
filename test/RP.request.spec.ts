@@ -42,6 +42,9 @@ describe('RP Builder should', () => {
 
     expect(
       RP.builder()
+        .addClientId('test')
+        .addScope('test')
+        .addResponseType('test')
         .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addDidMethod('factom')
         .addResolver('ethr', new Resolver(getUniResolver('ethr')))
@@ -76,6 +79,9 @@ describe('RP should', () => {
     expect.assertions(1);
 
     const opts: AuthenticationRequestOpts = {
+      clientId: 'test',
+      scope: 'test',
+      responseType: 'test',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
@@ -116,6 +122,9 @@ describe('RP should', () => {
   it('succeed from request opts when all params are set', async () => {
     // expect.assertions(1);
     const opts: AuthenticationRequestOpts = {
+      clientId: 'test',
+      scope: 'test',
+      responseType: 'test',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: {
@@ -263,6 +272,9 @@ describe('RP should', () => {
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
 
     const request = await RP.builder()
+      .addClientId('test')
+      .addScope('test')
+      .addResponseType('test')
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .redirect(EXAMPLE_REDIRECT_URL)
       .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)

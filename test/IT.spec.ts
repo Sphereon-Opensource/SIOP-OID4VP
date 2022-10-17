@@ -145,6 +145,9 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
+        .addClientId('test')
+        .addScope('test')
+        .addResponseType('test')
         .redirect(EXAMPLE_REDIRECT_URL)
         .withPresentationVerification(presentationVerificationCallback)
         .addVerifyCallback(verifyCallback)
@@ -242,6 +245,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId('test')
+      .addScope('test')
+      .addResponseType('test')
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
@@ -337,6 +343,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId('test')
+      .addScope('test')
+      .addResponseType('test')
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
@@ -429,6 +438,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId('test')
+      .addScope('test')
+      .addResponseType('test')
       .redirect(EXAMPLE_REDIRECT_URL)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
@@ -540,6 +552,9 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
+        .addClientId('test')
+        .addScope('test')
+        .addResponseType('test')
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
         .withPresentationVerification(presentationVerificationCallback)
         .addVerifyCallback(verifyCallback)
@@ -648,6 +663,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId('test')
+      .addScope('test')
+      .addResponseType('test')
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
@@ -777,6 +795,9 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
+        .addClientId('test')
+        .addScope('test')
+        .addResponseType('test')
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
         .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
@@ -889,6 +910,9 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
     const rp = RP.builder()
+      .addClientId('test')
+      .addScope('test')
+      .addResponseType('test')
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)

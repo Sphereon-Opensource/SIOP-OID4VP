@@ -130,6 +130,9 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
+        scope: opts.builder.scope,
+        responseType: opts.builder.responseType,
+        clientId: opts.builder.clientId,
       }
     : opts.requestOpts;
 

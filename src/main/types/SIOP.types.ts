@@ -17,7 +17,7 @@ import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT }
 export const expirationTime = 10 * 60;
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
-export interface AuthenticationRequestOpts {
+export interface AuthenticationRequestDeprecated {
   authorizationEndpoint?: string;
   redirectUri: string; // The redirect URI
   requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
@@ -26,18 +26,47 @@ export interface AuthenticationRequestOpts {
   responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
   responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
   responseTypesSupported?: ResponseType[];
-  claims?: ClaimOpts; // The claims
-  registration: RequestRegistrationOpts; // Registration metadata options
   nonce?: string; // An optional nonce, will be generated if not provided
   state?: string; // An optional state, will be generated if not provided
   scopesSupported?: Scope[];
   subjectTypesSupported?: SubjectType[];
   requestObjectSigningAlgValuesSupported?: SigningAlgo[];
   revocationVerificationCallback?: RevocationVerificationCallback;
-  idTokenHint?: string;
-  request?: string;
-  requestUri?: string;
 }
+
+interface AuthenticationRequestCommon {
+  scope: string; // from openid-connect-self-issued-v2-1_0-ID1
+  responseType: string; // from openid-connect-self-issued-v2-1_0-ID1
+  clientId: string; // from openid-connect-self-issued-v2-1_0-ID1
+  redirectUri: string; // from openid-connect-self-issued-v2-1_0-ID1
+  idTokenHint?: string; // from openid-connect-self-issued-v2-1_0-ID1
+  claims?: ClaimOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#Claims
+  request?: string; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+  requestUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
+}
+
+interface ID1AuthenticationRequest extends AuthenticationRequestCommon {
+  registration?: RequestRegistrationOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-registration-1_0.html
+  registrationUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
+}
+
+interface V2_1_0_11AuthenticationRequest extends AuthenticationRequestCommon {
+  clientMetadata?: object; // from openid-connect-self-issued-v2-1_0-11 look at https://openid.net/specs/openid-connect-registration-1_0.html
+  clientMetadataUri?: string; // from openid-connect-self-issued-v2-1_0-11
+  idTokenType?: string; // from openid-connect-self-issued-v2-1_0-11
+}
+
+export type AuthenticationRequestOpts = AuthenticationRequestDeprecated & ID1AuthenticationRequest & V2_1_0_11AuthenticationRequest;
+
+//V2-1_0-11
+// interface RequestObject {
+//   clientId: string;
+//   redirectUris: string[];
+//   responseTypes: string;
+//   responseMode: string;
+//   presentationDefinition: IPresentationDefinition; // look at https://identity.foundation/presentation-exchange/#presentation-definition
+//   nonce: string;
+// }
 
 interface ID1AuthenticationRequestPayload extends JWTPayload, RequestRegistrationPayload {
   scope: string;

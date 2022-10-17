@@ -45,6 +45,24 @@ export default class RPBuilder {
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: Array<SupportedVersion>;
+  scope: string;
+  responseType: string;
+  clientId: string;
+
+  addScope(scope: string): RPBuilder {
+    this.scope = scope;
+    return this;
+  }
+
+  addResponseType(responseType: string): RPBuilder {
+    this.responseType = responseType;
+    return this;
+  }
+
+  addClientId(clientId: string): RPBuilder {
+    this.clientId = clientId;
+    return this;
+  }
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
