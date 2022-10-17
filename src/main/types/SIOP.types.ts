@@ -221,33 +221,33 @@ export interface RequestRegistrationOpts extends RPRegistrationMetadataOpts {
 
 interface ID1DiscoveryMetadataOpts {
   //TODO add the check: Mandatory if PassBy.Value
-  authorizationEndpoint: Schema.OPENID | string;
+  authorizationEndpoint?: Schema.OPENID | string;
   // this is a confusion point. In the interop profile it mentions "https://self-issued.me/v2/openid-vc", but in the SIOPv2 it's mentioning "https://self-issued.me/v2"
   // @Niels also created an issue here: https://github.com/decentralized-identity/jwt-vc-presentation-profile/issues/63 so we can keep an eye on this for clarification
   //TODO add the check: Mandatory if PassBy.Value
-  issuer: ResponseIss | string;
+  issuer?: ResponseIss | string;
   //TODO add the check: Mandatory if PassBy.Value
-  responseTypesSupported: ResponseType[] | ResponseType;
-  scopesSupported: Scope[] | Scope;
-  subjectTypesSupported: SubjectType[] | SubjectType;
-  idTokenSigningAlgValuesSupported: SigningAlgo[] | SigningAlgo;
-  requestObjectSigningAlgValuesSupported: SigningAlgo[] | SigningAlgo;
+  responseTypesSupported?: ResponseType[] | ResponseType;
+  scopesSupported?: Scope[] | Scope;
+  subjectTypesSupported?: SubjectType[] | SubjectType;
+  idTokenSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
+  requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
   //TODO add the check: Mandatory if PassBy.Value
-  subjectSyntaxTypesSupported: string[] | string;
-  clientId: string; // from oidc4vp
-  redirectUris: string[] | string; // from oidc4vp
-  clientName: string; // from oidc4vp
-  tokenEndpointAuthMethod: string; // from oidc4vp
-  applicationType: string; // from oidc4vp
-  responseTypes: string; // from oidc4vp, also name suggests array
-  grantTypes: string; // from oidc4vp, also name suggests array
+  subjectSyntaxTypesSupported?: string[] | string;
+  clientId?: string; // from oidc4vp
+  redirectUris?: string[] | string; // from oidc4vp
+  clientName?: string; // from oidc4vp
+  tokenEndpointAuthMethod?: string; // from oidc4vp
+  applicationType?: string; // from oidc4vp
+  responseTypes?: string; // from oidc4vp, also name suggests array
+  grantTypes?: string; // from oidc4vp, also name suggests array
   //TODO add the check: Mandatory if PassBy.Value
-  vpFormats: Format; // from oidc4vp
-  tokenEndpoint: string; // from openid connect discovery 1_0
-  userinfoEndpoint: string; // from openid connect discovery 1_0
-  jwksUri: string; // from openid connect discovery 1_0
-  registrationEndpoint: string; // from openid connect discovery 1_0
-  responseModesSupported: ResponseMode[] | ResponseMode; // from openid connect discovery 1_0
+  vpFormats?: Format; // from oidc4vp
+  tokenEndpoint?: string; // from openid connect discovery 1_0
+  userinfoEndpoint?: string; // from openid connect discovery 1_0
+  jwksUri?: string; // from openid connect discovery 1_0
+  registrationEndpoint?: string; // from openid connect discovery 1_0
+  responseModesSupported?: ResponseMode[] | ResponseMode; // from openid connect discovery 1_0
   grantTypesSupported?: GrantType[] | GrantType; // from openid connect discovery 1_0
   acrValuesSupported?: AuthenticationContextReferences[] | AuthenticationContextReferences; // from openid connect discovery 1_0
   idTokenEncryptionAlgValuesSupported?: KeyAlgo[] | KeyAlgo; // from openid connect discovery 1_0
@@ -273,7 +273,16 @@ interface ID1DiscoveryMetadataOpts {
   opTosUri?: string; // from openid connect discovery 1_0
 }
 
-export type DiscoveryMetadataOpts = ID1DiscoveryMetadataOpts;
+// TODO update with the missing properties
+interface JWTVcPresentationProfileDiscoveryMetadataOpts {
+  idTokenTypesSupported?: IdTokenType[] | IdTokenType;
+  logoUri?: string;
+  clientPurpose?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
+}
+
+export type DiscoveryMetadataOpts = ID1DiscoveryMetadataOpts & JWTVcPresentationProfileDiscoveryMetadataOpts;
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8.2
 // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata

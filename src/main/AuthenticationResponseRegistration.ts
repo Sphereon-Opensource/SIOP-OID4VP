@@ -47,6 +47,9 @@ export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): Dis
     responseTypes: opts.responseTypes,
     redirectUris: opts.redirectUris,
     tokenEndpointAuthMethod: opts.tokenEndpointAuthMethod,
+    logo_uri: opts.logoUri,
+    client_purpose: opts.clientPurpose,
+    id_token_types_supported: opts.idTokenTypesSupported,
   };
 
   const languageTagEnabledFieldsNamesMapping = new Map<string, string>();

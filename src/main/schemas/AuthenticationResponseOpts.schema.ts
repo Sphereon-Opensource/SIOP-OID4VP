@@ -65,6 +65,25 @@ export const AuthenticationResponseOptsSchema = {
     "ResponseRegistrationOpts": {
       "type": "object",
       "properties": {
+        "idTokenTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/IdTokenType"
+              }
+            },
+            {
+              "$ref": "#/definitions/IdTokenType"
+            }
+          ]
+        },
+        "logoUri": {
+          "type": "string"
+        },
+        "clientPurpose": {
+          "type": "string"
+        },
         "authorizationEndpoint": {
           "type": "string"
         },
@@ -449,30 +468,15 @@ export const AuthenticationResponseOptsSchema = {
         }
       },
       "required": [
-        "applicationType",
-        "authorizationEndpoint",
-        "clientId",
-        "clientName",
-        "grantTypes",
-        "idTokenSigningAlgValuesSupported",
-        "issuer",
-        "jwksUri",
-        "redirectUris",
-        "registrationBy",
-        "registrationEndpoint",
-        "requestObjectSigningAlgValuesSupported",
-        "responseModesSupported",
-        "responseTypes",
-        "responseTypesSupported",
-        "scopesSupported",
-        "subjectSyntaxTypesSupported",
-        "subjectTypesSupported",
-        "tokenEndpoint",
-        "tokenEndpointAuthMethod",
-        "userinfoEndpoint",
-        "vpFormats"
-      ],
-      "additionalProperties": false
+        "registrationBy"
+      ]
+    },
+    "IdTokenType": {
+      "type": "string",
+      "enum": [
+        "subject_signed",
+        "attester_signed"
+      ]
     },
     "ResponseIss": {
       "type": "string",
