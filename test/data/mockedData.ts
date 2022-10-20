@@ -5,7 +5,6 @@ import { DIDDocument } from 'did-resolver';
 
 import {
   AuthenticationRequestPayload,
-  AuthenticationResponsePayload,
   IdTokenType,
   KeyAlgo,
   ResponseContext,
@@ -80,25 +79,6 @@ export const DIDAUTH_REQUEST_PAYLOAD: AuthenticationRequestPayload = {
   },*/
   exp: 1569937756, // Unix Timestamp; Date and time when the ID Token expires.
   iat: 1569934156,
-};
-
-export const DIDAUTH_RESPONSE_PAYLOAD: AuthenticationResponsePayload = {
-  iss: 'did:ethr:0x226e2e2223333c2e4c65652e452d412d50611111', // ResponseIss.SELF_ISSUED_V2, // MUST be https://self-issued.me/v2, but implementations use DIDs here. Resolution is based on this
-  sub: 'QS+5mH5GqVxuah94+D9wV97mMKZ6iMzW1op4B4s02Jk=', // Thumbprint of the sub_jwk
-  aud: 'http://app.example/demo', // MUST be client_id from the Request Object
-  exp: 1569937756, // Unix Timestamp; Date and time when the ID Token expires.
-  iat: 1569934156, // Unix Timestamp; Date and time when the Token was issued.
-  sub_type: SubjectIdentifierType.DID,
-  state: 'af0ifjsldkj',
-  nonce: '6a6b57a9d4e1a130b0edbe1ec4ae8823',
-  sub_jwk: {
-    crv: 'secp256k1',
-    kid: 'did:ethr:0x226e2e2223333c2e4c65652e452d412d50611111#keys-1',
-    kty: 'EC',
-    x: '7KEKZa5xJPh7WVqHJyUpb2MgEe3nA8Rk7eUlXsmBl-M',
-    y: '3zIgl_ml4RhapyEm5J7lvU-4f5jiBvZr4KgxUjEhl9o',
-  },
-  did: 'did:ethr:0x226e2e2223333c2e4c65652e452d412d50611111',
 };
 
 export const DID_DOCUMENT_PUBKEY_B58: DIDDocument = {

@@ -6,8 +6,7 @@ import { Resolvable } from 'did-resolver';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { LanguageTagUtils } from './functions';
-import { getResolverUnion, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
+import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
   AuthenticationResponseOpts,
@@ -52,7 +51,7 @@ export class OP {
 
   // TODO SK Can you please put some documentation on it?
   public async postAuthenticationResponse(authenticationResponse: AuthenticationResponseWithJWT): Promise<Response> {
-    return postAuthenticationResponse(authenticationResponse.payload.aud, authenticationResponse);
+    return postAuthenticationResponse(authenticationResponse.payload.idToken.aud, authenticationResponse);
   }
 
   public async verifyAuthenticationRequest(
@@ -86,7 +85,7 @@ export class OP {
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    return postAuthenticationResponseJwt(verifiedJwt.payload.aud, verifiedJwt.jwt);
+    return postAuthenticationResponseJwt(verifiedJwt.idToken.aud, verifiedJwt.jwt);
   }
 
   /**

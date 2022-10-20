@@ -53,6 +53,15 @@ export const AuthenticationResponseOptsSchema = {
         },
         "expiresIn": {
           "type": "number"
+        },
+        "accessToken": {
+          "type": "string"
+        },
+        "tokenType": {
+          "type": "string"
+        },
+        "refreshToken": {
+          "type": "string"
         }
       },
       "required": [

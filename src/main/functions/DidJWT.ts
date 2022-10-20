@@ -10,6 +10,7 @@ import {
   AuthenticationResponsePayload,
   EcdsaSignature,
   expirationTime,
+  IdToken,
   isExternalSignature,
   isInternalSignature,
   isResponseOpts,
@@ -75,7 +76,7 @@ export async function createDidJWT(
 }
 
 export async function signDidJwtPayload(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken,
   opts: AuthenticationRequestOpts | AuthenticationResponseOpts
 ) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
@@ -96,7 +97,7 @@ export async function signDidJwtPayload(
 }
 
 async function signDidJwtInternal(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken,
   issuer: string,
   hexPrivateKey: string,
   kid?: string
@@ -127,7 +128,7 @@ async function signDidJwtInternal(
 }
 
 async function signDidJwtExternal(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken,
   signatureUri: string,
   authZToken: string,
   kid?: string
@@ -150,7 +151,7 @@ async function signDidJwtExternal(
 }
 
 async function signDidJwtSupplied(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken,
   issuer: string,
   signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
   kid: string

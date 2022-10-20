@@ -23,6 +23,7 @@ import {
   AuthenticationResponsePayload,
   AuthenticationResponseWithJWT,
   CheckLinkedDomain,
+  IdToken,
   isExternalSignature,
   isExternalVerification,
   isInternalSignature,
@@ -70,50 +71,25 @@ export default class AuthenticationResponse {
     verifiedJwt: VerifiedAuthenticationRequestWithJWT,
     responseOpts: AuthenticationResponseOpts
   ): Promise<AuthenticationResponseWithJWT> {
+    const idToken = await createSIOPIDToken(verifiedJwt, responseOpts);
     const payload = await createSIOPResponsePayload(verifiedJwt, responseOpts);
+    payload.id_token = await signDidJwtPayload(idToken, responseOpts);
     await assertValidVerifiablePresentations({
       definitions: verifiedJwt.presentationDefinitions,
-      verPayload: payload,
+      vps: payload.vp_token ? [payload.vp_token]: undefined,
       presentationVerificationCallback: responseOpts.presentationVerificationCallback,
     });
-    const jwt = await signDidJwtPayload(payload, responseOpts);
+
     return {
-      jwt,
+      jwt: payload.id_token,
       state: payload.state,
       nonce: payload.nonce,
+      idToken,
       payload,
       responseOpts,
     };
 
     // todo add uri generation support in separate method, like in the AuthRequest class
-
-    /*if (isInternalSignature(responseOpts.signatureType)) {
-                                                        return DIDJwt.signDidJwtInternal(payload, ResponseIss.SELF_ISSUED_V2, responseOpts.signatureType.hexPrivateKey, responseOpts.signatureType.kid);
-                                                    } else if (isExternalSignature(responseOpts.signatureType)) {
-                                                        return DIDJwt.signDidJwtExternal(payload, responseOpts.signatureType.signatureUri, responseOpts.signatureType.authZToken, responseOpts.signatureType.kid);
-                                                    } else {
-                                                        throw new Error("INVALID_SIGNATURE_TYPE");
-                                                    }*/
-    /*const params = `id_token=${JWT}`;
-                                                    const uriResponse = {
-                                                        encodedUri: "",
-                                                        bodyEncoded: "",
-                                                        encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
-                                                        responseMode: didAuthResponseCall.responseMode
-                                                            ? didAuthResponseCall.responseMode
-                                                            : ResponseMode.FRAGMENT, // FRAGMENT is the default
-                                                    };
-
-                                                    if (didAuthResponseCall.responseMode === ResponseMode.FORM_POST) {
-                                                        uriResponse.encodedUri = encodeURI(didAuthResponseCall.redirectUri);
-                                                        uriResponse.bodyEncoded = encodeURI(params);
-                                                    } else if (didAuthResponseCall.responseMode === ResponseMode.QUERY) {
-                                                        uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}?${params}`);
-                                                    } else {
-                                                        uriResponse.responseMode = ResponseMode.FRAGMENT;
-                                                        uriResponse.encodedUri = encodeURI(`${didAuthResponseCall.redirectUri}#${params}`);
-                                                    }
-                                                    return uriResponse;*/
   }
 
   /**
@@ -141,23 +117,11 @@ export default class AuthenticationResponse {
     } else if (!verifyOpts.verification.checkLinkedDomain) {
       await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
     }
-    const verPayload = verifiedJWT.payload as AuthenticationResponsePayload;
+    const verPayload = verifiedJWT.payload as IdToken;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     // Enforces verifyPresentationCallback function on the RP side,
     if (!verifyOpts?.presentationVerificationCallback) {
       throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_VERIFICATION_FUNCTION_MISSING);
-    }
-    await assertValidVerifiablePresentations({
-      definitions: verifyOpts?.claims?.presentationDefinitions,
-      verPayload,
-      presentationVerificationCallback: verifyOpts?.presentationVerificationCallback,
-    });
-
-    const revocationVerification = verifyOpts.verification.revocationOpts
-      ? verifyOpts.verification.revocationOpts.revocationVerification
-      : RevocationVerification.IF_PRESENT;
-    if (revocationVerification !== RevocationVerification.NEVER) {
-      await verifyRevocation(verPayload.vp_token, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
     }
 
     return {
@@ -171,9 +135,24 @@ export default class AuthenticationResponse {
       },
     };
   }
+  static async verifyVPs(payload: AuthenticationResponsePayload, verifyOpts: VerifyAuthenticationResponseOpts) {
+    await assertValidVerifiablePresentations({
+      definitions: verifyOpts?.claims?.presentationDefinitions,
+      vps: payload.vp_token ? [payload.vp_token]: undefined,
+      presentationVerificationCallback: verifyOpts?.presentationVerificationCallback,
+    });
+
+    const revocationVerification = verifyOpts.verification.revocationOpts
+      ? verifyOpts.verification.revocationOpts.revocationVerification
+      : RevocationVerification.IF_PRESENT;
+    if (revocationVerification !== RevocationVerification.NEVER) {
+      // TODO check if this shouldn't be an array
+      await verifyRevocation(payload.vp_token, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
+    }
+  }
 }
 
-function assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload; verPayload?: AuthenticationResponsePayload; audience?: string }) {
+function assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload; verPayload?: IdToken; audience?: string }) {
   if (!opts.header) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
@@ -212,13 +191,6 @@ async function createThumbprintAndJWK(resOpts: AuthenticationResponseOpts): Prom
       resOpts.signatureType.kid || `${resOpts.signatureType.did}#key-1`,
       resOpts.did
     );
-    /*  } else if (isExternalSignature(resOpts.signatureType)) {
-                        const didDocument = await fetchDidDocument(resOpts.registration.registrationBy.referenceUri as string);
-                        if (!didDocument.verificationMethod || didDocument.verificationMethod.length == 0) {
-                          throw Error(SIOPErrors.VERIFY_BAD_PARAMS);
-                        }
-                        thumbprint = getThumbprintFromJwk(didDocument.verificationMethod[0].publicKeyJwk as JWK, resOpts.did);
-                        subJwk = didDocument.verificationMethod[0].publicKeyJwk as JWK;*/
   } else if (isSuppliedSignature(resOpts.signatureType)) {
     // fixme: These are uninitialized. Probably we have to extend the supplied signature to provide these.
     return { thumbprint, subJwk };
@@ -256,6 +228,42 @@ function extractPresentations(resOpts: AuthenticationResponseOpts) {
   };
 }
 
+async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJWT, resOpts: AuthenticationResponseOpts): Promise<IdToken> {
+  assertValidResponseOpts(resOpts);
+  if (!verifiedJwt || !verifiedJwt.jwt) {
+    throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
+  }
+  const supportedDidMethods = verifiedJwt.payload.registration?.subject_syntax_types_supported?.filter((sst) =>
+    sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
+  );
+  const state = resOpts.state || getState(verifiedJwt.payload.state);
+  const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
+  const { verifiable_presentations } = extractPresentations(resOpts);
+  const id_token: IdToken = {
+    iss: ResponseIss.SELF_ISSUED_V2,
+    aud: verifiedJwt.payload.redirect_uri,
+    iat: Date.now() / 1000,
+    exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
+    sub: resOpts.did,
+    auth_time: verifiedJwt.payload.auth_time,
+    nonce,
+    _vp_token: {
+      // right now pex doesn't support presentation_submission for multiple VPs (as well as multiple VPs)
+      presentation_submission: verifiable_presentations ? verifiable_presentations[0].presentation.presentation_submission : undefined,
+    },
+    //not officially in the specs
+    state,
+    did: resOpts.did,
+    sub_type: supportedDidMethods.length && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
+  };
+  if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
+    const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
+    id_token['sub_jwk'] = subJwk;
+    id_token.sub = thumbprint;
+  }
+  return id_token;
+}
+
 async function createSIOPResponsePayload(
   verifiedJwt: VerifiedAuthenticationRequestWithJWT,
   resOpts: AuthenticationResponseOpts
@@ -264,48 +272,18 @@ async function createSIOPResponsePayload(
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
-  const supportedDidMethods = verifiedJwt.payload.registration?.subject_syntax_types_supported?.filter((sst) =>
-    sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
-  );
-
-  const state = resOpts.state || getState(verifiedJwt.payload.state);
-  const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
   const registration = createDiscoveryMetadataPayload(resOpts.registration);
 
-  //https://sphereon.atlassian.net/browse/VDX-140
-  // *********************************************************************************
-  // todo We are missing a wrapper object. Actually the current object is the id_token
-  // *********************************************************************************
-
-  const { verifiable_presentations, vp_token } = extractPresentations(resOpts);
-  const authenticationResponsePayload: AuthenticationResponsePayload = {
-    iss: ResponseIss.SELF_ISSUED_V2,
-    sub: resOpts.did,
-    aud: verifiedJwt.payload.redirect_uri,
-    did: resOpts.did,
-    sub_type: supportedDidMethods.length && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
-    state,
-    nonce,
-    iat: Date.now() / 1000,
-    exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
+  const { vp_token } = extractPresentations(resOpts);
+  const authenticationResponsePayload: Partial<AuthenticationResponsePayload> = {
     registration,
+    access_token: resOpts.accessToken,
+    token_type: resOpts.tokenType,
+    refresh_token: resOpts.refreshToken,
+    expires_in: resOpts.expiresIn,
   };
   // add support for multiple VPs (VDX-158)
   if (resOpts.vp && resOpts.vp[0].location === PresentationLocation.ID_TOKEN) {
-    const id_token = {
-      iss: ResponseIss.SELF_ISSUED_V2,
-      aud: verifiedJwt.payload.redirect_uri,
-      iat: Date.now() / 1000,
-      exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
-      sub: resOpts.did,
-      //TODO: We don't have this value in the payload
-      auth_time: verifiedJwt.payload.auth_time,
-      nonce: nonce,
-      _vp_token: {
-        // right now pex doesn't support presentation_submission for multiple VPs (as well as multiple VPs)
-        presentation_submission: verifiable_presentations[0].presentation.presentation_submission,
-      },
-    };
     let vp_token;
     if (resOpts.vp.length > 1) {
       vp_token = [];
@@ -325,24 +303,11 @@ async function createSIOPResponsePayload(
         vp_token = resOpts.vp;
       }
     }
-    if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
-      const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
-      id_token['sub_jwk'] = subJwk;
-      id_token.sub = thumbprint;
-    }
-    authenticationResponsePayload.id_token = id_token;
     authenticationResponsePayload.vp_token = vp_token;
   } else {
     authenticationResponsePayload.vp_token = vp_token;
-    authenticationResponsePayload.verifiable_presentations = verifiable_presentations;
-
-    if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
-      const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
-      authenticationResponsePayload.sub_jwk = subJwk;
-      authenticationResponsePayload.sub = thumbprint;
-    }
   }
-  return authenticationResponsePayload;
+  return authenticationResponsePayload as AuthenticationResponsePayload;
 }
 
 function assertValidResponseOpts(opts: AuthenticationResponseOpts) {
@@ -361,39 +326,25 @@ function assertValidVerifyOpts(opts: VerifyAuthenticationResponseOpts) {
 
 async function assertValidVerifiablePresentations(args: {
   definitions: PresentationDefinitionWithLocation[];
-  verPayload: AuthenticationResponsePayload;
+  vps: VerifiablePresentationPayload[];
   presentationVerificationCallback?: PresentationVerificationCallback;
 }) {
-  if ((!args.definitions || args.definitions.length == 0) && !args.verPayload.vp_token) {
+  if ((!args.definitions || args.definitions.length == 0) && !args.vps) {
     return;
   }
 
   // const definitions: PresentationDefinitionWithLocation[] = verifyOpts?.claims?.presentationDefinitions;
   PresentationExchange.assertValidPresentationDefinitionWithLocations(args.definitions);
-  let presentationPayloads: VerifiablePresentationPayload[] = [];
+  const presentationPayloads: VerifiablePresentationPayload[] = [];
   let presentationSubmission: PresentationSubmission;
-  if (args.verPayload.verifiable_presentations && args.verPayload.verifiable_presentations.length > 0) {
-    presentationPayloads = args.verPayload.verifiable_presentations;
-  }
-  if (args.verPayload.vp_token) {
-    if (Array.isArray(args.verPayload.vp_token)) {
-      if (!presentationPayloads) {
-        presentationPayloads = args.verPayload.vp_token;
-      } else {
-        presentationPayloads.push(...args.verPayload.vp_token);
-      }
-    } else {
-      presentationPayloads = [args.verPayload.vp_token];
-    }
-  }
-  if (args.verPayload.id_token) {
-    if (args.verPayload.id_token._vp_token) {
-      presentationSubmission = args.verPayload.id_token._vp_token;
+  if (args.vps && args.vps.length > 0) {
+    presentationPayloads.push(...args.vps);
+    // TODO check how to handle multiple VPs
+    if (args.vps[0].presentation?.presentation_submission) {
+      presentationSubmission = args.vps[0].presentation.presentation_submission;
     }
   }
 
-  /*console.log('pd:', JSON.stringify(definitions));
-    console.log('vps:', JSON.stringify(presentationPayloads));*/
   if (args.definitions && args.definitions.length && !presentationPayloads) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
   } else if (!args.definitions && presentationPayloads) {

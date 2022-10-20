@@ -5,12 +5,12 @@ import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sph
 import {
   IPresentation as PEPresentation,
   IVerifiablePresentation as PEVerifiablePresentation,
+  PresentationSubmission,
   W3CVerifiableCredential,
   W3CVerifiablePresentation,
 } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
-import { JWK } from 'jose';
 
 import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
 
@@ -137,24 +137,38 @@ export interface AuthenticationResponseOpts {
   did: string;
   vp?: VerifiablePresentationResponseOpts[];
   expiresIn?: number;
+  accessToken?: string;
+  tokenType?: string;
+  refreshToken?: string;
 }
 
-export interface AuthenticationResponsePayload extends JWTPayload {
-  iss: ResponseIss.SELF_ISSUED_V2 | string; // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
+export interface IdToken extends JWTPayload {
+  iss: ResponseIss.SELF_ISSUED_V2 | string;
   sub: string; // did (or thumbprint of sub_jwk key when type is jkt)
-  // sub_type: SubjectIdentifierType;
-  sub_jwk?: JWK;
   aud: string; // redirect_uri from request
-  exp: number; // Expiration time
   iat: number; // Issued at time
-  state: string; // State value
-  nonce: string; // Nonce
-  did: string; // DID of the OP
-  registration?: DiscoveryMetadataPayload; // Registration metadata
-  registration_uri?: string; // Registration URI if metadata is hosted by the OP
-  verifiable_presentations?: VerifiablePresentationPayload[]; // Verifiable Presentations as part of the id token
-  // fixme All of the above is the id token. We need to create a new interface of the above and reference that here as id_token
-  vp_token?: VerifiablePresentationPayload; // Verifiable Presentation (the vp_token)
+  exp: number; // Expiration time
+  auth_time: number;
+  nonce: string;
+  _vp_token: {
+    /*
+      This profile currently supports including only a single VP in the VP Token.
+      In such cases, as defined in section 5.2 of OpenID4VP ID1, when the Self-Issued OP returns a single VP in the vp_token,
+      VP Token is not an array, and a single VP is passed as a vp_token. In this case, the descriptor map would contain a simple path expression “$”.
+    */
+    presentation_submission: PresentationSubmission;
+  };
+}
+
+export interface AuthenticationResponsePayload {
+  access_token?: ResponseIss.SELF_ISSUED_V2 | string;
+  token_type?: string;
+  refresh_token?: string;
+  expires_in: number;
+  id_token: string;
+  vp_token: VerifiablePresentationPayload;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
 }
 
 export interface VerifiablePresentationsPayload {
@@ -168,10 +182,10 @@ export interface IdTokenClaimPayload {
 }
 
 export interface VpTokenClaimPayload {
-  response_type: string;
+  response_type?: string;
   presentation_definition?: PresentationDefinitionV1 | PresentationDefinitionV2;
   presentation_definition_uri?: string;
-  nonce: string;
+  nonce?: string;
   [x: string]: unknown;
 }
 
@@ -223,6 +237,7 @@ export interface AuthenticationResponseWithJWT {
   jwt: string;
   nonce: string;
   state: string;
+  idToken: IdToken;
   payload: AuthenticationResponsePayload;
   verifyOpts?: VerifyAuthenticationRequestOpts;
   responseOpts: AuthenticationResponseOpts;
@@ -563,7 +578,7 @@ export interface DidAuthValidationResponse {
 }
 
 export interface VerifiedAuthenticationResponseWithJWT extends VerifiedJWT {
-  payload: AuthenticationResponsePayload;
+  payload: IdToken;
   verifyOpts: VerifyAuthenticationResponseOpts;
 }
 
@@ -704,11 +719,13 @@ export const isRequestOpts = (object: AuthenticationRequestOpts | Authentication
 export const isResponseOpts = (object: AuthenticationRequestOpts | AuthenticationResponseOpts): object is AuthenticationResponseOpts =>
   'did' in object;
 
-export const isRequestPayload = (object: AuthenticationRequestPayload | AuthenticationResponsePayload): object is AuthenticationRequestPayload =>
-  'response_mode' in object && 'response_type' in object;
+export const isRequestPayload = (
+  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken
+): object is AuthenticationRequestPayload => 'response_mode' in object && 'response_type' in object;
 
-export const isResponsePayload = (object: AuthenticationRequestPayload | AuthenticationResponsePayload): object is AuthenticationResponsePayload =>
-  'iss' in object && 'aud' in object;
+export const isResponsePayload = (
+  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken
+): object is AuthenticationResponsePayload => 'iss' in object && 'aud' in object;
 
 export const isInternalVerification = (object: InternalVerification | ExternalVerification): object is InternalVerification =>
   object.mode === VerificationMode.INTERNAL; /* && !isExternalVerification(object)*/
