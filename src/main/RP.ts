@@ -65,7 +65,7 @@ export class RP {
     const verifyCallback = verification.verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
     const presentationVerificationCallback =
       verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
-    await AuthenticationResponse.verifyVPs(payload, this.newVerifyAuthenticationResponseOpts({...opts}));
+    await AuthenticationResponse.verifyVPs(payload, this.newVerifyAuthenticationResponseOpts({ ...opts }));
     return AuthenticationResponse.verifyJWT(
       payload.id_token,
       this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback })

@@ -1,10 +1,10 @@
-import { ObjectUtils, PresentationSubmission } from '@sphereon/ssi-types';
-import { JWTHeader } from 'did-jwt';
-import { JWK } from 'jose';
+import {ObjectUtils, PresentationSubmission} from '@sphereon/ssi-types';
+import {JWTHeader} from 'did-jwt';
+import {JWK} from 'jose';
 
 import AuthenticationRequest from './AuthenticationRequest';
-import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
-import { PresentationExchange } from './PresentationExchange';
+import {createDiscoveryMetadataPayload} from './AuthenticationResponseRegistration';
+import {PresentationExchange} from './PresentationExchange';
 import {
   getIssuerDidFromPayload,
   getNonce,
@@ -76,7 +76,7 @@ export default class AuthenticationResponse {
     payload.id_token = await signDidJwtPayload(idToken, responseOpts);
     await assertValidVerifiablePresentations({
       definitions: verifiedJwt.presentationDefinitions,
-      vps: payload.vp_token ? [payload.vp_token]: undefined,
+      vps: payload.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
       presentationVerificationCallback: responseOpts.presentationVerificationCallback,
     });
 
@@ -138,7 +138,7 @@ export default class AuthenticationResponse {
   static async verifyVPs(payload: AuthenticationResponsePayload, verifyOpts: VerifyAuthenticationResponseOpts) {
     await assertValidVerifiablePresentations({
       definitions: verifyOpts?.claims?.presentationDefinitions,
-      vps: payload.vp_token ? [payload.vp_token]: undefined,
+      vps: payload.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
       presentationVerificationCallback: verifyOpts?.presentationVerificationCallback,
     });
 
@@ -146,8 +146,13 @@ export default class AuthenticationResponse {
       ? verifyOpts.verification.revocationOpts.revocationVerification
       : RevocationVerification.IF_PRESENT;
     if (revocationVerification !== RevocationVerification.NEVER) {
-      // TODO check if this shouldn't be an array
-      await verifyRevocation(payload.vp_token, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
+      if (Array.isArray(payload.vp_token)) {
+        payload.vp_token.forEach(
+          async (p) => await verifyRevocation(p, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification)
+        );
+      } else {
+        await verifyRevocation(payload.vp_token, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
+      }
     }
   }
 }
@@ -239,6 +244,7 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
   const state = resOpts.state || getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
   const { verifiable_presentations } = extractPresentations(resOpts);
+  const registration = createDiscoveryMetadataPayload(resOpts.registration);
   const id_token: IdToken = {
     iss: ResponseIss.SELF_ISSUED_V2,
     aud: verifiedJwt.payload.redirect_uri,
@@ -255,6 +261,7 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
     state,
     did: resOpts.did,
     sub_type: supportedDidMethods.length && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
+    registration
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
@@ -272,11 +279,8 @@ async function createSIOPResponsePayload(
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
-  const registration = createDiscoveryMetadataPayload(resOpts.registration);
-
   const { vp_token } = extractPresentations(resOpts);
   const authenticationResponsePayload: Partial<AuthenticationResponsePayload> = {
-    registration,
     access_token: resOpts.accessToken,
     token_type: resOpts.tokenType,
     refresh_token: resOpts.refreshToken,
@@ -326,22 +330,25 @@ function assertValidVerifyOpts(opts: VerifyAuthenticationResponseOpts) {
 
 async function assertValidVerifiablePresentations(args: {
   definitions: PresentationDefinitionWithLocation[];
-  vps: VerifiablePresentationPayload[];
+  vps: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
   presentationVerificationCallback?: PresentationVerificationCallback;
 }) {
   if ((!args.definitions || args.definitions.length == 0) && !args.vps) {
     return;
   }
-
-  // const definitions: PresentationDefinitionWithLocation[] = verifyOpts?.claims?.presentationDefinitions;
   PresentationExchange.assertValidPresentationDefinitionWithLocations(args.definitions);
   const presentationPayloads: VerifiablePresentationPayload[] = [];
   let presentationSubmission: PresentationSubmission;
-  if (args.vps && args.vps.length > 0) {
+  if (args.vps && Array.isArray(args.vps) && args.vps.length > 0) {
     presentationPayloads.push(...args.vps);
     // TODO check how to handle multiple VPs
     if (args.vps[0].presentation?.presentation_submission) {
       presentationSubmission = args.vps[0].presentation.presentation_submission;
+    }
+  } else if (args.vps && !Array.isArray(args.vps)) {
+    presentationPayloads.push(args.vps);
+    if (args.vps.presentation?.presentation_submission) {
+      presentationSubmission = args.vps.presentation.presentation_submission;
     }
   }
 

@@ -1,6 +1,6 @@
-import {IPresentationDefinition} from '@sphereon/pex';
-import {IProofType, IVerifiableCredential, IVerifiablePresentation} from '@sphereon/ssi-types';
-import {IVerifyCallbackArgs, IVerifyCredentialResult, VerifyCallback, WDCErrors} from '@sphereon/wellknown-dids-client';
+import { IPresentationDefinition } from '@sphereon/pex';
+import { IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult, VerifyCallback, WDCErrors } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
 import {
@@ -26,7 +26,7 @@ import {
   verifyRevocation,
 } from '../src/main';
 
-import {mockedGetEnterpriseAuthToken} from './TestUtils';
+import { mockedGetEnterpriseAuthToken } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
   VERIFIER_LOGO_FOR_CLIENT,
@@ -220,9 +220,8 @@ describe('RP and OP interaction should', () => {
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
       expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
       expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
-      //TODO fix payload registration
-    //   expect(verifiedAuthResponseWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
-    //   expect(verifiedAuthResponseWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100318');
+      expect(verifiedAuthResponseWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
+      expect(verifiedAuthResponseWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100318');
     },
     UNIT_TEST_TIMEOUT
   );
@@ -322,9 +321,8 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
-    // TODO fix payload registration
-    // expect(verifiedAuthResponseWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
-    // expect(verifiedAuthResponseWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100320');
+    expect(verifiedAuthResponseWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
+    expect(verifiedAuthResponseWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100320');
   });
 
   it('fail when calling with presentation definitions and without verifiable presentation', async () => {
@@ -637,21 +635,22 @@ describe('RP and OP interaction should', () => {
         ],
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
-      await expect(rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
+      await expect(
+        rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
           audience: EXAMPLE_REDIRECT_URL,
           verification: {
             mode: VerificationMode.INTERNAL,
-            verifyUri: "",
+            verifyUri: '',
             resolveOpts: {
-              subjectSyntaxTypesSupported:['did', 'did:eth']
+              subjectSyntaxTypesSupported: ['did', 'did:eth'],
             },
             checkLinkedDomain: CheckLinkedDomain.ALWAYS,
             revocationOpts: {
               revocationVerification: RevocationVerification.ALWAYS,
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              revocationVerificationCallback: (_credential, _type) => Promise.resolve({status: RevocationStatus.VALID})
-            }
-          }
+              revocationVerificationCallback: (_credential, _type) => Promise.resolve({ status: RevocationStatus.VALID }),
+            },
+          },
         })
       ).rejects.toThrow(new Error(WDCErrors.PROPERTY_SERVICE_NOT_PRESENT));
     },

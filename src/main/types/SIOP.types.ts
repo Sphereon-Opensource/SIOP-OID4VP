@@ -166,7 +166,7 @@ export interface AuthenticationResponsePayload {
   refresh_token?: string;
   expires_in: number;
   id_token: string;
-  vp_token: VerifiablePresentationPayload;
+  vp_token: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
