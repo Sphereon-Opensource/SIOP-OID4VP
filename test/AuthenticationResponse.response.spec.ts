@@ -1,5 +1,5 @@
-import { IPresentationDefinition, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
-import { ICredential } from '@sphereon/pex/dist/main/lib/types';
+import { IPresentationDefinition } from '@sphereon/pex';
+import { ICredential, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
 
 import { PresentationExchange } from '../src/main';
 import { AuthenticationRequest, AuthenticationResponse } from '../src/main';

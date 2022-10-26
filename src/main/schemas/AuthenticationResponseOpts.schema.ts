@@ -343,6 +343,9 @@ export const AuthenticationResponseOptsSchema = {
     "IPresentation": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string"
+        },
         "@context": {
           "anyOf": [
             {
@@ -487,7 +490,6 @@ export const AuthenticationResponseOptsSchema = {
       "required": [
         "@context",
         "credentialSubject",
-        "id",
         "issuanceDate",
         "issuer",
         "proof",
@@ -500,7 +502,7 @@ export const AuthenticationResponseOptsSchema = {
         "type": {
           "anyOf": [
             {
-              "$ref": "#/definitions/ProofType"
+              "$ref": "#/definitions/IProofType"
             },
             {
               "type": "string"
@@ -513,7 +515,7 @@ export const AuthenticationResponseOptsSchema = {
         "proofPurpose": {
           "anyOf": [
             {
-              "$ref": "#/definitions/ProofPurpose"
+              "$ref": "#/definitions/IProofPurpose"
             },
             {
               "type": "string"
@@ -568,7 +570,7 @@ export const AuthenticationResponseOptsSchema = {
         ]
       }
     },
-    "ProofType": {
+    "IProofType": {
       "type": "string",
       "enum": [
         "Ed25519Signature2018",
@@ -583,9 +585,10 @@ export const AuthenticationResponseOptsSchema = {
         "BbsBlsBoundSignatureProof2020"
       ]
     },
-    "ProofPurpose": {
+    "IProofPurpose": {
       "type": "string",
       "enum": [
+        "verificationMethod",
         "assertionMethod",
         "authentication",
         "keyAgreement",
@@ -660,16 +663,19 @@ export const AuthenticationResponseOptsSchema = {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "A UUID or some other unique ID to identify this Presentation Submission"
         },
         "definition_id": {
-          "type": "string"
+          "type": "string",
+          "description": "A UUID or some other unique ID to identify this Presentation Definition"
         },
         "descriptor_map": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/Descriptor"
-          }
+          },
+          "description": "List of descriptors of how the claims are being mapped to presentation definition"
         }
       },
       "required": [
@@ -677,22 +683,26 @@ export const AuthenticationResponseOptsSchema = {
         "definition_id",
         "descriptor_map"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "It express how the inputs presented as proofs to a Verifier."
     },
     "Descriptor": {
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "ID to identify the descriptor from Presentation Definition Input Descriptor it coresponds to."
         },
         "path": {
-          "type": "string"
+          "type": "string",
+          "description": "The path where the verifiable credential is located in the presentation submission json"
         },
         "path_nested": {
           "$ref": "#/definitions/Descriptor"
         },
         "format": {
-          "type": "string"
+          "type": "string",
+          "description": "The Proof or JWT algorith that the proof is in"
         }
       },
       "required": [
@@ -700,7 +710,8 @@ export const AuthenticationResponseOptsSchema = {
         "path",
         "format"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "descriptor map laying out the structure of the presentation submission."
     },
     "PresentationLocation": {
       "type": "string",
