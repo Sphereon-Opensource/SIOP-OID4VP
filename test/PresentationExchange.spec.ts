@@ -1,5 +1,5 @@
-import { IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
 import { PresentationDefinitionV1 } from '@sphereon/pex-models';
+import { IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
 
 import { PresentationExchange, SIOP } from '../src/main';
 import { State } from '../src/main/functions';

@@ -1,19 +1,15 @@
 import {
   EvaluationResults,
-  IPresentation,
   IPresentationDefinition,
-  IVerifiableCredential,
-  IVerifiablePresentation,
   KeyEncoding,
   PEX,
   PresentationSignCallBackParams,
   PresentationSignOptions,
-  ProofPurpose,
-  ProofType,
   SelectResults,
   Status,
 } from '@sphereon/pex';
 import { PresentationSubmission } from '@sphereon/pex-models';
+import { IPresentation, IProofPurpose, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
 
 import { extractDataFromPath } from './functions/ObjectUtils';
 import { SIOPErrors } from './types';
@@ -61,8 +57,8 @@ export class PresentationExchange {
     // fixme: this needs to be configurable
     const signOptions: PresentationSignOptions = {
       proofOptions: {
-        proofPurpose: ProofPurpose.authentication,
-        type: ProofType.EcdsaSecp256k1Signature2019,
+        proofPurpose: IProofPurpose.authentication,
+        type: IProofType.EcdsaSecp256k1Signature2019,
         challenge,
         domain,
       },

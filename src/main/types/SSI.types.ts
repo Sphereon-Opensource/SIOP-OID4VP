@@ -1,5 +1,12 @@
-import { ICredentialStatus, ICredentialSubject, IPresentation, IProof, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/pex';
-import { ICredential } from '@sphereon/pex/dist/main/lib/types';
+import {
+  ICredential,
+  ICredentialStatus,
+  ICredentialSubject,
+  IPresentation,
+  IProof,
+  IVerifiableCredential,
+  IVerifiablePresentation,
+} from '@sphereon/ssi-types';
 import { DIDDocument as DIFDIDDocument, Resolvable } from 'did-resolver';
 import { JWK } from 'jose/types';
 

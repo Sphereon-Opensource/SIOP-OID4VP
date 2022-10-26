@@ -1,4 +1,5 @@
-import { IPresentationDefinition, IVerifiableCredential } from '@sphereon/pex';
+import { IPresentationDefinition } from '@sphereon/pex';
+import { IVerifiableCredential } from '@sphereon/ssi-types';
 import nock from 'nock';
 
 import { OP, PresentationExchange, RP } from '../src/main';
