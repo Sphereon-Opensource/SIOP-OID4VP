@@ -27,7 +27,7 @@
     "node": ">=14"
   },
   "dependencies": {
-    "@sphereon/did-uni-client": "^0.4.0",
+    "@sphereon/did-uni-client": "file:../did-uni-client/",
     "@sphereon/pex": "^2.0.0-unstable.3",
     "@sphereon/pex-models": "^1.1.0",
     "@sphereon/ssi-types": "0.8.1-next.31",
@@ -44,8 +44,8 @@
     "bs58": "^5.0.0",
     "canonicalize": "^1.0.8",
     "cross-fetch": "^3.1.5",
-    "did-jwt": "6.2.0",
-    "did-resolver": "3.2.2",
+    "did-jwt": "6.9.0",
+    "did-resolver": "4.0.1",
     "elliptic": "^6.5.4",
     "eth-crypto": "^2.3.0",
     "jose": "^4.9.2",

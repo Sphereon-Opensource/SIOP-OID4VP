@@ -1659,13 +1659,11 @@
   dependencies:
     "@sinonjs/commons" "^1.7.0"
 
-"@sphereon/did-uni-client@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@sphereon/did-uni-client/-/did-uni-client-0.4.0.tgz#1a4c4302c3ad6714e23aa07adf8154a81c1968dd"
-  integrity sha512-PJr0xi46iEMtQ7vJW6rAoc2T+gPT8P7q0FjVcOVI3l8so4XJ+iY+wkeF2osEFGmjVS/Q76uhcDCBXTXxPDFdcQ==
+"@sphereon/did-uni-client@file:../did-uni-client":
+  version "0.4.1-unstable.0"
   dependencies:
     cross-fetch "^3.1.4"
-    did-resolver "^3.1.5"
+    did-resolver "^4.0.1"
 
 "@sphereon/pex-models@^1.1.0":
   version "1.1.0"
@@ -3021,10 +3019,10 @@ detect-newline@^3.0.0:
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-3.1.0.tgz#576f5dfc63ae1a192ff192d8ad3af6308991b651"
   integrity sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA==
 
-did-jwt@6.2.0:
-  version "6.2.0"
-  resolved "https://registry.yarnpkg.com/did-jwt/-/did-jwt-6.2.0.tgz#5c4009871ad1ad85ec80c14c501a52991a16e7a1"
-  integrity sha512-BokZHvwStx4K5s3a/0TXs649b1Tjl5S9X4X80gQjdkQFlg33Z0qh/DTfctDI8dWyapMR69yUPtMlLdDxwWQEQQ==
+did-jwt@6.9.0:
+  version "6.9.0"
+  resolved "https://registry.yarnpkg.com/did-jwt/-/did-jwt-6.9.0.tgz#92e05b9f947378004946e21e13b983db4413dd79"
+  integrity sha512-kZ8pakovM2VkG0pia6x0SA9/1rl9dOUti4i2FL3xg7arJDWW7dACJxX+6gQK7iR/DvXrfFo8F784ejHVbw9ryA==
   dependencies:
     "@stablelib/ed25519" "^1.0.2"
     "@stablelib/random" "^1.0.1"
@@ -3033,16 +3031,16 @@ did-jwt@6.2.0:
     "@stablelib/xchacha20poly1305" "^1.0.1"
     bech32 "^2.0.0"
     canonicalize "^1.0.8"
-    did-resolver "^3.2.2"
+    did-resolver "^4.0.0"
     elliptic "^6.5.4"
     js-sha3 "^0.8.0"
     multiformats "^9.6.5"
     uint8arrays "^3.0.0"
 
-did-resolver@3.2.2, did-resolver@^3.1.5, did-resolver@^3.2.2:
-  version "3.2.2"
-  resolved "https://registry.yarnpkg.com/did-resolver/-/did-resolver-3.2.2.tgz#6f4e252a810f785d1b28a10265fad6dffee25158"
-  integrity sha512-Eeo2F524VM5N3W4GwglZrnul2y6TLTwMQP3In62JdG34NZoqihYyOZLk+5wUW8sSgvIYIcJM8Dlt3xsdKZZ3tg==
+did-resolver@4.0.1, did-resolver@^4.0.0, did-resolver@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/did-resolver/-/did-resolver-4.0.1.tgz#11bb3f19ed1c8f53f4af4702912fa9f7852fc305"
+  integrity sha512-eHs2VLKhcANmh08S87PKvOauIAmSOd7nb7AlhNxcvOyDAIGQY1UfbiqI1VOW5IDKvOO6aEWY+5edOt1qrCp1Eg==
 
 diff-sequences@^28.1.1:
   version "28.1.1"
