@@ -1,10 +1,10 @@
-import {ObjectUtils, PresentationSubmission} from '@sphereon/ssi-types';
-import {JWTHeader} from 'did-jwt';
-import {JWK} from 'jose';
+import { ObjectUtils, PresentationSubmission } from '@sphereon/ssi-types';
+import { JWTHeader } from 'did-jwt';
+import { JWK } from 'jose';
 
 import AuthenticationRequest from './AuthenticationRequest';
-import {createDiscoveryMetadataPayload} from './AuthenticationResponseRegistration';
-import {PresentationExchange} from './PresentationExchange';
+import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
+import { PresentationExchange } from './PresentationExchange';
 import {
   getIssuerDidFromPayload,
   getNonce,
@@ -137,7 +137,7 @@ export default class AuthenticationResponse {
   }
   static async verifyVPs(payload: AuthenticationResponsePayload, verifyOpts: VerifyAuthenticationResponseOpts) {
     await assertValidVerifiablePresentations({
-      definitions: verifyOpts?.claims?.presentationDefinitions,
+      definitions: [{ definition: verifyOpts?.claims.vp_token?.presentation_definition, location: PresentationLocation.VP_TOKEN }],
       vps: payload.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
       presentationVerificationCallback: verifyOpts?.presentationVerificationCallback,
     });
@@ -261,7 +261,7 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
     state,
     did: resOpts.did,
     sub_type: supportedDidMethods.length && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
-    registration
+    registration,
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
@@ -333,7 +333,10 @@ async function assertValidVerifiablePresentations(args: {
   vps: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
   presentationVerificationCallback?: PresentationVerificationCallback;
 }) {
-  if ((!args.definitions || args.definitions.length == 0) && !args.vps) {
+  if (
+    (!args.definitions || args.definitions.filter((a) => a.definition).length === 0) &&
+    (!args.vps || (Array.isArray(args.vps) && args.vps.filter((vp) => vp.presentation).length === 0))
+  ) {
     return;
   }
   PresentationExchange.assertValidPresentationDefinitionWithLocations(args.definitions);
@@ -352,9 +355,9 @@ async function assertValidVerifiablePresentations(args: {
     }
   }
 
-  if (args.definitions && args.definitions.length && !presentationPayloads) {
+  if (args.definitions && args.definitions.length && (!presentationPayloads || presentationPayloads.length === 0)) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
-  } else if (!args.definitions && presentationPayloads) {
+  } else if ((!args.definitions || args.definitions.length === 0) && (presentationPayloads || presentationPayloads.length > 0)) {
     throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
   } else if (args.definitions && presentationPayloads && args.definitions.length != presentationPayloads.length) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);

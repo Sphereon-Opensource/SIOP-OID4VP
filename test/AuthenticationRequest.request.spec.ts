@@ -8,7 +8,6 @@ import {
   AuthenticationRequestOpts,
   CheckLinkedDomain,
   PassBy,
-  PresentationLocation,
   ResponseType,
   Scope,
   SigningAlgo,
@@ -513,24 +512,21 @@ describe('create Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        presentationDefinitions: [
-          {
-            location: PresentationLocation.VP_TOKEN,
-            definition: {
-              id: 'Insurance Plans',
-              input_descriptors: [
-                {
-                  id: 'Ontario Health Insurance Plan',
-                  schema: [
-                    {
-                      uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
-                    },
-                  ],
-                },
-              ],
-            },
+        vp_token: {
+          presentation_definition: {
+            id: 'Insurance Plans',
+            input_descriptors: [
+              {
+                id: 'Ontario Health Insurance Plan',
+                schema: [
+                  {
+                    uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+                  },
+                ],
+              },
+            ],
           },
-        ],
+        },
       },
     };
 
@@ -579,23 +575,20 @@ describe('create Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        presentationDefinitions: [
-          {
-            location: PresentationLocation.VP_TOKEN,
-            definition: {
-              input_descriptors: [
-                {
-                  id: 'Ontario Health Insurance Plan',
-                  schema: [
-                    {
-                      uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
-                    },
-                  ],
-                },
-              ],
-            } as IPresentationDefinition,
-          },
-        ],
+        vp_token: {
+          presentation_definition: {
+            input_descriptors: [
+              {
+                id: 'Ontario Health Insurance Plan',
+                schema: [
+                  {
+                    uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+                  },
+                ],
+              },
+            ],
+          } as IPresentationDefinition,
+        },
       },
     };
     await expect(AuthenticationRequest.createURI(opts)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);

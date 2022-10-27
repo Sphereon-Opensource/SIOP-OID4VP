@@ -369,10 +369,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
-      })
+      .addClaims(getPresentationDefinition())
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
@@ -443,6 +440,7 @@ describe('RP and OP interaction should', () => {
       .addScope('test')
       .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
+      .addClaims(getPresentationDefinition())
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
@@ -464,10 +462,6 @@ describe('RP and OP interaction should', () => {
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100322',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-      })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
       })
       .build();
     const op = OP.builder()
@@ -578,10 +572,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addPresentationDefinitionClaim({
-          definition: getPresentationDefinition(),
-          location: PresentationLocation.VP_TOKEN,
-        })
+        .addClaims(getPresentationDefinition())
         .build();
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
@@ -708,10 +699,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
-      })
+      .addClaims(getPresentationDefinition())
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
@@ -836,10 +824,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addPresentationDefinitionClaim({
-          definition: getPresentationDefinition(),
-          location: PresentationLocation.VP_TOKEN,
-        })
+        .addClaims(getPresentationDefinition())
         .build();
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
@@ -960,10 +945,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
-      })
+      .addClaims(getPresentationDefinition())
       .build();
 
     const op = OP.builder()
@@ -1257,10 +1239,7 @@ describe('RP and OP interaction should', () => {
         clientName: VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
-      })
+      .addClaims(getPresentationDefinition())
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)

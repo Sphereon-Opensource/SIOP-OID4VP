@@ -341,12 +341,9 @@ describe('create JWT from Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        presentationDefinitions: [
-          {
-            location: PresentationLocation.VP_TOKEN,
-            definition: definition,
-          },
-        ],
+        vp_token: {
+          presentation_definition: definition,
+        },
       },
     };
     const vc: ICredential = {
@@ -505,12 +502,9 @@ describe('create JWT from Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        presentationDefinitions: [
-          {
-            location: PresentationLocation.ID_TOKEN,
-            definition: definition,
-          },
-        ],
+        vp_token: {
+          presentation_definition: definition,
+        },
       },
     };
     const vc: ICredential = {

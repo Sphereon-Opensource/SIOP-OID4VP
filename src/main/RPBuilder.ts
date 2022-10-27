@@ -1,4 +1,5 @@
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
+import { IPresentationDefinition } from '@sphereon/pex';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
@@ -9,11 +10,11 @@ import {
   ClaimOpts,
   EcdsaSignature,
   ExternalSignature,
+  IdToken,
   InternalSignature,
   NoSignature,
   ObjectBy,
   PassBy,
-  PresentationDefinitionWithLocation,
   PresentationVerificationCallback,
   RequestRegistrationOpts,
   ResponseContext,
@@ -155,13 +156,14 @@ export default class RPBuilder {
     return this;
   }
 
-  addPresentationDefinitionClaim(definitionOpt: PresentationDefinitionWithLocation): RPBuilder {
-    if (!this.claims || !this.claims.presentationDefinitions) {
+  addClaims(definitionOpt: IPresentationDefinition, idToken?: IdToken): RPBuilder {
+    if (!this.claims || !this.claims.vp_token) {
       this.claims = {
-        presentationDefinitions: [definitionOpt],
+        id_token: idToken || {},
+        vp_token: {
+          presentation_definition: definitionOpt,
+        },
       };
-    } else {
-      this.claims.presentationDefinitions.push(definitionOpt);
     }
     return this;
   }

@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import { PresentationSignCallBackParams } from '@sphereon/pex';
+import { IPresentationDefinition, PresentationSignCallBackParams } from '@sphereon/pex';
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import {
   IPresentation as PEPresentation,
@@ -143,20 +143,21 @@ export interface AuthenticationResponseOpts {
 }
 
 export interface IdToken extends JWTPayload {
-  iss: ResponseIss.SELF_ISSUED_V2 | string;
-  sub: string; // did (or thumbprint of sub_jwk key when type is jkt)
-  aud: string; // redirect_uri from request
-  iat: number; // Issued at time
-  exp: number; // Expiration time
-  auth_time: number;
-  nonce: string;
-  _vp_token: {
+  iss?: ResponseIss.SELF_ISSUED_V2 | string;
+  sub?: string; // did (or thumbprint of sub_jwk key when type is jkt)
+  aud?: string; // redirect_uri from request
+  iat?: number; // Issued at time
+  exp?: number; // Expiration time
+  auth_time?: number;
+  nonce?: string;
+  _vp_token?: {
     /*
       This profile currently supports including only a single VP in the VP Token.
       In such cases, as defined in section 5.2 of OpenID4VP ID1, when the Self-Issued OP returns a single VP in the vp_token,
       VP Token is not an array, and a single VP is passed as a vp_token. In this case, the descriptor map would contain a simple path expression “$”.
+      * It's not clear from the ID1 specs how to handle presentation submission in case of multiple VPs
     */
-    presentation_submission: PresentationSubmission;
+    presentation_submission?: PresentationSubmission;
   };
 }
 
@@ -190,15 +191,13 @@ export interface VpTokenClaimPayload {
 }
 
 export interface ClaimOpts {
-  presentationDefinitions?: PresentationDefinitionWithLocation[];
+  id_token?: IdToken;
+  vp_token?: {
+    presentation_definition?: IPresentationDefinition;
+  };
 }
 
-export interface ClaimPayload {
-  id_token?: IdTokenClaimPayload;
-  vp_token?: VpTokenClaimPayload;
-
-  [x: string]: unknown;
-}
+export type ClaimPayload = ClaimOpts & { [x: string]: unknown };
 
 export interface DIDDocument extends DIFDIDDocument {
   owner?: string;

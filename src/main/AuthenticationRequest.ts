@@ -26,12 +26,10 @@ import {
   CheckLinkedDomain,
   ClaimOpts,
   ClaimPayload,
-  IdTokenClaimPayload,
   isExternalVerification,
   isInternalVerification,
   JWTPayload,
   PassBy,
-  PresentationLocation,
   ResponseContext,
   ResponseMode,
   ResponseType,
@@ -41,7 +39,6 @@ import {
   UrlEncodingFormat,
   VerifiedAuthenticationRequestWithJWT,
   VerifyAuthenticationRequestOpts,
-  VpTokenClaimPayload,
 } from './types';
 
 const ajv = new Ajv({ allowUnionTypes: true });
@@ -251,54 +248,29 @@ function assertValidRequestOpts(opts: AuthenticationRequestOpts) {
   assertValidRequestRegistrationOpts(opts.registration);
 }
 
-function createClaimsPayload(opts: ClaimOpts, nonce: string): ClaimPayload {
-  if (!opts || !opts.presentationDefinitions || opts.presentationDefinitions.length == 0) {
+function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
+  if (!opts || !opts.vp_token?.presentation_definition) {
     return undefined;
   }
-  let vp_token: VpTokenClaimPayload;
-  let id_token: IdTokenClaimPayload;
   const pex: PEX = new PEX();
-  opts.presentationDefinitions.forEach((def) => {
-    const discoveryResult = pex.definitionVersionDiscovery(def.definition);
-    if (discoveryResult.error) {
-      throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-    }
-    switch (def.location) {
-      case PresentationLocation.ID_TOKEN: {
-        if (!id_token || !id_token.verifiable_presentations) {
-          id_token = { verifiable_presentations: [{ presentation_definition: def.definition }] };
-        } else {
-          id_token.verifiable_presentations.push({ presentation_definition: def.definition });
-        }
-        return;
-      }
-      case PresentationLocation.VP_TOKEN: {
-        if (vp_token) {
-          // There can only be one definition in the vp_token according to the spec
-          throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-        } else {
-          vp_token = {
-            nonce: nonce,
-            presentation_definition: def.definition,
-            response_type: PresentationLocation.VP_TOKEN,
-          };
-        }
-        return;
-      }
-    }
-  });
-  const payload: ClaimPayload = {
-    id_token,
-    vp_token,
+  const discoveryResult = pex.definitionVersionDiscovery(opts.vp_token.presentation_definition);
+  if (discoveryResult.error) {
+    throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+  }
+
+  return {
+    id_token: opts.id_token,
+    vp_token: {
+      presentation_definition: opts.vp_token.presentation_definition,
+    },
   };
-  return payload;
 }
 
 async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestPayload> {
   assertValidRequestOpts(opts);
   const state = getState(opts.state);
   const registration = await createRequestRegistration(opts.registration);
-  const claims = createClaimsPayload(opts.claims, opts.nonce);
+  const claims = createClaimsPayload(opts.claims);
 
   return {
     response_type: ResponseType.ID_TOKEN,

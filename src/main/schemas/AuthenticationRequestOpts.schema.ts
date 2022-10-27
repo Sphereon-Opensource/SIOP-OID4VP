@@ -122,43 +122,130 @@ export const AuthenticationRequestOptsSchema = {
     "ClaimOpts": {
       "type": "object",
       "properties": {
-        "presentationDefinitions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/PresentationDefinitionWithLocation"
-          }
+        "id_token": {
+          "$ref": "#/definitions/IdToken"
+        },
+        "vp_token": {
+          "type": "object",
+          "properties": {
+            "presentation_definition": {
+              "$ref": "#/definitions/IPresentationDefinition"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
     },
-    "PresentationDefinitionWithLocation": {
+    "IdToken": {
       "type": "object",
       "properties": {
-        "location": {
-          "$ref": "#/definitions/PresentationLocation"
+        "iss": {
+          "type": "string"
         },
-        "definition": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/PresentationDefinitionV1"
-            },
-            {
-              "$ref": "#/definitions/PresentationDefinitionV2"
+        "sub": {
+          "type": "string"
+        },
+        "aud": {
+          "type": "string"
+        },
+        "iat": {
+          "type": "number"
+        },
+        "nbf": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "exp": {
+          "type": "number"
+        },
+        "rexp": {
+          "type": "number"
+        },
+        "jti": {
+          "type": "string"
+        },
+        "auth_time": {
+          "type": "number"
+        },
+        "nonce": {
+          "type": "string"
+        },
+        "_vp_token": {
+          "type": "object",
+          "properties": {
+            "presentation_submission": {
+              "$ref": "#/definitions/PresentationSubmission"
             }
-          ]
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "PresentationSubmission": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "A UUID or some other unique ID to identify this Presentation Submission"
+        },
+        "definition_id": {
+          "type": "string",
+          "description": "A UUID or some other unique ID to identify this Presentation Definition"
+        },
+        "descriptor_map": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Descriptor"
+          },
+          "description": "List of descriptors of how the claims are being mapped to presentation definition"
         }
       },
       "required": [
-        "location",
-        "definition"
+        "id",
+        "definition_id",
+        "descriptor_map"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "It expresses how the inputs are presented as proofs to a Verifier."
     },
-    "PresentationLocation": {
-      "type": "string",
-      "enum": [
-        "vp_token",
-        "id_token"
+    "Descriptor": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "ID to identify the descriptor from Presentation Definition Input Descriptor it coresponds to."
+        },
+        "path": {
+          "type": "string",
+          "description": "The path where the verifiable credential is located in the presentation submission json"
+        },
+        "path_nested": {
+          "$ref": "#/definitions/Descriptor"
+        },
+        "format": {
+          "type": "string",
+          "description": "The Proof or JWT algorith that the proof is in"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "format"
+      ],
+      "additionalProperties": false,
+      "description": "descriptor map laying out the structure of the presentation submission."
+    },
+    "IPresentationDefinition": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PresentationDefinitionV1"
+        },
+        {
+          "$ref": "#/definitions/PresentationDefinitionV2"
+        }
       ]
     },
     "PresentationDefinitionV1": {

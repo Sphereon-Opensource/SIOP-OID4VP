@@ -76,8 +76,6 @@ async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
         acr: null,
       },
       vp_token: {
-        response_type: 'vp_token',
-        nonce: getNonce(state),
         presentation_definition: {
           id: 'Insurance Plans',
           input_descriptors: [
@@ -153,9 +151,35 @@ async function getPayloadPdRef(): Promise<AuthenticationRequestPayload> {
         acr: null,
       },
       vp_token: {
-        response_type: 'vp_token',
-        nonce: getNonce(state),
-        presentation_definition_uri: EXAMPLE_PD_URL,
+        presentation_definition: {
+          id: 'Insurance Plans',
+          input_descriptors: [
+            {
+              id: 'Ontario Health Insurance Plan',
+              schema: [
+                {
+                  uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+                },
+                {
+                  uri: 'https://www.w3.org/2018/credentials/v1',
+                },
+              ],
+              constraints: {
+                limit_disclosure: 'preferred',
+                fields: [
+                  {
+                    path: ['$.issuer.id'],
+                    purpose: 'We can only verify bank accounts if they are attested by a source.',
+                    filter: {
+                      type: 'string',
+                      pattern: 'did:example:issuer',
+                    },
+                  },
+                ],
+              },
+            },
+          ],
+        },
       },
     },
   };
@@ -270,7 +294,8 @@ describe('presentation exchange manager tests', () => {
 
   it('validatePresentationAgainstDefinition: should throw error if both pd and pd_ref is present', async function () {
     const payload: AuthenticationRequestPayload = await getPayloadPdVal();
-    payload.claims.vp_token.presentation_definition_uri = 'my_pd_url';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (payload.claims.vp_token as any).presentation_definition_uri = EXAMPLE_PD_URL;
     await expect(PresentationExchange.findValidPresentationDefinitions(payload)).rejects.toThrow(
       SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE
     );
