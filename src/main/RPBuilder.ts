@@ -157,11 +157,11 @@ export default class RPBuilder {
   }
 
   addClaims(definitionOpt: IPresentationDefinition, idToken?: IdToken): RPBuilder {
-    if (!this.claims || !this.claims.vp_token) {
+    if (!this.claims || !this.claims.vpToken) {
       this.claims = {
-        id_token: idToken || {},
-        vp_token: {
-          presentation_definition: definitionOpt,
+        idToken: idToken || {},
+        vpToken: {
+          presentationDefinition: definitionOpt,
         },
       };
     }

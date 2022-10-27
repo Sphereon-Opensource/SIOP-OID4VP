@@ -512,8 +512,8 @@ describe('create Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        vp_token: {
-          presentation_definition: {
+        vpToken: {
+          presentationDefinition: {
             id: 'Insurance Plans',
             input_descriptors: [
               {
@@ -575,8 +575,8 @@ describe('create Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        vp_token: {
-          presentation_definition: {
+        vpToken: {
+          presentationDefinition: {
             input_descriptors: [
               {
                 id: 'Ontario Health Insurance Plan',

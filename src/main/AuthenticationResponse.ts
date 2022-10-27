@@ -137,7 +137,7 @@ export default class AuthenticationResponse {
   }
   static async verifyVPs(payload: AuthenticationResponsePayload, verifyOpts: VerifyAuthenticationResponseOpts) {
     await assertValidVerifiablePresentations({
-      definitions: [{ definition: verifyOpts?.claims.vp_token?.presentation_definition, location: PresentationLocation.VP_TOKEN }],
+      definitions: [{ definition: verifyOpts?.claims.vpToken?.presentationDefinition, location: PresentationLocation.VP_TOKEN }],
       vps: payload.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
       presentationVerificationCallback: verifyOpts?.presentationVerificationCallback,
     });

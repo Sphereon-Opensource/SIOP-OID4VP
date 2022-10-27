@@ -122,13 +122,13 @@ export const AuthenticationRequestOptsSchema = {
     "ClaimOpts": {
       "type": "object",
       "properties": {
-        "id_token": {
+        "idToken": {
           "$ref": "#/definitions/IdToken"
         },
-        "vp_token": {
+        "vpToken": {
           "type": "object",
           "properties": {
-            "presentation_definition": {
+            "presentationDefinition": {
               "$ref": "#/definitions/IPresentationDefinition"
             }
           },

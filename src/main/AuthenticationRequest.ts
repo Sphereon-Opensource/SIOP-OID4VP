@@ -249,19 +249,19 @@ function assertValidRequestOpts(opts: AuthenticationRequestOpts) {
 }
 
 function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
-  if (!opts || !opts.vp_token?.presentation_definition) {
+  if (!opts || !opts.vpToken?.presentationDefinition) {
     return undefined;
   }
   const pex: PEX = new PEX();
-  const discoveryResult = pex.definitionVersionDiscovery(opts.vp_token.presentation_definition);
+  const discoveryResult = pex.definitionVersionDiscovery(opts.vpToken.presentationDefinition);
   if (discoveryResult.error) {
     throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
   }
 
   return {
-    id_token: opts.id_token,
+    id_token: opts.idToken,
     vp_token: {
-      presentation_definition: opts.vp_token.presentation_definition,
+      presentation_definition: opts.vpToken.presentationDefinition,
     },
   };
 }

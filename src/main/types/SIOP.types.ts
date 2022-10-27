@@ -191,13 +191,18 @@ export interface VpTokenClaimPayload {
 }
 
 export interface ClaimOpts {
+  idToken?: IdToken;
+  vpToken?: {
+    presentationDefinition?: IPresentationDefinition;
+  };
+}
+
+export type ClaimPayload = {
   id_token?: IdToken;
   vp_token?: {
     presentation_definition?: IPresentationDefinition;
   };
-}
-
-export type ClaimPayload = ClaimOpts & { [x: string]: unknown };
+};
 
 export interface DIDDocument extends DIFDIDDocument {
   owner?: string;
@@ -242,7 +247,7 @@ export interface AuthenticationResponseWithJWT {
   responseOpts: AuthenticationResponseOpts;
 }
 
-interface DiscoveryMetadata {
+interface DiscoveryMetadataCommonOpts {
   //TODO add the check: Mandatory if PassBy.Value
   authorizationEndpoint?: Schema | string;
   // this is a confusion point. In the interop profile it mentions "https://self-issued.me/v2/openid-vc", but in the SIOPv2 it's mentioning "https://self-issued.me/v2"
@@ -290,7 +295,7 @@ interface DiscoveryMetadata {
 }
 
 //same for jwt_vc
-interface ID1DiscoveryMetadataOpts extends DiscoveryMetadata {
+interface ID1DiscoveryMetadataOpts extends DiscoveryMetadataCommonOpts {
   clientId?: string; // from oidc4vp
   redirectUris?: string[] | string; // from oidc4vp
   clientName?: string; // from oidc4vp
@@ -307,7 +312,7 @@ interface JWT_VCDiscoveryMetadataOpts extends ID1DiscoveryMetadataOpts {
   clientPurpose?: string;
 }
 
-interface V2_1_0_11DiscoveryMetadataOpts extends DiscoveryMetadata {
+interface V2_1_0_11DiscoveryMetadataOpts extends DiscoveryMetadataCommonOpts {
   idTokenTypesSupported?: IdTokenType[] | IdTokenType;
   vpFormatsSupported?: Format; // from oidc4vp
 }
@@ -389,8 +394,8 @@ interface JWT_VCDiscoveryMetadataPayload extends ID1DiscoveryMetadataPayload {
   client_purpose?: string;
 }
 interface VC2_1_0_11DiscoveryMetadataPayload extends GeneralDiscovertMetadataPayload {
-  idTokenTypesSupported?: IdTokenType[] | IdTokenType;
-  vpFormatsSupported?: Format; // from oidc4vp
+  id_token_types_supported?: IdTokenType[] | IdTokenType;
+  vp_formats_supported?: Format; // from oidc4vp
 }
 
 export type DiscoveryMetadataPayload = ID1DiscoveryMetadataPayload | JWT_VCDiscoveryMetadataPayload | VC2_1_0_11DiscoveryMetadataPayload;

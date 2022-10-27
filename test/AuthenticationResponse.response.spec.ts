@@ -341,8 +341,8 @@ describe('create JWT from Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        vp_token: {
-          presentation_definition: definition,
+        vpToken: {
+          presentationDefinition: definition,
         },
       },
     };
@@ -502,8 +502,8 @@ describe('create JWT from Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        vp_token: {
-          presentation_definition: definition,
+        vpToken: {
+          presentationDefinition: definition,
         },
       },
     };

@@ -1129,7 +1129,7 @@ export const DiscoveryMetadataPayloadSchema = {
             "op_tos_uri": {
               "type": "string"
             },
-            "idTokenTypesSupported": {
+            "id_token_types_supported": {
               "anyOf": [
                 {
                   "type": "array",
@@ -1142,7 +1142,7 @@ export const DiscoveryMetadataPayloadSchema = {
                 }
               ]
             },
-            "vpFormatsSupported": {
+            "vp_formats_supported": {
               "$ref": "#/definitions/Format"
             }
           },
