@@ -17,7 +17,7 @@ import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT }
 export const expirationTime = 10 * 60;
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
-export interface AuthenticationRequestDeprecated {
+export interface AuthenticationRequestExtraOpts {
   authorizationEndpoint?: string;
   redirectUri: string; // The redirect URI
   requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
@@ -56,29 +56,19 @@ export interface D11AuthenticationRequest extends AuthenticationRequestCommon {
   idTokenType?: string; // from openid-connect-self-issued-v2-1_0-11
 }
 
-export type AuthenticationRequestOpts = AuthenticationRequestDeprecated & ID1AuthenticationRequest & D11AuthenticationRequest;
+export type AuthenticationRequestOpts = AuthenticationRequestExtraOpts & ID1AuthenticationRequest & D11AuthenticationRequest;
 
-//V2-1_0-11
-// interface RequestObject {
-//   clientId: string;
-//   redirectUris: string[];
-//   responseTypes: string;
-//   responseMode: string;
-//   presentationDefinition: IPresentationDefinition; // look at https://identity.foundation/presentation-exchange/#presentation-definition
-//   nonce: string;
-// }
-
-interface ID1AuthenticationRequestPayload extends JWTPayload, RequestRegistrationPayload {
+interface ID1AuthenticationRequestPayload extends RequestRegistrationPayload {
   scope: string;
   response_type: ResponseType;
   client_id: string;
   redirect_uri: string;
   id_token_hint?: string;
   claims?: ClaimPayload;
-  registration?: RPRegistrationMetadataPayload;
-  registration_uri?: string;
   request?: string;
   request_uri?: string;
+  nonce: string;
+  state: string;
 }
 
 interface JWTVcPresentationProfileAuthenticationRequestPayload {
@@ -165,6 +155,7 @@ export interface AuthenticationResponsePayload {
   token_type?: string;
   refresh_token?: string;
   expires_in: number;
+  state: string;
   id_token: string;
   vp_token: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

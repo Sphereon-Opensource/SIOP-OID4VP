@@ -30,8 +30,6 @@ import {
   isInternalVerification,
   JWTPayload,
   PassBy,
-  ResponseContext,
-  ResponseMode,
   ResponseType,
   RPRegistrationMetadataPayload,
   Scope,
@@ -130,9 +128,9 @@ export default class AuthenticationRequest {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
     if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, opts.verification.checkLinkedDomain);
+      await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
     } else if (!opts.verification.checkLinkedDomain) {
-      await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
+      await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
@@ -201,7 +199,7 @@ async function createURIFromJWT(
   AuthenticationRequest.assertValidRequestObject(requestPayload);
   const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration);
   AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
-
+  // TODO unnecessary according to the specs (ID1), remove it
   switch (requestOpts.requestBy?.type) {
     case PassBy.REFERENCE:
       return {
@@ -275,11 +273,12 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
   return {
     response_type: ResponseType.ID_TOKEN,
     scope: Scope.OPENID,
-    client_id: opts.signatureType.did || opts.redirectUri, //todo: check whether we should include opts.redirectUri value here, or the whole of client_id to begin with
+    client_id: opts.signatureType.did || opts.redirectUri,
     redirect_uri: opts.redirectUri,
-    iss: opts.signatureType.did,
-    response_mode: opts.responseMode || ResponseMode.POST,
-    response_context: opts.responseContext || ResponseContext.RP,
+    id_token_hint: opts.idTokenHint,
+    registration_uri: opts.registrationUri,
+    request: opts.request,
+    request_uri: opts.requestUri,
     nonce: getNonce(state, opts.nonce),
     state,
     ...registration.requestRegistrationPayload,

@@ -1,20 +1,6 @@
-import { IProofType } from '@sphereon/ssi-types';
-import { ServiceTypesEnum } from '@sphereon/wellknown-dids-client';
-import { JWTHeader } from 'did-jwt';
-import { DIDDocument } from 'did-resolver';
-
-import {
-  AuthenticationRequestPayload,
-  IdTokenType,
-  KeyAlgo,
-  ResponseContext,
-  ResponseMode,
-  ResponseType,
-  Scope,
-  SigningAlgo,
-  SubjectIdentifierType,
-  SubjectType,
-} from '../../src/main';
+import {ServiceTypesEnum} from '@sphereon/wellknown-dids-client';
+import {JWTHeader} from 'did-jwt';
+import {DIDDocument} from 'did-resolver';
 
 export const UNIT_TEST_TIMEOUT = 30000;
 
@@ -31,55 +17,6 @@ export const VERIFIER_NAME_FOR_CLIENT_NL = ' *** dutch *** Client Verifier Relyi
 
 export const VERIFIERZ_PURPOSE_TO_VERIFY = 'To request, receive and verify your credential about the the valid subject.';
 export const VERIFIERZ_PURPOSE_TO_VERIFY_NL = ' *** Dutch *** To request, receive and verify your credential about the the valid subject.';
-
-export const DIDAUTH_REQUEST_PAYLOAD: AuthenticationRequestPayload = {
-  iss: 'did:ethr:0x416e6e6162656c2e4c65652e452d412d506f652e', // DIDres of the RP (kid must point to a key in this DIDres Document)
-  scope: Scope.OPENID, // MUST be "openid did_authn"
-  response_type: ResponseType.ID_TOKEN, // MUST be ID Token
-  response_context: ResponseContext.RP,
-  response_mode: ResponseMode.POST,
-  redirect_uri: 'http://app.example/demo', // Redirect URI after successful authentication
-  client_id: 'http://app.example/demo',
-  nonce: 'n-0S6_WzA2M', // MUST be a random string from a high-entropy source
-  state: 'af0ifjsldkj',
-  registration: {
-    id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-    id_token_types_supported: [IdTokenType.SUBJECT_SIGNED],
-    request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-    response_types_supported: [ResponseType.ID_TOKEN],
-    scopes_supported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
-    subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
-    subject_types_supported: [SubjectType.PAIRWISE],
-    vp_formats: {
-      ldp_vc: {
-        proof_type: [IProofType.EcdsaSecp256k1Signature2019],
-      },
-      jwt_vc: {
-        alg: [KeyAlgo.EDDSA],
-      },
-    },
-    logo_uri: VERIFIER_LOGO_FOR_CLIENT,
-    client_name: VERIFIER_NAME_FOR_CLIENT,
-    'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
-    client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-    'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-  },
-  /*registration: {
-      subject_types_supported: SubjectType.PAIRWISE,
-      scopes_supported: Scope.OPENID,
-      request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-      issuer: ResponseIss.SELF_ISSUED_V2,
-      response_types_supported: ResponseType.ID_TOKEN,
-      id_token_signing_alg_values_supported: [KeyAlgo.EDDSA, KeyAlgo.ES256K],
-      authorization_endpoint: Schema.OPENID
-      /!*!// either using jwks_uri or jwks
-      jwks_uri: ""
-          "https://uniresolver.io/1.0/identifiers/did:example:0xab;transform-keys=jwks",
-      id_token_signed_response_alg: KeyAlgo.ES256K,*!/
-  },*/
-  exp: 1569937756, // Unix Timestamp; Date and time when the ID Token expires.
-  iat: 1569934156,
-};
 
 export const DID_DOCUMENT_PUBKEY_B58: DIDDocument = {
   assertionMethod: [],

@@ -5,9 +5,7 @@ import { Resolvable } from 'did-resolver';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
 import {
   AuthenticationRequestOpts,
-  AuthenticationRequestPayload,
   AuthenticationResponseOpts,
-  AuthenticationResponsePayload,
   EcdsaSignature,
   expirationTime,
   IdToken,
@@ -75,10 +73,7 @@ export async function createDidJWT(
   return createJWT(payload, { issuer, signer, alg: header.alg, expiresIn, canonicalize }, header);
 }
 
-export async function signDidJwtPayload(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken,
-  opts: AuthenticationRequestOpts | AuthenticationResponseOpts
-) {
+export async function signDidJwtPayload(payload: IdToken, opts: AuthenticationRequestOpts | AuthenticationResponseOpts) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
   if (isResponse) {
     if (!payload.iss || payload.iss !== ResponseIss.SELF_ISSUED_V2) {
@@ -96,18 +91,13 @@ export async function signDidJwtPayload(
   }
 }
 
-async function signDidJwtInternal(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken,
-  issuer: string,
-  hexPrivateKey: string,
-  kid?: string
-): Promise<string> {
+async function signDidJwtInternal(payload: IdToken, issuer: string, hexPrivateKey: string, kid?: string): Promise<string> {
   // todo: Create method. We are doing roughly the same multiple times
   const algo =
     isEd25519DidKeyMethod(issuer) ||
     isEd25519DidKeyMethod(payload.kid) ||
     isEd25519DidKeyMethod(kid) ||
-    isEd25519DidKeyMethod(payload.did) ||
+    isEd25519DidKeyMethod(payload.sub) ||
     isEd25519JWK(payload.sub_jwk)
       ? KeyAlgo.EDDSA
       : KeyAlgo.ES256K;
@@ -116,7 +106,7 @@ async function signDidJwtInternal(
 
   const header = {
     alg: algo,
-    kid: kid || `${payload.did}#keys-1`,
+    kid: kid || `${payload.sub}#keys-1`,
   };
   const options = {
     issuer,
@@ -127,17 +117,12 @@ async function signDidJwtInternal(
   return await createDidJWT({ ...payload }, options, header);
 }
 
-async function signDidJwtExternal(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken,
-  signatureUri: string,
-  authZToken: string,
-  kid?: string
-): Promise<string> {
+async function signDidJwtExternal(payload: IdToken, signatureUri: string, authZToken: string, kid?: string): Promise<string> {
   // todo: Create method. We are doing roughly the same multiple times
-  const alg = isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
+  const alg = isEd25519DidKeyMethod(payload.sub) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
 
   const body = {
-    issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.did,
+    issuer: payload.sub,
     payload,
     type: alg === KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
     expiresIn: expirationTime,
@@ -151,7 +136,7 @@ async function signDidJwtExternal(
 }
 
 async function signDidJwtSupplied(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken,
+  payload: IdToken,
   issuer: string,
   signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
   kid: string
@@ -161,7 +146,7 @@ async function signDidJwtSupplied(
     isEd25519DidKeyMethod(issuer) ||
     isEd25519DidKeyMethod(payload.kid) ||
     isEd25519DidKeyMethod(kid) ||
-    isEd25519DidKeyMethod(payload.did) ||
+    isEd25519DidKeyMethod(payload.sub) ||
     isEd25519JWK(payload.sub_jwk)
       ? KeyAlgo.EDDSA
       : KeyAlgo.ES256K;
@@ -192,7 +177,7 @@ export function getAudience(jwt: string) {
 }
 
 function assertIssSelfIssuedOrDid(payload: JWTPayload) {
-  if (!payload.iss || !(payload.iss.startsWith('did:') || isIssSelfIssued(payload))) {
+  if (!payload.iss || !(payload.sub.startsWith('did:') || isIssSelfIssued(payload))) {
     throw new Error(SIOPErrors.NO_ISS_DID);
   }
 }
@@ -212,7 +197,7 @@ export function getIssuerDidFromPayload(payload: JWTPayload, header?: JWTHeader)
       return did;
     }
   }
-  return payload.iss;
+  return payload.sub;
 }
 
 export function isIssSelfIssued(payload: JWTPayload): boolean {

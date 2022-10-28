@@ -1,5 +1,5 @@
-import { PresentationDefinitionV1 } from '@sphereon/pex-models';
-import { IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import {PresentationDefinitionV1} from '@sphereon/pex-models';
+import {IProofType, IVerifiableCredential, IVerifiablePresentation} from '@sphereon/ssi-types';
 import nock from 'nock';
 
 import {
@@ -10,8 +10,6 @@ import {
   PresentationDefinitionWithLocation,
   PresentationExchange,
   PresentationSignCallback,
-  ResponseContext,
-  ResponseMode,
   ResponseType,
   Scope,
   SigningAlgo,
@@ -21,9 +19,9 @@ import {
   VerifiablePresentationTypeFormat,
   VerifiedAuthenticationRequestWithJWT,
 } from '../src/main';
-import { SIOPErrors } from '../src/main/types';
+import {SIOPErrors} from '../src/main/types';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import {mockedGetEnterpriseAuthToken} from './TestUtils';
 import {
   VERIFIER_LOGO_FOR_CLIENT,
   VERIFIER_NAME_FOR_CLIENT,
@@ -39,14 +37,10 @@ async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
   const state = getState();
   return {
-    iss: mockEntity.did,
-    aud: 'test',
-    response_mode: ResponseMode.POST,
-    response_context: ResponseContext.RP,
     redirect_uri: '',
     scope: Scope.OPENID,
     response_type: ResponseType.ID_TOKEN,
-    client_id: 'http://localhost:8080/test',
+    client_id: mockEntity.did,
     state,
     nonce: getNonce(state),
     registration: {
@@ -114,14 +108,10 @@ async function getPayloadPdRef(): Promise<AuthenticationRequestPayload> {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
   const state = getState();
   return {
-    iss: mockEntity.did,
-    aud: 'test',
-    response_mode: ResponseMode.POST,
-    response_context: ResponseContext.RP,
     redirect_uri: '',
     scope: Scope.OPENID,
     response_type: ResponseType.ID_TOKEN,
-    client_id: 'http://localhost:8080/test',
+    client_id: mockEntity.did,
     state,
     nonce: getNonce(state),
     registration: {

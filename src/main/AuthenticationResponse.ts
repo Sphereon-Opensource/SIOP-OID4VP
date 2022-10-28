@@ -3,7 +3,6 @@ import { JWTHeader } from 'did-jwt';
 import { JWK } from 'jose';
 
 import AuthenticationRequest from './AuthenticationRequest';
-import { createDiscoveryMetadataPayload } from './AuthenticationResponseRegistration';
 import { PresentationExchange } from './PresentationExchange';
 import {
   getIssuerDidFromPayload,
@@ -36,7 +35,6 @@ import {
   ResponseIss,
   RevocationVerification,
   SIOPErrors,
-  SubjectIdentifierType,
   SubjectSyntaxTypesSupportedValues,
   VerifiablePresentationPayload,
   VerifiedAuthenticationRequestWithJWT,
@@ -170,8 +168,6 @@ function assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload;
   if (opts.verPayload) {
     if (!opts.verPayload.nonce) {
       throw Error(SIOPErrors.NO_NONCE);
-    } else if (!opts.verPayload.sub_type) {
-      throw Error(SIOPErrors.NO_SUB_TYPE);
     } else if (!opts.verPayload.exp || opts.verPayload.exp < Date.now() / 1000) {
       throw Error(SIOPErrors.EXPIRED);
       /*} else if (!opts.verPayload.iat || opts.verPayload.iat > (Date.now() / 1000)) {
@@ -244,24 +240,18 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
   const state = resOpts.state || getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
   const { verifiable_presentations } = extractPresentations(resOpts);
-  const registration = createDiscoveryMetadataPayload(resOpts.registration);
   const id_token: IdToken = {
     iss: ResponseIss.SELF_ISSUED_V2,
     aud: verifiedJwt.payload.redirect_uri,
     iat: Date.now() / 1000,
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     sub: resOpts.did,
-    auth_time: verifiedJwt.payload.auth_time,
+    auth_time: Date.now() / 1000,
     nonce,
     _vp_token: {
       // right now pex doesn't support presentation_submission for multiple VPs (as well as multiple VPs)
       presentation_submission: verifiable_presentations ? verifiable_presentations[0].presentation.presentation_submission : undefined,
     },
-    //not officially in the specs
-    state,
-    did: resOpts.did,
-    sub_type: supportedDidMethods.length && resOpts.did ? SubjectIdentifierType.DID : SubjectIdentifierType.JKT,
-    registration,
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
@@ -279,12 +269,14 @@ async function createSIOPResponsePayload(
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
+  const state = resOpts.state || getState(verifiedJwt.payload.state);
   const { vp_token } = extractPresentations(resOpts);
   const authenticationResponsePayload: Partial<AuthenticationResponsePayload> = {
     access_token: resOpts.accessToken,
     token_type: resOpts.tokenType,
     refresh_token: resOpts.refreshToken,
     expires_in: resOpts.expiresIn,
+    state
   };
   // add support for multiple VPs (VDX-158)
   if (resOpts.vp && resOpts.vp[0].location === PresentationLocation.ID_TOKEN) {

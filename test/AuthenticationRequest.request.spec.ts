@@ -421,9 +421,6 @@ describe('create Request JWT should', () => {
         scope: 'openid',
         client_id: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0',
         redirect_uri: 'https://acme.com/hello',
-        iss: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0',
-        response_mode: 'post',
-        response_context: 'rp',
         registration: {
           id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
