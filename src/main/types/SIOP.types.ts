@@ -45,18 +45,18 @@ interface AuthenticationRequestCommon {
   requestUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
 }
 
-interface ID1AuthenticationRequest extends AuthenticationRequestCommon {
+export interface ID1AuthenticationRequest extends AuthenticationRequestCommon {
   registration?: RequestRegistrationOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-registration-1_0.html
   registrationUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
 }
 
-interface V2_1_0_11AuthenticationRequest extends AuthenticationRequestCommon {
+export interface D11AuthenticationRequest extends AuthenticationRequestCommon {
   clientMetadata?: object; // from openid-connect-self-issued-v2-1_0-11 look at https://openid.net/specs/openid-connect-registration-1_0.html
   clientMetadataUri?: string; // from openid-connect-self-issued-v2-1_0-11
   idTokenType?: string; // from openid-connect-self-issued-v2-1_0-11
 }
 
-export type AuthenticationRequestOpts = AuthenticationRequestDeprecated & ID1AuthenticationRequest & V2_1_0_11AuthenticationRequest;
+export type AuthenticationRequestOpts = AuthenticationRequestDeprecated & ID1AuthenticationRequest & D11AuthenticationRequest;
 
 //V2-1_0-11
 // interface RequestObject {
@@ -71,15 +71,14 @@ export type AuthenticationRequestOpts = AuthenticationRequestDeprecated & ID1Aut
 interface ID1AuthenticationRequestPayload extends JWTPayload, RequestRegistrationPayload {
   scope: string;
   response_type: ResponseType;
-  client_id: string; // did of RP
+  client_id: string;
   redirect_uri: string;
-  id_token_hint?: string; // TODO:  idtokenhint parameter value, as specified in Section 3.1.2. If the ID Token is encrypted to the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
-  response_mode?: ResponseMode; //Should to to request
-  claims?: ClaimPayload; // claims parameter value, as specified in Section 5.5.
+  id_token_hint?: string;
+  claims?: ClaimPayload;
   registration?: RPRegistrationMetadataPayload;
   registration_uri?: string;
-  request?: string; // TODO Request Object value, as specified in Section 6.1. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
-  request_uri?: string; //URL where Request Object value can be retrieved from, as specified in Section 6.2.
+  request?: string;
+  request_uri?: string;
 }
 
 interface JWTVcPresentationProfileAuthenticationRequestPayload {
