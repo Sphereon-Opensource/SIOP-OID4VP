@@ -1,5 +1,5 @@
-export * from './ID1AuthenticationRequest.schema';
-export * from './D11AuthenticationRequest.schema';
+export * from './ID1AuthenticationRequestPayload.schema';
+export * from './D11AuthenticationRequestPayload.schema';
 export * from './AuthenticationRequestOpts.schema';
 export * from './AuthenticationResponseOpts.schema';
 export * from './DiscoveryMetadataPayload.schema';

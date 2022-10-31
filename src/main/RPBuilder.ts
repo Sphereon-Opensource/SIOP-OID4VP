@@ -45,7 +45,7 @@ export default class RPBuilder {
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
-  supportedVersions: Array<SupportedVersion>;
+  supportedVersions: SupportedVersion[];
   scope: string;
   responseType: string;
   clientId: string;
@@ -179,20 +179,12 @@ export default class RPBuilder {
     }
   }
 
-  withSupportedVersions(supportedVersions: Array<string | SupportedVersion>): RPBuilder {
+  withSupportedVersions(supportedVersion: SupportedVersion[] | SupportedVersion): RPBuilder {
     this.initSupportedVersions();
-    for (const supportedVersion of supportedVersions) {
-      this.addSupportedVersion(supportedVersion);
-    }
-    return this;
-  }
-
-  addSupportedVersion(supportedVersion: string | SupportedVersion): RPBuilder {
-    this.initSupportedVersions();
-    if (typeof supportedVersion === 'string') {
-      this.supportedVersions.push(SupportedVersion[supportedVersion]);
-    } else if (Array.isArray(supportedVersion)) {
-      this.supportedVersions.push(supportedVersion as SupportedVersion);
+    if (Array.isArray(supportedVersion)) {
+      this.supportedVersions.push(...supportedVersion);
+    } else {
+      this.supportedVersions.push(supportedVersion);
     }
     return this;
   }

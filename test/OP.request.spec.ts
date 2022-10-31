@@ -63,7 +63,7 @@ describe('OP Builder should', () => {
         })
         .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
         .withExpiresIn(1000)
-        .withSupportedVersions(['SIOPv2_ID1'])
+        .withSupportedVersions([SupportedVersion['SIOPv2_ID1']])
         .build()
     ).toBeInstanceOf(OP);
   });
@@ -109,6 +109,7 @@ describe('OP should', () => {
       resolveOpts: {
         subjectSyntaxTypesSupported: ['did:ethr'],
       },
+      supportedVersions: [SupportedVersion.SIOPv2_ID1],
     },
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -215,7 +216,7 @@ describe('OP should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .withSupportedVersions(['SIOPv2_ID1'])
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build()
 
       .createAuthenticationRequest({

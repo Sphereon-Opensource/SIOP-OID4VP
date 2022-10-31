@@ -1,5 +1,5 @@
-import {PresentationDefinitionV1} from '@sphereon/pex-models';
-import {IProofType, IVerifiableCredential, IVerifiablePresentation} from '@sphereon/ssi-types';
+import { PresentationDefinitionV1 } from '@sphereon/pex-models';
+import { IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
 import nock from 'nock';
 
 import {
@@ -19,9 +19,9 @@ import {
   VerifiablePresentationTypeFormat,
   VerifiedAuthenticationRequestWithJWT,
 } from '../src/main';
-import {SIOPErrors} from '../src/main/types';
+import { SIOPErrors } from '../src/main/types';
 
-import {mockedGetEnterpriseAuthToken} from './TestUtils';
+import { mockedGetEnterpriseAuthToken } from './TestUtils';
 import {
   VERIFIER_LOGO_FOR_CLIENT,
   VERIFIER_NAME_FOR_CLIENT,

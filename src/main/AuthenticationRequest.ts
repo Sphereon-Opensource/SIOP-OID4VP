@@ -17,6 +17,7 @@ import {
   validateLinkedDomainWithDid,
   verifyDidJWT,
 } from './functions';
+import { authenticationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { RPRegistrationMetadataPayloadSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -115,6 +116,13 @@ export default class AuthenticationRequest {
     };
 
     const verPayload = payload as AuthenticationRequestPayload;
+    const { error, version } = authenticationRequestVersionDiscovery(verPayload);
+    if (error) {
+      throw new Error(error);
+    } else if (!opts.verification.supportedVersions.includes(version)) {
+      throw new Error(`SIOP ${version} is not supported`);
+    }
+
     if (opts.nonce && verPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
     }
@@ -199,7 +207,6 @@ async function createURIFromJWT(
   AuthenticationRequest.assertValidRequestObject(requestPayload);
   const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration);
   AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
-  // TODO unnecessary according to the specs (ID1), remove it
   switch (requestOpts.requestBy?.type) {
     case PassBy.REFERENCE:
       return {
@@ -273,7 +280,7 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
   return {
     response_type: ResponseType.ID_TOKEN,
     scope: Scope.OPENID,
-    client_id: opts.signatureType.did || opts.redirectUri,
+    client_id: opts.signatureType.did,
     redirect_uri: opts.redirectUri,
     id_token_hint: opts.idTokenHint,
     registration_uri: opts.registrationUri,

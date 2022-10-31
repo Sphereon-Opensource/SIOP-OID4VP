@@ -21,6 +21,7 @@ import {
   Scope,
   SigningAlgo,
   SubjectType,
+  SupportedVersion,
   VerifiablePresentationTypeFormat,
   VerificationMode,
   verifyRevocation,
@@ -172,6 +173,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
+        .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
         .build();
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
@@ -179,6 +181,7 @@ describe('RP and OP interaction should', () => {
         .addVerifyCallback(verifyCallback)
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .registrationBy({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -196,6 +199,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
       const requestURI = await rp.createAuthenticationRequest({
@@ -268,6 +272,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
@@ -291,6 +296,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -364,6 +370,7 @@ describe('RP and OP interaction should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
       .addClaims(getPresentationDefinition())
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
@@ -387,6 +394,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -457,6 +465,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
@@ -481,6 +490,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -566,6 +576,7 @@ describe('RP and OP interaction should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
         .addClaims(getPresentationDefinition())
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
@@ -589,6 +600,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
       const requestURI = await rp.createAuthenticationRequest({
@@ -693,6 +705,7 @@ describe('RP and OP interaction should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
       .addClaims(getPresentationDefinition())
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
@@ -721,6 +734,7 @@ describe('RP and OP interaction should', () => {
         subjectSyntaxTypesSupported: ['did:ethr'],
         registrationBy: { type: PassBy.VALUE },
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -817,6 +831,7 @@ describe('RP and OP interaction should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
         .addClaims(getPresentationDefinition())
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
@@ -842,6 +857,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
       const requestURI = await rp.createAuthenticationRequest({
@@ -937,6 +953,7 @@ describe('RP and OP interaction should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
       .addClaims(getPresentationDefinition())
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const op = OP.builder()
@@ -970,6 +987,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -1230,6 +1248,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
       .addClaims(getPresentationDefinition())
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
@@ -1257,6 +1276,7 @@ describe('RP and OP interaction should', () => {
         subjectSyntaxTypesSupported: ['did:ethr'],
         registrationBy: { type: PassBy.VALUE },
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({

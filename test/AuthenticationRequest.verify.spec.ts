@@ -1,5 +1,5 @@
-import {IProofType} from '@sphereon/ssi-types';
-import {IVerifyCallbackArgs, IVerifyCredentialResult} from '@sphereon/wellknown-dids-client';
+import { IProofType } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 import * as dotenv from 'dotenv';
 
 import {
@@ -12,12 +12,13 @@ import {
   SigningAlgo,
   SubjectSyntaxTypesSupportedValues,
   SubjectType,
+  SupportedVersion,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import {metadata, mockedGetEnterpriseAuthToken} from './TestUtils';
+import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
   VERIFIER_LOGO_FOR_CLIENT,
@@ -51,6 +52,7 @@ describe('verifyJWT should', () => {
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
     const requestOpts: AuthenticationRequestOpts = {
+      state: 'expected state',
       clientId: 'test_client_id',
       scope: 'test',
       responseType: 'id_token',
@@ -99,6 +101,7 @@ describe('verifyJWT should', () => {
         resolveOpts: {
           subjectSyntaxTypesSupported: ['key'],
         },
+        supportedVersions: [SupportedVersion.SIOPv2_ID1],
       },
       nonce: 'This nonce is different and should throw error',
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -112,16 +115,12 @@ describe('verifyJWT should', () => {
     'succeed if a valid JWT is passed',
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-      /*const header = {
-        alg: KeyAlgo.ES256K,
-        typ: "JWT",
-        kid: `${mockEntity.did}#controller`,
-    };
-    const state = State.getState();*/
       const requestOpts: AuthenticationRequestOpts = {
         clientId: 'test_client_id',
         scope: 'test',
         responseType: 'id_token',
+        state: '12345',
+        nonce: '12345',
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         authorizationEndpoint: '',
         redirectUri: 'https://acme.com/hello',
@@ -159,6 +158,7 @@ describe('verifyJWT should', () => {
           resolveOpts: {
             subjectSyntaxTypesSupported: ['did:ethr'],
           },
+          supportedVersions: [SupportedVersion.SIOPv2_ID1],
         },
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),

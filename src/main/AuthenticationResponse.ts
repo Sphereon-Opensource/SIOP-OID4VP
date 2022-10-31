@@ -276,7 +276,7 @@ async function createSIOPResponsePayload(
     token_type: resOpts.tokenType,
     refresh_token: resOpts.refreshToken,
     expires_in: resOpts.expiresIn,
-    state
+    state,
   };
   // add support for multiple VPs (VDX-158)
   if (resOpts.vp && resOpts.vp[0].location === PresentationLocation.ID_TOKEN) {

@@ -19,6 +19,7 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
+  SupportedVersion,
   VerifiablePresentationTypeFormat,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
@@ -84,6 +85,7 @@ describe('create JWT from Request JWT should', () => {
       resolveOpts: {
         subjectSyntaxTypesSupported: ['did:ethr'],
       },
+      supportedVersions: [SupportedVersion.SIOPv2_ID1],
       mode: VerificationMode.INTERNAL,
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -112,6 +114,8 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthenticationRequestOpts = {
+      nonce: '12345',
+      state: '12345',
       clientId: 'test_client_id',
       scope: 'test',
       responseType: 'id_token',

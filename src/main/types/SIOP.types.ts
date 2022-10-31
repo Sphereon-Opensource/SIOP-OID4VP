@@ -34,7 +34,7 @@ export interface AuthenticationRequestExtraOpts {
   revocationVerificationCallback?: RevocationVerificationCallback;
 }
 
-interface AuthenticationRequestCommon {
+interface AuthenticationRequestCommonOpts {
   scope: string; // from openid-connect-self-issued-v2-1_0-ID1
   responseType: string; // from openid-connect-self-issued-v2-1_0-ID1
   clientId: string; // from openid-connect-self-issued-v2-1_0-ID1
@@ -45,20 +45,20 @@ interface AuthenticationRequestCommon {
   requestUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
 }
 
-export interface ID1AuthenticationRequest extends AuthenticationRequestCommon {
+export interface ID1AuthenticationRequestOpts extends AuthenticationRequestCommonOpts {
   registration?: RequestRegistrationOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-registration-1_0.html
   registrationUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
 }
 
-export interface D11AuthenticationRequest extends AuthenticationRequestCommon {
+export interface D11AuthenticationRequestOpts extends AuthenticationRequestCommonOpts {
   clientMetadata?: object; // from openid-connect-self-issued-v2-1_0-11 look at https://openid.net/specs/openid-connect-registration-1_0.html
   clientMetadataUri?: string; // from openid-connect-self-issued-v2-1_0-11
   idTokenType?: string; // from openid-connect-self-issued-v2-1_0-11
 }
 
-export type AuthenticationRequestOpts = AuthenticationRequestExtraOpts & ID1AuthenticationRequest & D11AuthenticationRequest;
+export type AuthenticationRequestOpts = AuthenticationRequestExtraOpts & ID1AuthenticationRequestOpts & D11AuthenticationRequestOpts;
 
-interface ID1AuthenticationRequestPayload extends RequestRegistrationPayload {
+export interface AuthenticationRequestCommonPayload {
   scope: string;
   response_type: ResponseType;
   client_id: string;
@@ -71,7 +71,15 @@ interface ID1AuthenticationRequestPayload extends RequestRegistrationPayload {
   state: string;
 }
 
-interface JWTVcPresentationProfileAuthenticationRequestPayload {
+export type ID1AuthenticationRequestPayload = AuthenticationRequestCommonPayload & RequestRegistrationPayload;
+
+export interface D11AuthenticationRequestPayload extends AuthenticationRequestCommonPayload {
+  client_metadata?: unknown;
+  client_metadata_uri?: string;
+  id_token_type?: string;
+}
+
+export interface JWTVcPresentationProfileAuthenticationRequestPayload {
   /**
    * Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed
    * individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if
@@ -83,7 +91,7 @@ interface JWTVcPresentationProfileAuthenticationRequestPayload {
 }
 
 // https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
-export type AuthenticationRequestPayload = ID1AuthenticationRequestPayload & JWTVcPresentationProfileAuthenticationRequestPayload;
+export type AuthenticationRequestPayload = ID1AuthenticationRequestPayload & D11AuthenticationRequestPayload;
 
 export interface RequestRegistrationPayload {
   registration?: RPRegistrationMetadataPayload; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
@@ -532,6 +540,7 @@ export interface Verification {
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
+  supportedVersions?: SupportedVersion[];
 }
 
 export type InternalVerification = Verification;

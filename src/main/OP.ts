@@ -16,7 +16,6 @@ import {
   ParsedAuthenticationRequestURI,
   ResponseMode,
   SIOPErrors,
-  SupportedVersion,
   UrlEncodingFormat,
   VerifiablePresentationResponseOpts,
   Verification,
@@ -33,10 +32,8 @@ const validate = ajv.compile(AuthenticationResponseOptsSchema);
 export class OP {
   private readonly _authResponseOpts: AuthenticationResponseOpts;
   private readonly _verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
-  private readonly _supportedVersions: Array<SupportedVersion>;
 
   public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts; verifyOpts?: VerifyAuthenticationRequestOpts }) {
-    this._supportedVersions = opts?.builder?.supportedVersions;
     this._authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
   }
@@ -139,10 +136,6 @@ export class OP {
 
   public static fromOpts(responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts): OP {
     return new OP({ responseOpts, verifyOpts });
-  }
-
-  get supportedVersions(): Array<SupportedVersion> {
-    return this._supportedVersions;
   }
 
   public static builder() {
@@ -284,6 +277,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
             subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,
           },
+          supportedVersions: opts.builder.supportedVersions,
         } as InternalVerification,
       }
     : opts.verifyOpts;

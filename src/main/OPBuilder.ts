@@ -29,7 +29,7 @@ export default class OPBuilder {
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
   presentationSignCallback?: PresentationSignCallback;
-  supportedVersions: Array<SupportedVersion>;
+  supportedVersions: SupportedVersion[];
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
@@ -117,20 +117,12 @@ export default class OPBuilder {
     }
   }
 
-  withSupportedVersions(supportedVersions: Array<string | SupportedVersion>): OPBuilder {
+  withSupportedVersions(supportedVersion: SupportedVersion[] | SupportedVersion): OPBuilder {
     this.initSupportedVersions();
-    for (const supportedVersion of supportedVersions) {
-      this.addSupportedVersion(supportedVersion);
-    }
-    return this;
-  }
-
-  addSupportedVersion(supportedVersion: string | SupportedVersion): OPBuilder {
-    this.initSupportedVersions();
-    if (typeof supportedVersion === 'string') {
-      this.supportedVersions.push(SupportedVersion[supportedVersion]);
-    } else if (Array.isArray(supportedVersion)) {
-      this.supportedVersions.push(supportedVersion as SupportedVersion);
+    if (Array.isArray(supportedVersion)) {
+      this.supportedVersions.push(...supportedVersion);
+    } else {
+      this.supportedVersions.push(supportedVersion);
     }
     return this;
   }
