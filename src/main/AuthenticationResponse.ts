@@ -1,6 +1,7 @@
 import { ObjectUtils, PresentationSubmission } from '@sphereon/ssi-types';
 import { JWTHeader } from 'did-jwt';
 import { JWK } from 'jose';
+import { v4 as uuidv4 } from 'uuid';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import { PresentationExchange } from './PresentationExchange';
@@ -37,6 +38,7 @@ import {
   SIOPErrors,
   SubjectSyntaxTypesSupportedValues,
   VerifiablePresentationPayload,
+  VerifiablePresentationTypeFormat,
   VerifiedAuthenticationRequestWithJWT,
   VerifiedAuthenticationResponseWithJWT,
   VerifyAuthenticationRequestOpts,
@@ -239,7 +241,6 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
   );
   const state = resOpts.state || getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
-  const { verifiable_presentations } = extractPresentations(resOpts);
   const id_token: IdToken = {
     iss: ResponseIss.SELF_ISSUED_V2,
     aud: verifiedJwt.payload.redirect_uri,
@@ -250,7 +251,17 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
     nonce,
     _vp_token: {
       // right now pex doesn't support presentation_submission for multiple VPs (as well as multiple VPs)
-      presentation_submission: verifiable_presentations ? verifiable_presentations[0].presentation.presentation_submission : undefined,
+      presentation_submission: {
+        id: uuidv4(),
+        definition_id: verifiedJwt.presentationDefinitions[0]?.definition.id || undefined,
+        descriptor_map: [
+          {
+            format:
+              resOpts.vp && ObjectUtils.isString(resOpts.vp[0]) ? VerifiablePresentationTypeFormat.JWT_VP : VerifiablePresentationTypeFormat.LDP_VP,
+            path: '$',
+          },
+        ],
+      } as PresentationSubmission,
     },
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
