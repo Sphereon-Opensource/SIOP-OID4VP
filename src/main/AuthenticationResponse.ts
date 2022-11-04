@@ -241,7 +241,7 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
   );
   const state = resOpts.state || getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
-  const id_token: IdToken = {
+  const idToken: IdToken = {
     iss: ResponseIss.SELF_ISSUED_V2,
     aud: verifiedJwt.payload.redirect_uri,
     iat: Date.now() / 1000,
@@ -266,10 +266,10 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
-    id_token['sub_jwk'] = subJwk;
-    id_token.sub = thumbprint;
+    idToken['sub_jwk'] = subJwk;
+    idToken.sub = thumbprint;
   }
-  return id_token;
+  return idToken;
 }
 
 async function createSIOPResponsePayload(
