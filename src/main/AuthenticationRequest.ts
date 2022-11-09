@@ -1,9 +1,9 @@
-import { PEX } from '@sphereon/pex';
+import {PEX} from '@sphereon/pex';
 import Ajv from 'ajv';
-import { JWTHeader } from 'did-jwt';
+import {JWTHeader} from 'did-jwt';
 
-import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
-import { PresentationExchange } from './PresentationExchange';
+import {assertValidRequestRegistrationOpts, createRequestRegistration} from './AuthenticationRequestRegistration';
+import {PresentationExchange} from './PresentationExchange';
 import {
   decodeUriAsJson,
   encodeJsonAsURI,
@@ -17,8 +17,7 @@ import {
   validateLinkedDomainWithDid,
   verifyDidJWT,
 } from './functions';
-import { authenticationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
-import { RPRegistrationMetadataPayloadSchema } from './schemas';
+import {RPRegistrationMetadataPayloadSchema} from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestPayload,
@@ -116,12 +115,6 @@ export default class AuthenticationRequest {
     };
 
     const verPayload = payload as AuthenticationRequestPayload;
-    const { error, version } = authenticationRequestVersionDiscovery(verPayload);
-    if (error) {
-      throw new Error(error);
-    } else if (!opts.verification.supportedVersions.includes(version)) {
-      throw new Error(`SIOP ${version} is not supported`);
-    }
 
     if (opts.nonce && verPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);

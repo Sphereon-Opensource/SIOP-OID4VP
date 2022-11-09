@@ -7,8 +7,10 @@ import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
 import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
+import { authenticationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
+  AuthenticationRequestPayload,
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
   ExternalVerification,
@@ -16,6 +18,7 @@ import {
   ParsedAuthenticationRequestURI,
   ResponseMode,
   SIOPErrors,
+  SupportedVersion,
   UrlEncodingFormat,
   VerifiablePresentationResponseOpts,
   Verification,
@@ -49,6 +52,20 @@ export class OP {
   // TODO SK Can you please put some documentation on it?
   public async postAuthenticationResponse(authenticationResponse: AuthenticationResponseWithJWT): Promise<Response> {
     return postAuthenticationResponse(authenticationResponse.payload.idToken.aud, authenticationResponse);
+  }
+
+  /**
+   * This method tries to infer the SIOP specs version based on the request payload.
+   * If the version cannot be inferred or is not supported it throws an exception.
+   * This method needs to be called to ensure the OP can handle the request
+   * @param payload is the authentication request payload
+   */
+  public async checkSIOPSpecVersionSupported(payload: AuthenticationRequestPayload): Promise<SupportedVersion> {
+    const version: SupportedVersion = authenticationRequestVersionDiscovery(payload);
+    if (!this._verifyAuthRequestOpts.verification.supportedVersions.includes(version)) {
+      throw new Error(`SIOP ${version} is not supported`);
+    }
+    return version
   }
 
   public async verifyAuthenticationRequest(
