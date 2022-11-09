@@ -121,6 +121,9 @@ export const D11AuthenticationRequestPayloadSchema = {
               "$ref": "#/definitions/PresentationSubmission"
             }
           },
+          "required": [
+            "presentation_submission"
+          ],
           "additionalProperties": false
         }
       }

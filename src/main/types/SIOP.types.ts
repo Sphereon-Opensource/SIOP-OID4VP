@@ -137,6 +137,7 @@ export interface AuthenticationResponseOpts {
   accessToken?: string;
   tokenType?: string;
   refreshToken?: string;
+  _vp_token?: { presentation_submission: PresentationSubmission };
 }
 
 export interface IdToken extends JWTPayload {
@@ -154,7 +155,7 @@ export interface IdToken extends JWTPayload {
       VP Token is not an array, and a single VP is passed as a vp_token. In this case, the descriptor map would contain a simple path expression “$”.
       * It's not clear from the ID1 specs how to handle presentation submission in case of multiple VPs
     */
-    presentation_submission?: PresentationSubmission;
+    presentation_submission: PresentationSubmission;
   };
 }
 

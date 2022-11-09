@@ -318,6 +318,9 @@ export const ID1AuthenticationRequestPayloadSchema = {
               "$ref": "#/definitions/PresentationSubmission"
             }
           },
+          "required": [
+            "presentation_submission"
+          ],
           "additionalProperties": false
         }
       }

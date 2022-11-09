@@ -62,6 +62,18 @@ export const AuthenticationResponseOptsSchema = {
         },
         "refreshToken": {
           "type": "string"
+        },
+        "_vp_token": {
+          "type": "object",
+          "properties": {
+            "presentation_submission": {
+              "$ref": "#/definitions/PresentationSubmission"
+            }
+          },
+          "required": [
+            "presentation_submission"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [

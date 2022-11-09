@@ -65,7 +65,7 @@ export class OP {
     if (!this._verifyAuthRequestOpts.verification.supportedVersions.includes(version)) {
       throw new Error(`SIOP ${version} is not supported`);
     }
-    return version
+    return version;
   }
 
   public async verifyAuthenticationRequest(

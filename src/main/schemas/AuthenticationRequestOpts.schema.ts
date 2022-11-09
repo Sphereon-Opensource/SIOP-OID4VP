@@ -180,6 +180,9 @@ export const AuthenticationRequestOptsSchema = {
               "$ref": "#/definitions/PresentationSubmission"
             }
           },
+          "required": [
+            "presentation_submission"
+          ],
           "additionalProperties": false
         }
       }
