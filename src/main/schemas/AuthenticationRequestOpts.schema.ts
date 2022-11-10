@@ -77,10 +77,17 @@ export const AuthenticationRequestOptsSchema = {
           "$ref": "#/definitions/ResponseContext"
         },
         "responseTypesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ResponseType"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
         },
         "nonce": {
           "type": "string"
@@ -89,22 +96,43 @@ export const AuthenticationRequestOptsSchema = {
           "type": "string"
         },
         "scopesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Scope"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
         },
         "subjectTypesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SubjectType"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
         },
         "requestObjectSigningAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "revocationVerificationCallback": {
           "$ref": "#/definitions/RevocationVerificationCallback"
@@ -841,28 +869,56 @@ export const AuthenticationRequestOptsSchema = {
           ]
         },
         "requestObjectSigningAlgValuesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "responseTypesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ResponseType"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
         },
         "scopesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Scope"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
         },
         "subjectTypesSupported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SubjectType"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
         },
         "subjectSyntaxTypesSupported": {
           "type": "array",

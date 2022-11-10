@@ -25,12 +25,12 @@ export interface AuthenticationRequestExtraOpts {
   checkLinkedDomain?: CheckLinkedDomain; // determines how we'll handle the linked domains for this RP
   responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
   responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
-  responseTypesSupported?: ResponseType[];
+  responseTypesSupported?: ResponseType[] | ResponseType;
   nonce?: string; // An optional nonce, will be generated if not provided
   state?: string; // An optional state, will be generated if not provided
-  scopesSupported?: Scope[];
-  subjectTypesSupported?: SubjectType[];
-  requestObjectSigningAlgValuesSupported?: SigningAlgo[];
+  scopesSupported?: Scope[] | Scope;
+  subjectTypesSupported?: SubjectType[] | SubjectType;
+  requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
   revocationVerificationCallback?: RevocationVerificationCallback;
 }
 
@@ -254,11 +254,11 @@ interface DiscoveryMetadataCommonOpts {
   //TODO add the check: Mandatory if PassBy.Value
   issuer?: ResponseIss | string;
   //TODO add the check: Mandatory if PassBy.Value
-  responseTypesSupported?: ResponseType[];
-  scopesSupported?: Scope[];
-  subjectTypesSupported?: SubjectType[];
+  responseTypesSupported?: ResponseType[] | ResponseType;
+  scopesSupported?: Scope[] | Scope;
+  subjectTypesSupported?: SubjectType[] | SubjectType;
   idTokenSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  requestObjectSigningAlgValuesSupported?: SigningAlgo[];
+  requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
   //TODO add the check: Mandatory if PassBy.Value
   subjectSyntaxTypesSupported?: string[];
   tokenEndpoint?: string; // from openid connect discovery 1_0

@@ -10,7 +10,7 @@ export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): Dis
     subject_types_supported: opts?.subjectTypesSupported || [SubjectType.PAIRWISE],
     id_token_signing_alg_values_supported: opts?.idTokenSigningAlgValuesSupported || [SigningAlgo.ES256K, SigningAlgo.EDDSA],
     request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported || [SigningAlgo.ES256K, SigningAlgo.EDDSA],
-    subject_syntax_types_supported: opts.subjectSyntaxTypesSupported || [],
+    subject_syntax_types_supported: opts.subjectSyntaxTypesSupported,
     client_id: opts.clientId,
     redirect_uris: opts.redirectUris,
     client_name: opts.clientName,

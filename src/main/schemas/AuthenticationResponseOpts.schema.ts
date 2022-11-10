@@ -112,22 +112,43 @@ export const AuthenticationResponseOptsSchema = {
               ]
             },
             "responseTypesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseType"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseType"
+                }
+              ]
             },
             "scopesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Scope"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Scope"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/Scope"
+                }
+              ]
             },
             "subjectTypesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectType"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SubjectType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SubjectType"
+                }
+              ]
             },
             "idTokenSigningAlgValuesSupported": {
               "anyOf": [
@@ -143,10 +164,17 @@ export const AuthenticationResponseOptsSchema = {
               ]
             },
             "requestObjectSigningAlgValuesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
             },
             "subjectSyntaxTypesSupported": {
               "type": "array",
@@ -480,22 +508,43 @@ export const AuthenticationResponseOptsSchema = {
               ]
             },
             "responseTypesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseType"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseType"
+                }
+              ]
             },
             "scopesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Scope"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Scope"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/Scope"
+                }
+              ]
             },
             "subjectTypesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectType"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SubjectType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SubjectType"
+                }
+              ]
             },
             "idTokenSigningAlgValuesSupported": {
               "anyOf": [
@@ -511,10 +560,17 @@ export const AuthenticationResponseOptsSchema = {
               ]
             },
             "requestObjectSigningAlgValuesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
             },
             "subjectSyntaxTypesSupported": {
               "type": "array",
@@ -842,22 +898,43 @@ export const AuthenticationResponseOptsSchema = {
               ]
             },
             "responseTypesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseType"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/ResponseType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/ResponseType"
+                }
+              ]
             },
             "scopesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Scope"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Scope"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/Scope"
+                }
+              ]
             },
             "subjectTypesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectType"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SubjectType"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SubjectType"
+                }
+              ]
             },
             "idTokenSigningAlgValuesSupported": {
               "anyOf": [
@@ -873,10 +950,17 @@ export const AuthenticationResponseOptsSchema = {
               ]
             },
             "requestObjectSigningAlgValuesSupported": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/SigningAlgo"
+                  }
+                },
+                {
+                  "$ref": "#/definitions/SigningAlgo"
+                }
+              ]
             },
             "subjectSyntaxTypesSupported": {
               "type": "array",
