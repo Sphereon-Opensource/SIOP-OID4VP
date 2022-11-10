@@ -64,7 +64,7 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
       "type": "object",
       "properties": {
         "id_token": {
-          "$ref": "#/definitions/IdToken"
+          "$ref": "#/definitions/IdTokenPayload"
         },
         "vp_token": {
           "type": "object",
@@ -78,7 +78,7 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
       },
       "additionalProperties": false
     },
-    "IdToken": {
+    "IdTokenPayload": {
       "type": "object",
       "properties": {
         "iss": {

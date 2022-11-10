@@ -123,7 +123,7 @@ export const AuthenticationRequestOptsSchema = {
       "type": "object",
       "properties": {
         "idToken": {
-          "$ref": "#/definitions/IdToken"
+          "$ref": "#/definitions/IdTokenPayload"
         },
         "vpToken": {
           "type": "object",
@@ -137,7 +137,7 @@ export const AuthenticationRequestOptsSchema = {
       },
       "additionalProperties": false
     },
-    "IdToken": {
+    "IdTokenPayload": {
       "type": "object",
       "properties": {
         "iss": {

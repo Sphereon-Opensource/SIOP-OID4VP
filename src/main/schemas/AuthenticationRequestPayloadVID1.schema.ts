@@ -261,7 +261,7 @@ export const AuthenticationRequestPayloadSchemaVID1 = {
       "type": "object",
       "properties": {
         "id_token": {
-          "$ref": "#/definitions/IdToken"
+          "$ref": "#/definitions/IdTokenPayload"
         },
         "vp_token": {
           "type": "object",
@@ -275,7 +275,7 @@ export const AuthenticationRequestPayloadSchemaVID1 = {
       },
       "additionalProperties": false
     },
-    "IdToken": {
+    "IdTokenPayload": {
       "type": "object",
       "properties": {
         "iss": {
