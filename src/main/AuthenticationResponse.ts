@@ -1,4 +1,4 @@
-import { ObjectUtils, PresentationSubmission } from '@sphereon/ssi-types';
+import { PresentationSubmission } from '@sphereon/ssi-types';
 import { JWTHeader } from 'did-jwt';
 import { JWK } from 'jose';
 
@@ -272,33 +272,9 @@ async function createSIOPResponsePayload(
     token_type: resOpts.tokenType,
     refresh_token: resOpts.refreshToken,
     expires_in: resOpts.expiresIn,
+    vp_token,
     state,
   };
-  // add support for multiple VPs (VDX-158)
-  if (resOpts.vp && resOpts.vp[0].location === PresentationLocation.ID_TOKEN) {
-    let vp_token;
-    if (resOpts.vp.length > 1) {
-      vp_token = [];
-      for (const vptPayload of resOpts.vp) {
-        if (ObjectUtils.isString(vptPayload.presentation)) {
-          vp_token.push({
-            presentation: vptPayload.presentation,
-          });
-        } else {
-          vp_token.push(vptPayload.presentation);
-        }
-      }
-    } else if (resOpts.vp.length === 1) {
-      if (ObjectUtils.isString(resOpts.vp)) {
-        vp_token = { presentation: resOpts.vp };
-      } else {
-        vp_token = resOpts.vp;
-      }
-    }
-    authenticationResponsePayload.vp_token = vp_token;
-  } else {
-    authenticationResponsePayload.vp_token = vp_token;
-  }
   return authenticationResponsePayload as AuthenticationResponsePayload;
 }
 

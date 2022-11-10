@@ -134,18 +134,18 @@ const discoveryMetadataPayload = {
 const authenticationRequestPayloadVID1 = {
   path: "../src/main/types/SIOP.types.ts",
   tsconfig: "tsconfig.json",
-  type: "ID1AuthenticationRequestPayload", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/ID1AuthenticationRequestPayload.schema.ts",
-  outputConstName: "ID1AuthenticationRequestPayloadSchema",
+  type: "AuthenticationRequestPayloadVID1", // Or <type-name> if you want to generate schema for that one type only
+  outputPath: "src/main/schemas/AuthenticationRequestPayloadVID1.schema.ts",
+  outputConstName: "AuthenticationRequestPayloadSchemaVID1",
   skipTypeCheck: true
 };
 
 const authenticationRequestPayloadVD11 = {
   path: "../src/main/types/SIOP.types.ts",
   tsconfig: "tsconfig.json",
-  type: "D11AuthenticationRequestPayload", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/D11AuthenticationRequestPayload.schema.ts",
-  outputConstName: "D11AuthenticationRequestPayloadSchema",
+  type: "AuthenticationRequestPayloadVD11", // Or <type-name> if you want to generate schema for that one type only
+  outputPath: "src/main/schemas/AuthenticationRequestPayloadVD11.schema.ts",
+  outputConstName: "AuthenticationRequestPayloadSchemaVD11",
   skipTypeCheck: true
 }
 

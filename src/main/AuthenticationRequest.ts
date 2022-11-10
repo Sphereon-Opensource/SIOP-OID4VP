@@ -128,9 +128,13 @@ export default class AuthenticationRequest {
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
-    if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
+    if (
+      opts.verification.checkLinkedDomain &&
+      opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER &&
+      verPayload.client_id.startsWith('did:')
+    ) {
       await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
-    } else if (!opts.verification.checkLinkedDomain) {
+    } else if (!opts.verification.checkLinkedDomain && verPayload.client_id.startsWith('did:')) {
       await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
@@ -273,7 +277,7 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
   return {
     response_type: ResponseType.ID_TOKEN,
     scope: Scope.OPENID,
-    client_id: opts.signatureType.did,
+    client_id: opts.signatureType.did || opts.registrationUri,
     redirect_uri: opts.redirectUri,
     id_token_hint: opts.idTokenHint,
     registration_uri: opts.registrationUri,

@@ -45,18 +45,18 @@ interface AuthenticationRequestCommonOpts {
   requestUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
 }
 
-export interface ID1AuthenticationRequestOpts extends AuthenticationRequestCommonOpts {
+export interface AuthenticationRequestOptsVD1 extends AuthenticationRequestCommonOpts {
   registration?: RequestRegistrationOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-registration-1_0.html
   registrationUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
 }
 
-export interface D11AuthenticationRequestOpts extends AuthenticationRequestCommonOpts {
+export interface AuthenticationRequestOptsVD11 extends AuthenticationRequestCommonOpts {
   clientMetadata?: object; // from openid-connect-self-issued-v2-1_0-11 look at https://openid.net/specs/openid-connect-registration-1_0.html
   clientMetadataUri?: string; // from openid-connect-self-issued-v2-1_0-11
   idTokenType?: string; // from openid-connect-self-issued-v2-1_0-11
 }
 
-export type AuthenticationRequestOpts = AuthenticationRequestExtraOpts & ID1AuthenticationRequestOpts & D11AuthenticationRequestOpts;
+export type AuthenticationRequestOpts = AuthenticationRequestExtraOpts & AuthenticationRequestOptsVD1 & AuthenticationRequestOptsVD11;
 
 export interface AuthenticationRequestCommonPayload {
   scope: string;
@@ -71,9 +71,9 @@ export interface AuthenticationRequestCommonPayload {
   state: string;
 }
 
-export type ID1AuthenticationRequestPayload = AuthenticationRequestCommonPayload & RequestRegistrationPayload;
+export type AuthenticationRequestPayloadVID1 = AuthenticationRequestCommonPayload & RequestRegistrationPayload;
 
-export interface D11AuthenticationRequestPayload extends AuthenticationRequestCommonPayload {
+export interface AuthenticationRequestPayloadVD11 extends AuthenticationRequestCommonPayload {
   client_metadata?: unknown;
   client_metadata_uri?: string;
   id_token_type?: string;
@@ -91,7 +91,7 @@ export interface JWTVcPresentationProfileAuthenticationRequestPayload {
 }
 
 // https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
-export type AuthenticationRequestPayload = ID1AuthenticationRequestPayload & D11AuthenticationRequestPayload;
+export type AuthenticationRequestPayload = AuthenticationRequestPayloadVID1 & AuthenticationRequestPayloadVD11;
 
 export interface RequestRegistrationPayload {
   registration?: RPRegistrationMetadataPayload; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
@@ -294,7 +294,7 @@ interface DiscoveryMetadataCommonOpts {
 }
 
 //same for jwt_vc
-interface ID1DiscoveryMetadataOpts extends DiscoveryMetadataCommonOpts {
+interface DiscoveryMetadataOptsVID1 extends DiscoveryMetadataCommonOpts {
   clientId?: string; // from oidc4vp
   redirectUris?: string[] | string; // from oidc4vp
   clientName?: string; // from oidc4vp
@@ -306,12 +306,12 @@ interface ID1DiscoveryMetadataOpts extends DiscoveryMetadataCommonOpts {
   vpFormats?: Format; // from oidc4vp
 }
 
-interface JWT_VCDiscoveryMetadataOpts extends ID1DiscoveryMetadataOpts {
+interface JWT_VCDiscoveryMetadataOpts extends DiscoveryMetadataOptsVID1 {
   logoUri?: string;
   clientPurpose?: string;
 }
 
-interface V2_1_0_11DiscoveryMetadataOpts extends DiscoveryMetadataCommonOpts {
+interface DiscoveryMetadataOptsVD11 extends DiscoveryMetadataCommonOpts {
   idTokenTypesSupported?: IdTokenType[] | IdTokenType;
   vpFormatsSupported?: Format; // from oidc4vp
 }
@@ -378,7 +378,7 @@ interface GeneralDiscovertMetadataPayload {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
-interface ID1DiscoveryMetadataPayload extends GeneralDiscovertMetadataPayload {
+interface DiscoveryMetadataPayloadVID1 extends GeneralDiscovertMetadataPayload {
   client_id: string;
   redirectUris: string[];
   client_name?: string;
@@ -388,18 +388,18 @@ interface ID1DiscoveryMetadataPayload extends GeneralDiscovertMetadataPayload {
   grant_types: string;
   vp_formats: Format;
 }
-interface JWT_VCDiscoveryMetadataPayload extends ID1DiscoveryMetadataPayload {
+interface JWT_VCDiscoveryMetadataPayload extends DiscoveryMetadataPayloadVID1 {
   logo_uri?: string;
   client_purpose?: string;
 }
-interface VC2_1_0_11DiscoveryMetadataPayload extends GeneralDiscovertMetadataPayload {
+interface DiscoveryMetadataPayloadVD11 extends GeneralDiscovertMetadataPayload {
   id_token_types_supported?: IdTokenType[] | IdTokenType;
   vp_formats_supported?: Format; // from oidc4vp
 }
 
-export type DiscoveryMetadataPayload = ID1DiscoveryMetadataPayload | JWT_VCDiscoveryMetadataPayload | VC2_1_0_11DiscoveryMetadataPayload;
+export type DiscoveryMetadataPayload = DiscoveryMetadataPayloadVID1 | JWT_VCDiscoveryMetadataPayload | DiscoveryMetadataPayloadVD11;
 
-export type DiscoveryMetadataOpts = JWT_VCDiscoveryMetadataOpts | ID1DiscoveryMetadataOpts | V2_1_0_11DiscoveryMetadataOpts;
+export type DiscoveryMetadataOpts = JWT_VCDiscoveryMetadataOpts | DiscoveryMetadataOptsVID1 | DiscoveryMetadataOptsVD11;
 
 export type RequestRegistrationOpts = RPRegistrationMetadataOpts & { registrationBy: RegistrationType };
 
