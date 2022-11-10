@@ -22,7 +22,7 @@ import {
   AuthenticationResponsePayload,
   AuthenticationResponseWithJWT,
   CheckLinkedDomain,
-  IdToken,
+  IdTokenPayload,
   isExternalSignature,
   isExternalVerification,
   isInternalSignature,
@@ -61,16 +61,16 @@ export default class AuthenticationResponse {
       throw new Error(SIOPErrors.NO_JWT);
     }
     const verifiedJWT = await AuthenticationRequest.verifyJWT(requestJwt, verifyOpts);
-    return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJWT, responseOpts);
+    return AuthenticationResponse.createAuthenticationResponseFromVerifiedRequest(verifiedJWT, responseOpts);
   }
 
   // TODO SK Can you please put some documentation on it?
-  static async createJWTFromVerifiedRequest(
+  static async createAuthenticationResponseFromVerifiedRequest(
     verifiedJwt: VerifiedAuthenticationRequestWithJWT,
     responseOpts: AuthenticationResponseOpts
   ): Promise<AuthenticationResponseWithJWT> {
-    const idToken = await createSIOPIDToken(verifiedJwt, responseOpts);
     const payload = await createSIOPResponsePayload(verifiedJwt, responseOpts);
+    const idToken = await createSIOPIDToken(verifiedJwt, responseOpts);
     payload.id_token = await signDidJwtPayload(idToken, responseOpts);
     await assertValidVerifiablePresentations({
       definitions: verifiedJwt.presentationDefinitions,
@@ -81,7 +81,7 @@ export default class AuthenticationResponse {
     return {
       jwt: payload.id_token,
       state: payload.state,
-      nonce: payload.nonce,
+      nonce: idToken.nonce,
       idToken,
       payload,
       responseOpts,
@@ -115,7 +115,7 @@ export default class AuthenticationResponse {
     } else if (!verifyOpts.verification.checkLinkedDomain) {
       await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
     }
-    const verPayload = verifiedJWT.payload as IdToken;
+    const verPayload = verifiedJWT.payload as IdTokenPayload;
     assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     // Enforces verifyPresentationCallback function on the RP side,
     if (!verifyOpts?.presentationVerificationCallback) {
@@ -155,7 +155,7 @@ export default class AuthenticationResponse {
   }
 }
 
-function assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload; verPayload?: IdToken; audience?: string }) {
+function assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload; verPayload?: IdTokenPayload; audience?: string }) {
   if (!opts.header) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
@@ -229,7 +229,7 @@ function extractPresentations(resOpts: AuthenticationResponseOpts) {
   };
 }
 
-async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJWT, resOpts: AuthenticationResponseOpts): Promise<IdToken> {
+async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJWT, resOpts: AuthenticationResponseOpts): Promise<IdTokenPayload> {
   assertValidResponseOpts(resOpts);
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
@@ -239,7 +239,7 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
   );
   const state = resOpts.state || getState(verifiedJwt.payload.state);
   const nonce = verifiedJwt.payload.nonce || resOpts.nonce || getNonce(state);
-  const idToken: IdToken = {
+  const idToken: IdTokenPayload = {
     iss: ResponseIss.SELF_ISSUED_V2,
     aud: verifiedJwt.payload.redirect_uri,
     iat: Date.now() / 1000,

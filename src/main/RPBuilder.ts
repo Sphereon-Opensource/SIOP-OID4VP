@@ -10,7 +10,7 @@ import {
   ClaimOpts,
   EcdsaSignature,
   ExternalSignature,
-  IdToken,
+  IdTokenPayload,
   InternalSignature,
   NoSignature,
   ObjectBy,
@@ -156,7 +156,7 @@ export default class RPBuilder {
     return this;
   }
 
-  addClaims(definitionOpt: IPresentationDefinition, idToken?: IdToken): RPBuilder {
+  addClaims(definitionOpt: IPresentationDefinition, idToken?: IdTokenPayload): RPBuilder {
     if (!this.claims || !this.claims.vpToken) {
       this.claims = {
         idToken: idToken || {},

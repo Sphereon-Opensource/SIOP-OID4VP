@@ -87,7 +87,7 @@ export class OP {
       vp?: VerifiablePresentationResponseOpts[];
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
+    return AuthenticationResponse.createAuthenticationResponseFromVerifiedRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
   }
 
   // TODO SK Can you please put some documentation on it?

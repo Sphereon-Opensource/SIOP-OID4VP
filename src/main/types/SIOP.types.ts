@@ -59,14 +59,14 @@ export interface AuthenticationRequestOptsVD11 extends AuthenticationRequestComm
 export type AuthenticationRequestOpts = AuthenticationRequestExtraOpts & AuthenticationRequestOptsVD1 & AuthenticationRequestOptsVD11;
 
 export interface AuthenticationRequestCommonPayload {
-  scope: string;
-  response_type: ResponseType;
-  client_id: string;
-  redirect_uri: string;
-  id_token_hint?: string;
-  claims?: ClaimPayload;
-  request?: string;
-  request_uri?: string;
+  scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
+  response_type: ResponseType; // REQUIRED. Constant string value id_token.
+  client_id: string; // REQUIRED. RP's identifier at the Self-Issued OP.
+  redirect_uri: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
+  id_token_hint?: string; // OPTIONAL. As specified in Section 3.1.2 of [OpenID.Core]. If the ID Token is encrypted for the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
+  claims?: ClaimPayload; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
+  request?: string; // OPTIONAL. Request Object value, as specified in Section 6.1 of [OpenID.Core]. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
+  request_uri?: string; // OPTIONAL. URL where Request Object value can be retrieved from, as specified in Section 6.2 of [OpenID.Core].
   nonce: string;
   state: string;
 }
@@ -95,7 +95,7 @@ export type AuthenticationRequestPayload = AuthenticationRequestPayloadVID1 & Au
 
 export interface RequestRegistrationPayload {
   registration?: RPRegistrationMetadataPayload; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
-  registration_uri?: string;
+  registration_uri?: string; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in 2.2.1.
 }
 
 export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
@@ -140,7 +140,7 @@ export interface AuthenticationResponseOpts {
   _vp_token?: { presentation_submission: PresentationSubmission };
 }
 
-export interface IdToken extends JWTPayload {
+export interface IdTokenPayload extends JWTPayload {
   iss?: ResponseIss.SELF_ISSUED_V2 | string;
   sub?: string; // did (or thumbprint of sub_jwk key when type is jkt)
   aud?: string; // redirect_uri from request
@@ -190,14 +190,14 @@ export interface VpTokenClaimPayload {
 }
 
 export interface ClaimOpts {
-  idToken?: IdToken;
+  idToken?: IdTokenPayload;
   vpToken?: {
     presentationDefinition?: IPresentationDefinition;
   };
 }
 
 export type ClaimPayload = {
-  id_token?: IdToken;
+  id_token?: IdTokenPayload;
   vp_token?: {
     presentation_definition?: IPresentationDefinition;
   };
@@ -240,7 +240,7 @@ export interface AuthenticationResponseWithJWT {
   jwt: string;
   nonce: string;
   state: string;
-  idToken: IdToken;
+  idToken: IdTokenPayload;
   payload: AuthenticationResponsePayload;
   verifyOpts?: VerifyAuthenticationRequestOpts;
   responseOpts: AuthenticationResponseOpts;
@@ -582,7 +582,7 @@ export interface DidAuthValidationResponse {
 }
 
 export interface VerifiedAuthenticationResponseWithJWT extends VerifiedJWT {
-  payload: IdToken;
+  payload: IdTokenPayload;
   verifyOpts: VerifyAuthenticationResponseOpts;
 }
 
@@ -724,11 +724,11 @@ export const isResponseOpts = (object: AuthenticationRequestOpts | Authenticatio
   'did' in object;
 
 export const isRequestPayload = (
-  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken
+  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdTokenPayload
 ): object is AuthenticationRequestPayload => 'response_mode' in object && 'response_type' in object;
 
 export const isResponsePayload = (
-  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdToken
+  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdTokenPayload
 ): object is AuthenticationResponsePayload => 'iss' in object && 'aud' in object;
 
 export const isInternalVerification = (object: InternalVerification | ExternalVerification): object is InternalVerification =>

@@ -8,7 +8,7 @@ import {
   AuthenticationResponseOpts,
   EcdsaSignature,
   expirationTime,
-  IdToken,
+  IdTokenPayload,
   isExternalSignature,
   isInternalSignature,
   isResponseOpts,
@@ -73,7 +73,7 @@ export async function createDidJWT(
   return createJWT(payload, { issuer, signer, alg: header.alg, expiresIn, canonicalize }, header);
 }
 
-export async function signDidJwtPayload(payload: IdToken, opts: AuthenticationRequestOpts | AuthenticationResponseOpts) {
+export async function signDidJwtPayload(payload: IdTokenPayload, opts: AuthenticationRequestOpts | AuthenticationResponseOpts) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
   if (isResponse) {
     if (!payload.iss || payload.iss !== ResponseIss.SELF_ISSUED_V2) {
@@ -91,7 +91,7 @@ export async function signDidJwtPayload(payload: IdToken, opts: AuthenticationRe
   }
 }
 
-async function signDidJwtInternal(payload: IdToken, issuer: string, hexPrivateKey: string, kid?: string): Promise<string> {
+async function signDidJwtInternal(payload: IdTokenPayload, issuer: string, hexPrivateKey: string, kid?: string): Promise<string> {
   // todo: Create method. We are doing roughly the same multiple times
   const algo =
     isEd25519DidKeyMethod(issuer) ||
@@ -117,7 +117,7 @@ async function signDidJwtInternal(payload: IdToken, issuer: string, hexPrivateKe
   return await createDidJWT({ ...payload }, options, header);
 }
 
-async function signDidJwtExternal(payload: IdToken, signatureUri: string, authZToken: string, kid?: string): Promise<string> {
+async function signDidJwtExternal(payload: IdTokenPayload, signatureUri: string, authZToken: string, kid?: string): Promise<string> {
   // todo: Create method. We are doing roughly the same multiple times
   const alg = isEd25519DidKeyMethod(payload.sub) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
 
@@ -136,7 +136,7 @@ async function signDidJwtExternal(payload: IdToken, signatureUri: string, authZT
 }
 
 async function signDidJwtSupplied(
-  payload: IdToken,
+  payload: IdTokenPayload,
   issuer: string,
   signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
   kid: string
