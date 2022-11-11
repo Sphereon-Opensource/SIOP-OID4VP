@@ -187,7 +187,7 @@ export interface VpTokenClaimPayload {
 
 export interface VpTokenClaimOpts {
   presentationDefinition?: PresentationDefinitionV1 | PresentationDefinitionV2;
-  presentationDefinitionUri?: string
+  presentationDefinitionUri?: string;
 }
 
 export interface ClaimOpts {
