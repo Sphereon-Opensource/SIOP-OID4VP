@@ -209,6 +209,8 @@ describe('RP and OP interaction should', () => {
 
       nock('https://rp.acme.com/siop/jwts').get(/.*/).reply(200, requestURI.jwt);
 
+      //The schema validation needs to be done here otherwise it fails because of JWT properties
+      await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // The create method also calls the verifyRequest method, so no need to do it manually
       const verifiedRequest = await op.verifyAuthenticationRequest(requestURI.encodedUri);
       const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedRequest);
@@ -304,6 +306,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -402,6 +406,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -415,8 +421,8 @@ describe('RP and OP interaction should', () => {
       Error('authentication request expects a verifiable presentation in the response')
     );
 
-    expect(verifiedAuthReqWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
-    expect(verifiedAuthReqWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100321');
+    expect(verifiedAuthReqWithJWT.payload['registration'].client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
+    expect(verifiedAuthReqWithJWT.payload['registration']['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100321');
   });
 
   it('succeed when calling with presentation definitions and right verifiable presentation', async () => {
@@ -498,6 +504,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -608,6 +616,8 @@ describe('RP and OP interaction should', () => {
         state: 'b32f0087fc9816eb813fd11f',
       });
 
+      //The schema validation needs to be done here otherwise it fails because of JWT properties
+      await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // Let's test the parsing
       const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
       expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -742,6 +752,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -865,6 +877,8 @@ describe('RP and OP interaction should', () => {
         state: 'b32f0087fc9816eb813fd11f',
       });
 
+      //The schema validation needs to be done here otherwise it fails because of JWT properties
+      await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // Let's test the parsing
       const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
       expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -995,6 +1009,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();

@@ -17,23 +17,6 @@ import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT }
 export const expirationTime = 10 * 60;
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
-export interface AuthenticationRequestExtraOpts {
-  authorizationEndpoint?: string;
-  redirectUri: string; // The redirect URI
-  requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
-  signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication), or supplied (callback supplied)
-  checkLinkedDomain?: CheckLinkedDomain; // determines how we'll handle the linked domains for this RP
-  responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
-  responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
-  responseTypesSupported?: ResponseType[] | ResponseType;
-  nonce?: string; // An optional nonce, will be generated if not provided
-  state?: string; // An optional state, will be generated if not provided
-  scopesSupported?: Scope[] | Scope;
-  subjectTypesSupported?: SubjectType[] | SubjectType;
-  requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  revocationVerificationCallback?: RevocationVerificationCallback;
-}
-
 interface AuthenticationRequestCommonOpts {
   scope: string; // from openid-connect-self-issued-v2-1_0-ID1
   responseType: string; // from openid-connect-self-issued-v2-1_0-ID1
@@ -43,6 +26,19 @@ interface AuthenticationRequestCommonOpts {
   claims?: ClaimOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#Claims
   request?: string; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
   requestUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
+  nonce?: string; // An optional nonce, will be generated if not provided
+  state?: string; // An optional state, will be generated if not provided
+  signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication), or supplied (callback supplied)
+  authorizationEndpoint?: string;
+  requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
+  checkLinkedDomain?: CheckLinkedDomain; // determines how we'll handle the linked domains for this RP
+  responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
+  responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
+  responseTypesSupported?: ResponseType[] | ResponseType;
+  scopesSupported?: Scope[] | Scope;
+  subjectTypesSupported?: SubjectType[] | SubjectType;
+  requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
+  revocationVerificationCallback?: RevocationVerificationCallback;
 }
 
 export interface AuthenticationRequestOptsVD1 extends AuthenticationRequestCommonOpts {
@@ -56,7 +52,7 @@ export interface AuthenticationRequestOptsVD11 extends AuthenticationRequestComm
   idTokenType?: string; // from openid-connect-self-issued-v2-1_0-11
 }
 
-export type AuthenticationRequestOpts = AuthenticationRequestExtraOpts & AuthenticationRequestOptsVD1 & AuthenticationRequestOptsVD11;
+export type AuthenticationRequestOpts = AuthenticationRequestOptsVD1 | AuthenticationRequestOptsVD11;
 
 export interface AuthenticationRequestCommonPayload {
   scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
@@ -91,7 +87,7 @@ export interface JWTVcPresentationProfileAuthenticationRequestPayload {
 }
 
 // https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
-export type AuthenticationRequestPayload = AuthenticationRequestPayloadVID1 & AuthenticationRequestPayloadVD11;
+export type AuthenticationRequestPayload = AuthenticationRequestPayloadVID1 | AuthenticationRequestPayloadVD11;
 
 export interface RequestRegistrationPayload {
   registration?: RPRegistrationMetadataPayload; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
@@ -166,7 +162,7 @@ export interface AuthenticationResponsePayload {
   expires_in: number;
   state: string;
   id_token: string;
-  vp_token: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
+  vp_token?: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
@@ -187,6 +183,11 @@ export interface VpTokenClaimPayload {
   presentation_definition_uri?: string;
   nonce?: string;
   [x: string]: unknown;
+}
+
+export interface VpTokenClaimOpts {
+  presentationDefinition?: PresentationDefinitionV1 | PresentationDefinitionV2;
+  presentationDefinitionUri?: string
 }
 
 export interface ClaimOpts {

@@ -234,7 +234,7 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
   if (!verifiedJwt || !verifiedJwt.jwt) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
-  const supportedDidMethods = verifiedJwt.payload.registration?.subject_syntax_types_supported?.filter((sst) =>
+  const supportedDidMethods = verifiedJwt.payload['registration']?.subject_syntax_types_supported?.filter((sst) =>
     sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
   );
   const state = resOpts.state || getState(verifiedJwt.payload.state);
@@ -266,13 +266,13 @@ async function createSIOPResponsePayload(
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
   const state = resOpts.state || getState(verifiedJwt.payload.state);
-  const { vp_token } = extractPresentations(resOpts);
+  const { vp_token, verifiable_presentations } = extractPresentations(resOpts);
   const authenticationResponsePayload: Partial<AuthenticationResponsePayload> = {
     access_token: resOpts.accessToken,
     token_type: resOpts.tokenType,
     refresh_token: resOpts.refreshToken,
     expires_in: resOpts.expiresIn,
-    vp_token,
+    vp_token: vp_token || verifiable_presentations,
     state,
   };
   return authenticationResponsePayload as AuthenticationResponsePayload;

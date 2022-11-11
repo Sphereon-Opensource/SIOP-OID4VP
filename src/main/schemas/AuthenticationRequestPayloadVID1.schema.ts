@@ -21,6 +21,9 @@ export const AuthenticationRequestPayloadSchemaVID1 = {
         "client_id": {
           "type": "string"
         },
+        "response_mode": {
+          "$ref": "#/definitions/ResponseMode"
+        },
         "redirect_uri": {
           "type": "string"
         },
@@ -256,6 +259,15 @@ export const AuthenticationRequestPayloadSchemaVID1 = {
         "proof_type"
       ],
       "additionalProperties": false
+    },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
     },
     "ClaimPayload": {
       "type": "object",

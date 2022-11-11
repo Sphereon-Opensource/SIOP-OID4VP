@@ -121,7 +121,7 @@ export default class AuthenticationRequest {
     }
 
     AuthenticationRequest.assertValidRequestObject(verPayload);
-    const registrationMetadata = await AuthenticationRequest.getRegistrationObj(verPayload.registration_uri, verPayload.registration);
+    const registrationMetadata = await AuthenticationRequest.getRegistrationObj(verPayload['registration_uri'], verPayload['registration']);
     AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
     const verifiedJWT = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
@@ -155,7 +155,7 @@ export default class AuthenticationRequest {
   }
 
   public static assertValidRequestObject(verPayload: AuthenticationRequestPayload): void {
-    if (verPayload.registration_uri && verPayload.registration) {
+    if (verPayload['registration_uri'] && verPayload['registration']) {
       throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
     }
   }
@@ -202,7 +202,7 @@ async function createURIFromJWT(
   const query = encodeJsonAsURI(requestPayload);
 
   AuthenticationRequest.assertValidRequestObject(requestPayload);
-  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration);
+  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload['registration_uri'], requestPayload['registration']);
   AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
   switch (requestOpts.requestBy?.type) {
     case PassBy.REFERENCE:
@@ -247,11 +247,11 @@ function assertValidRequestOpts(opts: AuthenticationRequestOpts) {
   } else if (opts.requestBy.type === PassBy.REFERENCE && !opts.requestBy.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
-  assertValidRequestRegistrationOpts(opts.registration);
+  assertValidRequestRegistrationOpts(opts['registration']);
 }
 
 function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
-  if (!opts || !opts.vpToken?.presentationDefinition) {
+  if (!opts || (!opts.vpToken.presentationDefinition && !opts.vpToken?.presentationDefinitionUri)) {
     return undefined;
   }
   const pex: PEX = new PEX();
@@ -271,16 +271,16 @@ function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
 async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestPayload> {
   assertValidRequestOpts(opts);
   const state = getState(opts.state);
-  const registration = await createRequestRegistration(opts.registration);
+  const registration = await createRequestRegistration(opts['registration']);
   const claims = createClaimsPayload(opts.claims);
 
   return {
     response_type: ResponseType.ID_TOKEN,
     scope: Scope.OPENID,
-    client_id: opts.signatureType.did || opts.registrationUri,
+    client_id: opts.signatureType.did || opts['registrationUri'],
     redirect_uri: opts.redirectUri,
     id_token_hint: opts.idTokenHint,
-    registration_uri: opts.registrationUri,
+    registration_uri: opts['registrationUri'],
     request: opts.request,
     request_uri: opts.requestUri,
     nonce: getNonce(state, opts.nonce),

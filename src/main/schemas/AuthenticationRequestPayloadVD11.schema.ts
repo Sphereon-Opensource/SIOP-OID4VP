@@ -14,6 +14,9 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
         "client_id": {
           "type": "string"
         },
+        "response_mode": {
+          "$ref": "#/definitions/ResponseMode"
+        },
         "redirect_uri": {
           "type": "string"
         },
@@ -58,6 +61,15 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
       "enum": [
         "id_token",
         "vp_token"
+      ]
+    },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
       ]
     },
     "ClaimPayload": {
