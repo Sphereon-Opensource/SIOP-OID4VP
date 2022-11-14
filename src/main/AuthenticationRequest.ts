@@ -17,6 +17,7 @@ import {
   validateLinkedDomainWithDid,
   verifyDidJWT,
 } from './functions';
+import { authenticationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { RPRegistrationMetadataPayloadSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -116,7 +117,10 @@ export default class AuthenticationRequest {
     };
 
     const verPayload = payload as AuthenticationRequestPayload;
-
+    const version = authenticationRequestVersionDiscovery(verPayload);
+    if (!opts.verification.supportedVersions?.includes(version)) {
+      throw new Error(SIOPErrors.SIOP_VERSION_NOT_SUPPORTED);
+    }
     if (opts.nonce && verPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
     }
