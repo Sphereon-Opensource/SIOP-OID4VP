@@ -137,7 +137,7 @@ async function signDidJwtExternal(
   const alg = isEd25519DidKeyMethod(payload.sub) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
 
   const body = {
-    issuer: payload.sub,
+    issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.sub,
     payload,
     type: alg === KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
     expiresIn: expirationTime,
