@@ -99,7 +99,7 @@ export class OP {
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    return postAuthenticationResponseJwt(verifiedJwt.idToken.aud, verifiedJwt.payload);
+    return postAuthenticationResponseJwt(verifiedJwt.idToken.aud, verifiedJwt.jwt);
   }
 
   /**

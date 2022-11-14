@@ -245,7 +245,7 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
     iat: Date.now() / 1000,
     exp: Date.now() / 1000 + (resOpts.expiresIn || 600),
     sub: resOpts.did,
-    auth_time: Date.now() / 1000,
+    auth_time: verifiedJwt.payload.auth_time,
     nonce,
     _vp_token: resOpts._vp_token,
   };

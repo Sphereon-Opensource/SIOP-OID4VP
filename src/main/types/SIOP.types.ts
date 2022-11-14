@@ -54,7 +54,7 @@ export interface AuthenticationRequestOptsVD11 extends AuthenticationRequestComm
 
 export type AuthenticationRequestOpts = AuthenticationRequestOptsVD1 | AuthenticationRequestOptsVD11;
 
-export interface AuthenticationRequestCommonPayload {
+export interface AuthenticationRequestCommonPayload extends JWTPayload {
   scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
   response_type: ResponseType; // REQUIRED. Constant string value id_token.
   client_id: string; // REQUIRED. RP's identifier at the Self-Issued OP.

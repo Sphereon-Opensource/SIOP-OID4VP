@@ -4,12 +4,48 @@ export const AuthenticationRequestPayloadSchemaVID1 = {
   "definitions": {
     "AuthenticationRequestPayloadVID1": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "registration": {
           "$ref": "#/definitions/RPRegistrationMetadataPayload"
         },
         "registration_uri": {
+          "type": "string"
+        },
+        "iss": {
+          "type": "string"
+        },
+        "sub": {
+          "type": "string"
+        },
+        "aud": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "iat": {
+          "type": "number"
+        },
+        "nbf": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "exp": {
+          "type": "number"
+        },
+        "rexp": {
+          "type": "number"
+        },
+        "jti": {
           "type": "string"
         },
         "scope": {

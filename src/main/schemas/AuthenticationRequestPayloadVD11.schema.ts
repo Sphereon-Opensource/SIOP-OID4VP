@@ -5,6 +5,43 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
     "AuthenticationRequestPayloadVD11": {
       "type": "object",
       "properties": {
+        "iss": {
+          "type": "string"
+        },
+        "sub": {
+          "type": "string"
+        },
+        "aud": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "iat": {
+          "type": "number"
+        },
+        "nbf": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "exp": {
+          "type": "number"
+        },
+        "rexp": {
+          "type": "number"
+        },
+        "jti": {
+          "type": "string"
+        },
         "scope": {
           "type": "string"
         },
@@ -46,7 +83,6 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
           "type": "string"
         }
       },
-      "additionalProperties": false,
       "required": [
         "client_id",
         "nonce",

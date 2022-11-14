@@ -1,6 +1,6 @@
 import { fetch } from 'cross-fetch';
 
-import { AuthenticationResponsePayload, AuthenticationResponseWithJWT, JWTPayload, SIOPErrors } from '../types';
+import { AuthenticationResponseWithJWT, JWTPayload, SIOPErrors } from '../types';
 
 export async function postWithBearerToken(url: string, body: JWTPayload, bearerToken: string): Promise<Response> {
   try {
@@ -21,17 +21,17 @@ export async function postWithBearerToken(url: string, body: JWTPayload, bearerT
 }
 
 export async function postAuthenticationResponse(url: string, body: AuthenticationResponseWithJWT): Promise<Response> {
-  return postAuthenticationResponseJwt(url, body.payload);
+  return postAuthenticationResponseJwt(url, body.jwt);
 }
 
-export async function postAuthenticationResponseJwt(url: string, authResponsePayload: AuthenticationResponsePayload): Promise<Response> {
+export async function postAuthenticationResponseJwt(url: string, jwt: string): Promise<Response> {
   try {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
       },
-      body: JSON.stringify(authResponsePayload),
+      body: `id_token=${jwt}`,
     });
     if (!response || !response.status || response.status < 200 || response.status >= 400) {
       throw new Error(`${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText}, ${await response.text()}`);

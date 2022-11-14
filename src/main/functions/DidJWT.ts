@@ -5,6 +5,7 @@ import { Resolvable } from 'did-resolver';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
 import {
   AuthenticationRequestOpts,
+  AuthenticationRequestPayload,
   AuthenticationResponseOpts,
   EcdsaSignature,
   expirationTime,
@@ -73,7 +74,10 @@ export async function createDidJWT(
   return createJWT(payload, { issuer, signer, alg: header.alg, expiresIn, canonicalize }, header);
 }
 
-export async function signDidJwtPayload(payload: IdTokenPayload, opts: AuthenticationRequestOpts | AuthenticationResponseOpts) {
+export async function signDidJwtPayload(
+  payload: IdTokenPayload | AuthenticationRequestPayload,
+  opts: AuthenticationRequestOpts | AuthenticationResponseOpts
+) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
   if (isResponse) {
     if (!payload.iss || payload.iss !== ResponseIss.SELF_ISSUED_V2) {
@@ -91,7 +95,12 @@ export async function signDidJwtPayload(payload: IdTokenPayload, opts: Authentic
   }
 }
 
-async function signDidJwtInternal(payload: IdTokenPayload, issuer: string, hexPrivateKey: string, kid?: string): Promise<string> {
+async function signDidJwtInternal(
+  payload: IdTokenPayload | AuthenticationRequestPayload,
+  issuer: string,
+  hexPrivateKey: string,
+  kid?: string
+): Promise<string> {
   // todo: Create method. We are doing roughly the same multiple times
   const algo =
     isEd25519DidKeyMethod(issuer) ||
@@ -117,7 +126,12 @@ async function signDidJwtInternal(payload: IdTokenPayload, issuer: string, hexPr
   return await createDidJWT({ ...payload }, options, header);
 }
 
-async function signDidJwtExternal(payload: IdTokenPayload, signatureUri: string, authZToken: string, kid?: string): Promise<string> {
+async function signDidJwtExternal(
+  payload: IdTokenPayload | AuthenticationRequestPayload,
+  signatureUri: string,
+  authZToken: string,
+  kid?: string
+): Promise<string> {
   // todo: Create method. We are doing roughly the same multiple times
   const alg = isEd25519DidKeyMethod(payload.sub) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
 
@@ -136,7 +150,7 @@ async function signDidJwtExternal(payload: IdTokenPayload, signatureUri: string,
 }
 
 async function signDidJwtSupplied(
-  payload: IdTokenPayload,
+  payload: IdTokenPayload | AuthenticationRequestPayload,
   issuer: string,
   signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
   kid: string
