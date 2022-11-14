@@ -127,6 +127,16 @@ export default class OPBuilder {
     return this;
   }
 
+  addSupportedVersion(supportedVersion: string | SupportedVersion): OPBuilder {
+    this.initSupportedVersions();
+    if (typeof supportedVersion === 'string') {
+      this.supportedVersions.push(SupportedVersion[supportedVersion]);
+    } else if (Array.isArray(supportedVersion)) {
+      this.supportedVersions.push(supportedVersion as SupportedVersion);
+    }
+    return this;
+  }
+
   withPresentationSignCallback(presentationSignCallback: PresentationSignCallback) {
     this.presentationSignCallback = presentationSignCallback;
     return this;
