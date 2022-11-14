@@ -156,7 +156,7 @@ export interface IdTokenPayload extends JWTPayload {
   };
 }
 
-export interface AuthenticationResponsePayload {
+export interface AuthenticationResponsePayload extends JWTPayload {
   access_token?: ResponseIss.SELF_ISSUED_V2 | string;
   token_type?: string;
   refresh_token?: string;

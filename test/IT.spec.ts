@@ -219,7 +219,7 @@ describe('RP and OP interaction should', () => {
       const response = await op.submitAuthenticationResponse(authenticationResponseWithJWT);
       await expect(response.json()).resolves.toMatchObject({ result: 'ok' });
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
         audience: EXAMPLE_REDIRECT_URL,
       });
 
@@ -321,7 +321,7 @@ describe('RP and OP interaction should', () => {
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT);
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
       audience: EXAMPLE_REDIRECT_URL,
     });
 
@@ -530,7 +530,7 @@ describe('RP and OP interaction should', () => {
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
       audience: EXAMPLE_REDIRECT_URL,
     });
 
@@ -642,7 +642,7 @@ describe('RP and OP interaction should', () => {
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
       await expect(
-        rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
+        rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
           audience: EXAMPLE_REDIRECT_URL,
           verification: {
             mode: VerificationMode.INTERNAL,
@@ -787,7 +787,7 @@ describe('RP and OP interaction should', () => {
     };
     expect(rp.verifyAuthResponseOpts.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -903,7 +903,7 @@ describe('RP and OP interaction should', () => {
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
         audience: EXAMPLE_REDIRECT_URL,
       });
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -1045,7 +1045,7 @@ describe('RP and OP interaction should', () => {
       ],
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -1324,7 +1324,7 @@ describe('RP and OP interaction should', () => {
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
