@@ -373,7 +373,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addClaims(getPresentationDefinition())
+      .addPresentationDefinitionClaim(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
@@ -448,7 +448,7 @@ describe('RP and OP interaction should', () => {
       .addScope('test')
       .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
-      .addClaims(getPresentationDefinition())
+      .addPresentationDefinitionClaim(getPresentationDefinition())
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
@@ -583,7 +583,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addClaims(getPresentationDefinition())
+        .addPresentationDefinitionClaim(getPresentationDefinition())
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
@@ -714,7 +714,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addClaims(getPresentationDefinition())
+      .addPresentationDefinitionClaim(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
@@ -842,7 +842,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addClaims(getPresentationDefinition())
+        .addPresentationDefinitionClaim(getPresentationDefinition())
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
@@ -966,7 +966,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addClaims(getPresentationDefinition())
+      .addPresentationDefinitionClaim(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
@@ -1263,7 +1263,7 @@ describe('RP and OP interaction should', () => {
         clientName: VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
-      .addClaims(getPresentationDefinition())
+      .addPresentationDefinitionClaim(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
