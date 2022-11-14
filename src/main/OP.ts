@@ -169,7 +169,7 @@ async function parseAndResolveRequestUri(encodedUri: string) {
 async function parseAndResolveUri(encodedUri: string) {
   const { requestPayload, jwt } = await parseAndResolveRequestUri(encodedUri);
   AuthenticationRequest.assertValidRequestObject(requestPayload);
-  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration);
+  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload['registration_uri'], requestPayload['registration']);
   AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
   return { requestPayload, jwt, registrationMetadata };

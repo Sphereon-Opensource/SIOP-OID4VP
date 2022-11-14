@@ -3,8 +3,17 @@ export const AuthenticationRequestOptsSchema = {
   "$ref": "#/definitions/AuthenticationRequestOpts",
   "definitions": {
     "AuthenticationRequestOpts": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/AuthenticationRequestOptsVD1"
+        },
+        {
+          "$ref": "#/definitions/AuthenticationRequestOptsVD11"
+        }
+      ]
+    },
+    "AuthenticationRequestOptsVD1": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "scope": {
           "type": "string"
@@ -30,26 +39,11 @@ export const AuthenticationRequestOptsSchema = {
         "requestUri": {
           "type": "string"
         },
-        "clientMetadata": {
-          "type": "object"
-        },
-        "clientMetadataUri": {
+        "nonce": {
           "type": "string"
         },
-        "idTokenType": {
+        "state": {
           "type": "string"
-        },
-        "registration": {
-          "$ref": "#/definitions/RequestRegistrationOpts"
-        },
-        "registrationUri": {
-          "type": "string"
-        },
-        "authorizationEndpoint": {
-          "type": "string"
-        },
-        "requestBy": {
-          "$ref": "#/definitions/ObjectBy"
         },
         "signatureType": {
           "anyOf": [
@@ -66,6 +60,12 @@ export const AuthenticationRequestOptsSchema = {
               "$ref": "#/definitions/NoSignature"
             }
           ]
+        },
+        "authorizationEndpoint": {
+          "type": "string"
+        },
+        "requestBy": {
+          "$ref": "#/definitions/ObjectBy"
         },
         "checkLinkedDomain": {
           "$ref": "#/definitions/CheckLinkedDomain"
@@ -88,12 +88,6 @@ export const AuthenticationRequestOptsSchema = {
               "$ref": "#/definitions/ResponseType"
             }
           ]
-        },
-        "nonce": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
         },
         "scopesSupported": {
           "anyOf": [
@@ -136,8 +130,15 @@ export const AuthenticationRequestOptsSchema = {
         },
         "revocationVerificationCallback": {
           "$ref": "#/definitions/RevocationVerificationCallback"
+        },
+        "registration": {
+          "$ref": "#/definitions/RequestRegistrationOpts"
+        },
+        "registrationUri": {
+          "type": "string"
         }
       },
+      "additionalProperties": false,
       "required": [
         "clientId",
         "redirectUri",
@@ -154,13 +155,7 @@ export const AuthenticationRequestOptsSchema = {
           "$ref": "#/definitions/IdTokenPayload"
         },
         "vpToken": {
-          "type": "object",
-          "properties": {
-            "presentationDefinition": {
-              "$ref": "#/definitions/IPresentationDefinition"
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/definitions/VpTokenClaimOpts"
         }
       },
       "additionalProperties": false
@@ -269,15 +264,24 @@ export const AuthenticationRequestOptsSchema = {
       "additionalProperties": false,
       "description": "descriptor map laying out the structure of the presentation submission."
     },
-    "IPresentationDefinition": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/PresentationDefinitionV1"
+    "VpTokenClaimOpts": {
+      "type": "object",
+      "properties": {
+        "presentationDefinition": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PresentationDefinitionV1"
+            },
+            {
+              "$ref": "#/definitions/PresentationDefinitionV2"
+            }
+          ]
         },
-        {
-          "$ref": "#/definitions/PresentationDefinitionV2"
+        "presentationDefinitionUri": {
+          "type": "string"
         }
-      ]
+      },
+      "additionalProperties": false
     },
     "PresentationDefinitionV1": {
       "type": "object",
@@ -849,6 +853,180 @@ export const AuthenticationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
+    "InternalSignature": {
+      "type": "object",
+      "properties": {
+        "hexPrivateKey": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hexPrivateKey",
+        "did"
+      ],
+      "additionalProperties": false
+    },
+    "ExternalSignature": {
+      "type": "object",
+      "properties": {
+        "signatureUri": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "authZToken": {
+          "type": "string"
+        },
+        "hexPublicKey": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "signatureUri",
+        "did"
+      ],
+      "additionalProperties": false
+    },
+    "SuppliedSignature": {
+      "type": "object",
+      "properties": {
+        "signature": {
+          "properties": {
+            "isFunction": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "signature",
+        "did",
+        "kid"
+      ],
+      "additionalProperties": false
+    },
+    "NoSignature": {
+      "type": "object",
+      "properties": {
+        "hexPublicKey": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hexPublicKey",
+        "did"
+      ],
+      "additionalProperties": false
+    },
+    "ObjectBy": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "REFERENCE",
+            "VALUE"
+          ]
+        },
+        "referenceUri": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "CheckLinkedDomain": {
+      "type": "string",
+      "enum": [
+        "never",
+        "if_present",
+        "always"
+      ]
+    },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
+    },
+    "ResponseContext": {
+      "type": "string",
+      "enum": [
+        "rp",
+        "op"
+      ]
+    },
+    "ResponseType": {
+      "type": "string",
+      "enum": [
+        "id_token",
+        "vp_token"
+      ]
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "openid",
+        "openid did_authn",
+        "profile",
+        "email",
+        "address",
+        "phone"
+      ]
+    },
+    "SubjectType": {
+      "type": "string",
+      "enum": [
+        "public",
+        "pairwise"
+      ]
+    },
+    "SigningAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K",
+        "none"
+      ]
+    },
+    "RevocationVerificationCallback": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
     "RequestRegistrationOpts": {
       "type": "object",
       "properties": {
@@ -996,179 +1174,144 @@ export const AuthenticationRequestOptsSchema = {
       "type": "string",
       "const": "XC20P"
     },
-    "SigningAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K",
-        "none"
-      ]
-    },
-    "ResponseType": {
-      "type": "string",
-      "enum": [
-        "id_token",
-        "vp_token"
-      ]
-    },
-    "Scope": {
-      "type": "string",
-      "enum": [
-        "openid",
-        "openid did_authn",
-        "profile",
-        "email",
-        "address",
-        "phone"
-      ]
-    },
-    "SubjectType": {
-      "type": "string",
-      "enum": [
-        "public",
-        "pairwise"
-      ]
-    },
-    "ObjectBy": {
+    "AuthenticationRequestOptsVD11": {
       "type": "object",
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "REFERENCE",
-            "VALUE"
+        "scope": {
+          "type": "string"
+        },
+        "responseType": {
+          "type": "string"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "redirectUri": {
+          "type": "string"
+        },
+        "idTokenHint": {
+          "type": "string"
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimOpts"
+        },
+        "request": {
+          "type": "string"
+        },
+        "requestUri": {
+          "type": "string"
+        },
+        "nonce": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "signatureType": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/InternalSignature"
+            },
+            {
+              "$ref": "#/definitions/ExternalSignature"
+            },
+            {
+              "$ref": "#/definitions/SuppliedSignature"
+            },
+            {
+              "$ref": "#/definitions/NoSignature"
+            }
           ]
         },
-        "referenceUri": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "additionalProperties": false
-    },
-    "InternalSignature": {
-      "type": "object",
-      "properties": {
-        "hexPrivateKey": {
+        "authorizationEndpoint": {
           "type": "string"
         },
-        "did": {
-          "type": "string"
+        "requestBy": {
+          "$ref": "#/definitions/ObjectBy"
         },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "hexPrivateKey",
-        "did"
-      ],
-      "additionalProperties": false
-    },
-    "ExternalSignature": {
-      "type": "object",
-      "properties": {
-        "signatureUri": {
-          "type": "string"
+        "checkLinkedDomain": {
+          "$ref": "#/definitions/CheckLinkedDomain"
         },
-        "did": {
-          "type": "string"
+        "responseMode": {
+          "$ref": "#/definitions/ResponseMode"
         },
-        "authZToken": {
-          "type": "string"
+        "responseContext": {
+          "$ref": "#/definitions/ResponseContext"
         },
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "signatureUri",
-        "did"
-      ],
-      "additionalProperties": false
-    },
-    "SuppliedSignature": {
-      "type": "object",
-      "properties": {
-        "signature": {
-          "properties": {
-            "isFunction": {
-              "type": "boolean",
-              "const": true
+        "responseTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
             }
-          }
+          ]
         },
-        "did": {
+        "scopesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subjectTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
+        },
+        "requestObjectSigningAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "revocationVerificationCallback": {
+          "$ref": "#/definitions/RevocationVerificationCallback"
+        },
+        "clientMetadata": {
+          "type": "object"
+        },
+        "clientMetadataUri": {
           "type": "string"
         },
-        "kid": {
+        "idTokenType": {
           "type": "string"
         }
       },
+      "additionalProperties": false,
       "required": [
-        "signature",
-        "did",
-        "kid"
-      ],
-      "additionalProperties": false
-    },
-    "NoSignature": {
-      "type": "object",
-      "properties": {
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "hexPublicKey",
-        "did"
-      ],
-      "additionalProperties": false
-    },
-    "CheckLinkedDomain": {
-      "type": "string",
-      "enum": [
-        "never",
-        "if_present",
-        "always"
+        "clientId",
+        "redirectUri",
+        "requestBy",
+        "responseType",
+        "scope",
+        "signatureType"
       ]
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
-    },
-    "ResponseContext": {
-      "type": "string",
-      "enum": [
-        "rp",
-        "op"
-      ]
-    },
-    "RevocationVerificationCallback": {
-      "properties": {
-        "isFunction": {
-          "type": "boolean",
-          "const": true
-        }
-      }
     }
   }
 };

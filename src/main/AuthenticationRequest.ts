@@ -30,6 +30,7 @@ import {
   isInternalVerification,
   JWTPayload,
   PassBy,
+  ResponseMode,
   ResponseType,
   RPRegistrationMetadataPayload,
   Scope,
@@ -263,7 +264,8 @@ function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
   return {
     id_token: opts.idToken,
     vp_token: {
-      presentation_definition: opts.vpToken.presentationDefinition,
+      ...(opts.vpToken.presentationDefinition ? { presentation_definition: opts.vpToken.presentationDefinition } : {}),
+      ...(opts.vpToken.presentationDefinitionUri ? { presentation_definition_uri: opts.vpToken.presentationDefinitionUri } : {}),
     },
   };
 }
@@ -279,6 +281,7 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
     scope: Scope.OPENID,
     client_id: opts.signatureType.did || opts['registrationUri'],
     redirect_uri: opts.redirectUri,
+    response_mode: opts.responseMode || ResponseMode.POST,
     id_token_hint: opts.idTokenHint,
     registration_uri: opts['registrationUri'],
     request: opts.request,

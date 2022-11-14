@@ -15,7 +15,7 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
           "type": "string"
         },
         "response_mode": {
-          "$ref": "#/definitions/ResponseMode"
+          "type": "string"
         },
         "redirect_uri": {
           "type": "string"
@@ -63,15 +63,6 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
         "vp_token"
       ]
     },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
-    },
     "ClaimPayload": {
       "type": "object",
       "properties": {
@@ -79,13 +70,7 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
           "$ref": "#/definitions/IdTokenPayload"
         },
         "vp_token": {
-          "type": "object",
-          "properties": {
-            "presentation_definition": {
-              "$ref": "#/definitions/IPresentationDefinition"
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/definitions/VpTokenClaimPayload"
         }
       },
       "additionalProperties": false
@@ -194,15 +179,30 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
       "additionalProperties": false,
       "description": "descriptor map laying out the structure of the presentation submission."
     },
-    "IPresentationDefinition": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/PresentationDefinitionV1"
+    "VpTokenClaimPayload": {
+      "type": "object",
+      "properties": {
+        "response_type": {
+          "type": "string"
         },
-        {
-          "$ref": "#/definitions/PresentationDefinitionV2"
+        "presentation_definition": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PresentationDefinitionV1"
+            },
+            {
+              "$ref": "#/definitions/PresentationDefinitionV2"
+            }
+          ]
+        },
+        "presentation_definition_uri": {
+          "type": "string"
+        },
+        "nonce": {
+          "type": "string"
         }
-      ]
+      },
+      "additionalProperties": {}
     },
     "PresentationDefinitionV1": {
       "type": "object",

@@ -1,6 +1,6 @@
 // noinspection JSUnusedGlobalSymbols
 
-import { IPresentationDefinition, PresentationSignCallBackParams } from '@sphereon/pex';
+import { PresentationSignCallBackParams } from '@sphereon/pex';
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import {
   IPresentation as PEPresentation,
@@ -58,6 +58,7 @@ export interface AuthenticationRequestCommonPayload {
   scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
   response_type: ResponseType; // REQUIRED. Constant string value id_token.
   client_id: string; // REQUIRED. RP's identifier at the Self-Issued OP.
+  response_mode?: string;
   redirect_uri: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
   id_token_hint?: string; // OPTIONAL. As specified in Section 3.1.2 of [OpenID.Core]. If the ID Token is encrypted for the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
   claims?: ClaimPayload; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
@@ -192,16 +193,12 @@ export interface VpTokenClaimOpts {
 
 export interface ClaimOpts {
   idToken?: IdTokenPayload;
-  vpToken?: {
-    presentationDefinition?: IPresentationDefinition;
-  };
+  vpToken?: VpTokenClaimOpts;
 }
 
 export type ClaimPayload = {
   id_token?: IdTokenPayload;
-  vp_token?: {
-    presentation_definition?: IPresentationDefinition;
-  };
+  vp_token?: VpTokenClaimPayload;
 };
 
 export interface DIDDocument extends DIFDIDDocument {
