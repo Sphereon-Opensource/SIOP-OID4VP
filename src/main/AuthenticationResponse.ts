@@ -247,7 +247,7 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
     sub: resOpts.did,
     auth_time: verifiedJwt.payload.auth_time,
     nonce,
-    _vp_token: resOpts._vp_token,
+    ...(resOpts._vp_token ? { _vp_token: resOpts._vp_token } : {}),
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
