@@ -264,11 +264,15 @@ function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
   }
 
   return {
-    id_token: opts.idToken,
-    vp_token: {
-      ...(opts.vpToken.presentationDefinition ? { presentation_definition: opts.vpToken.presentationDefinition } : {}),
-      ...(opts.vpToken.presentationDefinitionUri ? { presentation_definition_uri: opts.vpToken.presentationDefinitionUri } : {}),
-    },
+    ...(opts.idToken ? { id_token: opts.idToken } : {}),
+    ...(opts.vpToken.presentationDefinition || opts.vpToken.presentationDefinitionUri
+      ? {
+          vp_token: {
+            ...(opts.vpToken.presentationDefinition ? { presentation_definition: opts.vpToken.presentationDefinition } : {}),
+            ...(opts.vpToken.presentationDefinitionUri ? { presentation_definition_uri: opts.vpToken.presentationDefinitionUri } : {}),
+          },
+        }
+      : {}),
   };
 }
 
