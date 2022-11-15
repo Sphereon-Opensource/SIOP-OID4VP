@@ -68,6 +68,7 @@ function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): 
     client_name: opts.clientName,
     logo_uri: opts.logoUri,
     client_purpose: opts.clientPurpose,
+    client_id: opts.clientId,
   };
 
   const languageTagEnabledFieldsNamesMapping = new Map<string, string>();

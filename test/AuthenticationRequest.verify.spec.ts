@@ -18,7 +18,7 @@ import {
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
+import { metadata, mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
   VERIFIER_LOGO_FOR_CLIENT,
@@ -53,7 +53,7 @@ describe('verifyJWT should', () => {
     expect.assertions(1);
     const requestOpts: AuthenticationRequestOpts = {
       state: 'expected state',
-      clientId: 'test_client_id',
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
@@ -71,6 +71,7 @@ describe('verifyJWT should', () => {
         kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
         subjectTypesSupported: [SubjectType.PAIRWISE],
@@ -116,7 +117,7 @@ describe('verifyJWT should', () => {
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
       const requestOpts: AuthenticationRequestOpts = {
-        clientId: 'test_client_id',
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
         responseType: 'id_token',
         state: '12345',
@@ -131,6 +132,7 @@ describe('verifyJWT should', () => {
           kid: `${mockEntity.did}#controller`,
         },
         registration: {
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           responseTypesSupported: [ResponseType.ID_TOKEN],
           scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
           subjectTypesSupported: [SubjectType.PAIRWISE],

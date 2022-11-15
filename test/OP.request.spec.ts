@@ -22,7 +22,7 @@ import {
   VerifyAuthenticationRequestOpts,
 } from '../src/main';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
   VERIFIER_LOGO_FOR_CLIENT,
@@ -144,6 +144,7 @@ describe('OP should', () => {
           kid: `${mockEntity.did}#controller`,
         },
         registration: {
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -164,7 +165,7 @@ describe('OP should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
-        clientId: 'test_client_id',
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
         responseType: 'id_token',
       };
@@ -192,7 +193,7 @@ describe('OP should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
     const requestURI = await RP.builder()
-      .addClientId('test_client_id')
+      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
       .addScope('test')
       .addResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
@@ -202,6 +203,7 @@ describe('OP should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
       .addDidMethod('ethr')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],

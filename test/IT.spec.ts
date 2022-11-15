@@ -27,7 +27,7 @@ import {
   verifyRevocation,
 } from '../src/main';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
   VERIFIER_LOGO_FOR_CLIENT,
@@ -147,7 +147,7 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
-        .addClientId('test_client_id')
+        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
         .addScope('test')
         .addResponseType('id_token')
         .redirect(EXAMPLE_REDIRECT_URL)
@@ -159,6 +159,7 @@ describe('RP and OP interaction should', () => {
         .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
         .addDidMethod('ethr')
         .registrationBy({
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -249,7 +250,7 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId('test_client_id')
+      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
       .addScope('test')
       .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
@@ -260,6 +261,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -348,7 +350,7 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId('test_client_id')
+      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
       .addScope('test')
       .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
@@ -359,6 +361,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -444,7 +447,7 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId('test_client_id')
+      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
       .addScope('test')
       .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
@@ -457,6 +460,7 @@ describe('RP and OP interaction should', () => {
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -558,7 +562,7 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
-        .addClientId('test_client_id')
+        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
         .addScope('test')
         .addResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
@@ -569,6 +573,7 @@ describe('RP and OP interaction should', () => {
         .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .registrationBy({
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -683,7 +688,7 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId('test_client_id')
+      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
       .addScope('test')
       .addResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
@@ -695,6 +700,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -815,7 +821,7 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
-        .addClientId('test_client_id')
+        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
         .addScope('test')
         .addResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
@@ -828,6 +834,7 @@ describe('RP and OP interaction should', () => {
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .addDidMethod('ethr')
         .registrationBy({
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -946,6 +953,7 @@ describe('RP and OP interaction should', () => {
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ion')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -1246,6 +1254,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],

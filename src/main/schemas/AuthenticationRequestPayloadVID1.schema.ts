@@ -94,6 +94,14 @@ export const AuthenticationRequestPayloadSchemaVID1 = {
     "RPRegistrationMetadataPayload": {
       "type": "object",
       "properties": {
+        "client_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
         "id_token_signing_alg_values_supported": {
           "anyOf": [
             {
@@ -199,6 +207,7 @@ export const AuthenticationRequestPayloadSchemaVID1 = {
         }
       },
       "required": [
+        "client_id",
         "id_token_signing_alg_values_supported",
         "response_types_supported",
         "scopes_supported",

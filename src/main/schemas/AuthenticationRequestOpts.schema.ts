@@ -1033,6 +1033,14 @@ export const AuthenticationRequestOptsSchema = {
         "registrationBy": {
           "$ref": "#/definitions/RegistrationType"
         },
+        "clientId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
         "idTokenSigningAlgValuesSupported": {
           "anyOf": [
             {

@@ -16,6 +16,7 @@ import {
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
+import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   VERIFIER_LOGO_FOR_CLIENT,
   VERIFIER_NAME_FOR_CLIENT,
@@ -75,7 +76,7 @@ describe('create Request Uri should', () => {
   it('return a reference url', async () => {
     expect.assertions(13);
     const opts: AuthenticationRequestOpts = {
-      clientId: 'test_client_id',
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
@@ -91,6 +92,7 @@ describe('create Request Uri should', () => {
         kid: KID,
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -136,7 +138,7 @@ describe('create Request Uri should', () => {
   it('return a reference url when using did:key', async () => {
     expect.assertions(3);
     const opts: AuthenticationRequestOpts = {
-      clientId: 'test_client_id',
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
@@ -153,6 +155,7 @@ describe('create Request Uri should', () => {
         kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#keys-1',
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -187,7 +190,7 @@ describe('create Request Uri should', () => {
   it('return an url with an embedded token value', async () => {
     expect.assertions(2);
     const opts: AuthenticationRequestOpts = {
-      clientId: 'test_client_id',
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
@@ -202,6 +205,7 @@ describe('create Request Uri should', () => {
         kid: KID,
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -472,7 +476,7 @@ describe('create Request JWT should', () => {
 
   it('succeed when requesting with a valid PD', async () => {
     const opts: AuthenticationRequestOpts = {
-      clientId: 'test_client_id',
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
@@ -488,6 +492,7 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],

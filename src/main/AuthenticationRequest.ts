@@ -285,7 +285,8 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
   return {
     response_type: ResponseType.ID_TOKEN,
     scope: Scope.OPENID,
-    client_id: opts.signatureType.did || opts['registrationUri'],
+    //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
+    client_id: registration.requestRegistrationPayload.registration.client_id || opts.signatureType.did,
     redirect_uri: opts.redirectUri,
     response_mode: opts.responseMode || ResponseMode.POST,
     id_token_hint: opts.idTokenHint,

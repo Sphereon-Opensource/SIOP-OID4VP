@@ -405,6 +405,7 @@ export type ResponseRegistrationOpts = DiscoveryMetadataOpts & { registrationBy:
 
 export type RPRegistrationMetadataOpts = Pick<
   DiscoveryMetadataOpts,
+  | 'clientId'
   | 'idTokenSigningAlgValuesSupported'
   | 'requestObjectSigningAlgValuesSupported'
   | 'responseTypesSupported'
@@ -422,6 +423,7 @@ export type RPRegistrationMetadataOpts = Pick<
 
 export type RPRegistrationMetadataPayload = Pick<
   DiscoveryMetadataPayload,
+  | 'client_id'
   | 'id_token_signing_alg_values_supported'
   | 'request_object_signing_alg_values_supported'
   | 'response_types_supported'
