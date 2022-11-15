@@ -133,14 +133,12 @@ export default class AuthenticationRequest {
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
-    if (
-      opts.verification.checkLinkedDomain &&
-      opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER &&
-      verPayload.client_id.startsWith('did:')
-    ) {
-      await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
-    } else if (!opts.verification.checkLinkedDomain && verPayload.client_id.startsWith('did:')) {
-      await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
+    if (verPayload.client_id.startsWith('did:')) {
+      if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
+        await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
+      } else if (!opts.verification.checkLinkedDomain) {
+        await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
+      }
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
@@ -256,7 +254,7 @@ function assertValidRequestOpts(opts: AuthenticationRequestOpts) {
 }
 
 function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
-  if (!opts || (!opts.vpToken.presentationDefinition && !opts.vpToken?.presentationDefinitionUri)) {
+  if (!opts || !opts.vpToken || (!opts.vpToken.presentationDefinition && !opts.vpToken.presentationDefinitionUri)) {
     return undefined;
   }
   const pex: PEX = new PEX();
