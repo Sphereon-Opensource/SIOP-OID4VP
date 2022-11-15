@@ -7,6 +7,7 @@ import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
+  AuthenticationResponseWithJWT,
   CheckLinkedDomain,
   ClaimOpts,
   ExternalVerification,
@@ -46,8 +47,8 @@ export class RP {
     return AuthenticationRequest.createURI(this.newAuthenticationRequestOpts(opts));
   }
 
-  public async verifyAuthenticationResponseJwt(
-    jwt: string,
+  public async verifyAuthenticationResponse(
+    authenticationResponseWithJWT: AuthenticationResponseWithJWT,
     opts?: {
       audience: string;
       state?: string;
@@ -61,10 +62,9 @@ export class RP {
     const verifyCallback = verification.verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
     const presentationVerificationCallback =
       verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
-    return AuthenticationResponse.verifyJWT(
-      jwt,
-      this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback })
-    );
+    const verifyAuthenticationResponseOpts = this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback });
+    AuthenticationResponse.verifyVPs(authenticationResponseWithJWT.payload, verifyAuthenticationResponseOpts);
+    return AuthenticationResponse.verifyJWT(authenticationResponseWithJWT.jwt, verifyAuthenticationResponseOpts);
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {

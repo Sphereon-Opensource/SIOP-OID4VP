@@ -121,7 +121,6 @@ export default class AuthenticationResponse {
     if (!verifyOpts?.presentationVerificationCallback) {
       throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_VERIFICATION_FUNCTION_MISSING);
     }
-
     return {
       signer: verifiedJWT.signer,
       didResolutionResult: verifiedJWT.didResolutionResult,
@@ -133,13 +132,12 @@ export default class AuthenticationResponse {
       },
     };
   }
-  static async verifyVPs(payload: AuthenticationResponsePayload, verifyOpts: VerifyAuthenticationResponseOpts) {
+  static async verifyVPs(payload: AuthenticationResponsePayload, verifyOpts: Partial<VerifyAuthenticationResponseOpts>): Promise<void> {
     await assertValidVerifiablePresentations({
       definitions: [{ definition: verifyOpts?.claims.vpToken?.presentationDefinition, location: PresentationLocation.VP_TOKEN }],
       vps: payload.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
       presentationVerificationCallback: verifyOpts?.presentationVerificationCallback,
     });
-
     const revocationVerification = verifyOpts.verification.revocationOpts
       ? verifyOpts.verification.revocationOpts.revocationVerification
       : RevocationVerification.IF_PRESENT;
