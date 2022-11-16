@@ -5,11 +5,11 @@ import { JWK } from 'jose';
 import AuthenticationRequest from './AuthenticationRequest';
 import { PresentationExchange } from './PresentationExchange';
 import {
-  getIssuerDidFromPayload,
   getNonce,
   getPublicJWKFromHexPrivateKey,
   getResolver,
   getState,
+  getSubDidFromPayload,
   getThumbprint,
   parseJWT,
   signDidJwtPayload,
@@ -109,7 +109,7 @@ export default class AuthenticationResponse {
       audience: verifyOpts.audience,
     });
 
-    const issuerDid = getIssuerDidFromPayload(payload);
+    const issuerDid = getSubDidFromPayload(payload);
     if (verifyOpts.verification.checkLinkedDomain && verifyOpts.verification.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
       await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, verifyOpts.verification.checkLinkedDomain);
     } else if (!verifyOpts.verification.checkLinkedDomain) {

@@ -7,7 +7,6 @@ import {
   AuthenticationRequestOpts,
   AuthenticationRequestPayload,
   AuthenticationResponseOpts,
-  AuthenticationResponsePayload,
   EcdsaSignature,
   expirationTime,
   IdTokenPayload,
@@ -76,7 +75,7 @@ export async function createDidJWT(
 }
 
 export async function signDidJwtPayload(
-  payload: IdTokenPayload | AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: IdTokenPayload | AuthenticationRequestPayload,
   opts: AuthenticationRequestOpts | AuthenticationResponseOpts
 ) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
@@ -97,7 +96,7 @@ export async function signDidJwtPayload(
 }
 
 async function signDidJwtInternal(
-  payload: IdTokenPayload | AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: IdTokenPayload | AuthenticationRequestPayload,
   issuer: string,
   hexPrivateKey: string,
   kid?: string
@@ -128,7 +127,7 @@ async function signDidJwtInternal(
 }
 
 async function signDidJwtExternal(
-  payload: IdTokenPayload | AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: IdTokenPayload | AuthenticationRequestPayload,
   signatureUri: string,
   authZToken: string,
   kid?: string
@@ -151,7 +150,7 @@ async function signDidJwtExternal(
 }
 
 async function signDidJwtSupplied(
-  payload: IdTokenPayload | AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: IdTokenPayload | AuthenticationRequestPayload,
   issuer: string,
   signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
   kid: string
@@ -191,19 +190,20 @@ export function getAudience(jwt: string) {
   return payload.aud;
 }
 
+//TODO To enable automatic registration, it cannot be a did, but HTTPS URL
 function assertIssSelfIssuedOrDid(payload: JWTPayload) {
-  if (!payload.iss || !(payload.sub.startsWith('did:') || isIssSelfIssued(payload))) {
+  if (!payload.sub || !payload.sub.startsWith('did:') || !payload.iss || !isIssSelfIssued(payload)) {
     throw new Error(SIOPErrors.NO_ISS_DID);
   }
 }
 
-export function getIssuerDidFromPayload(payload: JWTPayload, header?: JWTHeader): string {
+export function getSubDidFromPayload(payload: JWTPayload, header?: JWTHeader): string {
   assertIssSelfIssuedOrDid(payload);
 
   if (isIssSelfIssued(payload)) {
     let did;
-    if (payload.did) {
-      did = payload.did;
+    if (payload.sub && payload.sub.startsWith('did:')) {
+      did = payload.sub;
     }
     if (!did && header && header.kid && header.kid.startsWith('did:')) {
       did = header.kid.split('#')[0];
@@ -221,7 +221,7 @@ export function isIssSelfIssued(payload: JWTPayload): boolean {
 
 export function getIssuerDidFromJWT(jwt: string): string {
   const { payload } = parseJWT(jwt);
-  return getIssuerDidFromPayload(payload);
+  return getSubDidFromPayload(payload);
 }
 
 export function parseJWT(jwt: string): JWTDecoded {

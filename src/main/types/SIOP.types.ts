@@ -196,10 +196,10 @@ export interface ClaimOpts {
   vpToken?: VpTokenClaimOpts;
 }
 
-export type ClaimPayload = {
+export interface ClaimPayload {
   id_token?: IdTokenPayload;
   vp_token?: VpTokenClaimPayload;
-};
+}
 
 export interface DIDDocument extends DIFDIDDocument {
   owner?: string;
