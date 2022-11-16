@@ -281,12 +281,12 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
   const state = getState(opts.state);
   const registration = await createRequestRegistration(opts['registration']);
   const claims = createClaimsPayload(opts.claims);
-
+  const clientId = registration.requestRegistrationPayload.registration.client_id;
   return {
     response_type: ResponseType.ID_TOKEN,
     scope: Scope.OPENID,
     //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
-    client_id: registration.requestRegistrationPayload.registration.client_id || opts.signatureType.did,
+    client_id: clientId ? clientId : opts.signatureType.did,
     redirect_uri: opts.redirectUri,
     response_mode: opts.responseMode || ResponseMode.POST,
     id_token_hint: opts.idTokenHint,
