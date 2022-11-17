@@ -5,58 +5,78 @@ import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sph
 import {
   IPresentation as PEPresentation,
   IVerifiablePresentation as PEVerifiablePresentation,
+  PresentationSubmission,
   W3CVerifiableCredential,
   W3CVerifiablePresentation,
 } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
-import { JWK } from 'jose';
 
 import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
 
 export const expirationTime = 10 * 60;
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
-export interface AuthenticationRequestOpts {
-  authorizationEndpoint?: string;
-  redirectUri: string; // The redirect URI
-  requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
+interface AuthenticationRequestCommonOpts {
+  scope: string; // from openid-connect-self-issued-v2-1_0-ID1
+  responseType: string; // from openid-connect-self-issued-v2-1_0-ID1
+  clientId: string; // from openid-connect-self-issued-v2-1_0-ID1
+  redirectUri: string; // from openid-connect-self-issued-v2-1_0-ID1
+  idTokenHint?: string; // from openid-connect-self-issued-v2-1_0-ID1
+  claims?: ClaimOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#Claims
+  request?: string; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+  requestUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
+  nonce?: string; // An optional nonce, will be generated if not provided
+  state?: string; // An optional state, will be generated if not provided
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication), or supplied (callback supplied)
+  authorizationEndpoint?: string;
+  requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
   checkLinkedDomain?: CheckLinkedDomain; // determines how we'll handle the linked domains for this RP
   responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
   responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
-  responseTypesSupported?: ResponseType[];
-  claims?: ClaimOpts; // The claims
-  registration: RequestRegistrationOpts; // Registration metadata options
-  nonce?: string; // An optional nonce, will be generated if not provided
-  state?: string; // An optional state, will be generated if not provided
-  scopesSupported?: Scope[];
-  subjectTypesSupported?: SubjectType[];
-  requestObjectSigningAlgValuesSupported?: SigningAlgo[];
+  responseTypesSupported?: ResponseType[] | ResponseType;
+  scopesSupported?: Scope[] | Scope;
+  subjectTypesSupported?: SubjectType[] | SubjectType;
+  requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
   revocationVerificationCallback?: RevocationVerificationCallback;
-  // slint-disable-next-line @typescript-eslint/no-explicit-any
-  // [x: string]: any;
 }
 
-// https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
-export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistrationPayload {
-  scope: string;
-  response_type: ResponseType;
-  client_id: string; // did of RP
-  redirect_uri: string;
-  id_token_hint?: string; // TODO:  idtokenhint parameter value, as specified in Section 3.1.2. If the ID Token is encrypted to the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
-  // iss: string;
-  response_mode: ResponseMode;
-  claims?: ClaimPayload; // claims parameter value, as specified in Section 5.5.
-  registration?: RPRegistrationMetadataPayload;
-  registration_uri?: string;
-  //response_context: ResponseContext;
-  request?: string; // TODO Request Object value, as specified in Section 6.1. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
+export interface AuthenticationRequestOptsVD1 extends AuthenticationRequestCommonOpts {
+  registration?: RequestRegistrationOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-registration-1_0.html
+  registrationUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
+}
 
-  request_uri?: string; //URL where Request Object value can be retrieved from, as specified in Section 6.2.
-  // state?: string;
-  // nonce: string;
-  // did_doc?: DIDDocument;
+export interface AuthenticationRequestOptsVD11 extends AuthenticationRequestCommonOpts {
+  clientMetadata?: object; // from openid-connect-self-issued-v2-1_0-11 look at https://openid.net/specs/openid-connect-registration-1_0.html
+  clientMetadataUri?: string; // from openid-connect-self-issued-v2-1_0-11
+  idTokenType?: string; // from openid-connect-self-issued-v2-1_0-11
+}
+
+export type AuthenticationRequestOpts = AuthenticationRequestOptsVD1 | AuthenticationRequestOptsVD11;
+
+export interface AuthenticationRequestCommonPayload extends JWTPayload {
+  scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
+  response_type: ResponseType; // REQUIRED. Constant string value id_token.
+  client_id: string; // REQUIRED. RP's identifier at the Self-Issued OP.
+  response_mode?: string;
+  redirect_uri: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
+  id_token_hint?: string; // OPTIONAL. As specified in Section 3.1.2 of [OpenID.Core]. If the ID Token is encrypted for the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
+  claims?: ClaimPayload; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
+  request?: string; // OPTIONAL. Request Object value, as specified in Section 6.1 of [OpenID.Core]. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
+  request_uri?: string; // OPTIONAL. URL where Request Object value can be retrieved from, as specified in Section 6.2 of [OpenID.Core].
+  nonce: string;
+  state: string;
+}
+
+export type AuthenticationRequestPayloadVID1 = AuthenticationRequestCommonPayload & RequestRegistrationPayload;
+
+export interface AuthenticationRequestPayloadVD11 extends AuthenticationRequestCommonPayload {
+  client_metadata?: unknown;
+  client_metadata_uri?: string;
+  id_token_type?: string;
+}
+
+export interface JWTVcPresentationProfileAuthenticationRequestPayload {
   /**
    * Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed
    * individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if
@@ -67,9 +87,12 @@ export interface AuthenticationRequestPayload extends JWTPayload, RequestRegistr
   id_token_type?: string;
 }
 
+// https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
+export type AuthenticationRequestPayload = AuthenticationRequestPayloadVID1 | AuthenticationRequestPayloadVD11;
+
 export interface RequestRegistrationPayload {
   registration?: RPRegistrationMetadataPayload; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
-  registration_uri?: string;
+  registration_uri?: string; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in 2.2.1.
 }
 
 export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
@@ -108,38 +131,42 @@ export interface AuthenticationResponseOpts {
   did: string;
   vp?: VerifiablePresentationResponseOpts[];
   expiresIn?: number;
+  accessToken?: string;
+  tokenType?: string;
+  refreshToken?: string;
+  _vp_token?: { presentation_submission: PresentationSubmission };
 }
 
-export interface AuthenticationResponsePayload extends JWTPayload {
-  iss: ResponseIss.SELF_ISSUED_V2 | string; // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
-  sub: string; // did (or thumbprint of sub_jwk key when type is jkt)
-  // sub_type: SubjectIdentifierType;
-  sub_jwk?: JWK;
-  aud: string; // redirect_uri from request
-  exp: number; // Expiration time
-  iat: number; // Issued at time
-  state: string; // State value
-  nonce: string; // Nonce
-  did: string; // DID of the OP
-  registration?: DiscoveryMetadataPayload; // Registration metadata
-  registration_uri?: string; // Registration URI if metadata is hosted by the OP
-  verifiable_presentations?: VerifiablePresentationPayload[]; // Verifiable Presentations as part of the id token
-  // fixme All of the above is the id token. We need to create a new interface of the above and reference that here as id_token
-  vp_token?: VerifiablePresentationPayload; // Verifiable Presentation (the vp_token)
-  // claims?: ResponseClaims;
+export interface IdTokenPayload extends JWTPayload {
+  iss?: ResponseIss.SELF_ISSUED_V2 | string;
+  sub?: string; // did (or thumbprint of sub_jwk key when type is jkt)
+  aud?: string; // redirect_uri from request
+  iat?: number; // Issued at time
+  exp?: number; // Expiration time
+  auth_time?: number;
+  nonce?: string;
+  _vp_token?: {
+    /*
+      This profile currently supports including only a single VP in the VP Token.
+      In such cases, as defined in section 5.2 of OpenID4VP ID1, when the Self-Issued OP returns a single VP in the vp_token,
+      VP Token is not an array, and a single VP is passed as a vp_token. In this case, the descriptor map would contain a simple path expression “$”.
+      * It's not clear from the ID1 specs how to handle presentation submission in case of multiple VPs
+    */
+    presentation_submission: PresentationSubmission;
+  };
 }
 
-/*
-
-export interface OidcClaimJson {
-  essential?: boolean;
-  value?: string;
-  values?: string[];
+export interface AuthenticationResponsePayload {
+  access_token?: ResponseIss.SELF_ISSUED_V2 | string;
+  token_type?: string;
+  refresh_token?: string;
+  expires_in: number;
+  state: string;
+  id_token: string;
+  vp_token?: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
 }
-
-export interface OidcClaimRequest {
-  [x: string]: null | OidcClaimJson;
-}*/
 
 export interface VerifiablePresentationsPayload {
   presentation_definition: PresentationDefinitionV1 | PresentationDefinitionV2;
@@ -152,22 +179,26 @@ export interface IdTokenClaimPayload {
 }
 
 export interface VpTokenClaimPayload {
-  response_type: string;
+  response_type?: string;
   presentation_definition?: PresentationDefinitionV1 | PresentationDefinitionV2;
   presentation_definition_uri?: string;
-  nonce: string;
+  nonce?: string;
   [x: string]: unknown;
+}
+
+export interface VpTokenClaimOpts {
+  presentationDefinition?: PresentationDefinitionV1 | PresentationDefinitionV2;
+  presentationDefinitionUri?: string;
 }
 
 export interface ClaimOpts {
-  presentationDefinitions?: PresentationDefinitionWithLocation[];
+  idToken?: IdTokenPayload;
+  vpToken?: VpTokenClaimOpts;
 }
 
 export interface ClaimPayload {
-  id_token?: IdTokenClaimPayload;
+  id_token?: IdTokenPayload;
   vp_token?: VpTokenClaimPayload;
-
-  [x: string]: unknown;
 }
 
 export interface DIDDocument extends DIFDIDDocument {
@@ -207,129 +238,134 @@ export interface AuthenticationResponseWithJWT {
   jwt: string;
   nonce: string;
   state: string;
+  idToken: IdTokenPayload;
   payload: AuthenticationResponsePayload;
   verifyOpts?: VerifyAuthenticationRequestOpts;
   responseOpts: AuthenticationResponseOpts;
 }
 
-export interface RequestRegistrationOpts extends RPRegistrationMetadataOpts {
-  registrationBy: RegistrationType;
-
-  // slint-disable-next-line @typescript-eslint/no-explicit-any
-  // [x: string]: any;
-}
-
-export interface DiscoveryMetadataOpts {
+interface DiscoveryMetadataCommonOpts {
   //TODO add the check: Mandatory if PassBy.Value
-  vpFormats?: Format;
+  authorizationEndpoint?: Schema | string;
+  // this is a confusion point. In the interop profile it mentions "https://self-issued.me/v2/openid-vc", but in the SIOPv2 it's mentioning "https://self-issued.me/v2"
+  // @Niels also created an issue here: https://github.com/decentralized-identity/jwt-vc-presentation-profile/issues/63 so we can keep an eye on this for clarification
   //TODO add the check: Mandatory if PassBy.Value
-  authorizationEndpoint?: Schema.OPENID | string;
-  tokenEndpoint?: string;
-  userinfoEndpoint?: string;
-  //TODO add the check: Mandatory if PassBy.Value
-  issuer?: ResponseIss;
-  jwksUri?: string;
-  registrationEndpoint?: string;
+  issuer?: ResponseIss | string;
   //TODO add the check: Mandatory if PassBy.Value
   responseTypesSupported?: ResponseType[] | ResponseType;
-  responseModesSupported?: ResponseMode[] | ResponseMode;
-  grantTypesSupported?: GrantType[] | GrantType;
-  acrValuesSupported?: AuthenticationContextReferences[] | AuthenticationContextReferences;
   scopesSupported?: Scope[] | Scope;
   subjectTypesSupported?: SubjectType[] | SubjectType;
   idTokenSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  idTokenEncryptionAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
-  idTokenEncryptionEncValuesSupported?: string[] | string;
-  userinfoSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  userinfoEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  userinfoEncryptionEncValuesSupported?: string[] | string;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  requestObjectEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  requestObjectEncryptionEncValuesSupported?: string[] | string;
-  tokenEndpointAuthMethodsSupported?: TokenEndpointAuthMethod[] | TokenEndpointAuthMethod;
-  tokenEndpointAuthSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  displayValuesSupported?: unknown[] | unknown;
-  claimTypesSupported?: ClaimType[] | ClaimType;
-  claimsSupported?: string[] | string;
-  serviceDocumentation?: string;
-  claimsLocalesSupported?: string[] | string;
-  uiLocalesSupported?: string[] | string;
-  claimsParameterSupported?: boolean;
-  requestParameterSupported?: boolean;
-  requestUriParameterSupported?: boolean;
-  requireRequestUriRegistration?: boolean;
-  opPolicyUri?: string;
-  opTosUri?: string;
   //TODO add the check: Mandatory if PassBy.Value
-  subjectSyntaxTypesSupported?: string[] | string;
-  idTokenTypesSupported?: IdTokenType[] | IdTokenType;
-  clientName?: string;
-  logoUri?: string;
-  clientPurpose?: string;
+  subjectSyntaxTypesSupported?: string[];
+  tokenEndpoint?: string; // from openid connect discovery 1_0
+  userinfoEndpoint?: string; // from openid connect discovery 1_0
+  jwksUri?: string; // from openid connect discovery 1_0
+  registrationEndpoint?: string; // from openid connect discovery 1_0
+  responseModesSupported?: ResponseMode[] | ResponseMode; // from openid connect discovery 1_0
+  grantTypesSupported?: GrantType[] | GrantType; // from openid connect discovery 1_0
+  acrValuesSupported?: AuthenticationContextReferences[] | AuthenticationContextReferences; // from openid connect discovery 1_0
+  idTokenEncryptionAlgValuesSupported?: KeyAlgo[] | KeyAlgo; // from openid connect discovery 1_0
+  idTokenEncryptionEncValuesSupported?: string[] | string; // from openid connect discovery 1_0
+  userinfoSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
+  userinfoEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
+  userinfoEncryptionEncValuesSupported?: string[] | string; // from openid connect discovery 1_0
+  requestObjectEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
+  requestObjectEncryptionEncValuesSupported?: string[] | string; // from openid connect discovery 1_0
+  tokenEndpointAuthMethodsSupported?: TokenEndpointAuthMethod[] | TokenEndpointAuthMethod; // from openid connect discovery 1_0
+  tokenEndpointAuthSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
+  displayValuesSupported?: string[] | string; // from openid connect discovery 1_0
+  claimTypesSupported?: ClaimType[] | ClaimType; // from openid connect discovery 1_0
+  claimsSupported?: string[] | string; // recommended, from openid connect discovery 1_0
+  serviceDocumentation?: string; // from openid connect discovery 1_0
+  claimsLocalesSupported?: string[] | string; // from openid connect discovery 1_0
+  uiLocalesSupported?: string[] | string; // from openid connect discovery 1_0
+  claimsParameterSupported?: boolean; // from openid connect discovery 1_0
+  requestParameterSupported?: boolean; // from openid connect discovery 1_0
+  requestUriParameterSupported?: boolean; // from openid connect discovery 1_0
+  requireRequestUriRegistration?: boolean; // from openid connect discovery 1_0
+  opPolicyUri?: string; // from openid connect discovery 1_0
+  opTosUri?: string; // from openid connect discovery 1_0
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
+}
 
-  // didsSupported?: boolean;
-  // didMethodsSupported?: string[] | string;
-  // credentialSupported?: boolean;
-  // credentialEndpoint?: string;
-  // credentialFormatsSupported?: CredentialFormat[];
-  // credentialClaimsSupported?: string[] | string;
-  // credentialName?: string;
+//same for jwt_vc
+interface DiscoveryMetadataOptsVID1 extends DiscoveryMetadataCommonOpts {
+  clientId?: string; // from oidc4vp
+  redirectUris?: string[] | string; // from oidc4vp
+  clientName?: string; // from oidc4vp
+  tokenEndpointAuthMethod?: string; // from oidc4vp
+  applicationType?: string; // from oidc4vp
+  responseTypes?: string; // from oidc4vp, also name suggests array
+  grantTypes?: string; // from oidc4vp, also name suggests array
+  //TODO add the check: Mandatory if PassBy.Value
+  vpFormats?: Format; // from oidc4vp
+}
+
+interface JWT_VCDiscoveryMetadataOpts extends DiscoveryMetadataOptsVID1 {
+  logoUri?: string;
+  clientPurpose?: string;
+}
+
+interface DiscoveryMetadataOptsVD11 extends DiscoveryMetadataCommonOpts {
+  idTokenTypesSupported?: IdTokenType[] | IdTokenType;
+  vpFormatsSupported?: Format; // from oidc4vp
 }
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8.2
 // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
-export interface DiscoveryMetadataPayload {
-  acr_values_supported?: AuthenticationContextReferences[] | AuthenticationContextReferences;
+interface GeneralDiscovertMetadataPayload {
   authorization_endpoint: Schema | string;
-  claims_locales_supported?: string[] | string;
-  /**
-   * RECOMMENDED. JSON array containing a list of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for. Note that for privacy or other reasons, this might not be an exhaustive list.
-   */
-  claims_supported?: string[] | string;
-  /**
-   * OPTIONAL. JSON array containing a list of the Claim Types that the OpenID Provider supports. These Claim Types are described in Section 5.6 of OpenID Connect Core 1.0 [OpenID.Core]. Values defined by this specification are normal, aggregated, and distributed. If omitted, the implementation supports only normal Claims.
-   */
-  claim_types_supported?: ClaimType[] | ClaimType;
-
-  /**
-   * OPTIONAL. JSON array containing a list of the display parameter values that the OpenID Provider supports. These values are described in Section 3.1.2.1 of OpenID Connect Core 1.0 [OpenID.Core].
-   */
-  display_values_supported?: unknown[] | unknown;
+  issuer: ResponseIss;
+  response_types_supported: ResponseType[] | ResponseType;
+  scopes_supported: Scope[] | Scope;
+  subject_types_supported: SubjectType[] | SubjectType;
+  id_token_signing_alg_values_supported: SigningAlgo[] | SigningAlgo;
+  request_object_signing_alg_values_supported?: SigningAlgo[] | SigningAlgo;
+  subject_syntax_types_supported: string[];
+  token_endpoint?: string;
+  userinfo_endpoint?: string;
+  jwks_uri?: string;
+  // marked as required by https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+  registration_endpoint?: string;
+  response_modes_supported?: ResponseMode[] | ResponseMode;
   grant_types_supported?: GrantType[] | GrantType;
+  acr_values_supported?: AuthenticationContextReferences[] | AuthenticationContextReferences;
   id_token_encryption_alg_values_supported?: KeyAlgo[] | KeyAlgo;
   /**
    * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for the ID Token to encode the Claims in a JWT [JWT].
    */
   //TODO: maybe add an enum for this with: A256GCM, A128CBC-HS256, ...
   id_token_encryption_enc_values_supported?: string[] | string;
-  id_token_signing_alg_values_supported: SigningAlgo[] | SigningAlgo;
-  issuer: ResponseIss;
-  jwks_uri?: string;
-  token_endpoint?: string;
-  userinfo_endpoint?: string;
-  // marked as required by https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
-  registration_endpoint?: string;
-  response_types_supported: ResponseType[] | ResponseType;
-  response_modes_supported?: ResponseMode[] | ResponseMode;
-  scopes_supported: Scope[] | Scope;
-  subject_types_supported: SubjectType[] | SubjectType;
   userinfo_signing_alg_values_supported?: SigningAlgo[] | SigningAlgo;
   userinfo_encryption_alg_values_supported?: SigningAlgo[] | SigningAlgo;
+  /**
+   * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) [JWA] supported by the UserInfo Endpoint to encode the Claims in a JWT [JWT].
+   */
+  userinfo_encryption_enc_values_supported?: string[] | string;
   request_object_encryption_alg_values_supported?: SigningAlgo[] | SigningAlgo;
   /**
    * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for Request Objects. These algorithms are used both when the Request Object is passed by value and when it is passed by reference.
    */
   request_object_encryption_enc_values_supported?: string[] | string;
-  request_object_signing_alg_values_supported?: SigningAlgo[] | SigningAlgo;
   token_endpoint_auth_methods_supported?: TokenEndpointAuthMethod[] | TokenEndpointAuthMethod;
   token_endpoint_auth_signing_alg_values_supported?: SigningAlgo[] | SigningAlgo;
   /**
-   * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) [JWA] supported by the UserInfo Endpoint to encode the Claims in a JWT [JWT].
+   * OPTIONAL. JSON array containing a list of the display parameter values that the OpenID Provider supports. These values are described in Section 3.1.2.1 of OpenID Connect Core 1.0 [OpenID.Core].
    */
-  userinfo_encryption_enc_values_supported?: string[] | string;
+  display_values_supported?: unknown[] | unknown;
+  /**
+   * OPTIONAL. JSON array containing a list of the Claim Types that the OpenID Provider supports. These Claim Types are described in Section 5.6 of OpenID Connect Core 1.0 [OpenID.Core]. Values defined by this specification are normal, aggregated, and distributed. If omitted, the implementation supports only normal Claims.
+   */
+  claim_types_supported?: ClaimType[] | ClaimType;
+  /**
+   * RECOMMENDED. JSON array containing a list of the Claim Names of the Claims that the OpenID Provider MAY be able to supply values for. Note that for privacy or other reasons, this might not be an exhaustive list.
+   */
+  claims_supported?: string[] | string;
   service_documentation?: string;
+  claims_locales_supported?: string[] | string;
   ui_locales_supported?: string[] | string;
   claims_parameter_supported?: boolean;
   request_parameter_supported?: boolean;
@@ -337,70 +373,71 @@ export interface DiscoveryMetadataPayload {
   require_request_uri_registration?: boolean;
   op_policy_uri?: string;
   op_tos_uri?: string;
-  subject_syntax_types_supported: string[] | string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
+}
+interface DiscoveryMetadataPayloadVID1 extends GeneralDiscovertMetadataPayload {
+  client_id: string;
+  redirectUris: string[];
+  client_name?: string;
+  token_endpoint_auth_method: string;
+  application_type: string;
+  response_types: string;
+  grant_types: string;
+  vp_formats: Format;
+}
+interface JWT_VCDiscoveryMetadataPayload extends DiscoveryMetadataPayloadVID1 {
+  logo_uri?: string;
+  client_purpose?: string;
+}
+interface DiscoveryMetadataPayloadVD11 extends GeneralDiscovertMetadataPayload {
   id_token_types_supported?: IdTokenType[] | IdTokenType;
-  vp_formats: Format;
-  client_name?: string;
-  logo_uri?: string;
-  client_purpose?: string;
-  // dids_supported: boolean;
-  // did_methods_supported: string[] | string;
-  // credential_supported: boolean;
-  // credential_endpoint: string;
-  // credential_formats_supported: CredentialFormat[] | CredentialFormat;
-  // credential_claims_supported: string[] | string;
-  // credential_name: string;
+  vp_formats_supported?: Format; // from oidc4vp
+}
+
+export type DiscoveryMetadataPayload = DiscoveryMetadataPayloadVID1 | JWT_VCDiscoveryMetadataPayload | DiscoveryMetadataPayloadVD11;
+
+export type DiscoveryMetadataOpts = JWT_VCDiscoveryMetadataOpts | DiscoveryMetadataOptsVID1 | DiscoveryMetadataOptsVD11;
+
+export type RequestRegistrationOpts = RPRegistrationMetadataOpts & { registrationBy: RegistrationType };
+
+export type ResponseRegistrationOpts = DiscoveryMetadataOpts & { registrationBy: RegistrationType };
+
+export type RPRegistrationMetadataOpts = Pick<
+  DiscoveryMetadataOpts,
+  | 'clientId'
+  | 'idTokenSigningAlgValuesSupported'
+  | 'requestObjectSigningAlgValuesSupported'
+  | 'responseTypesSupported'
+  | 'scopesSupported'
+  | 'subjectTypesSupported'
+  | 'subjectSyntaxTypesSupported'
+  | 'vpFormatsSupported'
+  | 'clientName'
+  | 'logoUri'
+  | 'clientPurpose'
+> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
-}
+};
 
-export interface ResponseRegistrationOpts extends DiscoveryMetadataOpts {
-  registrationBy: RegistrationType;
-
-  // slint-disable-next-line @typescript-eslint/no-explicit-any
-  // [x: string]: any;
-}
-
-export interface RPRegistrationMetadataOpts {
-  //TODO add the check: Mandatory if PassBy.Value
-  requestObjectSigningAlgValuesSupported?: SigningAlgo[];
-  //TODO add the check: Mandatory if PassBy.Value
-  responseTypesSupported?: ResponseType[];
-  //TODO add the check: Mandatory if PassBy.Value
-  scopesSupported?: Scope[];
-  //TODO add the check: Mandatory if PassBy.Value
-  subjectTypesSupported?: SubjectType[];
-  //TODO add the check: Mandatory if PassBy.Value
-  subjectSyntaxTypesSupported?: string[];
-  idTokenSigningAlgValuesSupported?: SigningAlgo[];
-  //TODO add the check: Mandatory if PassBy.Value
-  vpFormatsSupported?: Format;
-  //TODO: ask @nklomp about this value, I couldn't find it anywhere in the old versions of protocol
-  // subjectIdentifiersSupported: SubjectIdentifierType[] | SubjectIdentifierType;
-  // didMethodsSupported?: string[] | string;
-  // credentialFormatsSupported: CredentialFormat[] | CredentialFormat;
-  clientName?: string;
-  logoUri?: string;
-  clientPurpose?: string;
+export type RPRegistrationMetadataPayload = Pick<
+  DiscoveryMetadataPayload,
+  | 'client_id'
+  | 'id_token_signing_alg_values_supported'
+  | 'request_object_signing_alg_values_supported'
+  | 'response_types_supported'
+  | 'scopes_supported'
+  | 'subject_types_supported'
+  | 'subject_syntax_types_supported'
+  | 'vp_formats'
+  | 'client_name'
+  | 'logo_uri'
+  | 'client_purpose'
+> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
-}
-
-export interface RPRegistrationMetadataPayload {
-  id_token_signing_alg_values_supported: SigningAlgo[];
-  id_token_types_supported?: IdTokenType[];
-  request_object_signing_alg_values_supported: SigningAlgo[];
-  response_types_supported: ResponseType[];
-  scopes_supported: Scope[];
-  subject_syntax_types_supported: string[];
-  subject_types_supported: SubjectType[];
-  vp_formats: Format;
-  client_name?: string;
-  logo_uri?: string;
-  client_purpose?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [x: string]: any;
-}
+};
 
 export interface CommonSupportedMetadata {
   subject_syntax_types_supported?: string[];
@@ -504,6 +541,7 @@ export interface Verification {
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
+  supportedVersions?: SupportedVersion[];
 }
 
 export type InternalVerification = Verification;
@@ -544,7 +582,7 @@ export interface DidAuthValidationResponse {
 }
 
 export interface VerifiedAuthenticationResponseWithJWT extends VerifiedJWT {
-  payload: AuthenticationResponsePayload;
+  payload: IdTokenPayload;
   verifyOpts: VerifyAuthenticationResponseOpts;
 }
 
@@ -659,6 +697,7 @@ export enum SubjectType {
 
 export enum Schema {
   OPENID = 'openid:',
+  OPENID_VC = 'openid-vc:',
 }
 
 export enum ResponseIss {
@@ -684,11 +723,13 @@ export const isRequestOpts = (object: AuthenticationRequestOpts | Authentication
 export const isResponseOpts = (object: AuthenticationRequestOpts | AuthenticationResponseOpts): object is AuthenticationResponseOpts =>
   'did' in object;
 
-export const isRequestPayload = (object: AuthenticationRequestPayload | AuthenticationResponsePayload): object is AuthenticationRequestPayload =>
-  'response_mode' in object && 'response_type' in object;
+export const isRequestPayload = (
+  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdTokenPayload
+): object is AuthenticationRequestPayload => 'response_mode' in object && 'response_type' in object;
 
-export const isResponsePayload = (object: AuthenticationRequestPayload | AuthenticationResponsePayload): object is AuthenticationResponsePayload =>
-  'iss' in object && 'aud' in object;
+export const isResponsePayload = (
+  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdTokenPayload
+): object is AuthenticationResponsePayload => 'iss' in object && 'aud' in object;
 
 export const isInternalVerification = (object: InternalVerification | ExternalVerification): object is InternalVerification =>
   object.mode === VerificationMode.INTERNAL; /* && !isExternalVerification(object)*/

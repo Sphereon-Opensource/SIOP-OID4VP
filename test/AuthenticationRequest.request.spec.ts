@@ -8,7 +8,6 @@ import {
   AuthenticationRequestOpts,
   CheckLinkedDomain,
   PassBy,
-  PresentationLocation,
   ResponseType,
   Scope,
   SigningAlgo,
@@ -17,6 +16,7 @@ import {
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
+import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   VERIFIER_LOGO_FOR_CLIENT,
   VERIFIER_NAME_FOR_CLIENT,
@@ -76,6 +76,9 @@ describe('create Request Uri should', () => {
   it('return a reference url', async () => {
     expect.assertions(13);
     const opts: AuthenticationRequestOpts = {
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      scope: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -89,6 +92,7 @@ describe('create Request Uri should', () => {
         kid: KID,
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -134,6 +138,9 @@ describe('create Request Uri should', () => {
   it('return a reference url when using did:key', async () => {
     expect.assertions(3);
     const opts: AuthenticationRequestOpts = {
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      scope: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -148,6 +155,7 @@ describe('create Request Uri should', () => {
         kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#keys-1',
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -182,6 +190,9 @@ describe('create Request Uri should', () => {
   it('return an url with an embedded token value', async () => {
     expect.assertions(2);
     const opts: AuthenticationRequestOpts = {
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      scope: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -194,6 +205,7 @@ describe('create Request Uri should', () => {
         kid: KID,
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -369,6 +381,9 @@ describe('create Request JWT should', () => {
   it('succeed when all params are set', async () => {
     // expect.assertions(1);
     const opts: AuthenticationRequestOpts = {
+      clientId: 'test_client_id',
+      scope: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -410,9 +425,6 @@ describe('create Request JWT should', () => {
         scope: 'openid',
         client_id: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0',
         redirect_uri: 'https://acme.com/hello',
-        iss: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0',
-        response_mode: 'post',
-        response_context: 'rp',
         registration: {
           id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -464,6 +476,9 @@ describe('create Request JWT should', () => {
 
   it('succeed when requesting with a valid PD', async () => {
     const opts: AuthenticationRequestOpts = {
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      scope: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -477,6 +492,7 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -498,24 +514,21 @@ describe('create Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        presentationDefinitions: [
-          {
-            location: PresentationLocation.VP_TOKEN,
-            definition: {
-              id: 'Insurance Plans',
-              input_descriptors: [
-                {
-                  id: 'Ontario Health Insurance Plan',
-                  schema: [
-                    {
-                      uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
-                    },
-                  ],
-                },
-              ],
-            },
+        vpToken: {
+          presentationDefinition: {
+            id: 'Insurance Plans',
+            input_descriptors: [
+              {
+                id: 'Ontario Health Insurance Plan',
+                schema: [
+                  {
+                    uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+                  },
+                ],
+              },
+            ],
           },
-        ],
+        },
       },
     };
 
@@ -527,6 +540,9 @@ describe('create Request JWT should', () => {
 
   it('should throw error if presentation definition object is not valid', async () => {
     const opts: AuthenticationRequestOpts = {
+      clientId: 'test_client_id',
+      scope: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -561,23 +577,20 @@ describe('create Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        presentationDefinitions: [
-          {
-            location: PresentationLocation.VP_TOKEN,
-            definition: {
-              input_descriptors: [
-                {
-                  id: 'Ontario Health Insurance Plan',
-                  schema: [
-                    {
-                      uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
-                    },
-                  ],
-                },
-              ],
-            } as IPresentationDefinition,
-          },
-        ],
+        vpToken: {
+          presentationDefinition: {
+            input_descriptors: [
+              {
+                id: 'Ontario Health Insurance Plan',
+                schema: [
+                  {
+                    uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+                  },
+                ],
+              },
+            ],
+          } as IPresentationDefinition,
+        },
       },
     };
     await expect(AuthenticationRequest.createURI(opts)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);

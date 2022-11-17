@@ -50,6 +50,7 @@ enum SIOPErrors {
   REG_PASS_BY_REFERENCE_INCORRECTLY = 'The registration by reference should always have a valid URL',
   REGISTRATION_OBJECT_TYPE_NOT_SET = 'Registration object type is not set.',
   SIGNATURE_OBJECT_TYPE_NOT_SET = 'Signature object type is not set.',
+  SIOP_VERSION_NOT_SUPPORTED = 'The SIOP spec version could not inferred from the authentication request payload',
   SUB_JWK_NOT_FOUND_OR_NOT_KID = 'Response Token does not contains sub_jwk claim or sub_jwk does not contain kid attribute.',
   VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED = "This type of verifiable presentation isn't supported in this version",
   VERIFICATION_METHOD_NOT_SUPPORTED = 'Verification method not supported',

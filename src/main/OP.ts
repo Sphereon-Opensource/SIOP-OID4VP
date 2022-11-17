@@ -6,10 +6,11 @@ import { Resolvable } from 'did-resolver';
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
-import { LanguageTagUtils } from './functions';
-import { getResolverUnion, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
+import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
+import { authenticationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
+  AuthenticationRequestPayload,
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
   ExternalVerification,
@@ -34,10 +35,8 @@ const validate = ajv.compile(AuthenticationResponseOptsSchema);
 export class OP {
   private readonly _authResponseOpts: AuthenticationResponseOpts;
   private readonly _verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
-  private readonly _supportedVersions: Array<SupportedVersion>;
 
   public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts; verifyOpts?: VerifyAuthenticationRequestOpts }) {
-    this._supportedVersions = opts?.builder?.supportedVersions;
     this._authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
   }
@@ -52,7 +51,21 @@ export class OP {
 
   // TODO SK Can you please put some documentation on it?
   public async postAuthenticationResponse(authenticationResponse: AuthenticationResponseWithJWT): Promise<Response> {
-    return postAuthenticationResponse(authenticationResponse.payload.aud, authenticationResponse);
+    return postAuthenticationResponse(authenticationResponse.payload.idToken.aud, authenticationResponse);
+  }
+
+  /**
+   * This method tries to infer the SIOP specs version based on the request payload.
+   * If the version cannot be inferred or is not supported it throws an exception.
+   * This method needs to be called to ensure the OP can handle the request
+   * @param payload is the authentication request payload
+   */
+  public async checkSIOPSpecVersionSupported(payload: AuthenticationRequestPayload): Promise<SupportedVersion> {
+    const version: SupportedVersion = authenticationRequestVersionDiscovery(payload);
+    if (!this._verifyAuthRequestOpts.verification.supportedVersions.includes(version)) {
+      throw new Error(`SIOP ${version} is not supported`);
+    }
+    return version;
   }
 
   public async verifyAuthenticationRequest(
@@ -74,7 +87,7 @@ export class OP {
       vp?: VerifiablePresentationResponseOpts[];
     }
   ): Promise<AuthenticationResponseWithJWT> {
-    return AuthenticationResponse.createJWTFromVerifiedRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
+    return AuthenticationResponse.createAuthenticationResponseFromVerifiedRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
   }
 
   // TODO SK Can you please put some documentation on it?
@@ -86,7 +99,7 @@ export class OP {
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    return postAuthenticationResponseJwt(verifiedJwt.payload.aud, verifiedJwt.jwt);
+    return postAuthenticationResponseJwt(verifiedJwt.idToken.aud, verifiedJwt.jwt);
   }
 
   /**
@@ -142,10 +155,6 @@ export class OP {
     return new OP({ responseOpts, verifyOpts });
   }
 
-  get supportedVersions(): Array<SupportedVersion> {
-    return this._supportedVersions;
-  }
-
   public static builder() {
     return new OPBuilder();
   }
@@ -160,7 +169,7 @@ async function parseAndResolveRequestUri(encodedUri: string) {
 async function parseAndResolveUri(encodedUri: string) {
   const { requestPayload, jwt } = await parseAndResolveRequestUri(encodedUri);
   AuthenticationRequest.assertValidRequestObject(requestPayload);
-  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration);
+  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload['registration_uri'], requestPayload['registration']);
   AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
   return { requestPayload, jwt, registrationMetadata };
@@ -220,10 +229,16 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: {
         registrationBy: opts.builder.responseRegistration.registrationBy,
         subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
         vpFormats: opts.builder.responseRegistration.vpFormats,
-        idTokenTypesSupported: opts.builder.responseRegistration.idTokenTypesSupported,
         clientName: opts.builder.responseRegistration.clientName,
+        clientId: opts.builder.responseRegistration.clientId,
+        applicationType: opts.builder.responseRegistration.applicationType,
+        grantTypes: opts.builder.responseRegistration.grantTypes,
+        responseTypes: opts.builder.responseRegistration.responseTypes,
+        redirectUris: opts.builder.responseRegistration.redirectUris,
+        tokenEndpointAuthMethod: opts.builder.responseRegistration.tokenEndpointAuthMethod,
         logoUri: opts.builder.responseRegistration.logoUri,
         clientPurpose: opts.builder.responseRegistration.clientPurpose,
+        idTokenTypesSupported: opts.builder.responseRegistration.idTokenTypesSupported,
       },
       did: opts.builder.signatureType.did,
       expiresIn: opts.builder.expiresIn,
@@ -279,6 +294,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
             subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,
           },
+          supportedVersions: opts.builder.supportedVersions,
         } as InternalVerification,
       }
     : opts.verifyOpts;

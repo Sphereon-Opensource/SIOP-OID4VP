@@ -7,9 +7,9 @@ import {
   AuthenticationRequestOpts,
   AuthenticationRequestPayload,
   AuthenticationResponseOpts,
-  AuthenticationResponsePayload,
   EcdsaSignature,
   expirationTime,
+  IdTokenPayload,
   isExternalSignature,
   isInternalSignature,
   isResponseOpts,
@@ -75,7 +75,7 @@ export async function createDidJWT(
 }
 
 export async function signDidJwtPayload(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: IdTokenPayload | AuthenticationRequestPayload,
   opts: AuthenticationRequestOpts | AuthenticationResponseOpts
 ) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
@@ -96,7 +96,7 @@ export async function signDidJwtPayload(
 }
 
 async function signDidJwtInternal(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: IdTokenPayload | AuthenticationRequestPayload,
   issuer: string,
   hexPrivateKey: string,
   kid?: string
@@ -106,7 +106,7 @@ async function signDidJwtInternal(
     isEd25519DidKeyMethod(issuer) ||
     isEd25519DidKeyMethod(payload.kid) ||
     isEd25519DidKeyMethod(kid) ||
-    isEd25519DidKeyMethod(payload.did) ||
+    isEd25519DidKeyMethod(payload.sub) ||
     isEd25519JWK(payload.sub_jwk)
       ? KeyAlgo.EDDSA
       : KeyAlgo.ES256K;
@@ -115,7 +115,7 @@ async function signDidJwtInternal(
 
   const header = {
     alg: algo,
-    kid: kid || `${payload.did}#keys-1`,
+    kid: kid || `${payload.sub}#keys-1`,
   };
   const options = {
     issuer,
@@ -127,16 +127,16 @@ async function signDidJwtInternal(
 }
 
 async function signDidJwtExternal(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: IdTokenPayload | AuthenticationRequestPayload,
   signatureUri: string,
   authZToken: string,
   kid?: string
 ): Promise<string> {
   // todo: Create method. We are doing roughly the same multiple times
-  const alg = isEd25519DidKeyMethod(payload.did) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
+  const alg = isEd25519DidKeyMethod(payload.sub) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
 
   const body = {
-    issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.did,
+    issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.sub,
     payload,
     type: alg === KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
     expiresIn: expirationTime,
@@ -150,7 +150,7 @@ async function signDidJwtExternal(
 }
 
 async function signDidJwtSupplied(
-  payload: AuthenticationRequestPayload | AuthenticationResponsePayload,
+  payload: IdTokenPayload | AuthenticationRequestPayload,
   issuer: string,
   signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
   kid: string
@@ -160,7 +160,7 @@ async function signDidJwtSupplied(
     isEd25519DidKeyMethod(issuer) ||
     isEd25519DidKeyMethod(payload.kid) ||
     isEd25519DidKeyMethod(kid) ||
-    isEd25519DidKeyMethod(payload.did) ||
+    isEd25519DidKeyMethod(payload.sub) ||
     isEd25519JWK(payload.sub_jwk)
       ? KeyAlgo.EDDSA
       : KeyAlgo.ES256K;
@@ -190,19 +190,20 @@ export function getAudience(jwt: string) {
   return payload.aud;
 }
 
+//TODO To enable automatic registration, it cannot be a did, but HTTPS URL
 function assertIssSelfIssuedOrDid(payload: JWTPayload) {
-  if (!payload.iss || !(payload.iss.startsWith('did:') || isIssSelfIssued(payload))) {
+  if (!payload.sub || !payload.sub.startsWith('did:') || !payload.iss || !isIssSelfIssued(payload)) {
     throw new Error(SIOPErrors.NO_ISS_DID);
   }
 }
 
-export function getIssuerDidFromPayload(payload: JWTPayload, header?: JWTHeader): string {
+export function getSubDidFromPayload(payload: JWTPayload, header?: JWTHeader): string {
   assertIssSelfIssuedOrDid(payload);
 
   if (isIssSelfIssued(payload)) {
     let did;
-    if (payload.did) {
-      did = payload.did;
+    if (payload.sub && payload.sub.startsWith('did:')) {
+      did = payload.sub;
     }
     if (!did && header && header.kid && header.kid.startsWith('did:')) {
       did = header.kid.split('#')[0];
@@ -211,7 +212,7 @@ export function getIssuerDidFromPayload(payload: JWTPayload, header?: JWTHeader)
       return did;
     }
   }
-  return payload.iss;
+  return payload.sub;
 }
 
 export function isIssSelfIssued(payload: JWTPayload): boolean {
@@ -220,7 +221,7 @@ export function isIssSelfIssued(payload: JWTPayload): boolean {
 
 export function getIssuerDidFromJWT(jwt: string): string {
   const { payload } = parseJWT(jwt);
-  return getIssuerDidFromPayload(payload);
+  return getSubDidFromPayload(payload);
 }
 
 export function parseJWT(jwt: string): JWTDecoded {

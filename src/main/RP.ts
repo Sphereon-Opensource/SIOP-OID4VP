@@ -7,13 +7,13 @@ import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
   AuthenticationRequestURI,
+  AuthenticationResponseWithJWT,
   CheckLinkedDomain,
   ClaimOpts,
   ExternalVerification,
   InternalVerification,
   PresentationVerificationCallback,
   RequestRegistrationOpts,
-  SupportedVersion,
   Verification,
   VerificationMode,
   VerifiedAuthenticationResponseWithJWT,
@@ -28,11 +28,9 @@ const validate = ajv.compile(AuthenticationRequestOptsSchema);
 export class RP {
   private readonly _authRequestOpts: AuthenticationRequestOpts;
   private readonly _verifyAuthResponseOpts: Partial<VerifyAuthenticationResponseOpts>;
-  private readonly _supportedVersions: Array<SupportedVersion>;
 
   public constructor(opts: { builder?: RPBuilder; requestOpts?: AuthenticationRequestOpts; verifyOpts?: VerifyAuthenticationResponseOpts }) {
     const claims = opts.builder?.claims;
-    this._supportedVersions = opts?.builder?.supportedVersions;
     this._authRequestOpts = { claims, ...createRequestOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthResponseOpts = { claims, ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
   }
@@ -49,8 +47,8 @@ export class RP {
     return AuthenticationRequest.createURI(this.newAuthenticationRequestOpts(opts));
   }
 
-  public async verifyAuthenticationResponseJwt(
-    jwt: string,
+  public async verifyAuthenticationResponse(
+    authenticationResponseWithJWT: AuthenticationResponseWithJWT,
     opts?: {
       audience: string;
       state?: string;
@@ -64,10 +62,9 @@ export class RP {
     const verifyCallback = verification.verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
     const presentationVerificationCallback =
       verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
-    return AuthenticationResponse.verifyJWT(
-      jwt,
-      this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback })
-    );
+    const verifyAuthenticationResponseOpts = this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback });
+    AuthenticationResponse.verifyVPs(authenticationResponseWithJWT.payload, verifyAuthenticationResponseOpts);
+    return AuthenticationResponse.verifyJWT(authenticationResponseWithJWT.jwt, verifyAuthenticationResponseOpts);
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
@@ -106,10 +103,6 @@ export class RP {
     return new RP({ requestOpts: opts });
   }
 
-  get supportedVersions(): Array<SupportedVersion> {
-    return this._supportedVersions;
-  }
-
   public static builder() {
     return new RPBuilder();
   }
@@ -130,6 +123,9 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
         responseMode: opts.builder.responseMode,
         responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
+        scope: opts.builder.scope,
+        responseType: opts.builder.responseType,
+        clientId: opts.builder.clientId,
       }
     : opts.requestOpts;
 
@@ -162,6 +158,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,
           },
+          supportedVersions: opts.builder.supportedVersions,
           revocationOpts: {
             revocationVerification: opts.builder.revocationVerification,
             revocationVerificationCallback: opts.builder.revocationVerificationCallback,

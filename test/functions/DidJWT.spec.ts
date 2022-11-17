@@ -2,9 +2,9 @@ import { JWTDecoded } from 'did-jwt/lib/JWT';
 
 import {
   getIssuerDidFromJWT,
-  getIssuerDidFromPayload,
   getMethodFromDid,
   getNetworkFromDid,
+  getSubDidFromPayload,
   isEd25519DidKeyMethod,
   isIssSelfIssued,
   parseJWT,
@@ -18,7 +18,7 @@ const validJWT =
 describe('DidJWT ', () => {
   it('getIssuerDidFromPayload: should pass if issuer is correct', async function () {
     const decoded: JWTDecoded = parseJWT(validJWT);
-    const result = getIssuerDidFromPayload(decoded.payload);
+    const result = getSubDidFromPayload(decoded.payload);
     console.log('result:', result);
   });
 

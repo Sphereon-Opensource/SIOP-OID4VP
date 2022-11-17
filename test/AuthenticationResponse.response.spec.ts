@@ -19,13 +19,14 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
+  SupportedVersion,
   VerifiablePresentationTypeFormat,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
   VERIFIER_LOGO_FOR_CLIENT,
@@ -84,6 +85,7 @@ describe('create JWT from Request JWT should', () => {
       resolveOpts: {
         subjectSyntaxTypesSupported: ['did:ethr'],
       },
+      supportedVersions: [SupportedVersion.SIOPv2_ID1],
       mode: VerificationMode.INTERNAL,
     },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -112,6 +114,11 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthenticationRequestOpts = {
+      nonce: '12345',
+      state: '12345',
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      scope: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
@@ -121,6 +128,7 @@ describe('create JWT from Request JWT should', () => {
         kid: `${mockReqEntity.did}#controller`,
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -192,6 +200,9 @@ describe('create JWT from Request JWT should', () => {
       const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
       const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
       const requestOpts: AuthenticationRequestOpts = {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        responseType: 'id_token',
         checkLinkedDomain: CheckLinkedDomain.NEVER,
         redirectUri: EXAMPLE_REDIRECT_URL,
         requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
@@ -201,6 +212,7 @@ describe('create JWT from Request JWT should', () => {
           kid: `${mockReqEntity.did}#controller`,
         },
         registration: {
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -304,6 +316,9 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthenticationRequestOpts = {
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      scope: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
@@ -313,6 +328,7 @@ describe('create JWT from Request JWT should', () => {
         kid: `${mockReqEntity.did}#controller`,
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -332,12 +348,9 @@ describe('create JWT from Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        presentationDefinitions: [
-          {
-            location: PresentationLocation.VP_TOKEN,
-            definition: definition,
-          },
-        ],
+        vpToken: {
+          presentationDefinition: definition,
+        },
       },
     };
     const vc: ICredential = {
@@ -465,6 +478,9 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthenticationRequestOpts = {
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      scope: 'test',
+      responseType: 'token_id',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
@@ -474,6 +490,7 @@ describe('create JWT from Request JWT should', () => {
         kid: `${mockReqEntity.did}#controller`,
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -493,12 +510,9 @@ describe('create JWT from Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
       claims: {
-        presentationDefinitions: [
-          {
-            location: PresentationLocation.ID_TOKEN,
-            definition: definition,
-          },
-        ],
+        vpToken: {
+          presentationDefinition: definition,
+        },
       },
     };
     const vc: ICredential = {

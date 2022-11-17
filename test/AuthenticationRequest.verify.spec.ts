@@ -1,30 +1,24 @@
 import { IProofType } from '@sphereon/ssi-types';
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 import * as dotenv from 'dotenv';
-import { importJWK, SignJWT } from 'jose';
 
 import {
   AuthenticationRequest,
   AuthenticationRequestOpts,
-  AuthenticationRequestPayload,
   CheckLinkedDomain,
-  getNonce,
-  getState,
-  KeyAlgo,
   PassBy,
-  ResponseContext,
-  ResponseMode,
   ResponseType,
   Scope,
   SigningAlgo,
   SubjectSyntaxTypesSupportedValues,
   SubjectType,
+  SupportedVersion,
   VerificationMode,
   VerifyAuthenticationRequestOpts,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
-import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
+import { metadata, mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
   VERIFIER_LOGO_FOR_CLIENT,
@@ -38,74 +32,6 @@ const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 
 dotenv.config();
-
-describe('SIOP Request Validation', () => {
-  it(
-    'should verify',
-    async () => {
-      // const mockVerifyJwt = verifyJWT as jest.Mock;
-      // const mockDecodeJWT = decodeJWT as jest.Mock;
-      expect.assertions(1);
-      const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-      const header = {
-        alg: KeyAlgo.ES256K,
-        typ: 'JWT',
-        kid: `${mockEntity.did}#controller`,
-      };
-      const state = getState();
-      const payload: AuthenticationRequestPayload = {
-        iss: mockEntity.did,
-        aud: 'test',
-        response_mode: ResponseMode.POST,
-        response_context: ResponseContext.RP,
-        redirect_uri: '',
-        scope: Scope.OPENID,
-        response_type: ResponseType.ID_TOKEN,
-        client_id: 'http://localhost:8080/test',
-        state,
-        nonce: getNonce(state),
-        registration: {
-          id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-          response_types_supported: [ResponseType.ID_TOKEN],
-          scopes_supported: [Scope.OPENID],
-          subject_syntax_types_supported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
-          subject_types_supported: [SubjectType.PAIRWISE],
-          vp_formats: {
-            ldp_vc: {
-              proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
-            },
-          },
-          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
-          client_name: VERIFIER_NAME_FOR_CLIENT,
-          'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100307',
-          client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-        },
-        /*registration: {
-          jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did}`,
-          // jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did};transform-keys=jwks`,
-          id_token_signed_response_alg: KeyAlgo.ES256K,
-      },*/
-      };
-      const privateKey = await importJWK(mockEntity.jwk, KeyAlgo.ES256K);
-      const jwt = await new SignJWT(payload).setProtectedHeader(header).sign(privateKey);
-
-      const optsVerify: VerifyAuthenticationRequestOpts = {
-        verification: {
-          mode: VerificationMode.INTERNAL,
-          resolveOpts: {
-            subjectSyntaxTypesSupported: ['did:ethr'],
-          },
-        },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
-      };
-      await expect(AuthenticationRequest.verifyJWT(jwt, optsVerify)).resolves.toBeDefined();
-    },
-    UNIT_TEST_TIMEOUT
-  );
-});
 
 describe('verifyJWT should', () => {
   it('throw VERIFY_BAD_PARAMETERS when no JWT is passed', async () => {
@@ -126,6 +52,10 @@ describe('verifyJWT should', () => {
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
     const requestOpts: AuthenticationRequestOpts = {
+      state: 'expected state',
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      scope: 'test',
+      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -141,6 +71,7 @@ describe('verifyJWT should', () => {
         kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
       },
       registration: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
         subjectTypesSupported: [SubjectType.PAIRWISE],
@@ -171,6 +102,7 @@ describe('verifyJWT should', () => {
         resolveOpts: {
           subjectSyntaxTypesSupported: ['key'],
         },
+        supportedVersions: [SupportedVersion.SIOPv2_ID1],
       },
       nonce: 'This nonce is different and should throw error',
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -184,13 +116,12 @@ describe('verifyJWT should', () => {
     'succeed if a valid JWT is passed',
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-      /*const header = {
-        alg: KeyAlgo.ES256K,
-        typ: "JWT",
-        kid: `${mockEntity.did}#controller`,
-    };
-    const state = State.getState();*/
       const requestOpts: AuthenticationRequestOpts = {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        responseType: 'id_token',
+        state: '12345',
+        nonce: '12345',
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         authorizationEndpoint: '',
         redirectUri: 'https://acme.com/hello',
@@ -201,6 +132,7 @@ describe('verifyJWT should', () => {
           kid: `${mockEntity.did}#controller`,
         },
         registration: {
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           responseTypesSupported: [ResponseType.ID_TOKEN],
           scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
           subjectTypesSupported: [SubjectType.PAIRWISE],
@@ -228,6 +160,7 @@ describe('verifyJWT should', () => {
           resolveOpts: {
             subjectSyntaxTypesSupported: ['did:ethr'],
           },
+          supportedVersions: [SupportedVersion.SIOPv2_ID1],
         },
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),

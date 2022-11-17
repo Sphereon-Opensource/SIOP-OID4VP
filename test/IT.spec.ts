@@ -21,11 +21,13 @@ import {
   Scope,
   SigningAlgo,
   SubjectType,
+  SupportedVersion,
   VerifiablePresentationTypeFormat,
+  VerificationMode,
   verifyRevocation,
 } from '../src/main';
 
-import { mockedGetEnterpriseAuthToken } from './TestUtils';
+import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
   VERIFIER_LOGO_FOR_CLIENT,
@@ -145,6 +147,9 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
+        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .addScope('test')
+        .addResponseType('id_token')
         .redirect(EXAMPLE_REDIRECT_URL)
         .withPresentationVerification(presentationVerificationCallback)
         .addVerifyCallback(verifyCallback)
@@ -154,6 +159,7 @@ describe('RP and OP interaction should', () => {
         .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
         .addDidMethod('ethr')
         .registrationBy({
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -168,6 +174,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
+        .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
         .build();
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
@@ -175,6 +182,7 @@ describe('RP and OP interaction should', () => {
         .addVerifyCallback(verifyCallback)
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .registrationBy({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -192,6 +200,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
       const requestURI = await rp.createAuthenticationRequest({
@@ -201,6 +210,8 @@ describe('RP and OP interaction should', () => {
 
       nock('https://rp.acme.com/siop/jwts').get(/.*/).reply(200, requestURI.jwt);
 
+      //The schema validation needs to be done here otherwise it fails because of JWT properties
+      await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // The create method also calls the verifyRequest method, so no need to do it manually
       const verifiedRequest = await op.verifyAuthenticationRequest(requestURI.encodedUri);
       const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedRequest);
@@ -209,15 +220,12 @@ describe('RP and OP interaction should', () => {
       const response = await op.submitAuthenticationResponse(authenticationResponseWithJWT);
       await expect(response.json()).resolves.toMatchObject({ result: 'ok' });
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
         audience: EXAMPLE_REDIRECT_URL,
       });
 
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-      expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
       expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
-      expect(verifiedAuthResponseWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
-      expect(verifiedAuthResponseWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100318');
     },
     UNIT_TEST_TIMEOUT
   );
@@ -242,6 +250,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .addScope('test')
+      .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
@@ -250,6 +261,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -264,6 +276,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
@@ -287,6 +300,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -294,6 +308,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -307,15 +323,12 @@ describe('RP and OP interaction should', () => {
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT);
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,
     });
 
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
-    expect(verifiedAuthResponseWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
-    expect(verifiedAuthResponseWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100320');
   });
 
   it('fail when calling with presentation definitions and without verifiable presentation', async () => {
@@ -337,6 +350,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .addScope('test')
+      .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
       .addVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
@@ -345,6 +361,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -359,10 +376,8 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
-      })
+      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
@@ -386,6 +401,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -393,6 +409,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -406,8 +424,8 @@ describe('RP and OP interaction should', () => {
       Error('authentication request expects a verifiable presentation in the response')
     );
 
-    expect(verifiedAuthReqWithJWT.payload.registration.client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
-    expect(verifiedAuthReqWithJWT.payload.registration['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100321');
+    expect(verifiedAuthReqWithJWT.payload['registration'].client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
+    expect(verifiedAuthReqWithJWT.payload['registration']['client_name#nl-NL']).toEqual(VERIFIER_NAME_FOR_CLIENT_NL + '2022100321');
   });
 
   it('succeed when calling with presentation definitions and right verifiable presentation', async () => {
@@ -429,7 +447,11 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .addScope('test')
+      .addResponseType('id_token')
       .redirect(EXAMPLE_REDIRECT_URL)
+      .addPresentationDefinitionClaim(getPresentationDefinition())
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
@@ -438,6 +460,7 @@ describe('RP and OP interaction should', () => {
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -452,10 +475,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
-      })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
@@ -480,6 +500,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -487,6 +508,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -511,12 +534,11 @@ describe('RP and OP interaction should', () => {
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,
     });
 
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
@@ -534,13 +556,15 @@ describe('RP and OP interaction should', () => {
         did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
         didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
       };
-
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
+        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .addScope('test')
+        .addResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
         .withPresentationVerification(presentationVerificationCallback)
         .addVerifyCallback(verifyCallback)
@@ -549,6 +573,7 @@ describe('RP and OP interaction should', () => {
         .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .registrationBy({
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -563,10 +588,8 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addPresentationDefinitionClaim({
-          definition: getPresentationDefinition(),
-          location: PresentationLocation.VP_TOKEN,
-        })
+        .addPresentationDefinitionClaim(getPresentationDefinition())
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
@@ -590,6 +613,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
       const requestURI = await rp.createAuthenticationRequest({
@@ -597,6 +621,8 @@ describe('RP and OP interaction should', () => {
         state: 'b32f0087fc9816eb813fd11f',
       });
 
+      //The schema validation needs to be done here otherwise it fails because of JWT properties
+      await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // Let's test the parsing
       const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
       expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -620,10 +646,22 @@ describe('RP and OP interaction should', () => {
         ],
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
-
       await expect(
-        rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+        rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
           audience: EXAMPLE_REDIRECT_URL,
+          verification: {
+            mode: VerificationMode.INTERNAL,
+            verifyUri: '',
+            resolveOpts: {
+              subjectSyntaxTypesSupported: ['did', 'did:eth'],
+            },
+            checkLinkedDomain: CheckLinkedDomain.ALWAYS,
+            revocationOpts: {
+              revocationVerification: RevocationVerification.ALWAYS,
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              revocationVerificationCallback: (_credential, _type) => Promise.resolve({ status: RevocationStatus.VALID }),
+            },
+          },
         })
       ).rejects.toThrow(new Error(WDCErrors.PROPERTY_SERVICE_NOT_PRESENT));
     },
@@ -650,6 +688,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .addScope('test')
+      .addResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
@@ -659,6 +700,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -678,10 +720,8 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
-      })
+      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
@@ -710,6 +750,7 @@ describe('RP and OP interaction should', () => {
         subjectSyntaxTypesSupported: ['did:ethr'],
         registrationBy: { type: PassBy.VALUE },
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -717,6 +758,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -750,11 +793,10 @@ describe('RP and OP interaction should', () => {
     };
     expect(rp.verifyAuthResponseOpts.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
@@ -779,6 +821,9 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
+        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .addScope('test')
+        .addResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
         .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
@@ -789,6 +834,7 @@ describe('RP and OP interaction should', () => {
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .addDidMethod('ethr')
         .registrationBy({
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -803,10 +849,8 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addPresentationDefinitionClaim({
-          definition: getPresentationDefinition(),
-          location: PresentationLocation.VP_TOKEN,
-        })
+        .addPresentationDefinitionClaim(getPresentationDefinition())
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
@@ -832,6 +876,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
       const requestURI = await rp.createAuthenticationRequest({
@@ -839,6 +884,8 @@ describe('RP and OP interaction should', () => {
         state: 'b32f0087fc9816eb813fd11f',
       });
 
+      //The schema validation needs to be done here otherwise it fails because of JWT properties
+      await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // Let's test the parsing
       const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
       expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -863,11 +910,10 @@ describe('RP and OP interaction should', () => {
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
         audience: EXAMPLE_REDIRECT_URL,
       });
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-      expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
       expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
     },
     UNIT_TEST_TIMEOUT
@@ -881,10 +927,9 @@ describe('RP and OP interaction should', () => {
     };
 
     const opMockEntity = {
-      hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
-      did: 'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19',
-      didKey:
-        'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19#key1',
+      hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+      did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+      didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
     };
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -892,6 +937,9 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
     const rp = RP.builder()
+      .addClientId('test_client_id')
+      .addScope('test')
+      .addResponseType('id_token')
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
@@ -905,6 +953,7 @@ describe('RP and OP interaction should', () => {
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ion')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -925,10 +974,8 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
-      })
+      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const op = OP.builder()
@@ -962,6 +1009,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -969,6 +1017,8 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
+    //The schema validation needs to be done here otherwise it fails because of JWT properties
+    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.requestPayload).toBeDefined();
@@ -1003,11 +1053,10 @@ describe('RP and OP interaction should', () => {
       ],
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
@@ -1193,6 +1242,9 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
+      .addClientId('test_client_id')
+      .addScope('test')
+      .addResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withPresentationVerification(presentationVerificationCallback)
       .addVerifyCallback(verifyCallback)
@@ -1202,6 +1254,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .registrationBy({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -1219,10 +1272,8 @@ describe('RP and OP interaction should', () => {
         clientName: VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
-      .addPresentationDefinitionClaim({
-        definition: getPresentationDefinition(),
-        location: PresentationLocation.VP_TOKEN,
-      })
+      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
@@ -1250,6 +1301,7 @@ describe('RP and OP interaction should', () => {
         subjectSyntaxTypesSupported: ['did:ethr'],
         registrationBy: { type: PassBy.VALUE },
       })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
     const requestURI = await rp.createAuthenticationRequest({
@@ -1281,11 +1333,10 @@ describe('RP and OP interaction should', () => {
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authenticationResponseWithJWT.jwt, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.state).toMatch('b32f0087fc9816eb813fd11f');
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 });

@@ -227,6 +227,7 @@ export const resolveDidKey = async (did: string): Promise<DIDResolutionResult> =
 };
 */
 
+export const WELL_KNOWN_OPENID_FEDERATION = 'https://www.example.com/.well-known/openid-federation';
 export const metadata: {
   opMetadata: DiscoveryMetadataPayload;
   rpMetadata: RPRegistrationMetadataPayload;
@@ -256,6 +257,7 @@ export const metadata: {
     'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 02',
   },
   rpMetadata: {
+    client_id: WELL_KNOWN_OPENID_FEDERATION,
     id_token_signing_alg_values_supported: [],
     request_object_signing_alg_values_supported: [SigningAlgo.EDDSA],
     response_types_supported: [ResponseType.ID_TOKEN],

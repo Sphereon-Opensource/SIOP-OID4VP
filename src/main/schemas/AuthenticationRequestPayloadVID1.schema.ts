@@ -1,42 +1,78 @@
-export const AuthenticationRequestOptsSchema = {
+export const AuthenticationRequestPayloadSchemaVID1 = {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/AuthenticationRequestOpts",
+  "$ref": "#/definitions/AuthenticationRequestPayloadVID1",
   "definitions": {
-    "AuthenticationRequestOpts": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/AuthenticationRequestOptsVD1"
-        },
-        {
-          "$ref": "#/definitions/AuthenticationRequestOptsVD11"
-        }
-      ]
-    },
-    "AuthenticationRequestOptsVD1": {
+    "AuthenticationRequestPayloadVID1": {
       "type": "object",
       "properties": {
+        "registration": {
+          "$ref": "#/definitions/RPRegistrationMetadataPayload"
+        },
+        "registration_uri": {
+          "type": "string"
+        },
+        "iss": {
+          "type": "string"
+        },
+        "sub": {
+          "type": "string"
+        },
+        "aud": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "iat": {
+          "type": "number"
+        },
+        "nbf": {
+          "type": "number"
+        },
+        "type": {
+          "type": "string"
+        },
+        "exp": {
+          "type": "number"
+        },
+        "rexp": {
+          "type": "number"
+        },
+        "jti": {
+          "type": "string"
+        },
         "scope": {
           "type": "string"
         },
-        "responseType": {
+        "response_type": {
+          "$ref": "#/definitions/ResponseType"
+        },
+        "client_id": {
           "type": "string"
         },
-        "clientId": {
+        "response_mode": {
           "type": "string"
         },
-        "redirectUri": {
+        "redirect_uri": {
           "type": "string"
         },
-        "idTokenHint": {
+        "id_token_hint": {
           "type": "string"
         },
         "claims": {
-          "$ref": "#/definitions/ClaimOpts"
+          "$ref": "#/definitions/ClaimPayload"
         },
         "request": {
           "type": "string"
         },
-        "requestUri": {
+        "request_uri": {
           "type": "string"
         },
         "nonce": {
@@ -44,78 +80,29 @@ export const AuthenticationRequestOptsSchema = {
         },
         "state": {
           "type": "string"
-        },
-        "signatureType": {
+        }
+      },
+      "required": [
+        "client_id",
+        "nonce",
+        "redirect_uri",
+        "response_type",
+        "scope",
+        "state"
+      ]
+    },
+    "RPRegistrationMetadataPayload": {
+      "type": "object",
+      "properties": {
+        "client_id": {
           "anyOf": [
             {
-              "$ref": "#/definitions/InternalSignature"
+              "type": "string"
             },
-            {
-              "$ref": "#/definitions/ExternalSignature"
-            },
-            {
-              "$ref": "#/definitions/SuppliedSignature"
-            },
-            {
-              "$ref": "#/definitions/NoSignature"
-            }
+            {}
           ]
         },
-        "authorizationEndpoint": {
-          "type": "string"
-        },
-        "requestBy": {
-          "$ref": "#/definitions/ObjectBy"
-        },
-        "checkLinkedDomain": {
-          "$ref": "#/definitions/CheckLinkedDomain"
-        },
-        "responseMode": {
-          "$ref": "#/definitions/ResponseMode"
-        },
-        "responseContext": {
-          "$ref": "#/definitions/ResponseContext"
-        },
-        "responseTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseType"
-              }
-            },
-            {
-              "$ref": "#/definitions/ResponseType"
-            }
-          ]
-        },
-        "scopesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Scope"
-              }
-            },
-            {
-              "$ref": "#/definitions/Scope"
-            }
-          ]
-        },
-        "subjectTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectType"
-              }
-            },
-            {
-              "$ref": "#/definitions/SubjectType"
-            }
-          ]
-        },
-        "requestObjectSigningAlgValuesSupported": {
+        "id_token_signing_alg_values_supported": {
           "anyOf": [
             {
               "type": "array",
@@ -128,34 +115,204 @@ export const AuthenticationRequestOptsSchema = {
             }
           ]
         },
-        "revocationVerificationCallback": {
-          "$ref": "#/definitions/RevocationVerificationCallback"
+        "request_object_signing_alg_values_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
-        "registration": {
-          "$ref": "#/definitions/RequestRegistrationOpts"
+        "response_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
         },
-        "registrationUri": {
-          "type": "string"
+        "scopes_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subject_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
+        },
+        "subject_syntax_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vp_formats": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Format"
+            },
+            {}
+          ]
+        },
+        "client_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
+        "logo_uri": {
+          "anyOf": [
+            {},
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "client_purpose": {
+          "anyOf": [
+            {},
+            {
+              "type": "string"
+            }
+          ]
         }
       },
-      "additionalProperties": false,
       "required": [
-        "clientId",
-        "redirectUri",
-        "requestBy",
-        "responseType",
-        "scope",
-        "signatureType"
+        "client_id",
+        "id_token_signing_alg_values_supported",
+        "response_types_supported",
+        "scopes_supported",
+        "subject_syntax_types_supported",
+        "subject_types_supported",
+        "vp_formats"
       ]
     },
-    "ClaimOpts": {
+    "SigningAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K",
+        "none"
+      ]
+    },
+    "ResponseType": {
+      "type": "string",
+      "enum": [
+        "id_token",
+        "vp_token"
+      ]
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "openid",
+        "openid did_authn",
+        "profile",
+        "email",
+        "address",
+        "phone"
+      ]
+    },
+    "SubjectType": {
+      "type": "string",
+      "enum": [
+        "public",
+        "pairwise"
+      ]
+    },
+    "Format": {
       "type": "object",
       "properties": {
-        "idToken": {
+        "jwt": {
+          "$ref": "#/definitions/JwtObject"
+        },
+        "jwt_vc": {
+          "$ref": "#/definitions/JwtObject"
+        },
+        "jwt_vp": {
+          "$ref": "#/definitions/JwtObject"
+        },
+        "ldp": {
+          "$ref": "#/definitions/LdpObject"
+        },
+        "ldp_vc": {
+          "$ref": "#/definitions/LdpObject"
+        },
+        "ldp_vp": {
+          "$ref": "#/definitions/LdpObject"
+        }
+      },
+      "additionalProperties": false
+    },
+    "JwtObject": {
+      "type": "object",
+      "properties": {
+        "alg": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "alg"
+      ],
+      "additionalProperties": false
+    },
+    "LdpObject": {
+      "type": "object",
+      "properties": {
+        "proof_type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "proof_type"
+      ],
+      "additionalProperties": false
+    },
+    "ClaimPayload": {
+      "type": "object",
+      "properties": {
+        "id_token": {
           "$ref": "#/definitions/IdTokenPayload"
         },
-        "vpToken": {
-          "$ref": "#/definitions/VpTokenClaimOpts"
+        "vp_token": {
+          "$ref": "#/definitions/VpTokenClaimPayload"
         }
       },
       "additionalProperties": false
@@ -264,10 +421,13 @@ export const AuthenticationRequestOptsSchema = {
       "additionalProperties": false,
       "description": "descriptor map laying out the structure of the presentation submission."
     },
-    "VpTokenClaimOpts": {
+    "VpTokenClaimPayload": {
       "type": "object",
       "properties": {
-        "presentationDefinition": {
+        "response_type": {
+          "type": "string"
+        },
+        "presentation_definition": {
           "anyOf": [
             {
               "$ref": "#/definitions/PresentationDefinitionV1"
@@ -277,11 +437,14 @@ export const AuthenticationRequestOptsSchema = {
             }
           ]
         },
-        "presentationDefinitionUri": {
+        "presentation_definition_uri": {
+          "type": "string"
+        },
+        "nonce": {
           "type": "string"
         }
       },
-      "additionalProperties": false
+      "additionalProperties": {}
     },
     "PresentationDefinitionV1": {
       "type": "object",
@@ -314,60 +477,6 @@ export const AuthenticationRequestOptsSchema = {
       "required": [
         "id",
         "input_descriptors"
-      ],
-      "additionalProperties": false
-    },
-    "Format": {
-      "type": "object",
-      "properties": {
-        "jwt": {
-          "$ref": "#/definitions/JwtObject"
-        },
-        "jwt_vc": {
-          "$ref": "#/definitions/JwtObject"
-        },
-        "jwt_vp": {
-          "$ref": "#/definitions/JwtObject"
-        },
-        "ldp": {
-          "$ref": "#/definitions/LdpObject"
-        },
-        "ldp_vc": {
-          "$ref": "#/definitions/LdpObject"
-        },
-        "ldp_vp": {
-          "$ref": "#/definitions/LdpObject"
-        }
-      },
-      "additionalProperties": false
-    },
-    "JwtObject": {
-      "type": "object",
-      "properties": {
-        "alg": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "alg"
-      ],
-      "additionalProperties": false
-    },
-    "LdpObject": {
-      "type": "object",
-      "properties": {
-        "proof_type": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "proof_type"
       ],
       "additionalProperties": false
     },
@@ -852,474 +961,6 @@ export const AuthenticationRequestOptsSchema = {
         "type"
       ],
       "additionalProperties": false
-    },
-    "InternalSignature": {
-      "type": "object",
-      "properties": {
-        "hexPrivateKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "hexPrivateKey",
-        "did"
-      ],
-      "additionalProperties": false
-    },
-    "ExternalSignature": {
-      "type": "object",
-      "properties": {
-        "signatureUri": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "authZToken": {
-          "type": "string"
-        },
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "signatureUri",
-        "did"
-      ],
-      "additionalProperties": false
-    },
-    "SuppliedSignature": {
-      "type": "object",
-      "properties": {
-        "signature": {
-          "properties": {
-            "isFunction": {
-              "type": "boolean",
-              "const": true
-            }
-          }
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "signature",
-        "did",
-        "kid"
-      ],
-      "additionalProperties": false
-    },
-    "NoSignature": {
-      "type": "object",
-      "properties": {
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "hexPublicKey",
-        "did"
-      ],
-      "additionalProperties": false
-    },
-    "ObjectBy": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "REFERENCE",
-            "VALUE"
-          ]
-        },
-        "referenceUri": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "additionalProperties": false
-    },
-    "CheckLinkedDomain": {
-      "type": "string",
-      "enum": [
-        "never",
-        "if_present",
-        "always"
-      ]
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
-    },
-    "ResponseContext": {
-      "type": "string",
-      "enum": [
-        "rp",
-        "op"
-      ]
-    },
-    "ResponseType": {
-      "type": "string",
-      "enum": [
-        "id_token",
-        "vp_token"
-      ]
-    },
-    "Scope": {
-      "type": "string",
-      "enum": [
-        "openid",
-        "openid did_authn",
-        "profile",
-        "email",
-        "address",
-        "phone"
-      ]
-    },
-    "SubjectType": {
-      "type": "string",
-      "enum": [
-        "public",
-        "pairwise"
-      ]
-    },
-    "SigningAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K",
-        "none"
-      ]
-    },
-    "RevocationVerificationCallback": {
-      "properties": {
-        "isFunction": {
-          "type": "boolean",
-          "const": true
-        }
-      }
-    },
-    "RequestRegistrationOpts": {
-      "type": "object",
-      "properties": {
-        "registrationBy": {
-          "$ref": "#/definitions/RegistrationType"
-        },
-        "clientId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {}
-          ]
-        },
-        "idTokenSigningAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "requestObjectSigningAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "responseTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseType"
-              }
-            },
-            {
-              "$ref": "#/definitions/ResponseType"
-            }
-          ]
-        },
-        "scopesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Scope"
-              }
-            },
-            {
-              "$ref": "#/definitions/Scope"
-            }
-          ]
-        },
-        "subjectTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectType"
-              }
-            },
-            {
-              "$ref": "#/definitions/SubjectType"
-            }
-          ]
-        },
-        "subjectSyntaxTypesSupported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "vpFormatsSupported": {
-          "anyOf": [
-            {},
-            {
-              "$ref": "#/definitions/Format"
-            }
-          ]
-        },
-        "clientName": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {}
-          ]
-        },
-        "logoUri": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {}
-          ]
-        },
-        "clientPurpose": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {}
-          ]
-        }
-      },
-      "required": [
-        "registrationBy"
-      ]
-    },
-    "RegistrationType": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "REFERENCE",
-            "VALUE"
-          ]
-        },
-        "referenceUri": {
-          "type": "string"
-        },
-        "id_token_encrypted_response_alg": {
-          "$ref": "#/definitions/EncKeyAlgorithm"
-        },
-        "id_token_encrypted_response_enc": {
-          "$ref": "#/definitions/EncSymmetricAlgorithmCode"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ]
-    },
-    "EncKeyAlgorithm": {
-      "type": "string",
-      "const": "ECDH-ES"
-    },
-    "EncSymmetricAlgorithmCode": {
-      "type": "string",
-      "const": "XC20P"
-    },
-    "AuthenticationRequestOptsVD11": {
-      "type": "object",
-      "properties": {
-        "scope": {
-          "type": "string"
-        },
-        "responseType": {
-          "type": "string"
-        },
-        "clientId": {
-          "type": "string"
-        },
-        "redirectUri": {
-          "type": "string"
-        },
-        "idTokenHint": {
-          "type": "string"
-        },
-        "claims": {
-          "$ref": "#/definitions/ClaimOpts"
-        },
-        "request": {
-          "type": "string"
-        },
-        "requestUri": {
-          "type": "string"
-        },
-        "nonce": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
-        },
-        "signatureType": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/InternalSignature"
-            },
-            {
-              "$ref": "#/definitions/ExternalSignature"
-            },
-            {
-              "$ref": "#/definitions/SuppliedSignature"
-            },
-            {
-              "$ref": "#/definitions/NoSignature"
-            }
-          ]
-        },
-        "authorizationEndpoint": {
-          "type": "string"
-        },
-        "requestBy": {
-          "$ref": "#/definitions/ObjectBy"
-        },
-        "checkLinkedDomain": {
-          "$ref": "#/definitions/CheckLinkedDomain"
-        },
-        "responseMode": {
-          "$ref": "#/definitions/ResponseMode"
-        },
-        "responseContext": {
-          "$ref": "#/definitions/ResponseContext"
-        },
-        "responseTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseType"
-              }
-            },
-            {
-              "$ref": "#/definitions/ResponseType"
-            }
-          ]
-        },
-        "scopesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Scope"
-              }
-            },
-            {
-              "$ref": "#/definitions/Scope"
-            }
-          ]
-        },
-        "subjectTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectType"
-              }
-            },
-            {
-              "$ref": "#/definitions/SubjectType"
-            }
-          ]
-        },
-        "requestObjectSigningAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "revocationVerificationCallback": {
-          "$ref": "#/definitions/RevocationVerificationCallback"
-        },
-        "clientMetadata": {
-          "type": "object"
-        },
-        "clientMetadataUri": {
-          "type": "string"
-        },
-        "idTokenType": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "clientId",
-        "redirectUri",
-        "requestBy",
-        "responseType",
-        "scope",
-        "signatureType"
-      ]
     }
   }
 };

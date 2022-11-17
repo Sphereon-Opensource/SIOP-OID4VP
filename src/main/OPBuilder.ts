@@ -24,14 +24,12 @@ export default class OPBuilder {
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   responseMode?: ResponseMode;
   responseRegistration: Partial<ResponseRegistrationOpts> = {};
-  // did: string;
-  // vp?: VerifiablePresentation;
   customResolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
   presentationSignCallback?: PresentationSignCallback;
-  supportedVersions: Array<SupportedVersion>;
+  supportedVersions: SupportedVersion[];
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
@@ -119,10 +117,12 @@ export default class OPBuilder {
     }
   }
 
-  withSupportedVersions(supportedVersions: Array<string | SupportedVersion>): OPBuilder {
+  withSupportedVersions(supportedVersion: SupportedVersion[] | SupportedVersion): OPBuilder {
     this.initSupportedVersions();
-    for (const supportedVersion of supportedVersions) {
-      this.addSupportedVersion(supportedVersion);
+    if (Array.isArray(supportedVersion)) {
+      this.supportedVersions.push(...supportedVersion);
+    } else {
+      this.supportedVersions.push(supportedVersion);
     }
     return this;
   }

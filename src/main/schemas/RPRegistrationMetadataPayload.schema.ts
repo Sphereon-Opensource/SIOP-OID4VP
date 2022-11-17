@@ -5,35 +5,78 @@ export const RPRegistrationMetadataPayloadSchema = {
     "RPRegistrationMetadataPayload": {
       "type": "object",
       "properties": {
-        "id_token_signing_alg_values_supported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+        "client_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
         },
-        "id_token_types_supported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/IdTokenType"
-          }
+        "id_token_signing_alg_values_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "request_object_signing_alg_values_supported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SigningAlgo"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
         },
         "response_types_supported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/ResponseType"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
         },
         "scopes_supported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Scope"
-          }
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subject_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
         },
         "subject_syntax_types_supported": {
           "type": "array",
@@ -41,28 +84,42 @@ export const RPRegistrationMetadataPayloadSchema = {
             "type": "string"
           }
         },
-        "subject_types_supported": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SubjectType"
-          }
-        },
         "vp_formats": {
-          "$ref": "#/definitions/Format"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Format"
+            },
+            {}
+          ]
         },
         "client_name": {
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
         },
         "logo_uri": {
-          "type": "string"
+          "anyOf": [
+            {},
+            {
+              "type": "string"
+            }
+          ]
         },
         "client_purpose": {
-          "type": "string"
+          "anyOf": [
+            {},
+            {
+              "type": "string"
+            }
+          ]
         }
       },
       "required": [
+        "client_id",
         "id_token_signing_alg_values_supported",
-        "request_object_signing_alg_values_supported",
         "response_types_supported",
         "scopes_supported",
         "subject_syntax_types_supported",
@@ -78,13 +135,6 @@ export const RPRegistrationMetadataPayloadSchema = {
         "ES256",
         "ES256K",
         "none"
-      ]
-    },
-    "IdTokenType": {
-      "type": "string",
-      "enum": [
-        "subject_signed",
-        "attester_signed"
       ]
     },
     "ResponseType": {

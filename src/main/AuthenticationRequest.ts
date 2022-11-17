@@ -17,6 +17,7 @@ import {
   validateLinkedDomainWithDid,
   verifyDidJWT,
 } from './functions';
+import { authenticationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { RPRegistrationMetadataPayloadSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
@@ -26,13 +27,10 @@ import {
   CheckLinkedDomain,
   ClaimOpts,
   ClaimPayload,
-  IdTokenClaimPayload,
   isExternalVerification,
   isInternalVerification,
   JWTPayload,
   PassBy,
-  PresentationLocation,
-  ResponseContext,
   ResponseMode,
   ResponseType,
   RPRegistrationMetadataPayload,
@@ -41,7 +39,6 @@ import {
   UrlEncodingFormat,
   VerifiedAuthenticationRequestWithJWT,
   VerifyAuthenticationRequestOpts,
-  VpTokenClaimPayload,
 } from './types';
 
 const ajv = new Ajv({ allowUnionTypes: true });
@@ -120,22 +117,28 @@ export default class AuthenticationRequest {
     };
 
     const verPayload = payload as AuthenticationRequestPayload;
+    const version = authenticationRequestVersionDiscovery(verPayload);
+    if (!opts.verification.supportedVersions?.includes(version)) {
+      throw new Error(SIOPErrors.SIOP_VERSION_NOT_SUPPORTED);
+    }
     if (opts.nonce && verPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
     }
 
     AuthenticationRequest.assertValidRequestObject(verPayload);
-    const registrationMetadata = await AuthenticationRequest.getRegistrationObj(verPayload.registration_uri, verPayload.registration);
+    const registrationMetadata = await AuthenticationRequest.getRegistrationObj(verPayload['registration_uri'], verPayload['registration']);
     AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
     const verifiedJWT = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
     if (!verifiedJWT || !verifiedJWT.payload) {
       throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
     }
-    if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, opts.verification.checkLinkedDomain);
-    } else if (!opts.verification.checkLinkedDomain) {
-      await validateLinkedDomainWithDid(verPayload.iss, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
+    if (verPayload.client_id.startsWith('did:')) {
+      if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
+        await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
+      } else if (!opts.verification.checkLinkedDomain) {
+        await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
+      }
     }
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
     return {
@@ -155,7 +158,7 @@ export default class AuthenticationRequest {
   }
 
   public static assertValidRequestObject(verPayload: AuthenticationRequestPayload): void {
-    if (verPayload.registration_uri && verPayload.registration) {
+    if (verPayload['registration_uri'] && verPayload['registration']) {
       throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
     }
   }
@@ -202,9 +205,8 @@ async function createURIFromJWT(
   const query = encodeJsonAsURI(requestPayload);
 
   AuthenticationRequest.assertValidRequestObject(requestPayload);
-  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload.registration_uri, requestPayload.registration);
+  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload['registration_uri'], requestPayload['registration']);
   AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
-
   switch (requestOpts.requestBy?.type) {
     case PassBy.REFERENCE:
       return {
@@ -248,66 +250,49 @@ function assertValidRequestOpts(opts: AuthenticationRequestOpts) {
   } else if (opts.requestBy.type === PassBy.REFERENCE && !opts.requestBy.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
-  assertValidRequestRegistrationOpts(opts.registration);
+  assertValidRequestRegistrationOpts(opts['registration']);
 }
 
-function createClaimsPayload(opts: ClaimOpts, nonce: string): ClaimPayload {
-  if (!opts || !opts.presentationDefinitions || opts.presentationDefinitions.length == 0) {
+function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
+  if (!opts || !opts.vpToken || (!opts.vpToken.presentationDefinition && !opts.vpToken.presentationDefinitionUri)) {
     return undefined;
   }
-  let vp_token: VpTokenClaimPayload;
-  let id_token: IdTokenClaimPayload;
   const pex: PEX = new PEX();
-  opts.presentationDefinitions.forEach((def) => {
-    const discoveryResult = pex.definitionVersionDiscovery(def.definition);
-    if (discoveryResult.error) {
-      throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-    }
-    switch (def.location) {
-      case PresentationLocation.ID_TOKEN: {
-        if (!id_token || !id_token.verifiable_presentations) {
-          id_token = { verifiable_presentations: [{ presentation_definition: def.definition }] };
-        } else {
-          id_token.verifiable_presentations.push({ presentation_definition: def.definition });
+  const discoveryResult = pex.definitionVersionDiscovery(opts.vpToken.presentationDefinition);
+  if (discoveryResult.error) {
+    throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+  }
+
+  return {
+    ...(opts.idToken ? { id_token: opts.idToken } : {}),
+    ...(opts.vpToken.presentationDefinition || opts.vpToken.presentationDefinitionUri
+      ? {
+          vp_token: {
+            ...(opts.vpToken.presentationDefinition ? { presentation_definition: opts.vpToken.presentationDefinition } : {}),
+            ...(opts.vpToken.presentationDefinitionUri ? { presentation_definition_uri: opts.vpToken.presentationDefinitionUri } : {}),
+          },
         }
-        return;
-      }
-      case PresentationLocation.VP_TOKEN: {
-        if (vp_token) {
-          // There can only be one definition in the vp_token according to the spec
-          throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-        } else {
-          vp_token = {
-            nonce: nonce,
-            presentation_definition: def.definition,
-            response_type: PresentationLocation.VP_TOKEN,
-          };
-        }
-        return;
-      }
-    }
-  });
-  const payload: ClaimPayload = {
-    id_token,
-    vp_token,
+      : {}),
   };
-  return payload;
 }
 
 async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestPayload> {
   assertValidRequestOpts(opts);
   const state = getState(opts.state);
-  const registration = await createRequestRegistration(opts.registration);
-  const claims = createClaimsPayload(opts.claims, opts.nonce);
-
+  const registration = await createRequestRegistration(opts['registration']);
+  const claims = createClaimsPayload(opts.claims);
+  const clientId = registration.requestRegistrationPayload.registration.client_id;
   return {
     response_type: ResponseType.ID_TOKEN,
     scope: Scope.OPENID,
-    client_id: opts.signatureType.did || opts.redirectUri, //todo: check whether we should include opts.redirectUri value here, or the whole of client_id to begin with
+    //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
+    client_id: clientId ? clientId : opts.signatureType.did,
     redirect_uri: opts.redirectUri,
-    iss: opts.signatureType.did,
     response_mode: opts.responseMode || ResponseMode.POST,
-    response_context: opts.responseContext || ResponseContext.RP,
+    id_token_hint: opts.idTokenHint,
+    registration_uri: opts['registrationUri'],
+    request: opts.request,
+    request_uri: opts.requestUri,
     nonce: getNonce(state, opts.nonce),
     state,
     ...registration.requestRegistrationPayload,

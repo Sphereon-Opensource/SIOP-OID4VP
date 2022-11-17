@@ -1,4 +1,5 @@
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
+import { IPresentationDefinition } from '@sphereon/pex';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
@@ -13,7 +14,6 @@ import {
   NoSignature,
   ObjectBy,
   PassBy,
-  PresentationDefinitionWithLocation,
   PresentationVerificationCallback,
   RequestRegistrationOpts,
   ResponseContext,
@@ -44,7 +44,25 @@ export default class RPBuilder {
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
-  supportedVersions: Array<SupportedVersion>;
+  supportedVersions: SupportedVersion[];
+  scope: string;
+  responseType: string;
+  clientId: string;
+
+  addScope(scope: string): RPBuilder {
+    this.scope = scope;
+    return this;
+  }
+
+  addResponseType(responseType: string): RPBuilder {
+    this.responseType = responseType;
+    return this;
+  }
+
+  addClientId(clientId: string): RPBuilder {
+    this.clientId = clientId;
+    return this;
+  }
 
   addIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
@@ -137,13 +155,13 @@ export default class RPBuilder {
     return this;
   }
 
-  addPresentationDefinitionClaim(definitionOpt: PresentationDefinitionWithLocation): RPBuilder {
-    if (!this.claims || !this.claims.presentationDefinitions) {
+  addPresentationDefinitionClaim(definitionOpt: IPresentationDefinition): RPBuilder {
+    if (!this.claims || !this.claims.vpToken) {
       this.claims = {
-        presentationDefinitions: [definitionOpt],
+        vpToken: {
+          presentationDefinition: definitionOpt,
+        },
       };
-    } else {
-      this.claims.presentationDefinitions.push(definitionOpt);
     }
     return this;
   }
@@ -159,20 +177,12 @@ export default class RPBuilder {
     }
   }
 
-  withSupportedVersions(supportedVersions: Array<string | SupportedVersion>): RPBuilder {
+  withSupportedVersions(supportedVersion: SupportedVersion[] | SupportedVersion): RPBuilder {
     this.initSupportedVersions();
-    for (const supportedVersion of supportedVersions) {
-      this.addSupportedVersion(supportedVersion);
-    }
-    return this;
-  }
-
-  addSupportedVersion(supportedVersion: string | SupportedVersion): RPBuilder {
-    this.initSupportedVersions();
-    if (typeof supportedVersion === 'string') {
-      this.supportedVersions.push(SupportedVersion[supportedVersion]);
-    } else if (Array.isArray(supportedVersion)) {
-      this.supportedVersions.push(supportedVersion as SupportedVersion);
+    if (Array.isArray(supportedVersion)) {
+      this.supportedVersions.push(...supportedVersion);
+    } else {
+      this.supportedVersions.push(supportedVersion);
     }
     return this;
   }
