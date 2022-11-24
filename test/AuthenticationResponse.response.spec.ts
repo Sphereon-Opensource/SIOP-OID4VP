@@ -428,13 +428,15 @@ describe('create JWT from Request JWT should', () => {
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
       },
-      vp: [
-        {
-          location: PresentationLocation.VP_TOKEN,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          presentation: result,
-        },
-      ],
+      presentationExchange: {
+        vps: [
+          {
+            location: PresentationLocation.VP_TOKEN,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            presentation: result,
+          },
+        ],
+      },
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
     };
@@ -589,14 +591,17 @@ describe('create JWT from Request JWT should', () => {
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
       },
-      vp: [
-        {
-          location: PresentationLocation.ID_TOKEN,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          presentation: result,
-        },
-      ],
-      presentationSignCallback: presentationSignCallback,
+      presentationExchange: {
+        vps: [
+          {
+            location: PresentationLocation.ID_TOKEN,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            presentation: result,
+          },
+        ],
+        presentationSignCallback: presentationSignCallback,
+      },
+
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
     };

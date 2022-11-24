@@ -5,6 +5,13 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
     "AuthenticationRequestPayloadVD11": {
       "type": "object",
       "properties": {
+        "id_token_type": {
+          "type": "string"
+        },
+        "client_metadata": {},
+        "client_metadata_uri": {
+          "type": "string"
+        },
         "iss": {
           "type": "string"
         },
@@ -51,9 +58,6 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
         "client_id": {
           "type": "string"
         },
-        "response_mode": {
-          "type": "string"
-        },
         "redirect_uri": {
           "type": "string"
         },
@@ -75,11 +79,7 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
         "state": {
           "type": "string"
         },
-        "client_metadata": {},
-        "client_metadata_uri": {
-          "type": "string"
-        },
-        "id_token_type": {
+        "response_mode": {
           "type": "string"
         }
       },

@@ -4,21 +4,21 @@ import { AuthenticationRequestPayloadSchemaVD11, AuthenticationRequestPayloadSch
 import { AuthenticationRequestPayload, SupportedVersion } from '../types';
 import errors from '../types/Errors';
 
-export function authenticationRequestVersionDiscovery(authenticationRequestPayload: AuthenticationRequestPayload): SupportedVersion {
-  const authenticationRequestPayloadCopy: AuthenticationRequestPayload = JSON.parse(JSON.stringify(authenticationRequestPayload));
+export function authenticationRequestVersionDiscovery(authenticationRequest: AuthenticationRequestPayload): SupportedVersion {
+  const authenticationRequestCopy: AuthenticationRequestPayload = JSON.parse(JSON.stringify(authenticationRequest));
   const ajv = new Ajv({ verbose: true, allowUnionTypes: true, allErrors: true });
   const validateID1 = ajv.compile(AuthenticationRequestPayloadSchemaVID1);
-  let result = validateID1(authenticationRequestPayloadCopy);
+  let result = validateID1(authenticationRequestCopy);
   if (result) {
     return SupportedVersion.SIOPv2_ID1;
   }
   const validateJWTVCPresentationProfile = ajv.compile(AuthenticationRequestPayloadSchemaVID1);
-  result = validateJWTVCPresentationProfile(authenticationRequestPayloadCopy);
+  result = validateJWTVCPresentationProfile(authenticationRequestCopy);
   if (result) {
     return SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1;
   }
   const validateD11 = ajv.compile(AuthenticationRequestPayloadSchemaVD11);
-  result = validateD11(authenticationRequestPayloadCopy);
+  result = validateD11(authenticationRequestCopy);
   if (result) {
     return SupportedVersion.SIOPv2_D11;
   }

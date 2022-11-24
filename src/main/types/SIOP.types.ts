@@ -3,8 +3,8 @@
 import { PresentationSignCallBackParams } from '@sphereon/pex';
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import {
-  IPresentation as PEPresentation,
-  IVerifiablePresentation as PEVerifiablePresentation,
+  IPresentation,
+  IVerifiablePresentation,
   PresentationSubmission,
   W3CVerifiableCredential,
   W3CVerifiablePresentation,
@@ -42,55 +42,55 @@ interface AuthenticationRequestCommonOpts {
 }
 
 export interface AuthenticationRequestOptsVD1 extends AuthenticationRequestCommonOpts {
-  registration?: RequestRegistrationOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-registration-1_0.html
-  registrationUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
+  registration?: RequestRegistrationOpts; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
+  registrationUri?: string; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
 }
 
 export interface AuthenticationRequestOptsVD11 extends AuthenticationRequestCommonOpts {
   clientMetadata?: object; // from openid-connect-self-issued-v2-1_0-11 look at https://openid.net/specs/openid-connect-registration-1_0.html
   clientMetadataUri?: string; // from openid-connect-self-issued-v2-1_0-11
-  idTokenType?: string; // from openid-connect-self-issued-v2-1_0-11
+  idTokenType?: string; // OPTIONAL. Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed.
 }
 
-export type AuthenticationRequestOpts = AuthenticationRequestOptsVD1 | AuthenticationRequestOptsVD11;
+export interface AuthenticationRequestOpts extends AuthenticationRequestOptsVD1, AuthenticationRequestOptsVD11 {}
 
 export interface AuthenticationRequestCommonPayload extends JWTPayload {
   scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
   response_type: ResponseType; // REQUIRED. Constant string value id_token.
   client_id: string; // REQUIRED. RP's identifier at the Self-Issued OP.
-  response_mode?: string;
   redirect_uri: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
   id_token_hint?: string; // OPTIONAL. As specified in Section 3.1.2 of [OpenID.Core]. If the ID Token is encrypted for the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
   claims?: ClaimPayload; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
   request?: string; // OPTIONAL. Request Object value, as specified in Section 6.1 of [OpenID.Core]. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
   request_uri?: string; // OPTIONAL. URL where Request Object value can be retrieved from, as specified in Section 6.2 of [OpenID.Core].
+
   nonce: string;
   state: string;
+  response_mode?: string; //? check whether this is part of the spec
 }
 
-export type AuthenticationRequestPayloadVID1 = AuthenticationRequestCommonPayload & RequestRegistrationPayload;
+export interface AuthenticationRequestPayloadVID1 extends AuthenticationRequestCommonPayload, RequestRegistrationPayloadProperties {}
 
-export interface AuthenticationRequestPayloadVD11 extends AuthenticationRequestCommonPayload {
-  client_metadata?: unknown;
-  client_metadata_uri?: string;
-  id_token_type?: string;
-}
-
-export interface JWTVcPresentationProfileAuthenticationRequestPayload {
-  /**
-   * Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed
-   * individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if
-   * ID token returned based on the comparison of the iss and subclaims values (see Section 12.1). In order to preserve compatibility with
-   * existing OpenID Connect deployments, the OP MAY return an ID token that does not fulfill the requirements as expressed in this parameter. So the
-   * RP SHOULD be prepared to reliably handle such an outcome.
-   */
-  id_token_type?: string;
-}
+export interface AuthenticationRequestPayloadVD11
+  extends AuthenticationRequestCommonPayload,
+    RequestClientMetadataPayloadProperties,
+    RequestIdTokenPayloadProperties {}
 
 // https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
 export type AuthenticationRequestPayload = AuthenticationRequestPayloadVID1 | AuthenticationRequestPayloadVD11;
 
-export interface RequestRegistrationPayload {
+export type JWTVcPresentationProfileAuthenticationRequestPayload = RequestIdTokenPayloadProperties;
+
+export interface RequestIdTokenPayloadProperties {
+  id_token_type?: string; // OPTIONAL. Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if ID token returned based on the comparison of the iss and sub claims values (see(see Section 12.1). In order to preserve compatibility with existing OpenID Connect deployments, the OP MAY return an ID token that does not fulfill the requirements as expressed in this parameter. So the RP SHOULD be prepared to reliably handle such an outcome.
+}
+
+export interface RequestClientMetadataPayloadProperties {
+  client_metadata?: unknown; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
+  client_metadata_uri?: string; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
+}
+
+export interface RequestRegistrationPayloadProperties {
   registration?: RPRegistrationMetadataPayload; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
   registration_uri?: string; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in 2.2.1.
 }
@@ -122,18 +122,23 @@ export interface AuthenticationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
   registration: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
-  presentationVerificationCallback?: PresentationVerificationCallback;
-  presentationSignCallback?: PresentationSignCallback;
+
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   nonce?: string;
   state?: string;
   responseMode?: ResponseMode;
   did: string;
-  vp?: VerifiablePresentationResponseOpts[];
   expiresIn?: number;
   accessToken?: string;
   tokenType?: string;
   refreshToken?: string;
+  presentationExchange?: PresentationExchangeOpts;
+}
+
+export interface PresentationExchangeOpts {
+  presentationVerificationCallback?: PresentationVerificationCallback;
+  presentationSignCallback?: PresentationSignCallback;
+  vps?: VerifiablePresentationWithLocation[];
   _vp_token?: { presentation_submission: PresentationSubmission };
 }
 
@@ -213,7 +218,7 @@ export interface PresentationDefinitionWithLocation {
   definition: PresentationDefinitionV1 | PresentationDefinitionV2;
 }
 
-export interface VerifiablePresentationResponseOpts extends VerifiablePresentationPayload {
+export interface VerifiablePresentationWithLocation extends VerifiablePresentationPayload {
   location: PresentationLocation;
 }
 
@@ -228,7 +233,7 @@ export enum PresentationLocation {
  */
 export interface VerifiablePresentationPayload {
   format: VerifiablePresentationTypeFormat;
-  presentation: PEVerifiablePresentation;
+  presentation: IVerifiablePresentation;
 }
 
 /**
@@ -736,8 +741,8 @@ export const isInternalVerification = (object: InternalVerification | ExternalVe
 export const isExternalVerification = (object: InternalVerification | ExternalVerification): object is ExternalVerification =>
   object.mode === VerificationMode.EXTERNAL; /*&& 'verifyUri' in object || 'authZToken' in object*/
 
-export const isVP = (object: PEVerifiablePresentation | PEPresentation): object is PEVerifiablePresentation => 'presentation' in object;
-export const isPresentation = (object: PEVerifiablePresentation | PEPresentation): object is PEPresentation => 'presentation_submission' in object;
+export const isVP = (object: IVerifiablePresentation | IPresentation): object is IVerifiablePresentation => 'presentation' in object;
+export const isPresentation = (object: IVerifiablePresentation | IPresentation): object is IPresentation => 'presentation_submission' in object;
 
 export enum RevocationStatus {
   VALID = 'valid',

@@ -5,7 +5,7 @@ import { RPRegistrationMetadataPayloadSchema } from './schemas';
 import {
   PassBy,
   RequestRegistrationOpts,
-  RequestRegistrationPayload,
+  RequestRegistrationPayloadProperties,
   RPRegistrationMetadataOpts,
   RPRegistrationMetadataPayload,
   SIOPErrors,
@@ -24,7 +24,7 @@ export function assertValidRequestRegistrationOpts(opts: RequestRegistrationOpts
   }
 }
 
-export async function createRequestRegistrationPayload(opts: RequestRegistrationOpts): Promise<RequestRegistrationPayload> {
+export async function createRequestRegistrationPayload(opts: RequestRegistrationOpts): Promise<RequestRegistrationPayloadProperties> {
   assertValidRequestRegistrationOpts(opts);
 
   const regObj: RPRegistrationMetadataPayload = createRPRegistrationMetadataPayload(opts);
@@ -44,7 +44,7 @@ export async function createRequestRegistrationPayload(opts: RequestRegistration
 }
 
 export async function createRequestRegistration(opts: RequestRegistrationOpts): Promise<{
-  requestRegistrationPayload: RequestRegistrationPayload;
+  requestRegistrationPayload: RequestRegistrationPayloadProperties;
   rpRegistrationMetadataPayload: RPRegistrationMetadataPayload;
   opts: RequestRegistrationOpts;
 }> {

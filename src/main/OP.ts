@@ -16,11 +16,12 @@ import {
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
+  PresentationExchangeOpts,
   ResponseMode,
   SIOPErrors,
   SupportedVersion,
   UrlEncodingFormat,
-  VerifiablePresentationResponseOpts,
+  VerifiablePresentationWithLocation,
   Verification,
   VerificationMode,
   VerifiedAuthenticationRequestWithJWT,
@@ -84,7 +85,9 @@ export class OP {
       state?: string;
       audience?: string;
       verification?: InternalVerification | ExternalVerification;
-      vp?: VerifiablePresentationResponseOpts[];
+      presentationExchange?: {
+        vps?: VerifiablePresentationWithLocation[];
+      };
     }
   ): Promise<AuthenticationResponseWithJWT> {
     return AuthenticationResponse.createAuthenticationResponseFromVerifiedRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
@@ -123,18 +126,14 @@ export class OP {
     nonce?: string;
     state?: string;
     audience?: string;
-    vp?: VerifiablePresentationResponseOpts[];
+    presentationExchange?: PresentationExchangeOpts;
   }): AuthenticationResponseOpts {
-    const state = opts?.state;
-    const nonce = opts?.nonce;
-    const vp = opts?.vp;
-    const audience = opts?.audience;
     return {
-      redirectUri: audience,
+      ...(opts?.audience ? { redirectUri: opts.audience } : {}),
       ...this._authResponseOpts,
-      nonce,
-      state,
-      vp,
+      ...(opts?.nonce ? { nonce: opts.nonce } : {}),
+      ...(opts?.state ? { state: opts.state } : {}),
+      ...(opts?.presentationExchange ? { presentationExchange: opts.presentationExchange } : {}),
     };
   }
 
@@ -244,7 +243,9 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: {
       expiresIn: opts.builder.expiresIn,
       signatureType: opts.builder.signatureType,
       responseMode: opts.builder.responseMode,
-      presentationSignCallback: opts.builder.presentationSignCallback,
+      presentationExchange: {
+        presentationSignCallback: opts.builder.presentationSignCallback,
+      },
     };
 
     const languageTagEnabledFieldsNames = ['clientName', 'clientPurpose'];

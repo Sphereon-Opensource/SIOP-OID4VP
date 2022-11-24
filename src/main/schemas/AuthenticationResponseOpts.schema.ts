@@ -14,12 +14,6 @@ export const AuthenticationResponseOptsSchema = {
         "checkLinkedDomain": {
           "$ref": "#/definitions/CheckLinkedDomain"
         },
-        "presentationVerificationCallback": {
-          "$ref": "#/definitions/PresentationVerificationCallback"
-        },
-        "presentationSignCallback": {
-          "$ref": "#/definitions/PresentationSignCallback"
-        },
         "signatureType": {
           "anyOf": [
             {
@@ -45,12 +39,6 @@ export const AuthenticationResponseOptsSchema = {
         "did": {
           "type": "string"
         },
-        "vp": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/VerifiablePresentationResponseOpts"
-          }
-        },
         "expiresIn": {
           "type": "number"
         },
@@ -63,17 +51,8 @@ export const AuthenticationResponseOptsSchema = {
         "refreshToken": {
           "type": "string"
         },
-        "_vp_token": {
-          "type": "object",
-          "properties": {
-            "presentation_submission": {
-              "$ref": "#/definitions/PresentationSubmission"
-            }
-          },
-          "required": [
-            "presentation_submission"
-          ],
-          "additionalProperties": false
+        "presentationExchange": {
+          "$ref": "#/definitions/PresentationExchangeOpts"
         }
       },
       "required": [
@@ -1445,22 +1424,6 @@ export const AuthenticationResponseOptsSchema = {
         "always"
       ]
     },
-    "PresentationVerificationCallback": {
-      "properties": {
-        "isFunction": {
-          "type": "boolean",
-          "const": true
-        }
-      }
-    },
-    "PresentationSignCallback": {
-      "properties": {
-        "isFunction": {
-          "type": "boolean",
-          "const": true
-        }
-      }
-    },
     "InternalSignature": {
       "type": "object",
       "properties": {
@@ -1530,7 +1493,53 @@ export const AuthenticationResponseOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "VerifiablePresentationResponseOpts": {
+    "PresentationExchangeOpts": {
+      "type": "object",
+      "properties": {
+        "presentationVerificationCallback": {
+          "$ref": "#/definitions/PresentationVerificationCallback"
+        },
+        "presentationSignCallback": {
+          "$ref": "#/definitions/PresentationSignCallback"
+        },
+        "vps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VerifiablePresentationWithLocation"
+          }
+        },
+        "_vp_token": {
+          "type": "object",
+          "properties": {
+            "presentation_submission": {
+              "$ref": "#/definitions/PresentationSubmission"
+            }
+          },
+          "required": [
+            "presentation_submission"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "PresentationVerificationCallback": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "PresentationSignCallback": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "VerifiablePresentationWithLocation": {
       "type": "object",
       "properties": {
         "format": {

@@ -522,15 +522,22 @@ describe('RP and OP interaction should', () => {
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
+    const vp = (await pex.submissionFrom(
+      pd[0].definition,
+      getVCs(),
+      {},
+      op.authResponseOpts.presentationExchange.presentationSignCallback
+    )) as IVerifiablePresentation;
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-      vp: [
-        {
-          presentation: vp,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          location: PresentationLocation.VP_TOKEN,
-        },
-      ],
+      presentationExchange: {
+        vps: [
+          {
+            presentation: vp,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            location: PresentationLocation.VP_TOKEN,
+          },
+        ],
+      },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
@@ -635,15 +642,22 @@ describe('RP and OP interaction should', () => {
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
+      const vp = (await pex.submissionFrom(
+        pd[0].definition,
+        getVCs(),
+        {},
+        op.authResponseOpts.presentationExchange.presentationSignCallback
+      )) as IVerifiablePresentation;
       const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-        vp: [
-          {
-            presentation: vp,
-            format: VerifiablePresentationTypeFormat.LDP_VP,
-            location: PresentationLocation.VP_TOKEN,
-          },
-        ],
+        presentationExchange: {
+          vps: [
+            {
+              presentation: vp,
+              format: VerifiablePresentationTypeFormat.LDP_VP,
+              location: PresentationLocation.VP_TOKEN,
+            },
+          ],
+        },
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
       await expect(
@@ -772,15 +786,22 @@ describe('RP and OP interaction should', () => {
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
+    const vp = (await pex.submissionFrom(
+      pd[0].definition,
+      getVCs(),
+      {},
+      op.authResponseOpts.presentationExchange.presentationSignCallback
+    )) as IVerifiablePresentation;
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-      vp: [
-        {
-          presentation: vp,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          location: PresentationLocation.VP_TOKEN,
-        },
-      ],
+      presentationExchange: {
+        vps: [
+          {
+            presentation: vp,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            location: PresentationLocation.VP_TOKEN,
+          },
+        ],
+      },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
@@ -898,15 +919,22 @@ describe('RP and OP interaction should', () => {
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
+      const vp = (await pex.submissionFrom(
+        pd[0].definition,
+        getVCs(),
+        {},
+        op.authResponseOpts.presentationExchange.presentationSignCallback
+      )) as IVerifiablePresentation;
       const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-        vp: [
-          {
-            presentation: vp,
-            format: VerifiablePresentationTypeFormat.LDP_VP,
-            location: PresentationLocation.VP_TOKEN,
-          },
-        ],
+        presentationExchange: {
+          vps: [
+            {
+              presentation: vp,
+              format: VerifiablePresentationTypeFormat.LDP_VP,
+              location: PresentationLocation.VP_TOKEN,
+            },
+          ],
+        },
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
 
@@ -1032,16 +1060,23 @@ describe('RP and OP interaction should', () => {
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
+    const vp = (await pex.submissionFrom(
+      pd[0].definition,
+      getVCs(),
+      {},
+      op.authResponseOpts.presentationExchange.presentationSignCallback
+    )) as IVerifiablePresentation;
 
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-      vp: [
-        {
-          presentation: vp,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          location: PresentationLocation.VP_TOKEN,
-        },
-      ],
+      presentationExchange: {
+        vps: [
+          {
+            presentation: vp,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            location: PresentationLocation.VP_TOKEN,
+          },
+        ],
+      },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
@@ -1321,15 +1356,22 @@ describe('RP and OP interaction should', () => {
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
+    const vp = (await pex.submissionFrom(
+      pd[0].definition,
+      getVCs(),
+      {},
+      op.authResponseOpts.presentationExchange.presentationSignCallback
+    )) as IVerifiablePresentation;
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-      vp: [
-        {
-          presentation: vp,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          location: PresentationLocation.ID_TOKEN,
-        },
-      ],
+      presentationExchange: {
+        vps: [
+          {
+            presentation: vp,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            location: PresentationLocation.ID_TOKEN,
+          },
+        ],
+      },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 

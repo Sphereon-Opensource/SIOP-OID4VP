@@ -75,7 +75,7 @@ export default class AuthenticationResponse {
     await assertValidVerifiablePresentations({
       definitions: verifiedJwt.presentationDefinitions,
       vps: payload.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
-      presentationVerificationCallback: responseOpts.presentationVerificationCallback,
+      presentationVerificationCallback: responseOpts.presentationExchange?.presentationVerificationCallback,
     });
 
     return {
@@ -201,14 +201,14 @@ async function createThumbprintAndJWK(resOpts: AuthenticationResponseOpts): Prom
 
 function extractPresentations(resOpts: AuthenticationResponseOpts) {
   const presentationPayloads =
-    resOpts.vp && resOpts.vp.length > 0
-      ? resOpts.vp
+    resOpts.presentationExchange?.vps && resOpts.presentationExchange.vps.length > 0
+      ? resOpts.presentationExchange.vps
           .filter((vp) => vp.location === PresentationLocation.ID_TOKEN)
           .map<VerifiablePresentationPayload>((vp) => vp as VerifiablePresentationPayload)
       : undefined;
   const vp_tokens =
-    resOpts.vp && resOpts.vp.length > 0
-      ? resOpts.vp
+    resOpts.presentationExchange?.vps && resOpts.presentationExchange.vps.length > 0
+      ? resOpts.presentationExchange.vps
           .filter((vp) => vp.location === PresentationLocation.VP_TOKEN)
           .map<VerifiablePresentationPayload>((vp) => vp as VerifiablePresentationPayload)
       : undefined;
@@ -245,7 +245,7 @@ async function createSIOPIDToken(verifiedJwt: VerifiedAuthenticationRequestWithJ
     sub: resOpts.did,
     auth_time: verifiedJwt.payload.auth_time,
     nonce,
-    ...(resOpts._vp_token ? { _vp_token: resOpts._vp_token } : {}),
+    ...(resOpts.presentationExchange?._vp_token ? { _vp_token: resOpts.presentationExchange._vp_token } : {}),
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !resOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(resOpts);
@@ -270,6 +270,7 @@ async function createSIOPResponsePayload(
     token_type: resOpts.tokenType,
     refresh_token: resOpts.refreshToken,
     expires_in: resOpts.expiresIn,
+    // fixme: The or definitely is wrong. The verifiable_presentations should end up in the ID token if present
     vp_token: vp_token || verifiable_presentations,
     state,
   };

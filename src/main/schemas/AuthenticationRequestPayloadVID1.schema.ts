@@ -57,9 +57,6 @@ export const AuthenticationRequestPayloadSchemaVID1 = {
         "client_id": {
           "type": "string"
         },
-        "response_mode": {
-          "type": "string"
-        },
         "redirect_uri": {
           "type": "string"
         },
@@ -79,6 +76,9 @@ export const AuthenticationRequestPayloadSchemaVID1 = {
           "type": "string"
         },
         "state": {
+          "type": "string"
+        },
+        "response_mode": {
           "type": "string"
         }
       },
