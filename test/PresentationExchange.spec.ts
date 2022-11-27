@@ -15,6 +15,7 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
+  SupportedVersion,
   VerifiablePresentationPayload,
   VerifiablePresentationTypeFormat,
   VerifiedAuthenticationRequestWithJWT,
@@ -211,11 +212,13 @@ describe('presentation exchange manager tests', () => {
     const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
       didResolutionResult: undefined,
       issuer: '',
-      jwt: '',
+      jwt: payload.request,
       signer: undefined,
-      payload: payload,
+      payload: undefined,
+      authorizationRequest: payload,
       presentationDefinitions: pd,
       verifyOpts: null,
+      version: SupportedVersion.SIOPv2_ID1,
     };
     await expect(
       PresentationExchange.validatePresentationAgainstDefinition(verifiedJwt.presentationDefinitions[0].definition, {
@@ -267,11 +270,13 @@ describe('presentation exchange manager tests', () => {
     const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
       didResolutionResult: undefined,
       issuer: '',
-      jwt: '',
+      jwt: payload.request,
       signer: undefined,
-      payload: payload,
+      payload: undefined,
+      authorizationRequest: payload,
       presentationDefinitions: pd,
       verifyOpts: null,
+      version: SupportedVersion.SIOPv2_ID1,
     };
     await expect(
       PresentationExchange.validatePresentationAgainstDefinition(verifiedJwt.presentationDefinitions[0].definition, {
@@ -298,11 +303,13 @@ describe('presentation exchange manager tests', () => {
     const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
       didResolutionResult: undefined,
       issuer: '',
-      jwt: '',
+      jwt: payload.request,
       signer: undefined,
-      payload: payload,
+      payload: undefined,
+      authorizationRequest: payload,
       presentationDefinitions: pd,
       verifyOpts: null,
+      version: SupportedVersion.SIOPv2_ID1,
     };
     const result = await PresentationExchange.validatePresentationAgainstDefinition(verifiedJwt.presentationDefinitions[0].definition, {
       '@context': ['https://www.w3.org/2018/credentials/v1'],

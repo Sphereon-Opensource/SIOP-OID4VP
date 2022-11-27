@@ -59,7 +59,8 @@ export default class AuthenticationRequest {
   public static async createURI(opts: AuthenticationRequestOpts): Promise<AuthorizationRequestURI> {
     const { requestObject } = await AuthenticationRequest.createRequestObject(opts);
     const authorizationRequest = await createAuthorizationRequestPayload(opts, requestObject);
-    return AuthenticationRequest.createURIFromRequest(opts, authorizationRequest);
+    const result = await AuthenticationRequest.createURIFromRequest(opts, authorizationRequest);
+    return { authorizationRequest, ...result, ...{ requestObject } };
   }
 
   public static async parseAndResolveURI(encodedUri: string) {
@@ -90,15 +91,15 @@ export default class AuthenticationRequest {
    * the URI will be constructed based on the Request Object only!
    */
   static async createRequestObject(opts: AuthenticationRequestOpts): Promise<RequestObjectResult> {
-    if (opts.requestBy.type === PassBy.NONE) {
+    if (opts && opts.requestBy?.type === PassBy.NONE) {
       throw Error(`Cannot create a Request Object when the passBy options is set to None`);
     }
     const createdRequestObject = await createRequestObjectPayload(opts);
     const requestObjectPayload = JSON.parse(JSON.stringify(createdRequestObject));
     // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
     // request and request_uri parameters MUST NOT be included in Request Objects.
-    delete requestObjectPayload.registration;
-    delete requestObjectPayload.registration_uri;
+    delete requestObjectPayload.request;
+    delete requestObjectPayload.request_uri;
     const requestObject = await signDidJwtPayload(requestObjectPayload, opts);
 
     return {
@@ -125,7 +126,7 @@ export default class AuthenticationRequest {
   /**
    * Verifies a SIOP Request JWT on OP side
    *
-   * @param jwt
+   * @param uriOrJwt
    * @param opts
    */
   static async verify(uriOrJwt: string, opts: VerifyAuthenticationRequestOpts): Promise<VerifiedAuthenticationRequestWithJWT> {
@@ -142,7 +143,9 @@ export default class AuthenticationRequest {
     if (isJwt) {
       // Put back the request object as that won't be present in the Jwt
       origAuthorizationRequest.request = jwt;
-      const { header, payload } = parseJWT(origAuthorizationRequest.request);
+    }
+    if (jwt) {
+      const { header, payload } = parseJWT(jwt);
       assertValidRequestJWT(header, payload);
       const options = {
         audience: getAudience(jwt),
@@ -208,8 +211,7 @@ export default class AuthenticationRequest {
   /**
    * Creates an URI Request
    * @param opts Options to define the Uri Request
-   * @param requestObject
-   * @param jwt
+   * @param request
    *
    */
   private static async createURIFromRequest(
@@ -224,16 +226,18 @@ export default class AuthenticationRequest {
     }
     const requestObjectPayload: RequestObjectPayload = requestObject ? (decodeJWT(requestObject) as RequestObjectPayload) : undefined;
 
-    // Only used to validate if it contains a presentation definition
-    await PresentationExchange.findValidPresentationDefinitions(requestObjectPayload);
+    if (requestObjectPayload) {
+      // Only used to validate if it contains a presentation definition
+      await PresentationExchange.findValidPresentationDefinitions(requestObjectPayload);
 
-    AuthenticationRequest.assertValidRequestObject(requestObjectPayload);
-    // fixme. This should not be fetched at all. We should inspect the opts
-    /*const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
-      requestObject['registration_uri'],
-      requestObject['registration']
-    );
-    AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);*/
+      AuthenticationRequest.assertValidRequestObject(requestObjectPayload);
+      // fixme. This should not be fetched at all. We should inspect the opts
+      const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
+        requestObjectPayload['registration_uri'],
+        requestObjectPayload['registration']
+      );
+      AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
+    }
     const authorizationRequest: AuthorizationRequestPayload = isJwt ? (requestObjectPayload as AuthorizationRequestPayload) : request;
     if (!authorizationRequest) {
       throw Error(SIOPErrors.BAD_PARAMS);
@@ -276,7 +280,7 @@ export default class AuthenticationRequest {
 
   private static async parseAndResolveRequestUri(uri: string) {
     const { authorizationRequest, scheme } = AuthenticationRequest.parseURI(uri);
-    const requestObject = await fetchByReferenceOrUseByValue(authorizationRequest.request, authorizationRequest.request_uri);
+    const requestObject = await fetchByReferenceOrUseByValue(authorizationRequest.request_uri, authorizationRequest.request, true);
     return { scheme, authorizationRequest, requestObject };
   }
 }
@@ -343,7 +347,7 @@ async function createAuthorizationRequestPayload(opts: AuthenticationRequestOpts
   const state = getState(opts.state);
   const registration = await createRequestRegistration(opts['registration']);
   const claims = createClaimsPayloadProperties(opts.claims);
-  const clientId = opts.clientId ? opts.clientId : registration.requestRegistrationPayload.registration.client_id;
+  const clientId = opts.clientId ? opts.clientId : registration.requestRegistration.registration.client_id;
 
   return {
     response_type: ResponseType.ID_TOKEN,
@@ -358,7 +362,7 @@ async function createAuthorizationRequestPayload(opts: AuthenticationRequestOpts
     ...(opts.requestBy && opts.requestBy.type === PassBy.VALUE ? { request: requestObject } : {}),
     nonce: getNonce(state, opts.nonce),
     state,
-    ...registration.requestRegistrationPayload,
+    ...registration.requestRegistration,
     claims,
   };
 }
@@ -372,7 +376,7 @@ async function createRequestObjectPayload(opts: AuthenticationRequestOpts): Prom
   const registration = await createRequestRegistration(requestOpts['registration']);
   const claims = createClaimsPayloadProperties(requestOpts.claims);
 
-  const clientId = requestOpts.clientId ? requestOpts.clientId : registration.requestRegistrationPayload.registration.client_id;
+  const clientId = requestOpts.clientId ? requestOpts.clientId : registration.requestRegistration.registration.client_id;
 
   return {
     response_type: ResponseType.ID_TOKEN,
@@ -385,7 +389,7 @@ async function createRequestObjectPayload(opts: AuthenticationRequestOpts): Prom
     registration_uri: requestOpts['registrationUri'],
     nonce: getNonce(state, requestOpts.nonce),
     state,
-    ...registration.requestRegistrationPayload,
+    ...registration.requestRegistration,
     claims,
   };
 }

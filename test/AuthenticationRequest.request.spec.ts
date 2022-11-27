@@ -74,7 +74,7 @@ describe('create Request Uri should', () => {
   });
 
   it('return a reference url', async () => {
-    expect.assertions(13);
+    expect.assertions(14);
     const opts: AuthenticationRequestOpts = {
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
@@ -119,8 +119,9 @@ describe('create Request Uri should', () => {
     expect(uriRequest).toBeDefined();
     expect(uriRequest).toHaveProperty('encodedUri');
     expect(uriRequest).toHaveProperty('encodingFormat');
-    expect(uriRequest).toHaveProperty('jwt');
-    expect(uriRequest.jwt).toBeDefined();
+    expect(uriRequest).toHaveProperty('requestObject');
+    expect(uriRequest).toHaveProperty('authorizationRequest');
+    expect(uriRequest.authorizationRequest).toBeDefined();
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`openid://`);
@@ -136,7 +137,7 @@ describe('create Request Uri should', () => {
   });
 
   it('return a reference url when using did:key', async () => {
-    expect.assertions(3);
+    expect.assertions(4);
     const opts: AuthenticationRequestOpts = {
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
@@ -183,8 +184,9 @@ describe('create Request Uri should', () => {
 
     const data = parse(uriDecoded);
     expect(data.request_uri).toStrictEqual(opts.requestBy.referenceUri);
-    expect(uriRequest).toHaveProperty('jwt');
-    expect(uriRequest.jwt).toBeDefined();
+    expect(uriRequest).toHaveProperty('requestObject');
+    expect(uriRequest.authorizationRequest).toBeDefined();
+    expect(uriRequest.authorizationRequest.request_uri).toEqual(EXAMPLE_REFERENCE_URL);
   });
 
   it('return an url with an embedded token value', async () => {
@@ -421,7 +423,7 @@ describe('create Request JWT should', () => {
     };
 
     const expected = {
-      authenticationRequest: {
+      requestObjectPayload: {
         response_type: 'id_token',
         scope: 'openid',
         client_id: 'test_client_id',

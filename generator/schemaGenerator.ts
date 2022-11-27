@@ -49,12 +49,10 @@ function writeSchema(config) {
 }
 
 function correctSchema(schemaString: string) {
-  return schemaString.replace(
-    "\"SuppliedSignature\": {\n" +
+  return schemaString.replace("\"SuppliedSignature\": {\n" +
     "      \"type\": \"object\",\n" +
     "      \"properties\": {\n" +
     "        \"signature\": {\n" +
-    "          \"type\": \"object\",\n" +
     "          \"properties\": {\n" +
     "            \"isFunction\": {\n" +
     "              \"type\": \"boolean\",\n" +
@@ -131,26 +129,26 @@ const discoveryMetadataPayload = {
   skipTypeCheck: true
 };
 
-const authenticationRequestPayloadVID1 = {
+const authorizationRequestPayloadVID1 = {
   path: "../src/main/types/SIOP.types.ts",
   tsconfig: "tsconfig.json",
-  type: "AuthenticationRequestPayloadVID1", // Or <type-name> if you want to generate schema for that one type only
+  type: "AuthorizationRequestPayloadVID1", // Or <type-name> if you want to generate schema for that one type only
   outputPath: "src/main/schemas/AuthenticationRequestPayloadVID1.schema.ts",
   outputConstName: "AuthenticationRequestPayloadSchemaVID1",
   skipTypeCheck: true
 };
 
-const authenticationRequestPayloadVD11 = {
+const authorizationRequestPayloadVD11 = {
   path: "../src/main/types/SIOP.types.ts",
   tsconfig: "tsconfig.json",
-  type: "AuthenticationRequestPayloadVD11", // Or <type-name> if you want to generate schema for that one type only
+  type: "AuthorizationRequestPayloadVD11", // Or <type-name> if you want to generate schema for that one type only
   outputPath: "src/main/schemas/AuthenticationRequestPayloadVD11.schema.ts",
   outputConstName: "AuthenticationRequestPayloadSchemaVD11",
   skipTypeCheck: true
 }
 
-writeSchema(authenticationRequestPayloadVID1)
-writeSchema(authenticationRequestPayloadVD11)
+writeSchema(authorizationRequestPayloadVID1)
+writeSchema(authorizationRequestPayloadVD11)
 writeSchema(requestOptsConf);
 writeSchema(responseOptsConf);
 writeSchema(rPRegistrationMetadataPayload);

@@ -1,5 +1,6 @@
 import { IProofType } from '@sphereon/ssi-types';
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
+import nock from 'nock';
 
 import {
   AuthenticationRequestOpts,
@@ -175,7 +176,9 @@ describe('OP should', () => {
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.jwt);
+      nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObject);
+
+      const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.encodedUri);
       console.log(JSON.stringify(verifiedRequest));
       expect(verifiedRequest.issuer).toMatch(mockEntity.did);
       expect(verifiedRequest.signer).toMatchObject({
@@ -199,7 +202,7 @@ describe('OP should', () => {
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withRedirectUri(EXAMPLE_REFERENCE_URL)
-      .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+      .withRequestBy(PassBy.VALUE)
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
       .addDidMethod('ethr')
       .withRegistrationBy({
@@ -250,7 +253,7 @@ describe('OP should', () => {
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .build()
 
-      .verifyAuthenticationRequest(requestURI.jwt);
+      .verifyAuthenticationRequest(requestURI.encodedUri);
     console.log(JSON.stringify(verifiedRequest));
     expect(verifiedRequest.issuer).toMatch(rpMockEntity.did);
     expect(verifiedRequest.signer).toMatchObject({

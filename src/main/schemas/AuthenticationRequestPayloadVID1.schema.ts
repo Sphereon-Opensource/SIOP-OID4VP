@@ -1,8 +1,8 @@
 export const AuthenticationRequestPayloadSchemaVID1 = {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/AuthenticationRequestPayloadVID1",
+  "$ref": "#/definitions/AuthorizationRequestPayloadVID1",
   "definitions": {
-    "AuthenticationRequestPayloadVID1": {
+    "AuthorizationRequestPayloadVID1": {
       "type": "object",
       "properties": {
         "registration": {

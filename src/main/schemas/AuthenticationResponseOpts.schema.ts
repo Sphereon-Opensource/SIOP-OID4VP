@@ -1228,11 +1228,7 @@ export const AuthenticationResponseOptsSchema = {
       "type": "object",
       "properties": {
         "type": {
-          "type": "string",
-          "enum": [
-            "REFERENCE",
-            "VALUE"
-          ]
+          "$ref": "#/definitions/PassBy"
         },
         "referenceUri": {
           "type": "string"
@@ -1247,6 +1243,14 @@ export const AuthenticationResponseOptsSchema = {
       "additionalProperties": false,
       "required": [
         "type"
+      ]
+    },
+    "PassBy": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "REFERENCE",
+        "VALUE"
       ]
     },
     "EncKeyAlgorithm": {
@@ -1471,14 +1475,6 @@ export const AuthenticationResponseOptsSchema = {
     "SuppliedSignature": {
       "type": "object",
       "properties": {
-        "signature": {
-          "properties": {
-            "isFunction": {
-              "type": "boolean",
-              "const": true
-            }
-          }
-        },
         "did": {
           "type": "string"
         },
@@ -1487,11 +1483,10 @@ export const AuthenticationResponseOptsSchema = {
         }
       },
       "required": [
-        "signature",
         "did",
         "kid"
       ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "PresentationExchangeOpts": {
       "type": "object",

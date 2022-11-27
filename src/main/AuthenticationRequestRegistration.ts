@@ -11,7 +11,7 @@ import {
   SIOPErrors,
 } from './types';
 
-const ajv = new Ajv({ allowUnionTypes: true });
+const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export function assertValidRequestRegistrationOpts(opts: RequestRegistrationOpts) {
@@ -43,14 +43,14 @@ export async function createRequestRegistrationPayload(opts: RequestRegistration
 }
 
 export async function createRequestRegistration(opts: RequestRegistrationOpts): Promise<{
-  requestRegistrationPayload: RequestRegistrationPayloadProperties;
-  rpRegistrationMetadataPayload: RPRegistrationMetadataPayload;
+  requestRegistration: RequestRegistrationPayloadProperties;
+  rpRegistrationMetadata: RPRegistrationMetadataPayload;
   opts: RequestRegistrationOpts;
 }> {
   const requestRegistrationPayload = await createRequestRegistrationPayload(opts);
   return {
-    requestRegistrationPayload: requestRegistrationPayload,
-    rpRegistrationMetadataPayload: createRPRegistrationMetadataPayload(opts),
+    requestRegistration: requestRegistrationPayload,
+    rpRegistrationMetadata: createRPRegistrationMetadataPayload(opts),
     opts,
   };
 }

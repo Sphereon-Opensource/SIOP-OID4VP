@@ -27,7 +27,7 @@ import {
   VerifyAuthenticationRequestOpts,
 } from './types';
 
-const ajv = new Ajv({ allowUnionTypes: true });
+const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 
 const validate = ajv.compile(AuthenticationResponseOptsSchema);
 

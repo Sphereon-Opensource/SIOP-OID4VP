@@ -7,7 +7,7 @@ import errors from '../types/Errors';
 // TODO: Probably wise to return an array in case a request adheres to multiple schema's
 export function authorizationRequestVersionDiscovery(authorizationRequest: AuthorizationRequestPayload): SupportedVersion {
   const authorizationRequestCopy: AuthorizationRequestPayload = JSON.parse(JSON.stringify(authorizationRequest));
-  const ajv = new Ajv({ verbose: true, allowUnionTypes: true, allErrors: true });
+  const ajv = new Ajv({ verbose: true, allowUnionTypes: true, strict: false, allErrors: true });
   const validateID1 = ajv.compile(AuthenticationRequestPayloadSchemaVID1);
   let result = validateID1(authorizationRequestCopy);
   if (result) {

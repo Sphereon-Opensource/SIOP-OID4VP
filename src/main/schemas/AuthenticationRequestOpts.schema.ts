@@ -33,48 +33,17 @@ export const AuthenticationRequestOptsSchema = {
         "claims": {
           "$ref": "#/definitions/ClaimOpts"
         },
-        "request": {
-          "type": "string"
-        },
-        "requestUri": {
-          "type": "string"
-        },
         "nonce": {
           "type": "string"
         },
         "state": {
           "type": "string"
         },
-        "signatureType": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/InternalSignature"
-            },
-            {
-              "$ref": "#/definitions/ExternalSignature"
-            },
-            {
-              "$ref": "#/definitions/SuppliedSignature"
-            },
-            {
-              "$ref": "#/definitions/NoSignature"
-            }
-          ]
-        },
         "authorizationEndpoint": {
           "type": "string"
         },
-        "requestBy": {
-          "$ref": "#/definitions/ObjectBy"
-        },
-        "checkLinkedDomain": {
-          "$ref": "#/definitions/CheckLinkedDomain"
-        },
         "responseMode": {
           "$ref": "#/definitions/ResponseMode"
-        },
-        "responseContext": {
-          "$ref": "#/definitions/ResponseContext"
         },
         "responseTypesSupported": {
           "anyOf": [
@@ -127,6 +96,28 @@ export const AuthenticationRequestOptsSchema = {
               "$ref": "#/definitions/SigningAlgo"
             }
           ]
+        },
+        "requestBy": {
+          "$ref": "#/definitions/RequestBy"
+        },
+        "signatureType": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/InternalSignature"
+            },
+            {
+              "$ref": "#/definitions/ExternalSignature"
+            },
+            {
+              "$ref": "#/definitions/SuppliedSignature"
+            },
+            {
+              "$ref": "#/definitions/NoSignature"
+            }
+          ]
+        },
+        "checkLinkedDomain": {
+          "$ref": "#/definitions/CheckLinkedDomain"
         },
         "revocationVerificationCallback": {
           "$ref": "#/definitions/RevocationVerificationCallback"
@@ -853,6 +844,170 @@ export const AuthenticationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
+    },
+    "ResponseType": {
+      "type": "string",
+      "enum": [
+        "id_token",
+        "vp_token"
+      ]
+    },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "openid",
+        "openid did_authn",
+        "profile",
+        "email",
+        "address",
+        "phone"
+      ]
+    },
+    "SubjectType": {
+      "type": "string",
+      "enum": [
+        "public",
+        "pairwise"
+      ]
+    },
+    "SigningAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K",
+        "none"
+      ]
+    },
+    "RequestBy": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/PassBy"
+        },
+        "referenceUri": {
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/definitions/RequestObjectOpts"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ]
+    },
+    "PassBy": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "REFERENCE",
+        "VALUE"
+      ]
+    },
+    "RequestObjectOpts": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "responseType": {
+          "type": "string"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "redirectUri": {
+          "type": "string"
+        },
+        "idTokenHint": {
+          "type": "string"
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimOpts"
+        },
+        "nonce": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "authorizationEndpoint": {
+          "type": "string"
+        },
+        "responseMode": {
+          "$ref": "#/definitions/ResponseMode"
+        },
+        "responseTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
+        },
+        "scopesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subjectTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
+        },
+        "requestObjectSigningAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        }
+      },
+      "required": [
+        "scope",
+        "responseType",
+        "clientId",
+        "redirectUri"
+      ],
+      "additionalProperties": false
+    },
     "InternalSignature": {
       "type": "object",
       "properties": {
@@ -900,14 +1055,6 @@ export const AuthenticationRequestOptsSchema = {
     "SuppliedSignature": {
       "type": "object",
       "properties": {
-        "signature": {
-          "properties": {
-            "isFunction": {
-              "type": "boolean",
-              "const": true
-            }
-          }
-        },
         "did": {
           "type": "string"
         },
@@ -916,11 +1063,10 @@ export const AuthenticationRequestOptsSchema = {
         }
       },
       "required": [
-        "signature",
         "did",
         "kid"
       ],
-      "additionalProperties": false
+      "additionalProperties": true
     },
     "NoSignature": {
       "type": "object",
@@ -941,82 +1087,12 @@ export const AuthenticationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "ObjectBy": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "REFERENCE",
-            "VALUE"
-          ]
-        },
-        "referenceUri": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "additionalProperties": false
-    },
     "CheckLinkedDomain": {
       "type": "string",
       "enum": [
         "never",
         "if_present",
         "always"
-      ]
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
-    },
-    "ResponseContext": {
-      "type": "string",
-      "enum": [
-        "rp",
-        "op"
-      ]
-    },
-    "ResponseType": {
-      "type": "string",
-      "enum": [
-        "id_token",
-        "vp_token"
-      ]
-    },
-    "Scope": {
-      "type": "string",
-      "enum": [
-        "openid",
-        "openid did_authn",
-        "profile",
-        "email",
-        "address",
-        "phone"
-      ]
-    },
-    "SubjectType": {
-      "type": "string",
-      "enum": [
-        "public",
-        "pairwise"
-      ]
-    },
-    "SigningAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K",
-        "none"
       ]
     },
     "RevocationVerificationCallback": {
@@ -1153,11 +1229,7 @@ export const AuthenticationRequestOptsSchema = {
       "type": "object",
       "properties": {
         "type": {
-          "type": "string",
-          "enum": [
-            "REFERENCE",
-            "VALUE"
-          ]
+          "$ref": "#/definitions/PassBy"
         },
         "referenceUri": {
           "type": "string"
@@ -1203,48 +1275,17 @@ export const AuthenticationRequestOptsSchema = {
         "claims": {
           "$ref": "#/definitions/ClaimOpts"
         },
-        "request": {
-          "type": "string"
-        },
-        "requestUri": {
-          "type": "string"
-        },
         "nonce": {
           "type": "string"
         },
         "state": {
           "type": "string"
         },
-        "signatureType": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/InternalSignature"
-            },
-            {
-              "$ref": "#/definitions/ExternalSignature"
-            },
-            {
-              "$ref": "#/definitions/SuppliedSignature"
-            },
-            {
-              "$ref": "#/definitions/NoSignature"
-            }
-          ]
-        },
         "authorizationEndpoint": {
           "type": "string"
         },
-        "requestBy": {
-          "$ref": "#/definitions/ObjectBy"
-        },
-        "checkLinkedDomain": {
-          "$ref": "#/definitions/CheckLinkedDomain"
-        },
         "responseMode": {
           "$ref": "#/definitions/ResponseMode"
-        },
-        "responseContext": {
-          "$ref": "#/definitions/ResponseContext"
         },
         "responseTypesSupported": {
           "anyOf": [
@@ -1297,6 +1338,28 @@ export const AuthenticationRequestOptsSchema = {
               "$ref": "#/definitions/SigningAlgo"
             }
           ]
+        },
+        "requestBy": {
+          "$ref": "#/definitions/RequestBy"
+        },
+        "signatureType": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/InternalSignature"
+            },
+            {
+              "$ref": "#/definitions/ExternalSignature"
+            },
+            {
+              "$ref": "#/definitions/SuppliedSignature"
+            },
+            {
+              "$ref": "#/definitions/NoSignature"
+            }
+          ]
+        },
+        "checkLinkedDomain": {
+          "$ref": "#/definitions/CheckLinkedDomain"
         },
         "revocationVerificationCallback": {
           "$ref": "#/definitions/RevocationVerificationCallback"

@@ -22,7 +22,7 @@ import {
 
 import { AuthenticationRequest, AuthenticationResponse, RPBuilder } from './';
 
-const ajv = new Ajv({ allowUnionTypes: true });
+const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validate = ajv.compile(AuthenticationRequestOptsSchema);
 
 export class RP {
@@ -121,7 +121,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
         subjectTypesSupported: opts.builder.requestRegistration.subjectTypesSupported,
         requestObjectSigningAlgValuesSupported: opts.builder.requestRegistration.requestObjectSigningAlgValuesSupported,
         responseMode: opts.builder.responseMode,
-        responseContext: opts.builder.responseContext,
+        // responseContext: opts.builder.responseContext,
         claims: opts.builder.claims,
         scope: opts.builder.scope,
         responseType: opts.builder.responseType,

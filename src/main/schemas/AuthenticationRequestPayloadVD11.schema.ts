@@ -1,8 +1,8 @@
 export const AuthenticationRequestPayloadSchemaVD11 = {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/AuthenticationRequestPayloadVD11",
+  "$ref": "#/definitions/AuthorizationRequestPayloadVD11",
   "definitions": {
-    "AuthenticationRequestPayloadVD11": {
+    "AuthorizationRequestPayloadVD11": {
       "type": "object",
       "properties": {
         "id_token_type": {

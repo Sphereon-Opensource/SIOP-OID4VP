@@ -42,11 +42,14 @@ export async function postAuthenticationResponseJwt(url: string, jwt: string): P
   }
 }
 
-export async function getWithUrl(url: string): Promise<Response> {
+export async function getWithUrl(url: string, textResponse?: boolean): Promise<Response> {
   return fetch(url)
     .then((response: Response) => {
       if (response.status >= 400) {
         return Promise.reject(Error(`${SIOPErrors.RESPONSE_STATUS_UNEXPECTED} ${response.status}:${response.statusText} URL: ${url}`));
+      }
+      if (textResponse === true) {
+        return response.text();
       }
       return response.json();
     })
@@ -55,13 +58,13 @@ export async function getWithUrl(url: string): Promise<Response> {
     });
 }
 
-export async function fetchByReferenceOrUseByValue<T>(referenceURI: string, valueObject: T): Promise<T> {
+export async function fetchByReferenceOrUseByValue<T>(referenceURI: string, valueObject: T, textResponse?: boolean): Promise<T> {
   let response: T = valueObject;
   if (referenceURI) {
     try {
-      response = (await getWithUrl(referenceURI)) as unknown as T;
+      response = (await getWithUrl(referenceURI, textResponse)) as unknown as T;
     } catch (e) {
-      throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
+      throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}. URL: ${referenceURI}`);
     }
   }
   return response;
