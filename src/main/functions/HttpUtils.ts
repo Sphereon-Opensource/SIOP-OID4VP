@@ -54,3 +54,15 @@ export async function getWithUrl(url: string): Promise<Response> {
       return Promise.reject(Error(`${(e as Error).message}`));
     });
 }
+
+export async function fetchByReferenceOrUseByValue<T>(referenceURI: string, valueObject: T): Promise<T> {
+  let response: T = valueObject;
+  if (referenceURI) {
+    try {
+      response = (await getWithUrl(referenceURI)) as unknown as T;
+    } catch (e) {
+      throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
+    }
+  }
+  return response;
+}

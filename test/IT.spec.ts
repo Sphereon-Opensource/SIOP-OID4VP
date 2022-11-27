@@ -147,18 +147,18 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
-        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-        .addScope('test')
-        .addResponseType('id_token')
-        .redirect(EXAMPLE_REDIRECT_URL)
+        .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .withScope('test')
+        .withResponseType('id_token')
+        .withRedirectUri(EXAMPLE_REDIRECT_URL)
         .withPresentationVerification(presentationVerificationCallback)
-        .addVerifyCallback(verifyCallback)
+        .withVerifyCallback(verifyCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
-        .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
-        .addIssuer(ResponseIss.SELF_ISSUED_V2)
-        .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
+        .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+        .withIssuer(ResponseIss.SELF_ISSUED_V2)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
         .addDidMethod('ethr')
-        .registrationBy({
+        .withRegistrationBy({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -250,17 +250,17 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .addVerifyCallback(verifyCallback)
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType('id_token')
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
-      .registrationBy({
+      .withRegistrationBy({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -312,11 +312,11 @@ describe('RP and OP interaction should', () => {
     await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
+    expect(parsedAuthReqURI.requestObject).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
@@ -350,17 +350,17 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .addVerifyCallback(verifyCallback)
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType('id_token')
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
-      .registrationBy({
+      .withRegistrationBy({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -413,11 +413,11 @@ describe('RP and OP interaction should', () => {
     await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
+    expect(parsedAuthReqURI.requestObject).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     await expect(op.createAuthenticationResponse(verifiedAuthReqWithJWT)).rejects.toThrow(
@@ -447,19 +447,19 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
-      .redirect(EXAMPLE_REDIRECT_URL)
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType('id_token')
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .addPresentationDefinitionClaim(getPresentationDefinition())
       .withPresentationVerification(presentationVerificationCallback)
-      .addVerifyCallback(verifyCallback)
+      .withVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
-      .registrationBy({
+      .withRegistrationBy({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -512,15 +512,17 @@ describe('RP and OP interaction should', () => {
     await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
+    expect(parsedAuthReqURI.requestObject).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      parsedAuthReqURI.authorizationRequest
+    );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = (await pex.submissionFrom(
       pd[0].definition,
@@ -569,17 +571,17 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
-        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-        .addScope('test')
-        .addResponseType('id_token')
+        .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .withScope('test')
+        .withResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
         .withPresentationVerification(presentationVerificationCallback)
-        .addVerifyCallback(verifyCallback)
-        .redirect(EXAMPLE_REDIRECT_URL)
-        .requestBy(PassBy.VALUE)
-        .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+        .withVerifyCallback(verifyCallback)
+        .withRedirectUri(EXAMPLE_REDIRECT_URL)
+        .withRequestBy(PassBy.VALUE)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-        .registrationBy({
+        .withRegistrationBy({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -632,15 +634,17 @@ describe('RP and OP interaction should', () => {
       await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // Let's test the parsing
       const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-      expect(parsedAuthReqURI.requestPayload).toBeDefined();
-      expect(parsedAuthReqURI.jwt).toBeDefined();
+      expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
+      expect(parsedAuthReqURI.requestObject).toBeDefined();
       expect(parsedAuthReqURI.registration).toBeDefined();
 
-      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-      const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+      const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+        parsedAuthReqURI.authorizationRequest
+      );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
       const vp = (await pex.submissionFrom(
         pd[0].definition,
@@ -702,18 +706,18 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
-      .addVerifyCallback(verifyCallback)
+      .withVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .registrationBy({
+      .withRegistrationBy({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -776,15 +780,17 @@ describe('RP and OP interaction should', () => {
     await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
+    expect(parsedAuthReqURI.requestObject).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      parsedAuthReqURI.authorizationRequest
+    );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = (await pex.submissionFrom(
       pd[0].definition,
@@ -842,19 +848,19 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder()
-        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-        .addScope('test')
-        .addResponseType('id_token')
+        .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .withScope('test')
+        .withResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
         .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
-        .addVerifyCallback(verifyCallback)
-        .redirect(EXAMPLE_REDIRECT_URL)
-        .requestBy(PassBy.VALUE)
-        .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+        .withVerifyCallback(verifyCallback)
+        .withRedirectUri(EXAMPLE_REDIRECT_URL)
+        .withRequestBy(PassBy.VALUE)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .addDidMethod('ethr')
-        .registrationBy({
+        .withRegistrationBy({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -909,15 +915,17 @@ describe('RP and OP interaction should', () => {
       await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // Let's test the parsing
       const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-      expect(parsedAuthReqURI.requestPayload).toBeDefined();
-      expect(parsedAuthReqURI.jwt).toBeDefined();
+      expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
+      expect(parsedAuthReqURI.requestObject).toBeDefined();
       expect(parsedAuthReqURI.registration).toBeDefined();
 
-      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-      const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+      const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+        parsedAuthReqURI.authorizationRequest
+      );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
       const vp = (await pex.submissionFrom(
         pd[0].definition,
@@ -965,22 +973,22 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
     const rp = RP.builder()
-      .addClientId('test_client_id')
-      .addScope('test')
-      .addResponseType('id_token')
+      .withClientId('test_client_id')
+      .withScope('test')
+      .withResponseType('id_token')
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
-      .addVerifyCallback(verifyCallback)
+      .withVerifyCallback(verifyCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withRevocationVerificationCallback(async () => {
         return { status: RevocationStatus.VALID };
       })
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ion')
-      .registrationBy({
+      .withRegistrationBy({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -1049,16 +1057,18 @@ describe('RP and OP interaction should', () => {
     await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
+    expect(parsedAuthReqURI.requestObject).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt); //, rp.authRequestOpts
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject); //, rp.authRequestOpts
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      parsedAuthReqURI.authorizationRequest
+    );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = (await pex.submissionFrom(
       pd[0].definition,
@@ -1277,18 +1287,18 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder()
-      .addClientId('test_client_id')
-      .addScope('test')
-      .addResponseType('id_token')
+      .withClientId('test_client_id')
+      .withScope('test')
+      .withResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withPresentationVerification(presentationVerificationCallback)
-      .addVerifyCallback(verifyCallback)
+      .withVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .registrationBy({
+      .withRegistrationBy({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -1346,15 +1356,17 @@ describe('RP and OP interaction should', () => {
 
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
+    expect(parsedAuthReqURI.requestObject).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      parsedAuthReqURI.authorizationRequest
+    );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = (await pex.submissionFrom(
       pd[0].definition,

@@ -36,17 +36,17 @@ dotenv.config();
 describe('verifyJWT should', () => {
   it('throw VERIFY_BAD_PARAMETERS when no JWT is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT(undefined as never, undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthenticationRequest.verify(undefined as never, undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT('a valid JWT', undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthenticationRequest.verify('a valid JWT', undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts.verification is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT('a valid JWT', {} as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthenticationRequest.verify('a valid JWT', {} as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
   });
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
@@ -94,13 +94,13 @@ describe('verifyJWT should', () => {
       },
     };
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+    const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
 
     const verifyOpts: VerifyAuthenticationRequestOpts = {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          subjectSyntaxTypesSupported: ['key'],
+          subjectSyntaxTypesSupported: ['did:key'],
         },
         supportedVersions: [SupportedVersion.SIOPv2_ID1],
       },
@@ -110,7 +110,7 @@ describe('verifyJWT should', () => {
     };
 
     // expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
+    await expect(AuthenticationRequest.verify(requestWithJWT.requestObject, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
   });
   it(
     'succeed if a valid JWT is passed',
@@ -152,7 +152,7 @@ describe('verifyJWT should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
       };
-      const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+      const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
 
       const verifyOpts: VerifyAuthenticationRequestOpts = {
         verification: {
@@ -166,7 +166,7 @@ describe('verifyJWT should', () => {
         verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
       };
 
-      const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);
+      const verifyJWT = await AuthenticationRequest.verify(requestWithJWT.requestObject, verifyOpts);
       expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
     },
     UNIT_TEST_TIMEOUT

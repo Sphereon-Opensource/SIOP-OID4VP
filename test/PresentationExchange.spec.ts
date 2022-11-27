@@ -3,7 +3,7 @@ import { IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sph
 import nock from 'nock';
 
 import {
-  AuthenticationRequestPayload,
+  AuthorizationRequestPayload,
   getNonce,
   getState,
   IdTokenType,
@@ -33,7 +33,7 @@ import {
 const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
 const EXAMPLE_PD_URL = 'http://my_own_pd.com/pd/';
 
-async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
+async function getPayloadPdVal(): Promise<AuthorizationRequestPayload> {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
   const state = getState();
   return {
@@ -104,7 +104,7 @@ async function getPayloadPdVal(): Promise<AuthenticationRequestPayload> {
   };
 }
 
-async function getPayloadPdRef(): Promise<AuthenticationRequestPayload> {
+async function getPayloadPdRef(): Promise<AuthorizationRequestPayload> {
   const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
   const state = getState();
   return {
@@ -204,7 +204,7 @@ function getVCs(): IVerifiableCredential[] {
 
 describe('presentation exchange manager tests', () => {
   it("validatePresentationAgainstDefinition: should throw error if provided VP doesn't match the PD val", async function () {
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
+    const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
@@ -227,7 +227,7 @@ describe('presentation exchange manager tests', () => {
   });
 
   it("validatePresentationAgainstDefinition: should throw error if provided VP doesn't match the PD ref", async function () {
-    const payload: AuthenticationRequestPayload = await getPayloadPdRef();
+    const payload: AuthorizationRequestPayload = await getPayloadPdRef();
     const response = {
       id: 'Insurance Plans',
       input_descriptors: [
@@ -283,7 +283,7 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('validatePresentationAgainstDefinition: should throw error if both pd and pd_ref is present', async function () {
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
+    const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (payload.claims.vp_token as any).presentation_definition_uri = EXAMPLE_PD_URL;
     await expect(PresentationExchange.findValidPresentationDefinitions(payload)).rejects.toThrow(
@@ -292,7 +292,7 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('validatePresentationAgainstDefinition: should pass if provided VP match the PD', async function () {
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
+    const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     const vcs = getVCs();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
@@ -316,7 +316,7 @@ describe('presentation exchange manager tests', () => {
   it('submissionFrom: should pass if a valid presentationSubmission object created', async function () {
     const vcs = getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
+    const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     await PresentationExchange.validatePresentationAgainstDefinition(pd[0].definition, {
       '@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -347,7 +347,7 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('selectVerifiableCredentialsForSubmission: should fail if selectResults object contains error', async function () {
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
+    const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = undefined;
@@ -362,7 +362,7 @@ describe('presentation exchange manager tests', () => {
   it('selectVerifiableCredentialsForSubmission: should pass if a valid selectResults object created', async function () {
     const vcs = getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
+    const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const result = await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     expect(result.errors.length).toBe(0);
@@ -372,14 +372,14 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('pass if no PresentationDefinition is found', async () => {
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
+    const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     payload.claims = undefined;
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     expect(pd.length).toBe(0);
   });
 
   it('pass if findValidPresentationDefinitions finds a valid presentation_definition', async () => {
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
+    const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     const pd = await PresentationExchange.findValidPresentationDefinitions(payload);
     const definition = pd[0].definition as PresentationDefinitionV1;
     expect(definition['id']).toBe('Insurance Plans');
@@ -387,7 +387,7 @@ describe('presentation exchange manager tests', () => {
   });
 
   it('should validate a list of VerifiablePresentations against a list of PresentationDefinitions', async () => {
-    const payload: AuthenticationRequestPayload = await getPayloadPdVal();
+    const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });

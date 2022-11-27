@@ -30,6 +30,7 @@ enum SIOPErrors {
   NO_DID_PAYLOAD = 'payload must contain did field in payload for self-issued tokens',
   NO_IDENTIFIERS_URI = 'identifiersUri must be defined to get the publick key',
   NO_ISS_DID = 'Token does not have a iss DID',
+  NO_URI = 'no URI was supplied',
   NO_JWT = 'no JWT was supplied',
   NO_KEY_CURVE_SUPPORTED = 'Key Curve not supported.',
   NO_NONCE = 'No nonce found in JWT payload',

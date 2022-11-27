@@ -15,6 +15,7 @@ import {
   ObjectBy,
   PassBy,
   PresentationVerificationCallback,
+  RequestObjectPayload,
   RequestRegistrationOpts,
   ResponseContext,
   ResponseIss,
@@ -39,33 +40,38 @@ export default class RPBuilder {
   responseContext?: ResponseContext.RP;
   claims?: ClaimOpts;
   checkLinkedDomain?: CheckLinkedDomain;
-  // claims?: ClaimPayload;
   verifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
-  scope: string;
+
+  requestPayload: RequestObjectPayload = {};
   responseType: string;
+  scope: string;
   clientId: string;
 
-  addScope(scope: string): RPBuilder {
+  withScope(scope: string): RPBuilder {
     this.scope = scope;
+    this.requestPayload.scope = scope;
     return this;
   }
 
-  addResponseType(responseType: string): RPBuilder {
+  withResponseType(responseType: string): RPBuilder {
     this.responseType = responseType;
+    this.requestPayload.response_type = responseType;
     return this;
   }
 
-  addClientId(clientId: string): RPBuilder {
+  withClientId(clientId: string): RPBuilder {
     this.clientId = clientId;
+    this.requestPayload.client_id = clientId;
     return this;
   }
 
-  addIssuer(issuer: ResponseIss): RPBuilder {
+  withIssuer(issuer: ResponseIss): RPBuilder {
     this.issuer = issuer;
+    this.requestPayload.iss = issuer.valueOf();
     return this;
   }
 
@@ -114,12 +120,12 @@ export default class RPBuilder {
     return this;
   }
 
-  redirect(redirectUri: string): RPBuilder {
+  withRedirectUri(redirectUri: string): RPBuilder {
     this.redirectUri = redirectUri;
     return this;
   }
 
-  requestBy(type: PassBy, referenceUri?: string): RPBuilder {
+  withRequestBy(type: PassBy, referenceUri?: string): RPBuilder {
     this.requestObjectBy = {
       type,
       referenceUri,
@@ -127,12 +133,12 @@ export default class RPBuilder {
     return this;
   }
 
-  response(responseMode: ResponseMode): RPBuilder {
+  withResponseMode(responseMode: ResponseMode): RPBuilder {
     this.responseMode = responseMode;
     return this;
   }
 
-  registrationBy(requestRegistration: RequestRegistrationOpts): RPBuilder {
+  withRegistrationBy(requestRegistration: RequestRegistrationOpts): RPBuilder {
     this.requestRegistration = {
       ...requestRegistration,
     };
@@ -140,18 +146,18 @@ export default class RPBuilder {
   }
 
   // Only internal | supplied supported for now
-  signature(signatureType: InternalSignature | SuppliedSignature): RPBuilder {
+  withSignature(signatureType: InternalSignature | SuppliedSignature): RPBuilder {
     this.signatureType = signatureType;
     return this;
   }
 
-  internalSignature(hexPrivateKey: string, did: string, kid?: string): RPBuilder {
-    this.signature({ hexPrivateKey, did, kid });
+  withInternalSignature(hexPrivateKey: string, did: string, kid?: string): RPBuilder {
+    this.withSignature({ hexPrivateKey, did, kid });
     return this;
   }
 
-  suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): RPBuilder {
-    this.signature({ signature, did, kid });
+  withSuppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): RPBuilder {
+    this.withSignature({ signature, did, kid });
     return this;
   }
 
@@ -166,7 +172,7 @@ export default class RPBuilder {
     return this;
   }
 
-  addVerifyCallback(verifyCallback: VerifyCallback): RPBuilder {
+  withVerifyCallback(verifyCallback: VerifyCallback): RPBuilder {
     this.verifyCallback = verifyCallback;
     return this;
   }

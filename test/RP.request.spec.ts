@@ -43,16 +43,16 @@ describe('RP Builder should', () => {
 
     expect(
       RP.builder()
-        .addClientId('test_client_id')
-        .addScope('test')
-        .addResponseType('id_token')
+        .withClientId('test_client_id')
+        .withScope('test')
+        .withResponseType('id_token')
         .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addDidMethod('factom')
         .addResolver('ethr', new Resolver(getUniResolver('ethr')))
-        .redirect('https://redirect.me')
-        .requestBy(PassBy.VALUE)
-        .response(ResponseMode.POST)
-        .registrationBy({
+        .withRedirectUri('https://redirect.me')
+        .withRequestBy(PassBy.VALUE)
+        .withResponseMode(ResponseMode.POST)
+        .withRegistrationBy({
           registrationBy: {
             type: PassBy.REFERENCE,
             referenceUri: 'https://registration.here',
@@ -64,7 +64,7 @@ describe('RP Builder should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
 
-        .internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
+        .withInternalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build()
     ).toBeInstanceOf(RP);
@@ -244,14 +244,14 @@ describe('RP should', () => {
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
 
     const request = await RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
-      .internalSignature(HEX_KEY, DID, KID)
-      .registrationBy({
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+      .withInternalSignature(HEX_KEY, DID, KID)
+      .withRegistrationBy({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],

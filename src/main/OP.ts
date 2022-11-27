@@ -1,18 +1,17 @@
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
-import fetch from 'cross-fetch';
 import { Resolvable } from 'did-resolver';
 
 import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
 import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
-import { authenticationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
+import { authorizationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { AuthenticationResponseOptsSchema } from './schemas';
 import {
-  AuthenticationRequestPayload,
   AuthenticationResponseOpts,
   AuthenticationResponseWithJWT,
+  AuthorizationRequestPayload,
   ExternalVerification,
   InternalVerification,
   ParsedAuthenticationRequestURI,
@@ -61,8 +60,8 @@ export class OP {
    * This method needs to be called to ensure the OP can handle the request
    * @param payload is the authentication request payload
    */
-  public async checkSIOPSpecVersionSupported(payload: AuthenticationRequestPayload): Promise<SupportedVersion> {
-    const version: SupportedVersion = authenticationRequestVersionDiscovery(payload);
+  public async checkSIOPSpecVersionSupported(payload: AuthorizationRequestPayload): Promise<SupportedVersion> {
+    const version: SupportedVersion = authorizationRequestVersionDiscovery(payload);
     if (!this._verifyAuthRequestOpts.verification.supportedVersions.includes(version)) {
       throw new Error(`SIOP ${version} is not supported`);
     }
@@ -74,8 +73,7 @@ export class OP {
     opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
     const verifyCallback = (this._verifyAuthRequestOpts.verification as Verification).verifyCallback || this._verifyAuthRequestOpts.verifyCallback;
-    const jwt = requestJwtOrUri.startsWith('ey') ? requestJwtOrUri : (await parseAndResolveRequestUri(requestJwtOrUri)).jwt;
-    return AuthenticationRequest.verifyJWT(jwt, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
+    return AuthenticationRequest.verify(requestJwtOrUri, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
   }
 
   public async createAuthenticationResponse(
@@ -111,13 +109,14 @@ export class OP {
    * @param encodedUri
    */
   public async parseAuthenticationRequestURI(encodedUri: string): Promise<ParsedAuthenticationRequestURI> {
-    const { requestPayload, jwt, registrationMetadata } = await parseAndResolveUri(encodedUri);
+    const { scheme, requestObject, authorizationRequest, registrationMetadata } = await AuthenticationRequest.parseAndResolveURI(encodedUri);
 
     return {
       encodedUri,
       encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
-      jwt,
-      requestPayload,
+      scheme,
+      requestObject,
+      authorizationRequest,
       registration: registrationMetadata,
     };
   }
@@ -157,21 +156,6 @@ export class OP {
   public static builder() {
     return new OPBuilder();
   }
-}
-
-async function parseAndResolveRequestUri(encodedUri: string) {
-  const requestPayload = AuthenticationRequest.parseURI(encodedUri);
-  const jwt = requestPayload.request || (await (await fetch(requestPayload.request_uri)).text());
-  return { requestPayload, jwt };
-}
-
-async function parseAndResolveUri(encodedUri: string) {
-  const { requestPayload, jwt } = await parseAndResolveRequestUri(encodedUri);
-  AuthenticationRequest.assertValidRequestObject(requestPayload);
-  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload['registration_uri'], requestPayload['registration']);
-  AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
-
-  return { requestPayload, jwt, registrationMetadata };
 }
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: {

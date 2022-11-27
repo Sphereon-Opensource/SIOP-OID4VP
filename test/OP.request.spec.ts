@@ -193,16 +193,16 @@ describe('OP should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
     const requestURI = await RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType('id_token')
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .redirect(EXAMPLE_REFERENCE_URL)
-      .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
+      .withRedirectUri(EXAMPLE_REFERENCE_URL)
+      .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
       .addDidMethod('ethr')
-      .registrationBy({
+      .withRegistrationBy({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],

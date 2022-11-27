@@ -27,20 +27,19 @@ export function assertValidRequestRegistrationOpts(opts: RequestRegistrationOpts
 export async function createRequestRegistrationPayload(opts: RequestRegistrationOpts): Promise<RequestRegistrationPayloadProperties> {
   assertValidRequestRegistrationOpts(opts);
 
-  const regObj: RPRegistrationMetadataPayload = createRPRegistrationMetadataPayload(opts);
-
-  if (opts.registrationBy.referenceUri) {
-    const regObjToValidate = (await getWithUrl(opts.registrationBy.referenceUri)) as unknown as RPRegistrationMetadataPayload;
-    if (!regObjToValidate || !validateRPRegistrationMetadata(regObjToValidate)) {
-      throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
-    }
-  }
-
   if (opts.registrationBy.type == PassBy.VALUE) {
-    return { registration: regObj };
-  } else {
-    return { registration_uri: opts.registrationBy.referenceUri };
+    return { registration: createRPRegistrationMetadataPayload(opts) };
   }
+
+  // pass by ref
+  const regObjToValidate = (await getWithUrl(opts.registrationBy.referenceUri)) as unknown as RPRegistrationMetadataPayload;
+  if (!regObjToValidate || !validateRPRegistrationMetadata(regObjToValidate)) {
+    throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
+  }
+  return {
+    registration: regObjToValidate,
+    registration_uri: opts.registrationBy.referenceUri,
+  };
 }
 
 export async function createRequestRegistration(opts: RequestRegistrationOpts): Promise<{

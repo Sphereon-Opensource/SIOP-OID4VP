@@ -184,10 +184,10 @@ describe('create JWT from Request JWT should', () => {
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+    const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
 
     jest.useRealTimers();
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).rejects.toThrow(
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1577837400/
     );
   });
@@ -265,9 +265,9 @@ describe('create JWT from Request JWT should', () => {
         responseMode: ResponseMode.POST,
       };
 
-      const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-      console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
-      await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
+      const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
+      console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)));
+      await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
     },
     UNIT_TEST_TIMEOUT
   );
@@ -441,11 +441,11 @@ describe('create JWT from Request JWT should', () => {
       responseMode: ResponseMode.POST,
     };
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+    const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
     /* console.log(
       JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
     );*/
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 
   it('succeed when valid JWT with PD is passed in for id_token', async () => {
@@ -606,7 +606,7 @@ describe('create JWT from Request JWT should', () => {
       responseMode: ResponseMode.POST,
     };
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
+    const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
+    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 });

@@ -264,7 +264,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createJWT(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
+    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when no referenceUri is passed with REFERENCE requestBy type is set', async () => {
@@ -292,7 +292,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createJWT(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
+    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('throw BAD_SIGNATURE_PARAMS when signature Type is neither internal nor external', async () => {
@@ -317,7 +317,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createJWT(opts as never)).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
+    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
   });
 
   it('throw REGISTRATION_OBJECT_TYPE_NOT_SET when registrationBy type is neither REFERENCE nor VALUE', async () => {
@@ -346,7 +346,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createJWT(opts as never)).rejects.toThrow(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
+    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when registrationBy type is REFERENCE and no referenceUri is passed', async () => {
@@ -375,7 +375,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createJWT(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
+    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('succeed when all params are set', async () => {
@@ -397,6 +397,7 @@ describe('create Request JWT should', () => {
         kid: KID,
       },
       registration: {
+        clientId: 'test_client_id',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -420,10 +421,10 @@ describe('create Request JWT should', () => {
     };
 
     const expected = {
-      payload: {
+      authenticationRequest: {
         response_type: 'id_token',
         scope: 'openid',
-        client_id: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0',
+        client_id: 'test_client_id',
         redirect_uri: 'https://acme.com/hello',
         registration: {
           id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -470,8 +471,8 @@ describe('create Request JWT should', () => {
       },
     };
 
-    AuthenticationRequest.createURI(opts).then((uri) => console.log(uri.encodedUri));
-    await expect(AuthenticationRequest.createJWT(opts)).resolves.toMatchObject(expected);
+    await AuthenticationRequest.createURI(opts).then((uri) => console.log(uri.encodedUri));
+    await expect(AuthenticationRequest.createRequestObject(opts)).resolves.toMatchObject(expected);
   });
 
   it('succeed when requesting with a valid PD', async () => {

@@ -1,29 +1,28 @@
 import { PEX } from '@sphereon/pex';
 import Ajv from 'ajv';
-import { JWTHeader } from 'did-jwt';
+import { decodeJWT, JWTHeader } from 'did-jwt';
 
 import { assertValidRequestRegistrationOpts, createRequestRegistration } from './AuthenticationRequestRegistration';
 import { PresentationExchange } from './PresentationExchange';
 import {
   decodeUriAsJson,
   encodeJsonAsURI,
+  fetchByReferenceOrUseByValue,
   getAudience,
   getNonce,
   getResolver,
   getState,
-  getWithUrl,
   parseJWT,
   signDidJwtPayload,
   validateLinkedDomainWithDid,
   verifyDidJWT,
 } from './functions';
-import { authenticationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
+import { authorizationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { RPRegistrationMetadataPayloadSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
-  AuthenticationRequestPayload,
-  AuthenticationRequestURI,
-  AuthenticationRequestWithJWT,
+  AuthorizationRequestPayload,
+  AuthorizationRequestURI,
   CheckLinkedDomain,
   ClaimOpts,
   ClaimPayload,
@@ -31,6 +30,8 @@ import {
   isInternalVerification,
   JWTPayload,
   PassBy,
+  RequestObjectPayload,
+  RequestObjectResult,
   ResponseMode,
   ResponseType,
   RPRegistrationMetadataPayload,
@@ -38,10 +39,11 @@ import {
   SIOPErrors,
   UrlEncodingFormat,
   VerifiedAuthenticationRequestWithJWT,
+  VerifiedJWT,
   VerifyAuthenticationRequestOpts,
 } from './types';
 
-const ajv = new Ajv({ allowUnionTypes: true });
+const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export default class AuthenticationRequest {
@@ -54,47 +56,70 @@ export default class AuthenticationRequest {
    *
    * Normally you will want to use this method to create the request.
    */
-  static async createURI(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestURI> {
-    const { jwt, payload } = await AuthenticationRequest.createJWT(opts);
-    return createURIFromJWT(opts, payload, jwt);
+  public static async createURI(opts: AuthenticationRequestOpts): Promise<AuthorizationRequestURI> {
+    const { requestObject } = await AuthenticationRequest.createRequestObject(opts);
+    const authorizationRequest = await createAuthorizationRequestPayload(opts, requestObject);
+    return AuthenticationRequest.createURIFromRequest(opts, authorizationRequest);
+  }
+
+  public static async parseAndResolveURI(encodedUri: string) {
+    const { scheme, requestObject, authorizationRequest } = await AuthenticationRequest.parseAndResolveRequestUri(encodedUri);
+    if (requestObject) {
+      AuthenticationRequest.assertValidRequestObject(decodeJWT(requestObject) as RequestObjectPayload);
+    }
+    const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
+      authorizationRequest['registration_uri'],
+      authorizationRequest['registration']
+    );
+    AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
+
+    return { scheme, requestObject, authorizationRequest, registrationMetadata };
   }
 
   /**
-   * Create a Authentication Request Payload from a URI string
+   * Create a signed SIOP request object as JWT on RP side, typically you will want to use the createURI version!
    *
-   * @param uri
+   * @param opts Request input data to build a SIOP Request Object as JWT
+   * @remarks This method is used to generate a SIOP request Object with info provided by the RP.
+   * First it generates the request object payload, and then it creates the signed JWT.
+   *
+   * Normally you will want to use the createURI method. That creates a URI that includes the JWT from this method in the URI
+   * If you do use this method, you can call the `convertRequestObjectToURI` afterwards to get the URI.
+   * Please note that the createURI method allows you to differentiate between OAuth2 and OpenID parameters that become
+   * part of the URI and which become part of the Request Object. If you generate a URI based upon the result of this method,
+   * the URI will be constructed based on the Request Object only!
    */
-  static parseURI(uri: string): AuthenticationRequestPayload {
-    // We strip the uri scheme before passing it to the decode function
-    return decodeUriAsJson(uri.replace(/^.*:\/\/\??/, '')) as AuthenticationRequestPayload;
-  }
-
-  /**
-   * Create a signed SIOP request as JWT on RP side, typically you will want to use the createURI version!
-   *
-   * @param opts Request input data to build a SIOP Request as JWT
-   * @remarks This method is used to generate a SIOP request with info provided by the RP.
-   * First it generates the request payload and then it creates the signed JWT.
-   *
-   * Normally you will want to use the createURI version. That creates a URI that includes the JWT from this method in the URI
-   * If you do use this method, you can call the wrapInUri afterwards to get the URI
-   */
-  static async createJWT(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestWithJWT> {
-    const siopRequestPayload = await createAuthenticationRequestPayload(opts);
-    const { nonce, state } = siopRequestPayload;
-    const jwt = await signDidJwtPayload(siopRequestPayload, opts);
+  static async createRequestObject(opts: AuthenticationRequestOpts): Promise<RequestObjectResult> {
+    if (opts.requestBy.type === PassBy.NONE) {
+      throw Error(`Cannot create a Request Object when the passBy options is set to None`);
+    }
+    const createdRequestObject = await createRequestObjectPayload(opts);
+    const requestObjectPayload = JSON.parse(JSON.stringify(createdRequestObject));
+    // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
+    // request and request_uri parameters MUST NOT be included in Request Objects.
+    delete requestObjectPayload.registration;
+    delete requestObjectPayload.registration_uri;
+    const requestObject = await signDidJwtPayload(requestObjectPayload, opts);
 
     return {
-      jwt,
-      nonce,
-      state,
-      payload: siopRequestPayload,
-      opts: opts,
+      opts,
+      requestObject,
+      requestObjectPayload,
     };
   }
 
-  static async wrapAsURI(request: AuthenticationRequestWithJWT): Promise<AuthenticationRequestURI> {
-    return await createURIFromJWT(request.opts, request.payload, request.jwt);
+  /**
+   * Create a URI from the request object, typically you will want to use the createURI version!
+   *
+   * @remarks This method is used to generate a SIOP request Object with info provided by the RP.
+   * First it generates the request object payload, and then it creates the signed JWT.
+   *
+   * Please note that the createURI method allows you to differentiate between OAuth2 and OpenID parameters that become
+   * part of the URI and which become part of the Request Object. If you generate a URI based upon the result of this method,
+   * the URI will be constructed based on the Request Object only!
+   */
+  static async convertRequestObjectToURI(request: RequestObjectResult): Promise<AuthorizationRequestURI> {
+    return await AuthenticationRequest.createURIFromRequest(request.opts, request.requestObject);
   }
 
   /**
@@ -103,53 +128,70 @@ export default class AuthenticationRequest {
    * @param jwt
    * @param opts
    */
-  static async verifyJWT(jwt: string, opts: VerifyAuthenticationRequestOpts): Promise<VerifiedAuthenticationRequestWithJWT> {
+  static async verify(uriOrJwt: string, opts: VerifyAuthenticationRequestOpts): Promise<VerifiedAuthenticationRequestWithJWT> {
     assertValidVerifyOpts(opts);
-    if (!jwt) {
-      throw new Error(SIOPErrors.NO_JWT);
+    if (!uriOrJwt) {
+      throw new Error(SIOPErrors.NO_URI);
+    }
+    const isJwt = uriOrJwt.startsWith('ey');
+    const jwt = isJwt ? uriOrJwt : (await this.parseAndResolveRequestUri(uriOrJwt)).requestObject;
+
+    const origAuthorizationRequest = isJwt ? (parseJWT(jwt).payload as AuthorizationRequestPayload) : this.parseURI(uriOrJwt).authorizationRequest;
+    let requestObjectPayload: RequestObjectPayload;
+    let verifiedJwt: VerifiedJWT;
+    if (isJwt) {
+      // Put back the request object as that won't be present in the Jwt
+      origAuthorizationRequest.request = jwt;
+      const { header, payload } = parseJWT(origAuthorizationRequest.request);
+      assertValidRequestJWT(header, payload);
+      const options = {
+        audience: getAudience(jwt),
+      };
+
+      verifiedJwt = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
+      if (!verifiedJwt || !verifiedJwt.payload) {
+        throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
+      }
+      requestObjectPayload = verifiedJwt.payload as RequestObjectPayload;
     }
 
-    const { header, payload } = parseJWT(jwt);
-    assertValidRequestJWT(header, payload);
+    // AuthenticationRequest.assertValidRequestObject(origAuthenticationRequest);
 
-    const options = {
-      audience: getAudience(jwt),
-    };
-
-    const verPayload = payload as AuthenticationRequestPayload;
-    const version = authenticationRequestVersionDiscovery(verPayload);
-    if (!opts.verification.supportedVersions?.includes(version)) {
+    // We use the orig request for default values, but the JWT payload contains signed request object properties
+    const authorizationRequest = { ...origAuthorizationRequest, ...requestObjectPayload };
+    const version = authorizationRequestVersionDiscovery(authorizationRequest);
+    if (opts.verification.supportedVersions && !opts.verification.supportedVersions.includes(version)) {
       throw new Error(SIOPErrors.SIOP_VERSION_NOT_SUPPORTED);
-    }
-    if (opts.nonce && verPayload.nonce !== opts.nonce) {
-      throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${payload.nonce}, supplied: ${opts.nonce}`);
+    } else if (opts.nonce && authorizationRequest.nonce !== opts.nonce) {
+      throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${authorizationRequest.nonce}, supplied: ${opts.nonce}`);
     }
 
-    AuthenticationRequest.assertValidRequestObject(verPayload);
-    const registrationMetadata = await AuthenticationRequest.getRegistrationObj(verPayload['registration_uri'], verPayload['registration']);
+    // todo: We can use client_metadata here as well probably
+    const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
+      authorizationRequest['registration_uri'],
+      authorizationRequest['registration']
+    );
     AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
 
-    const verifiedJWT = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
-    if (!verifiedJWT || !verifiedJWT.payload) {
-      throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
-    }
-    if (verPayload.client_id.startsWith('did:')) {
+    if (authorizationRequest.client_id.startsWith('did:')) {
       if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-        await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
+        await validateLinkedDomainWithDid(authorizationRequest.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
       } else if (!opts.verification.checkLinkedDomain) {
-        await validateLinkedDomainWithDid(verPayload.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
+        await validateLinkedDomainWithDid(authorizationRequest.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
       }
     }
-    const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(payload);
+    const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(authorizationRequest);
     return {
-      ...verifiedJWT,
+      ...verifiedJwt,
       verifyOpts: opts,
       presentationDefinitions,
-      payload: verifiedJWT.payload as AuthenticationRequestPayload,
+      payload: requestObjectPayload,
+      authorizationRequest: authorizationRequest,
+      version,
     };
   }
 
-  public static assertValidRegistrationObject(regObj: RPRegistrationMetadataPayload) {
+  private static assertValidRegistrationObject(regObj: RPRegistrationMetadataPayload) {
     if (regObj && !validateRPRegistrationMetadata(regObj)) {
       throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
     } else if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
@@ -157,26 +199,85 @@ export default class AuthenticationRequest {
     }
   }
 
-  public static assertValidRequestObject(verPayload: AuthenticationRequestPayload): void {
-    if (verPayload['registration_uri'] && verPayload['registration']) {
+  private static assertValidRequestObject(verPayload: RequestObjectPayload): void {
+    if (verPayload['registration_uri'] || verPayload['registration']) {
       throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
     }
   }
 
-  public static async getRegistrationObj(
-    registrationUri: string,
-    registrationObject: RPRegistrationMetadataPayload
-  ): Promise<RPRegistrationMetadataPayload> {
-    let response: RPRegistrationMetadataPayload = registrationObject;
-    if (registrationUri) {
-      try {
-        response = (await getWithUrl(registrationUri)) as unknown as RPRegistrationMetadataPayload;
-      } catch (e) {
-        throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}`);
-      }
+  /**
+   * Creates an URI Request
+   * @param opts Options to define the Uri Request
+   * @param requestObject
+   * @param jwt
+   *
+   */
+  private static async createURIFromRequest(
+    opts: AuthenticationRequestOpts,
+    request: AuthorizationRequestPayload | string
+  ): Promise<AuthorizationRequestURI> {
+    const schema = 'openid://';
+    const isJwt = typeof request === 'string';
+    const requestObject = isJwt ? request : request.request;
+    if (isJwt && (!requestObject || !requestObject.startsWith('ey'))) {
+      throw Error(SIOPErrors.NO_JWT);
+    }
+    const requestObjectPayload: RequestObjectPayload = requestObject ? (decodeJWT(requestObject) as RequestObjectPayload) : undefined;
+
+    // Only used to validate if it contains a presentation definition
+    await PresentationExchange.findValidPresentationDefinitions(requestObjectPayload);
+
+    AuthenticationRequest.assertValidRequestObject(requestObjectPayload);
+    // fixme. This should not be fetched at all. We should inspect the opts
+    /*const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
+      requestObject['registration_uri'],
+      requestObject['registration']
+    );
+    AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);*/
+    const authorizationRequest: AuthorizationRequestPayload = isJwt ? (requestObjectPayload as AuthorizationRequestPayload) : request;
+    if (!authorizationRequest) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
+    const type = opts.requestBy?.type;
+    if (!type) {
+      throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
     }
 
-    return response;
+    if (type === PassBy.REFERENCE) {
+      if (!opts.requestBy.referenceUri) {
+        throw new Error(SIOPErrors.NO_REFERENCE_URI);
+      }
+      authorizationRequest.request_uri = opts.requestBy.referenceUri;
+      delete authorizationRequest.request;
+    } else if (type === PassBy.VALUE) {
+      authorizationRequest.request = requestObject;
+      delete authorizationRequest.request_uri;
+    }
+    return {
+      encodedUri: `${schema}?${encodeJsonAsURI(authorizationRequest)}`,
+      encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
+      requestOpts: opts,
+      authorizationRequest,
+      requestObject,
+    };
+  }
+
+  /**
+   * Create a Authentication Request Payload from a URI string
+   *
+   * @param uri
+   */
+  private static parseURI(uri: string): { scheme: string; authorizationRequest: AuthorizationRequestPayload } {
+    // We strip the uri scheme before passing it to the decode function
+    const scheme: string = uri.match(/^.*:\/\/\??/)[0];
+    const authorizationRequest = decodeUriAsJson(uri.replace(/^.*:\/\/\??/, '')) as AuthorizationRequestPayload;
+    return { scheme, authorizationRequest };
+  }
+
+  private static async parseAndResolveRequestUri(uri: string) {
+    const { authorizationRequest, scheme } = AuthenticationRequest.parseURI(uri);
+    const requestObject = await fetchByReferenceOrUseByValue(authorizationRequest.request, authorizationRequest.request_uri);
+    return { scheme, authorizationRequest, requestObject };
   }
 }
 
@@ -185,48 +286,6 @@ export default class AuthenticationRequest {
  * Helper functions are down below
  *
  ***************************************/
-
-/**
- * Creates an URI Request
- * @param requestOpts Options to define the Uri Request
- * @param requestPayload
- * @param jwt
- * @param requestPayload
- * @param jwt
- */
-async function createURIFromJWT(
-  requestOpts: AuthenticationRequestOpts,
-  requestPayload: AuthenticationRequestPayload,
-  jwt: string
-): Promise<AuthenticationRequestURI> {
-  const schema = 'openid://';
-  // Only used to validate if it contains a definition
-  await PresentationExchange.findValidPresentationDefinitions(requestPayload);
-  const query = encodeJsonAsURI(requestPayload);
-
-  AuthenticationRequest.assertValidRequestObject(requestPayload);
-  const registrationMetadata = await AuthenticationRequest.getRegistrationObj(requestPayload['registration_uri'], requestPayload['registration']);
-  AuthenticationRequest.assertValidRegistrationObject(registrationMetadata);
-  switch (requestOpts.requestBy?.type) {
-    case PassBy.REFERENCE:
-      return {
-        encodedUri: `${schema}?${query}&request_uri=${encodeURIComponent(requestOpts.requestBy.referenceUri)}`,
-        encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
-        requestOpts,
-        requestPayload,
-        jwt,
-      };
-    case PassBy.VALUE:
-      return {
-        encodedUri: `${schema}?${query}&request=${jwt}`,
-        encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
-        requestOpts,
-        requestPayload,
-        jwt,
-      };
-  }
-  throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
-}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function assertValidRequestJWT(_header: JWTHeader, _payload: JWTPayload) {
@@ -253,7 +312,7 @@ function assertValidRequestOpts(opts: AuthenticationRequestOpts) {
   assertValidRequestRegistrationOpts(opts['registration']);
 }
 
-function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
+function createClaimsPayloadProperties(opts: ClaimOpts): ClaimPayload {
   if (!opts || !opts.vpToken || (!opts.vpToken.presentationDefinition && !opts.vpToken.presentationDefinitionUri)) {
     return undefined;
   }
@@ -276,12 +335,16 @@ function createClaimsPayload(opts: ClaimOpts): ClaimPayload {
   };
 }
 
-async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpts): Promise<AuthenticationRequestPayload> {
+async function createAuthorizationRequestPayload(opts: AuthenticationRequestOpts, requestObject?: string): Promise<AuthorizationRequestPayload> {
   assertValidRequestOpts(opts);
+  if (opts.requestBy && opts.requestBy.type === PassBy.VALUE && !requestObject) {
+    throw Error(SIOPErrors.NO_JWT);
+  }
   const state = getState(opts.state);
   const registration = await createRequestRegistration(opts['registration']);
-  const claims = createClaimsPayload(opts.claims);
-  const clientId = registration.requestRegistrationPayload.registration.client_id;
+  const claims = createClaimsPayloadProperties(opts.claims);
+  const clientId = opts.clientId ? opts.clientId : registration.requestRegistrationPayload.registration.client_id;
+
   return {
     response_type: ResponseType.ID_TOKEN,
     scope: Scope.OPENID,
@@ -291,9 +354,36 @@ async function createAuthenticationRequestPayload(opts: AuthenticationRequestOpt
     response_mode: opts.responseMode || ResponseMode.POST,
     id_token_hint: opts.idTokenHint,
     registration_uri: opts['registrationUri'],
-    ...(opts.requestUri ? { request_uri: opts.requestUri } : {}),
-    ...(opts.request && !opts.requestUri ? { request: opts.request } : {}),
+    ...(opts.requestBy && opts.requestBy.type === PassBy.REFERENCE ? { request_uri: opts.requestBy.referenceUri } : {}),
+    ...(opts.requestBy && opts.requestBy.type === PassBy.VALUE ? { request: requestObject } : {}),
     nonce: getNonce(state, opts.nonce),
+    state,
+    ...registration.requestRegistrationPayload,
+    claims,
+  };
+}
+
+async function createRequestObjectPayload(opts: AuthenticationRequestOpts): Promise<RequestObjectPayload> {
+  assertValidRequestOpts(opts);
+
+  // todo restrict opts to request type
+  const requestOpts = opts.requestBy?.request ? { ...opts, ...opts.requestBy.request } : opts;
+  const state = getState(requestOpts.state);
+  const registration = await createRequestRegistration(requestOpts['registration']);
+  const claims = createClaimsPayloadProperties(requestOpts.claims);
+
+  const clientId = requestOpts.clientId ? requestOpts.clientId : registration.requestRegistrationPayload.registration.client_id;
+
+  return {
+    response_type: ResponseType.ID_TOKEN,
+    scope: Scope.OPENID,
+    //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
+    client_id: clientId ? clientId : requestOpts.signatureType.did,
+    redirect_uri: requestOpts.redirectUri,
+    response_mode: requestOpts.responseMode || ResponseMode.POST,
+    id_token_hint: requestOpts.idTokenHint,
+    registration_uri: requestOpts['registrationUri'],
+    nonce: getNonce(state, requestOpts.nonce),
     state,
     ...registration.requestRegistrationPayload,
     claims,

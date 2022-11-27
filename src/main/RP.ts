@@ -6,8 +6,8 @@ import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './func
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
   AuthenticationRequestOpts,
-  AuthenticationRequestURI,
   AuthenticationResponseWithJWT,
+  AuthorizationRequestURI,
   CheckLinkedDomain,
   ClaimOpts,
   ExternalVerification,
@@ -43,7 +43,7 @@ export class RP {
     return this._verifyAuthResponseOpts;
   }
 
-  public createAuthenticationRequest(opts?: { nonce?: string; state?: string }): Promise<AuthenticationRequestURI> {
+  public createAuthenticationRequest(opts?: { nonce?: string; state?: string }): Promise<AuthorizationRequestURI> {
     return AuthenticationRequest.createURI(this.newAuthenticationRequestOpts(opts));
   }
 
@@ -63,7 +63,7 @@ export class RP {
     const presentationVerificationCallback =
       verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
     const verifyAuthenticationResponseOpts = this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback });
-    AuthenticationResponse.verifyVPs(authenticationResponseWithJWT.payload, verifyAuthenticationResponseOpts);
+    await AuthenticationResponse.verifyVPs(authenticationResponseWithJWT.payload, verifyAuthenticationResponseOpts);
     return AuthenticationResponse.verifyJWT(authenticationResponseWithJWT.jwt, verifyAuthenticationResponseOpts);
   }
 
