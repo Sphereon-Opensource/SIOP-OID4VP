@@ -2,6 +2,7 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
+import AuthorizationRequest from './authorization-request/AuthorizationRequest';
 import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
 import { AuthenticationRequestOptsSchema } from './schemas';
 import {
@@ -20,7 +21,7 @@ import {
   VerifyAuthenticationResponseOpts,
 } from './types';
 
-import { AuthenticationRequest, AuthenticationResponse, RPBuilder } from './';
+import { AuthenticationResponse, RPBuilder } from './';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validate = ajv.compile(AuthenticationRequestOptsSchema);
@@ -44,7 +45,7 @@ export class RP {
   }
 
   public createAuthenticationRequest(opts?: { nonce?: string; state?: string }): Promise<AuthorizationRequestURI> {
-    return AuthenticationRequest.createURI(this.newAuthenticationRequestOpts(opts));
+    return AuthorizationRequest.URI.create(this.newAuthenticationRequestOpts(opts));
   }
 
   public async verifyAuthenticationResponse(

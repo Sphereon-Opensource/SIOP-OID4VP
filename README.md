@@ -620,7 +620,7 @@ expect(verifiedAuthResponseWithJWT.payload.state).toMatch("b32f0087fc9816eb813fd
 expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch("qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg");
 ````
 
-## AuthenticationRequest class
+## AuthorizationRequest class
 
 In the previous chapter we have seen the highlevel OP and RP classes. These classes use the Authentication Request and
 Response objects explained in this chapter and the next chapter. If you want you can do most interactions using these
@@ -709,7 +709,7 @@ const opts: AuthenticationRequestOpts = {
   },
 };
 
-AuthenticationRequest.createURI(opts)
+AuthorizationRequest.createURI(opts)
     .then(uri => console.log(uri.encodedUri));
 
 // Output: 
@@ -802,7 +802,7 @@ const verifyOpts: VerifyAuthenticationRequestOpts = {
     }
 }
 const jwt = 'ey..........' // JWT created by RP
-AuthenticationRequest.verifyJWT(jwt).then(req => {
+AuthorizationRequest.verifyJWT(jwt).then(req => {
     console.log(`issuer: ${req.issuer}`);
     console.log(JSON.stringify(req.signer));
 });
@@ -819,7 +819,7 @@ AuthenticationRequest.verifyJWT(jwt).then(req => {
 
 ### createJwtFromRequestJWT
 
-Creates an AuthenticationResponse object from the OP side, using the AuthenticationRequest of the RP and its
+Creates an AuthenticationResponse object from the OP side, using the AuthorizationRequest of the RP and its
 verification as input together with settings from the OP. The Authentication Response contains the ID token as well as
 optional Verifiable Presentations conforming to the Submission Requirements sent by the RP.
 
@@ -1057,7 +1057,7 @@ await resolveDidDocument('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda', 
 ## JWT and DID creation and verification
 
 Please note that this chapter is about low level JWT functions, which normally aren't used by end users of this library.
-Typically, you use the AuthenticationRequest and Response classes (low-level) or the OP and RP classes (high-level).
+Typically, you use the AuthorizationRequest and Response classes (low-level) or the OP and RP classes (high-level).
 
 ### Create JWT
 

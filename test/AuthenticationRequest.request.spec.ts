@@ -4,7 +4,6 @@ import { IPresentationDefinition } from '@sphereon/pex';
 import { IProofType } from '@sphereon/ssi-types';
 
 import {
-  AuthenticationRequest,
   AuthenticationRequestOpts,
   CheckLinkedDomain,
   PassBy,
@@ -14,6 +13,7 @@ import {
   SubjectIdentifierType,
   SubjectType,
 } from '../src/main';
+import AuthorizationRequest from '../src/main/authorization-request/AuthorizationRequest';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -34,13 +34,13 @@ const KID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1';
 describe('create Request Uri should', () => {
   it('throw BAD_PARAMS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.createURI(undefined as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
+    await expect(AuthorizationRequest.URI.create(undefined as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
 
   it('throw BAD_PARAMS when no responseOpts.redirectUri is passed', async () => {
     expect.assertions(1);
     const opts = {};
-    await expect(AuthenticationRequest.createURI(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
+    await expect(AuthorizationRequest.URI.create(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
 
   it('throw BAD_PARAMS when no responseOpts.requestBy is passed', async () => {
@@ -48,7 +48,7 @@ describe('create Request Uri should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
     };
-    await expect(AuthenticationRequest.createURI(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
+    await expect(AuthorizationRequest.URI.create(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
 
   it('throw REQUEST_OBJECT_TYPE_NOT_SET when responseOpts.requestBy type is different from REFERENCE or VALUE', async () => {
@@ -59,7 +59,7 @@ describe('create Request Uri should', () => {
         type: 'other type',
       },
     };
-    await expect(AuthenticationRequest.createURI(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
+    await expect(AuthorizationRequest.URI.create(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when responseOpts.requestBy type is REFERENCE and no referenceUri is passed', async () => {
@@ -70,7 +70,7 @@ describe('create Request Uri should', () => {
         type: PassBy.REFERENCE,
       },
     };
-    await expect(AuthenticationRequest.createURI(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
+    await expect(AuthorizationRequest.URI.create(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('return a reference url', async () => {
@@ -115,7 +115,7 @@ describe('create Request Uri should', () => {
       },
     };
 
-    const uriRequest = await AuthenticationRequest.createURI(opts);
+    const uriRequest = await AuthorizationRequest.URI.create(opts);
     expect(uriRequest).toBeDefined();
     expect(uriRequest).toHaveProperty('encodedUri');
     expect(uriRequest).toHaveProperty('encodingFormat');
@@ -179,7 +179,7 @@ describe('create Request Uri should', () => {
       },
     };
 
-    const uriRequest = await AuthenticationRequest.createURI(opts);
+    const uriRequest = await AuthorizationRequest.URI.create(opts);
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
 
     const data = parse(uriDecoded);
@@ -230,7 +230,7 @@ describe('create Request Uri should', () => {
       },
     };
 
-    const uriRequest = await AuthenticationRequest.createURI(opts);
+    const uriRequest = await AuthorizationRequest.URI.create(opts);
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`&request=`);
@@ -266,7 +266,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
+    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when no referenceUri is passed with REFERENCE requestBy type is set', async () => {
@@ -294,7 +294,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
+    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('throw BAD_SIGNATURE_PARAMS when signature Type is neither internal nor external', async () => {
@@ -319,7 +319,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
+    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
   });
 
   it('throw REGISTRATION_OBJECT_TYPE_NOT_SET when registrationBy type is neither REFERENCE nor VALUE', async () => {
@@ -348,7 +348,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
+    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when registrationBy type is REFERENCE and no referenceUri is passed', async () => {
@@ -377,7 +377,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
+    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('succeed when all params are set', async () => {
@@ -473,8 +473,8 @@ describe('create Request JWT should', () => {
       },
     };
 
-    await AuthenticationRequest.createURI(opts).then((uri) => console.log(uri.encodedUri));
-    await expect(AuthenticationRequest.createRequestObject(opts)).resolves.toMatchObject(expected);
+    await AuthorizationRequest.URI.create(opts).then((uri) => console.log(uri.encodedUri));
+    await expect(AuthorizationRequest.createRequestObject(opts)).resolves.toMatchObject(expected);
   });
 
   it('succeed when requesting with a valid PD', async () => {
@@ -535,7 +535,7 @@ describe('create Request JWT should', () => {
       },
     };
 
-    const uriRequest = await AuthenticationRequest.createURI(opts);
+    const uriRequest = await AuthorizationRequest.URI.create(opts);
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`&claims=`);
@@ -596,6 +596,6 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthenticationRequest.createURI(opts)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+    await expect(AuthorizationRequest.URI.create(opts)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
   });
 });

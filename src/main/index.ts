@@ -1,4 +1,3 @@
-import AuthenticationRequest from './AuthenticationRequest';
 import * as RPRegistrationMetadata from './AuthenticationRequestRegistration';
 import AuthenticationResponse from './AuthenticationResponse';
 import { OP } from './OP';
@@ -8,6 +7,6 @@ import { RP } from './RP';
 import RPBuilder from './RPBuilder';
 export * from './functions';
 export * from './types';
-
+export * from './authorization-request';
 export { JWTHeader, JWTPayload, JWTOptions, JWTVerifyOptions } from 'did-jwt';
-export { AuthenticationRequest, AuthenticationResponse, OP, OPBuilder, PresentationExchange, RP, RPBuilder, RPRegistrationMetadata };
+export { AuthenticationResponse, OP, OPBuilder, PresentationExchange, RP, RPBuilder, RPRegistrationMetadata };

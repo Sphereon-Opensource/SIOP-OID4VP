@@ -2,9 +2,9 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
-import AuthenticationRequest from './AuthenticationRequest';
 import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
+import AuthorizationRequest from './authorization-request/AuthorizationRequest';
 import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { authorizationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { AuthenticationResponseOptsSchema } from './schemas';
@@ -73,7 +73,7 @@ export class OP {
     opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthenticationRequestWithJWT> {
     const verifyCallback = (this._verifyAuthRequestOpts.verification as Verification).verifyCallback || this._verifyAuthRequestOpts.verifyCallback;
-    return AuthenticationRequest.verify(requestJwtOrUri, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
+    return AuthorizationRequest.verify(requestJwtOrUri, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
   }
 
   public async createAuthenticationResponse(
@@ -109,7 +109,7 @@ export class OP {
    * @param encodedUri
    */
   public async parseAuthenticationRequestURI(encodedUri: string): Promise<ParsedAuthenticationRequestURI> {
-    const { scheme, requestObject, authorizationRequest, registrationMetadata } = await AuthenticationRequest.parseAndResolveURI(encodedUri);
+    const { scheme, requestObject, authorizationRequest, registrationMetadata } = await AuthorizationRequest.URI.parseAndResolve(encodedUri);
 
     return {
       encodedUri,

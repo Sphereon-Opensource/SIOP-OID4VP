@@ -2,8 +2,8 @@ import { PresentationSubmission } from '@sphereon/ssi-types';
 import { JWTHeader } from 'did-jwt';
 import { JWK } from 'jose';
 
-import AuthenticationRequest from './AuthenticationRequest';
 import { PresentationExchange } from './PresentationExchange';
+import AuthorizationRequest from './authorization-request/AuthorizationRequest';
 import {
   getNonce,
   getPublicJWKFromHexPrivateKey,
@@ -60,7 +60,7 @@ export default class AuthenticationResponse {
     if (!requestJwt || !requestJwt.startsWith('ey')) {
       throw new Error(SIOPErrors.NO_JWT);
     }
-    const verifiedJWT = await AuthenticationRequest.verify(requestJwt, verifyOpts);
+    const verifiedJWT = await AuthorizationRequest.verify(requestJwt, verifyOpts);
     return AuthenticationResponse.createAuthenticationResponseFromVerifiedRequest(verifiedJWT, responseOpts);
   }
 

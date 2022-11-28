@@ -3,7 +3,6 @@ import { ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
-  AuthenticationRequest,
   AuthenticationRequestOpts,
   AuthenticationResponse,
   AuthenticationResponseOpts,
@@ -24,6 +23,7 @@ import {
   VerificationMode,
   VerifyAuthenticationRequestOpts,
 } from '../src/main';
+import AuthorizationRequest from '../src/main/authorization-request/AuthorizationRequest';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -184,7 +184,7 @@ describe('create JWT from Request JWT should', () => {
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
 
-    const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
+    const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
 
     jest.useRealTimers();
     await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).rejects.toThrow(
@@ -265,7 +265,7 @@ describe('create JWT from Request JWT should', () => {
         responseMode: ResponseMode.POST,
       };
 
-      const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
+      const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
       console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)));
       await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
     },
@@ -441,7 +441,7 @@ describe('create JWT from Request JWT should', () => {
       responseMode: ResponseMode.POST,
     };
 
-    const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
+    const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
     /* console.log(
       JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
     );*/
@@ -606,7 +606,7 @@ describe('create JWT from Request JWT should', () => {
       responseMode: ResponseMode.POST,
     };
 
-    const requestWithJWT = await AuthenticationRequest.createRequestObject(requestOpts);
+    const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
     await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 });
