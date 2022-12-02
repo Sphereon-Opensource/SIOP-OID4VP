@@ -3,12 +3,13 @@ import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
 import AuthorizationRequest from './authorization-request/AuthorizationRequest';
+import { verifyPresentations } from './authorization-response/OpenID4VP';
 import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
-import { AuthenticationRequestOptsSchema } from './schemas';
+import { AuthorizationRequestOptsSchema } from './schemas';
 import {
-  AuthenticationRequestOpts,
-  AuthenticationResponseWithJWT,
+  AuthorizationRequestOpts,
   AuthorizationRequestURI,
+  AuthorizationResponseResult,
   CheckLinkedDomain,
   ClaimOpts,
   ExternalVerification,
@@ -17,30 +18,30 @@ import {
   RequestRegistrationOpts,
   Verification,
   VerificationMode,
-  VerifiedAuthenticationResponseWithJWT,
-  VerifyAuthenticationResponseOpts,
+  VerifiedAuthenticationResponse,
+  VerifyAuthorizationResponseOpts,
 } from './types';
 
-import { AuthenticationResponse, RPBuilder } from './';
+import { AuthorizationResponse, RPBuilder } from './';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
-const validate = ajv.compile(AuthenticationRequestOptsSchema);
+const validate = ajv.compile(AuthorizationRequestOptsSchema);
 
 export class RP {
-  private readonly _authRequestOpts: AuthenticationRequestOpts;
-  private readonly _verifyAuthResponseOpts: Partial<VerifyAuthenticationResponseOpts>;
+  private readonly _authRequestOpts: AuthorizationRequestOpts;
+  private readonly _verifyAuthResponseOpts: Partial<VerifyAuthorizationResponseOpts>;
 
-  public constructor(opts: { builder?: RPBuilder; requestOpts?: AuthenticationRequestOpts; verifyOpts?: VerifyAuthenticationResponseOpts }) {
+  public constructor(opts: { builder?: RPBuilder; requestOpts?: AuthorizationRequestOpts; verifyOpts?: VerifyAuthorizationResponseOpts }) {
     const claims = opts.builder?.claims;
     this._authRequestOpts = { claims, ...createRequestOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthResponseOpts = { claims, ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
   }
 
-  get authRequestOpts(): AuthenticationRequestOpts {
+  get authRequestOpts(): AuthorizationRequestOpts {
     return this._authRequestOpts;
   }
 
-  get verifyAuthResponseOpts(): Partial<VerifyAuthenticationResponseOpts> {
+  get verifyAuthResponseOpts(): Partial<VerifyAuthorizationResponseOpts> {
     return this._verifyAuthResponseOpts;
   }
 
@@ -49,7 +50,7 @@ export class RP {
   }
 
   public async verifyAuthenticationResponse(
-    authenticationResponseWithJWT: AuthenticationResponseWithJWT,
+    authenticationResponseWithJWT: AuthorizationResponseResult,
     opts?: {
       audience: string;
       state?: string;
@@ -58,17 +59,17 @@ export class RP {
       claims?: ClaimOpts;
       checkLinkedDomain?: CheckLinkedDomain;
     }
-  ): Promise<VerifiedAuthenticationResponseWithJWT> {
+  ): Promise<VerifiedAuthenticationResponse> {
     const verification: Verification = this._verifyAuthResponseOpts.verification;
     const verifyCallback = verification.verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
     const presentationVerificationCallback =
       verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
     const verifyAuthenticationResponseOpts = this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback });
-    await AuthenticationResponse.verifyVPs(authenticationResponseWithJWT.payload, verifyAuthenticationResponseOpts);
-    return AuthenticationResponse.verifyJWT(authenticationResponseWithJWT.jwt, verifyAuthenticationResponseOpts);
+    await verifyPresentations(authenticationResponseWithJWT.responsePayload, verifyAuthenticationResponseOpts);
+    return AuthorizationResponse.verifyIDToken(authenticationResponseWithJWT.idToken, verifyAuthenticationResponseOpts);
   }
 
-  public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthenticationRequestOpts {
+  public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthorizationRequestOpts {
     const state = opts?.state || getState(opts?.state);
     const nonce = opts?.nonce || getNonce(state, opts?.nonce);
     return {
@@ -87,7 +88,7 @@ export class RP {
     checkLinkedDomain?: CheckLinkedDomain;
     verifyCallback?: VerifyCallback;
     presentationVerificationCallback?: PresentationVerificationCallback;
-  }): VerifyAuthenticationResponseOpts {
+  }): VerifyAuthorizationResponseOpts {
     return {
       ...this._verifyAuthResponseOpts,
       audience: opts.audience,
@@ -100,7 +101,7 @@ export class RP {
     };
   }
 
-  public static fromRequestOpts(opts: AuthenticationRequestOpts): RP {
+  public static fromRequestOpts(opts: AuthorizationRequestOpts): RP {
     return new RP({ requestOpts: opts });
   }
 
@@ -109,8 +110,8 @@ export class RP {
   }
 }
 
-function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; requestOpts?: AuthenticationRequestOpts }) {
-  const requestOpts: AuthenticationRequestOpts = opts.builder
+function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; requestOpts?: AuthorizationRequestOpts }) {
+  const requestOpts: AuthorizationRequestOpts = opts.builder
     ? {
         authorizationEndpoint: opts.builder.authorizationEndpoint,
         registration: opts.builder.requestRegistration as RequestRegistrationOpts,
@@ -137,7 +138,7 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
   return requestOpts;
 }
 
-function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthenticationResponseOpts }) {
+function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthorizationResponseOpts }) {
   if (opts?.builder?.resolvers.size && opts.builder?.requestRegistration) {
     opts.builder.requestRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
       opts.builder.requestRegistration.subjectSyntaxTypesSupported,

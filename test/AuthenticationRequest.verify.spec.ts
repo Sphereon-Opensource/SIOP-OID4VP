@@ -3,7 +3,7 @@ import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknow
 import * as dotenv from 'dotenv';
 
 import {
-  AuthenticationRequestOpts,
+  AuthorizationRequestOpts,
   CheckLinkedDomain,
   PassBy,
   ResponseType,
@@ -13,7 +13,7 @@ import {
   SubjectType,
   SupportedVersion,
   VerificationMode,
-  VerifyAuthenticationRequestOpts,
+  VerifyAuthorizationRequestOpts,
 } from '../src/main';
 import AuthorizationRequest from '../src/main/authorization-request/AuthorizationRequest';
 import SIOPErrors from '../src/main/types/Errors';
@@ -51,7 +51,7 @@ describe('verifyJWT should', () => {
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
-    const requestOpts: AuthenticationRequestOpts = {
+    const requestOpts: AuthorizationRequestOpts = {
       state: 'expected state',
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
@@ -96,7 +96,7 @@ describe('verifyJWT should', () => {
 
     const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
 
-    const verifyOpts: VerifyAuthenticationRequestOpts = {
+    const verifyOpts: VerifyAuthorizationRequestOpts = {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
@@ -116,7 +116,7 @@ describe('verifyJWT should', () => {
     'succeed if a valid JWT is passed',
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-      const requestOpts: AuthenticationRequestOpts = {
+      const requestOpts: AuthorizationRequestOpts = {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
         responseType: 'id_token',
@@ -154,7 +154,7 @@ describe('verifyJWT should', () => {
       };
       const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
 
-      const verifyOpts: VerifyAuthenticationRequestOpts = {
+      const verifyOpts: VerifyAuthorizationRequestOpts = {
         verification: {
           mode: VerificationMode.INTERNAL,
           resolveOpts: {

@@ -3,8 +3,8 @@ import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknow
 import nock from 'nock';
 
 import {
-  AuthenticationRequestOpts,
-  AuthenticationResponseOpts,
+  AuthorizationRequestOpts,
+  AuthorizationResponseOpts,
   CheckLinkedDomain,
   KeyAlgo,
   OP,
@@ -20,7 +20,7 @@ import {
   SubjectType,
   SupportedVersion,
   VerificationMode,
-  VerifyAuthenticationRequestOpts,
+  VerifyAuthorizationRequestOpts,
 } from '../src/main';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -71,7 +71,7 @@ describe('OP Builder should', () => {
 });
 
 describe('OP should', () => {
-  const responseOpts: AuthenticationResponseOpts = {
+  const responseOpts: AuthorizationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
     signatureType: {
@@ -104,7 +104,7 @@ describe('OP should', () => {
     expiresIn: 2000,
   };
 
-  const verifyOpts: VerifyAuthenticationRequestOpts = {
+  const verifyOpts: VerifyAuthorizationRequestOpts = {
     verification: {
       mode: VerificationMode.INTERNAL,
       resolveOpts: {
@@ -132,7 +132,7 @@ describe('OP should', () => {
     'succeed from request opts when all params are set',
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
-      const requestOpts: AuthenticationRequestOpts = {
+      const requestOpts: AuthorizationRequestOpts = {
         checkLinkedDomain: CheckLinkedDomain.NEVER,
         redirectUri: EXAMPLE_REDIRECT_URL,
         requestBy: {

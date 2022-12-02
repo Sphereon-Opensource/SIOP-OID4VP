@@ -95,9 +95,9 @@ function correctSchema(schemaString: string) {
 const requestOptsConf = {
   path: "../src/main/types/SIOP.types.ts",
   tsconfig: "tsconfig.json",
-  type: "AuthenticationRequestOpts", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/AuthenticationRequestOpts.schema.ts",
-  outputConstName: "AuthenticationRequestOptsSchema",
+  type: "AuthorizationRequestOpts", // Or <type-name> if you want to generate schema for that one type only
+  outputPath: "src/main/schemas/AuthorizationRequestOpts.schema.ts",
+  outputConstName: "AuthorizationRequestOptsSchema",
   skipTypeCheck: true
 };
 
@@ -105,9 +105,9 @@ const requestOptsConf = {
 const responseOptsConf = {
   path: "../src/main/types/SIOP.types.ts",
   tsconfig: "tsconfig.json",
-  type: "AuthenticationResponseOpts", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/AuthenticationResponseOpts.schema.ts",
-  outputConstName: "AuthenticationResponseOptsSchema",
+  type: "AuthorizationResponseOpts", // Or <type-name> if you want to generate schema for that one type only
+  outputPath: "src/main/schemas/AuthorizationResponseOpts.schema.ts",
+  outputConstName: "AuthorizationResponseOptsSchema",
   skipTypeCheck: true
 };
 
@@ -133,8 +133,8 @@ const authorizationRequestPayloadVID1 = {
   path: "../src/main/types/SIOP.types.ts",
   tsconfig: "tsconfig.json",
   type: "AuthorizationRequestPayloadVID1", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/AuthenticationRequestPayloadVID1.schema.ts",
-  outputConstName: "AuthenticationRequestPayloadSchemaVID1",
+  outputPath: "src/main/schemas/AuthorizationRequestPayloadVID1.schema.ts",
+  outputConstName: "AuthorizationRequestPayloadSchemaVID1",
   skipTypeCheck: true
 };
 
@@ -142,8 +142,8 @@ const authorizationRequestPayloadVD11 = {
   path: "../src/main/types/SIOP.types.ts",
   tsconfig: "tsconfig.json",
   type: "AuthorizationRequestPayloadVD11", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/AuthenticationRequestPayloadVD11.schema.ts",
-  outputConstName: "AuthenticationRequestPayloadSchemaVD11",
+  outputPath: "src/main/schemas/AuthorizationRequestPayloadVD11.schema.ts",
+  outputConstName: "AuthorizationRequestPayloadSchemaVD11",
   skipTypeCheck: true
 }
 

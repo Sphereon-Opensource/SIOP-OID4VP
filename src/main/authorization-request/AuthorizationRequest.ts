@@ -1,4 +1,3 @@
-import { createRequestRegistration } from '../AuthenticationRequestRegistration';
 import { PresentationExchange } from '../PresentationExchange';
 import {
   fetchByReferenceOrUseByValue,
@@ -13,7 +12,7 @@ import {
 } from '../functions';
 import { authorizationRequestVersionDiscovery } from '../functions/SIOPVersionDiscovery';
 import {
-  AuthenticationRequestOpts,
+  AuthorizationRequestOpts,
   AuthorizationRequestPayload,
   CheckLinkedDomain,
   PassBy,
@@ -24,50 +23,20 @@ import {
   RPRegistrationMetadataPayload,
   Scope,
   SIOPErrors,
-  VerifiedAuthenticationRequestWithJWT,
+  VerifiedAuthorizationRequest,
   VerifiedJWT,
-  VerifyAuthenticationRequestOpts,
+  VerifyAuthorizationRequestOpts,
 } from '../types';
 
 import Opts from './Opts';
 import Payload from './Payload';
+import { createRequestRegistration } from './RequestRegistration';
 import URI from './URI';
 
 export default class AuthorizationRequest {
   public static readonly URI: URI = new URI();
-  /**
-   * Create a signed SIOP request object as JWT on RP side, typically you will want to use the createURI version!
-   *
-   * @param opts Request input data to build a SIOP Request Object as JWT
-   * @remarks This method is used to generate a SIOP request Object with info provided by the RP.
-   * First it generates the request object payload, and then it creates the signed JWT.
-   *
-   * Normally you will want to use the createURI method. That creates a URI that includes the JWT from this method in the URI
-   * If you do use this method, you can call the `convertRequestObjectToURI` afterwards to get the URI.
-   * Please note that the createURI method allows you to differentiate between OAuth2 and OpenID parameters that become
-   * part of the URI and which become part of the Request Object. If you generate a URI based upon the result of this method,
-   * the URI will be constructed based on the Request Object only!
-   */
-  static async createRequestObject(opts: AuthenticationRequestOpts): Promise<RequestObjectResult> {
-    if (opts && opts.requestBy?.type === PassBy.NONE) {
-      throw Error(`Cannot create a Request Object when the passBy options is set to None`);
-    }
-    const createdRequestObject = await Payload.createRequestObject(opts);
-    const requestObjectPayload = JSON.parse(JSON.stringify(createdRequestObject));
-    // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
-    // request and request_uri parameters MUST NOT be included in Request Objects.
-    delete requestObjectPayload.request;
-    delete requestObjectPayload.request_uri;
-    const requestObject = await signDidJwtPayload(requestObjectPayload, opts);
 
-    return {
-      opts,
-      requestObject,
-      requestObjectPayload,
-    };
-  }
-
-  static async createAuthorizationRequest(opts: AuthenticationRequestOpts, requestObject?: string): Promise<AuthorizationRequestPayload> {
+  static async createAuthorizationRequest(opts: AuthorizationRequestOpts, requestObject?: string): Promise<AuthorizationRequestPayload> {
     Opts.assertValidRequestOpts(opts);
     if (opts.requestBy && opts.requestBy.type === PassBy.VALUE && !requestObject) {
       throw Error(SIOPErrors.NO_JWT);
@@ -96,12 +65,44 @@ export default class AuthorizationRequest {
   }
 
   /**
+   * Create a signed SIOP request object as JWT on RP side, typically you will want to use the createURI version!
+   *
+   * @param opts Request input data to build a SIOP Request Object as JWT
+   * @remarks This method is used to generate a SIOP request Object with info provided by the RP.
+   * First it generates the request object payload, and then it creates the signed JWT.
+   *
+   * Normally you will want to use the createURI method. That creates a URI that includes the JWT from this method in the URI
+   * If you do use this method, you can call the `convertRequestObjectToURI` afterwards to get the URI.
+   * Please note that the createURI method allows you to differentiate between OAuth2 and OpenID parameters that become
+   * part of the URI and which become part of the Request Object. If you generate a URI based upon the result of this method,
+   * the URI will be constructed based on the Request Object only!
+   */
+  static async createRequestObject(opts: AuthorizationRequestOpts): Promise<RequestObjectResult> {
+    if (opts && opts.requestBy?.type === PassBy.NONE) {
+      throw Error(`Cannot create a Request Object when the passBy options is set to None`);
+    }
+    const createdRequestObject = await Payload.createRequestObject(opts);
+    const requestObjectPayload = JSON.parse(JSON.stringify(createdRequestObject));
+    // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
+    // request and request_uri parameters MUST NOT be included in Request Objects.
+    delete requestObjectPayload.request;
+    delete requestObjectPayload.request_uri;
+    const requestObject = await signDidJwtPayload(requestObjectPayload, opts);
+
+    return {
+      opts,
+      requestObject,
+      requestObjectPayload,
+    };
+  }
+
+  /**
    * Verifies a SIOP Request JWT on OP side
    *
    * @param uriOrJwt
    * @param opts
    */
-  static async verify(uriOrJwt: string, opts: VerifyAuthenticationRequestOpts): Promise<VerifiedAuthenticationRequestWithJWT> {
+  static async verify(uriOrJwt: string, opts: VerifyAuthorizationRequestOpts): Promise<VerifiedAuthorizationRequest> {
     Opts.assertValidVerifyOpts(opts);
     if (!uriOrJwt) {
       throw new Error(SIOPErrors.NO_URI);

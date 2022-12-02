@@ -1,7 +1,7 @@
-import { LanguageTagUtils } from './functions';
-import { DiscoveryMetadataOpts, DiscoveryMetadataPayload, ResponseIss, ResponseType, Schema, Scope, SigningAlgo, SubjectType } from './types';
+import { LanguageTagUtils } from '../functions';
+import { DiscoveryMetadataOpts, DiscoveryMetadataPayload, ResponseIss, ResponseType, Schema, Scope, SigningAlgo, SubjectType } from '../types';
 
-export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): DiscoveryMetadataPayload {
+export const createDiscoveryMetadataPayload = (opts: DiscoveryMetadataOpts): DiscoveryMetadataPayload => {
   const discoveryMetadataPayload: DiscoveryMetadataPayload = {
     authorization_endpoint: opts.authorizationEndpoint || Schema.OPENID,
     issuer: ResponseIss.SELF_ISSUED_V2,
@@ -62,4 +62,4 @@ export function createDiscoveryMetadataPayload(opts: DiscoveryMetadataOpts): Dis
   });
 
   return discoveryMetadataPayload;
-}
+};

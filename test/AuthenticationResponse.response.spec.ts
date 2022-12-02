@@ -3,9 +3,9 @@ import { ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
-  AuthenticationRequestOpts,
-  AuthenticationResponse,
-  AuthenticationResponseOpts,
+  AuthorizationRequestOpts,
+  AuthorizationResponse,
+  AuthorizationResponseOpts,
   CheckLinkedDomain,
   PassBy,
   PresentationExchange,
@@ -21,7 +21,7 @@ import {
   SupportedVersion,
   VerifiablePresentationTypeFormat,
   VerificationMode,
-  VerifyAuthenticationRequestOpts,
+  VerifyAuthorizationRequestOpts,
 } from '../src/main';
 import AuthorizationRequest from '../src/main/authorization-request/AuthorizationRequest';
 import SIOPErrors from '../src/main/types/Errors';
@@ -49,7 +49,7 @@ const validButExpiredJWT =
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 
 describe('create JWT from Request JWT should', () => {
-  const responseOpts: AuthenticationResponseOpts = {
+  const responseOpts: AuthorizationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
     registration: {
@@ -80,7 +80,7 @@ describe('create JWT from Request JWT should', () => {
     did: DID,
     responseMode: ResponseMode.POST,
   };
-  const verifyOpts: VerifyAuthenticationRequestOpts = {
+  const verifyOpts: VerifyAuthorizationRequestOpts = {
     verification: {
       resolveOpts: {
         subjectSyntaxTypesSupported: ['did:ethr'],
@@ -94,17 +94,17 @@ describe('create JWT from Request JWT should', () => {
 
   it('throw NO_JWT when no jwt is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(undefined as never, responseOpts, verifyOpts)).rejects.toThrow(SIOPErrors.NO_JWT);
+    await expect(AuthorizationResponse.createFromRequestObject(undefined as never, responseOpts, verifyOpts)).rejects.toThrow(SIOPErrors.NO_JWT);
   });
   it('throw BAD_PARAMS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, undefined as never, verifyOpts)).rejects.toThrow(
+    await expect(AuthorizationResponse.createFromRequestObject(validButExpiredJWT, undefined as never, verifyOpts)).rejects.toThrow(
       SIOPErrors.BAD_PARAMS
     );
   });
   it('throw VERIFY_BAD_PARAMS when no verifyOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, responseOpts, undefined as never)).rejects.toThrow(
+    await expect(AuthorizationResponse.createFromRequestObject(validButExpiredJWT, responseOpts, undefined as never)).rejects.toThrow(
       SIOPErrors.VERIFY_BAD_PARAMS
     );
   });
@@ -113,7 +113,7 @@ describe('create JWT from Request JWT should', () => {
     expect.assertions(1);
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-    const requestOpts: AuthenticationRequestOpts = {
+    const requestOpts: AuthorizationRequestOpts = {
       nonce: '12345',
       state: '12345',
       clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -148,7 +148,7 @@ describe('create JWT from Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
-    const responseOpts: AuthenticationResponseOpts = {
+    const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
@@ -187,7 +187,7 @@ describe('create JWT from Request JWT should', () => {
     const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
 
     jest.useRealTimers();
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).rejects.toThrow(
+    await expect(AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1577837400/
     );
   });
@@ -199,7 +199,7 @@ describe('create JWT from Request JWT should', () => {
 
       const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
       const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-      const requestOpts: AuthenticationRequestOpts = {
+      const requestOpts: AuthorizationRequestOpts = {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
         responseType: 'id_token',
@@ -232,7 +232,7 @@ describe('create JWT from Request JWT should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
       };
-      const responseOpts: AuthenticationResponseOpts = {
+      const responseOpts: AuthorizationResponseOpts = {
         checkLinkedDomain: CheckLinkedDomain.NEVER,
         redirectUri: EXAMPLE_REDIRECT_URL,
         registration: {
@@ -266,8 +266,8 @@ describe('create JWT from Request JWT should', () => {
       };
 
       const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
-      console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)));
-      await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
+      console.log(JSON.stringify(await AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)));
+      await expect(AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
     },
     UNIT_TEST_TIMEOUT
   );
@@ -315,7 +315,7 @@ describe('create JWT from Request JWT should', () => {
         },
       ],
     };
-    const requestOpts: AuthenticationRequestOpts = {
+    const requestOpts: AuthorizationRequestOpts = {
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
@@ -400,7 +400,7 @@ describe('create JWT from Request JWT should', () => {
       {},
       presentationSignCallback
     )) as IVerifiablePresentation;
-    const responseOpts: AuthenticationResponseOpts = {
+    const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
@@ -445,7 +445,7 @@ describe('create JWT from Request JWT should', () => {
     /* console.log(
       JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
     );*/
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
+    await expect(AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 
   it('succeed when valid JWT with PD is passed in for id_token', async () => {
@@ -479,7 +479,7 @@ describe('create JWT from Request JWT should', () => {
         },
       ],
     };
-    const requestOpts: AuthenticationRequestOpts = {
+    const requestOpts: AuthorizationRequestOpts = {
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'token_id',
@@ -563,7 +563,7 @@ describe('create JWT from Request JWT should', () => {
       {},
       presentationSignCallback
     )) as IVerifiablePresentation;
-    const responseOpts: AuthenticationResponseOpts = {
+    const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
@@ -607,6 +607,6 @@ describe('create JWT from Request JWT should', () => {
     };
 
     const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
+    await expect(AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 });

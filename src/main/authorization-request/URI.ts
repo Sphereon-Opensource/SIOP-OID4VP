@@ -3,10 +3,11 @@ import { decodeJWT } from 'did-jwt';
 import { PresentationExchange } from '../PresentationExchange';
 import { decodeUriAsJson, encodeJsonAsURI, fetchByReferenceOrUseByValue } from '../functions';
 import {
-  AuthenticationRequestOpts,
+  AuthorizationRequestOpts,
   AuthorizationRequestPayload,
   AuthorizationRequestURI,
   PassBy,
+  RequestBy,
   RequestObjectPayload,
   RequestObjectResult,
   RPRegistrationMetadataPayload,
@@ -27,7 +28,7 @@ export default class URI {
    *
    * Normally you will want to use this method to create the request.
    */
-  public async create(opts: AuthenticationRequestOpts): Promise<AuthorizationRequestURI> {
+  public async create(opts: AuthorizationRequestOpts): Promise<AuthorizationRequestURI> {
     const { requestObject } = await AuthorizationRequest.createRequestObject(opts);
     const authorizationRequest = await AuthorizationRequest.createAuthorizationRequest(opts, requestObject);
     const result = await this.fromRequest(opts, authorizationRequest);
@@ -35,7 +36,7 @@ export default class URI {
   }
 
   public async parseAndResolve(uri: string) {
-    const { scheme, requestObject, authorizationRequest } = await this.parseAndResolveRequestUri(uri);
+    const { uriScheme, requestObject, authorizationRequest } = await this.parseAndResolveRequestUri(uri);
     if (requestObject) {
       Payload.assertValidRequestObject(decodeJWT(requestObject) as RequestObjectPayload);
     }
@@ -45,7 +46,7 @@ export default class URI {
     );
     Payload.assertValidRegistrationObject(registrationMetadata);
 
-    return { scheme, requestObject, authorizationRequest, registrationMetadata };
+    return { uriScheme, requestObject, authorizationRequest, registrationMetadata };
   }
 
   /**
@@ -68,8 +69,11 @@ export default class URI {
    * @param request
    *
    */
-  private async fromRequest(opts: AuthenticationRequestOpts, request: AuthorizationRequestPayload | string): Promise<AuthorizationRequestURI> {
-    const schema = 'openid://';
+  private async fromRequest(
+    opts: { uriScheme?: string; requestBy: RequestBy },
+    request: AuthorizationRequestPayload | string
+  ): Promise<AuthorizationRequestURI> {
+    const scheme = opts.uriScheme ? (opts.uriScheme.endsWith('://') ? opts.uriScheme : `${opts.uriScheme}://`) : 'openid://';
     const isJwt = typeof request === 'string';
     const requestObject = isJwt ? request : request.request;
     if (isJwt && (!requestObject || !requestObject.startsWith('ey'))) {
@@ -109,9 +113,9 @@ export default class URI {
       delete authorizationRequest.request_uri;
     }
     return {
-      encodedUri: `${schema}?${encodeJsonAsURI(authorizationRequest)}`,
+      encodedUri: `${scheme}?${encodeJsonAsURI(authorizationRequest)}`,
       encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
-      requestOpts: opts,
+      requestBy: opts.requestBy,
       authorizationRequest,
       requestObject,
     };
@@ -122,16 +126,16 @@ export default class URI {
    *
    * @param uri
    */
-  parse(uri: string): { scheme: string; authorizationRequest: AuthorizationRequestPayload } {
+  parse(uri: string): { uriScheme: string; authorizationRequest: AuthorizationRequestPayload } {
     // We strip the uri scheme before passing it to the decode function
-    const scheme: string = uri.match(/^.*:\/\/\??/)[0];
+    const uriScheme: string = uri.match(/^.*:\/\/\??/)[0];
     const authorizationRequest = decodeUriAsJson(uri.replace(/^.*:\/\/\??/, '')) as AuthorizationRequestPayload;
-    return { scheme, authorizationRequest };
+    return { uriScheme, authorizationRequest };
   }
 
   protected async parseAndResolveRequestUri(uri: string) {
-    const { authorizationRequest, scheme } = this.parse(uri);
+    const { authorizationRequest, uriScheme } = this.parse(uri);
     const requestObject = await fetchByReferenceOrUseByValue(authorizationRequest.request_uri, authorizationRequest.request, true);
-    return { scheme, authorizationRequest, requestObject };
+    return { uriScheme, authorizationRequest, requestObject };
   }
 }

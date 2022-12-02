@@ -1,18 +1,18 @@
-export const AuthenticationRequestOptsSchema = {
+export const AuthorizationRequestOptsSchema = {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/AuthenticationRequestOpts",
+  "$ref": "#/definitions/AuthorizationRequestOpts",
   "definitions": {
-    "AuthenticationRequestOpts": {
+    "AuthorizationRequestOpts": {
       "anyOf": [
         {
-          "$ref": "#/definitions/AuthenticationRequestOptsVD1"
+          "$ref": "#/definitions/AuthorizationRequestOptsVD1"
         },
         {
-          "$ref": "#/definitions/AuthenticationRequestOptsVD11"
+          "$ref": "#/definitions/AuthorizationRequestOptsVD11"
         }
       ]
     },
-    "AuthenticationRequestOptsVD1": {
+    "AuthorizationRequestOptsVD1": {
       "type": "object",
       "properties": {
         "scope": {
@@ -97,6 +97,9 @@ export const AuthenticationRequestOptsSchema = {
             }
           ]
         },
+        "uriScheme": {
+          "type": "string"
+        },
         "requestBy": {
           "$ref": "#/definitions/RequestBy"
         },
@@ -143,7 +146,7 @@ export const AuthenticationRequestOptsSchema = {
       "type": "object",
       "properties": {
         "idToken": {
-          "$ref": "#/definitions/IdTokenPayload"
+          "$ref": "#/definitions/IDTokenPayload"
         },
         "vpToken": {
           "$ref": "#/definitions/VpTokenClaimOpts"
@@ -151,7 +154,7 @@ export const AuthenticationRequestOptsSchema = {
       },
       "additionalProperties": false
     },
-    "IdTokenPayload": {
+    "IDTokenPayload": {
       "type": "object",
       "properties": {
         "iss": {
@@ -1254,7 +1257,7 @@ export const AuthenticationRequestOptsSchema = {
       "type": "string",
       "const": "XC20P"
     },
-    "AuthenticationRequestOptsVD11": {
+    "AuthorizationRequestOptsVD11": {
       "type": "object",
       "properties": {
         "scope": {
@@ -1338,6 +1341,9 @@ export const AuthenticationRequestOptsSchema = {
               "$ref": "#/definitions/SigningAlgo"
             }
           ]
+        },
+        "uriScheme": {
+          "type": "string"
         },
         "requestBy": {
           "$ref": "#/definitions/RequestBy"

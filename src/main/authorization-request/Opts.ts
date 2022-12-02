@@ -1,21 +1,22 @@
-import { assertValidRequestRegistrationOpts } from '../AuthenticationRequestRegistration';
 import {
-  AuthenticationRequestOpts,
+  AuthorizationRequestOpts,
   isExternalVerification,
   isInternalVerification,
   PassBy,
   SIOPErrors,
-  VerifyAuthenticationRequestOpts,
+  VerifyAuthorizationRequestOpts,
 } from '../types';
 
+import { assertValidRequestRegistrationOpts } from './RequestRegistration';
+
 export default class Opts {
-  static assertValidVerifyOpts(opts: VerifyAuthenticationRequestOpts) {
+  static assertValidVerifyOpts(opts: VerifyAuthorizationRequestOpts) {
     if (!opts || !opts.verification || (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))) {
       throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
     }
   }
 
-  static assertValidRequestOpts(opts: AuthenticationRequestOpts) {
+  static assertValidRequestOpts(opts: AuthorizationRequestOpts) {
     if (!opts || !opts.redirectUri) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     } else if (!opts.requestBy) {

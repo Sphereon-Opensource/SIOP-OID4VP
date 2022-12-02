@@ -321,7 +321,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT);
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,
@@ -541,7 +541,7 @@ describe('RP and OP interaction should', () => {
         ],
       },
     });
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,
@@ -663,7 +663,7 @@ describe('RP and OP interaction should', () => {
           ],
         },
       });
-      expect(authenticationResponseWithJWT.payload).toBeDefined();
+      expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
       await expect(
         rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
           audience: EXAMPLE_REDIRECT_URL,
@@ -809,7 +809,7 @@ describe('RP and OP interaction should', () => {
         ],
       },
     });
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
 
     const DID_CONFIGURATION = {
       '@context': 'https://identity.foundation/.well-known/did-configuration/v1',
@@ -944,7 +944,7 @@ describe('RP and OP interaction should', () => {
           ],
         },
       });
-      expect(authenticationResponseWithJWT.payload).toBeDefined();
+      expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
 
       const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
         audience: EXAMPLE_REDIRECT_URL,
@@ -1088,7 +1088,7 @@ describe('RP and OP interaction should', () => {
         ],
       },
     });
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
 
     const DID_CONFIGURATION = {
       '@context': 'https://identity.foundation/.well-known/did-configuration/v1',
@@ -1385,7 +1385,7 @@ describe('RP and OP interaction should', () => {
         ],
       },
     });
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,

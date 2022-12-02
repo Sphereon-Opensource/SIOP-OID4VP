@@ -2,19 +2,19 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
-import AuthenticationResponse from './AuthenticationResponse';
 import OPBuilder from './OPBuilder';
 import AuthorizationRequest from './authorization-request/AuthorizationRequest';
+import AuthorizationResponse from './authorization-response/AuthorizationResponse';
 import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { authorizationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
-import { AuthenticationResponseOptsSchema } from './schemas';
+import { AuthorizationResponseOptsSchema } from './schemas';
 import {
-  AuthenticationResponseOpts,
-  AuthenticationResponseWithJWT,
   AuthorizationRequestPayload,
+  AuthorizationResponseOpts,
+  AuthorizationResponseResult,
   ExternalVerification,
   InternalVerification,
-  ParsedAuthenticationRequestURI,
+  ParsedAuthorizationRequestURI,
   PresentationExchangeOpts,
   ResponseMode,
   SIOPErrors,
@@ -23,35 +23,35 @@ import {
   VerifiablePresentationWithLocation,
   Verification,
   VerificationMode,
-  VerifiedAuthenticationRequestWithJWT,
-  VerifyAuthenticationRequestOpts,
+  VerifiedAuthorizationRequest,
+  VerifyAuthorizationRequestOpts,
 } from './types';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 
-const validate = ajv.compile(AuthenticationResponseOptsSchema);
+const validate = ajv.compile(AuthorizationResponseOptsSchema);
 
 // The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
 export class OP {
-  private readonly _authResponseOpts: AuthenticationResponseOpts;
-  private readonly _verifyAuthRequestOpts: Partial<VerifyAuthenticationRequestOpts>;
+  private readonly _authResponseOpts: AuthorizationResponseOpts;
+  private readonly _verifyAuthRequestOpts: Partial<VerifyAuthorizationRequestOpts>;
 
-  public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthenticationResponseOpts; verifyOpts?: VerifyAuthenticationRequestOpts }) {
+  public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthorizationResponseOpts; verifyOpts?: VerifyAuthorizationRequestOpts }) {
     this._authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
     this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
   }
 
-  get authResponseOpts(): AuthenticationResponseOpts {
+  get authResponseOpts(): AuthorizationResponseOpts {
     return this._authResponseOpts;
   }
 
-  get verifyAuthRequestOpts(): Partial<VerifyAuthenticationRequestOpts> {
+  get verifyAuthRequestOpts(): Partial<VerifyAuthorizationRequestOpts> {
     return this._verifyAuthRequestOpts;
   }
 
   // TODO SK Can you please put some documentation on it?
-  public async postAuthenticationResponse(authenticationResponse: AuthenticationResponseWithJWT): Promise<Response> {
-    return postAuthenticationResponse(authenticationResponse.payload.idToken.aud, authenticationResponse);
+  public async postAuthenticationResponse(authenticationResponse: AuthorizationResponseResult): Promise<Response> {
+    return postAuthenticationResponse(authenticationResponse.responsePayload.idToken.aud, authenticationResponse);
   }
 
   /**
@@ -71,13 +71,13 @@ export class OP {
   public async verifyAuthenticationRequest(
     requestJwtOrUri: string,
     opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
-  ): Promise<VerifiedAuthenticationRequestWithJWT> {
+  ): Promise<VerifiedAuthorizationRequest> {
     const verifyCallback = (this._verifyAuthRequestOpts.verification as Verification).verifyCallback || this._verifyAuthRequestOpts.verifyCallback;
     return AuthorizationRequest.verify(requestJwtOrUri, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
   }
 
   public async createAuthenticationResponse(
-    verifiedJwt: VerifiedAuthenticationRequestWithJWT,
+    verifiedJwt: VerifiedAuthorizationRequest,
     responseOpts?: {
       nonce?: string;
       state?: string;
@@ -87,12 +87,12 @@ export class OP {
         vps?: VerifiablePresentationWithLocation[];
       };
     }
-  ): Promise<AuthenticationResponseWithJWT> {
-    return AuthenticationResponse.createAuthenticationResponseFromVerifiedRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
+  ): Promise<AuthorizationResponseResult> {
+    return AuthorizationResponse.createFromVerifiedAuthorizationRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
   }
 
   // TODO SK Can you please put some documentation on it?
-  public async submitAuthenticationResponse(verifiedJwt: AuthenticationResponseWithJWT): Promise<Response> {
+  public async submitAuthenticationResponse(verifiedJwt: AuthorizationResponseResult): Promise<Response> {
     if (
       !verifiedJwt ||
       (verifiedJwt.responseOpts.responseMode &&
@@ -100,7 +100,7 @@ export class OP {
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    return postAuthenticationResponseJwt(verifiedJwt.idToken.aud, verifiedJwt.jwt);
+    return postAuthenticationResponseJwt(verifiedJwt.idTokenPayload.aud, verifiedJwt.idToken);
   }
 
   /**
@@ -108,13 +108,13 @@ export class OP {
    *
    * @param encodedUri
    */
-  public async parseAuthenticationRequestURI(encodedUri: string): Promise<ParsedAuthenticationRequestURI> {
-    const { scheme, requestObject, authorizationRequest, registrationMetadata } = await AuthorizationRequest.URI.parseAndResolve(encodedUri);
+  public async parseAuthenticationRequestURI(encodedUri: string): Promise<ParsedAuthorizationRequestURI> {
+    const { uriScheme, requestObject, authorizationRequest, registrationMetadata } = await AuthorizationRequest.URI.parseAndResolve(encodedUri);
 
     return {
       encodedUri,
       encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
-      scheme,
+      uriScheme,
       requestObject,
       authorizationRequest,
       registration: registrationMetadata,
@@ -126,7 +126,7 @@ export class OP {
     state?: string;
     audience?: string;
     presentationExchange?: PresentationExchangeOpts;
-  }): AuthenticationResponseOpts {
+  }): AuthorizationResponseOpts {
     return {
       ...(opts?.audience ? { redirectUri: opts.audience } : {}),
       ...this._authResponseOpts,
@@ -140,7 +140,7 @@ export class OP {
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
     verifyCallback?: VerifyCallback;
-  }): VerifyAuthenticationRequestOpts {
+  }): VerifyAuthorizationRequestOpts {
     return {
       ...this._verifyAuthRequestOpts,
       nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
@@ -149,7 +149,7 @@ export class OP {
     };
   }
 
-  public static fromOpts(responseOpts: AuthenticationResponseOpts, verifyOpts: VerifyAuthenticationRequestOpts): OP {
+  public static fromOpts(responseOpts: AuthorizationResponseOpts, verifyOpts: VerifyAuthorizationRequestOpts): OP {
     return new OP({ responseOpts, verifyOpts });
   }
 
@@ -160,8 +160,8 @@ export class OP {
 
 function createResponseOptsFromBuilderOrExistingOpts(opts: {
   builder?: OPBuilder;
-  responseOpts?: AuthenticationResponseOpts;
-}): AuthenticationResponseOpts {
+  responseOpts?: AuthorizationResponseOpts;
+}): AuthorizationResponseOpts {
   if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
     opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
       opts.builder.responseRegistration.subjectSyntaxTypesSupported,
@@ -169,7 +169,7 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: {
     );
   }
 
-  let responseOpts: AuthenticationResponseOpts;
+  let responseOpts: AuthorizationResponseOpts;
 
   if (opts.builder) {
     responseOpts = {
@@ -257,8 +257,8 @@ function createResponseOptsFromBuilderOrExistingOpts(opts: {
 
 function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
   builder?: OPBuilder;
-  verifyOpts?: VerifyAuthenticationRequestOpts;
-}): VerifyAuthenticationRequestOpts {
+  verifyOpts?: VerifyAuthorizationRequestOpts;
+}): VerifyAuthorizationRequestOpts {
   if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration) {
     opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
       opts.builder.responseRegistration.subjectSyntaxTypesSupported,

@@ -18,7 +18,7 @@ import {
   SupportedVersion,
   VerifiablePresentationPayload,
   VerifiablePresentationTypeFormat,
-  VerifiedAuthenticationRequestWithJWT,
+  VerifiedAuthorizationRequest,
 } from '../src/main';
 import { SIOPErrors } from '../src/main/types';
 
@@ -209,7 +209,7 @@ describe('presentation exchange manager tests', () => {
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
-    const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
+    const verifiedJwt: VerifiedAuthorizationRequest = {
       didResolutionResult: undefined,
       issuer: '',
       jwt: payload.request,
@@ -267,7 +267,7 @@ describe('presentation exchange manager tests', () => {
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
-    const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
+    const verifiedJwt: VerifiedAuthorizationRequest = {
       didResolutionResult: undefined,
       issuer: '',
       jwt: payload.request,
@@ -300,7 +300,7 @@ describe('presentation exchange manager tests', () => {
     const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     const vcs = getVCs();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
-    const verifiedJwt: VerifiedAuthenticationRequestWithJWT = {
+    const verifiedJwt: VerifiedAuthorizationRequest = {
       didResolutionResult: undefined,
       issuer: '',
       jwt: payload.request,

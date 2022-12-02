@@ -1,11 +1,10 @@
 import { PEX } from '@sphereon/pex';
 import Ajv from 'ajv';
 
-import { createRequestRegistration } from '../AuthenticationRequestRegistration';
 import { getNonce, getState } from '../functions';
 import { RPRegistrationMetadataPayloadSchema } from '../schemas';
 import {
-  AuthenticationRequestOpts,
+  AuthorizationRequestOpts,
   ClaimOpts,
   ClaimPayload,
   RequestObjectPayload,
@@ -17,6 +16,7 @@ import {
 } from '../types';
 
 import Opts from './Opts';
+import { createRequestRegistration } from './RequestRegistration';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
@@ -45,7 +45,7 @@ export default class Payload {
     };
   }
 
-  static async createRequestObject(opts: AuthenticationRequestOpts): Promise<RequestObjectPayload> {
+  static async createRequestObject(opts: AuthorizationRequestOpts): Promise<RequestObjectPayload> {
     Opts.assertValidRequestOpts(opts);
 
     // todo restrict opts to request type

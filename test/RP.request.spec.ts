@@ -3,7 +3,7 @@ import { IProofType } from '@sphereon/ssi-types';
 import { Resolver } from 'did-resolver';
 
 import {
-  AuthenticationRequestOpts,
+  AuthorizationRequestOpts,
   CheckLinkedDomain,
   PassBy,
   ResponseMode,
@@ -79,7 +79,7 @@ describe('RP should', () => {
   it('return an RP when all request arguments are set', async () => {
     expect.assertions(1);
 
-    const opts: AuthenticationRequestOpts = {
+    const opts: AuthorizationRequestOpts = {
       clientId: 'test',
       scope: 'test',
       responseType: 'test',
@@ -122,7 +122,7 @@ describe('RP should', () => {
 
   it('succeed from request opts when all params are set', async () => {
     // expect.assertions(1);
-    const opts: AuthenticationRequestOpts = {
+    const opts: AuthorizationRequestOpts = {
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'test',

@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 
-import { AuthenticationRequestPayloadSchemaVD11, AuthenticationRequestPayloadSchemaVID1 } from '../schemas';
+import { AuthorizationRequestPayloadSchemaVD11, AuthorizationRequestPayloadSchemaVID1 } from '../schemas';
 import { AuthorizationRequestPayload, SupportedVersion } from '../types';
 import errors from '../types/Errors';
 
@@ -8,17 +8,17 @@ import errors from '../types/Errors';
 export function authorizationRequestVersionDiscovery(authorizationRequest: AuthorizationRequestPayload): SupportedVersion {
   const authorizationRequestCopy: AuthorizationRequestPayload = JSON.parse(JSON.stringify(authorizationRequest));
   const ajv = new Ajv({ verbose: true, allowUnionTypes: true, strict: false, allErrors: true });
-  const validateID1 = ajv.compile(AuthenticationRequestPayloadSchemaVID1);
+  const validateID1 = ajv.compile(AuthorizationRequestPayloadSchemaVID1);
   let result = validateID1(authorizationRequestCopy);
   if (result) {
     return SupportedVersion.SIOPv2_ID1;
   }
-  const validateJWTVCPresentationProfile = ajv.compile(AuthenticationRequestPayloadSchemaVID1);
+  const validateJWTVCPresentationProfile = ajv.compile(AuthorizationRequestPayloadSchemaVID1);
   result = validateJWTVCPresentationProfile(authorizationRequestCopy);
   if (result) {
     return SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1;
   }
-  const validateD11 = ajv.compile(AuthenticationRequestPayloadSchemaVD11);
+  const validateD11 = ajv.compile(AuthorizationRequestPayloadSchemaVD11);
   result = validateD11(authorizationRequestCopy);
   if (result) {
     return SupportedVersion.SIOPv2_D11;

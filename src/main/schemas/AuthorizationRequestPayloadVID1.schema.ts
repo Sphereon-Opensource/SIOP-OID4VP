@@ -1,15 +1,14 @@
-export const AuthenticationRequestPayloadSchemaVD11 = {
+export const AuthorizationRequestPayloadSchemaVID1 = {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/AuthorizationRequestPayloadVD11",
+  "$ref": "#/definitions/AuthorizationRequestPayloadVID1",
   "definitions": {
-    "AuthorizationRequestPayloadVD11": {
+    "AuthorizationRequestPayloadVID1": {
       "type": "object",
       "properties": {
-        "id_token_type": {
-          "type": "string"
+        "registration": {
+          "$ref": "#/definitions/RPRegistrationMetadataPayload"
         },
-        "client_metadata": {},
-        "client_metadata_uri": {
+        "registration_uri": {
           "type": "string"
         },
         "iss": {
@@ -80,7 +79,7 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
           "type": "string"
         },
         "response_mode": {
-          "type": "string"
+          "$ref": "#/definitions/ResponseMode"
         }
       },
       "required": [
@@ -92,6 +91,141 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
         "state"
       ]
     },
+    "RPRegistrationMetadataPayload": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
+        "id_token_signing_alg_values_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "request_object_signing_alg_values_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "response_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
+        },
+        "scopes_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subject_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
+        },
+        "subject_syntax_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vp_formats": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Format"
+            },
+            {}
+          ]
+        },
+        "client_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
+        "logo_uri": {
+          "anyOf": [
+            {},
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "client_purpose": {
+          "anyOf": [
+            {},
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": [
+        "client_id",
+        "id_token_signing_alg_values_supported",
+        "response_types_supported",
+        "scopes_supported",
+        "subject_syntax_types_supported",
+        "subject_types_supported",
+        "vp_formats"
+      ]
+    },
+    "SigningAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K",
+        "none"
+      ]
+    },
     "ResponseType": {
       "type": "string",
       "enum": [
@@ -99,11 +233,83 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
         "vp_token"
       ]
     },
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "openid",
+        "openid did_authn",
+        "profile",
+        "email",
+        "address",
+        "phone"
+      ]
+    },
+    "SubjectType": {
+      "type": "string",
+      "enum": [
+        "public",
+        "pairwise"
+      ]
+    },
+    "Format": {
+      "type": "object",
+      "properties": {
+        "jwt": {
+          "$ref": "#/definitions/JwtObject"
+        },
+        "jwt_vc": {
+          "$ref": "#/definitions/JwtObject"
+        },
+        "jwt_vp": {
+          "$ref": "#/definitions/JwtObject"
+        },
+        "ldp": {
+          "$ref": "#/definitions/LdpObject"
+        },
+        "ldp_vc": {
+          "$ref": "#/definitions/LdpObject"
+        },
+        "ldp_vp": {
+          "$ref": "#/definitions/LdpObject"
+        }
+      },
+      "additionalProperties": false
+    },
+    "JwtObject": {
+      "type": "object",
+      "properties": {
+        "alg": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "alg"
+      ],
+      "additionalProperties": false
+    },
+    "LdpObject": {
+      "type": "object",
+      "properties": {
+        "proof_type": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "proof_type"
+      ],
+      "additionalProperties": false
+    },
     "ClaimPayload": {
       "type": "object",
       "properties": {
         "id_token": {
-          "$ref": "#/definitions/IdTokenPayload"
+          "$ref": "#/definitions/IDTokenPayload"
         },
         "vp_token": {
           "$ref": "#/definitions/VpTokenClaimPayload"
@@ -111,7 +317,7 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
       },
       "additionalProperties": false
     },
-    "IdTokenPayload": {
+    "IDTokenPayload": {
       "type": "object",
       "properties": {
         "iss": {
@@ -271,60 +477,6 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
       "required": [
         "id",
         "input_descriptors"
-      ],
-      "additionalProperties": false
-    },
-    "Format": {
-      "type": "object",
-      "properties": {
-        "jwt": {
-          "$ref": "#/definitions/JwtObject"
-        },
-        "jwt_vc": {
-          "$ref": "#/definitions/JwtObject"
-        },
-        "jwt_vp": {
-          "$ref": "#/definitions/JwtObject"
-        },
-        "ldp": {
-          "$ref": "#/definitions/LdpObject"
-        },
-        "ldp_vc": {
-          "$ref": "#/definitions/LdpObject"
-        },
-        "ldp_vp": {
-          "$ref": "#/definitions/LdpObject"
-        }
-      },
-      "additionalProperties": false
-    },
-    "JwtObject": {
-      "type": "object",
-      "properties": {
-        "alg": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "alg"
-      ],
-      "additionalProperties": false
-    },
-    "LdpObject": {
-      "type": "object",
-      "properties": {
-        "proof_type": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "proof_type"
       ],
       "additionalProperties": false
     },
@@ -809,6 +961,15 @@ export const AuthenticationRequestPayloadSchemaVD11 = {
         "type"
       ],
       "additionalProperties": false
+    },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
     }
   }
 };

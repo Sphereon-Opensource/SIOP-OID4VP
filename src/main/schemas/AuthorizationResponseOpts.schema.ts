@@ -1,8 +1,8 @@
-export const AuthenticationResponseOptsSchema = {
+export const AuthorizationResponseOptsSchema = {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/AuthenticationResponseOpts",
+  "$ref": "#/definitions/AuthorizationResponseOpts",
   "definitions": {
-    "AuthenticationResponseOpts": {
+    "AuthorizationResponseOpts": {
       "type": "object",
       "properties": {
         "redirectUri": {

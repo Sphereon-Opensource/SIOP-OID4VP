@@ -4,11 +4,11 @@ import { Resolvable } from 'did-resolver';
 
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
 import {
-  AuthenticationRequestOpts,
-  AuthenticationResponseOpts,
+  AuthorizationRequestOpts,
+  AuthorizationResponseOpts,
   EcdsaSignature,
   expirationTime,
-  IdTokenPayload,
+  IDTokenPayload,
   isExternalSignature,
   isInternalSignature,
   isResponseOpts,
@@ -74,10 +74,7 @@ export async function createDidJWT(
   return createJWT(payload, { issuer, signer, alg: header.alg, expiresIn, canonicalize }, header);
 }
 
-export async function signDidJwtPayload(
-  payload: IdTokenPayload | RequestObjectPayload,
-  opts: AuthenticationRequestOpts | AuthenticationResponseOpts
-) {
+export async function signDidJwtPayload(payload: IDTokenPayload | RequestObjectPayload, opts: AuthorizationRequestOpts | AuthorizationResponseOpts) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
   if (isResponse) {
     if (!payload.iss || payload.iss !== ResponseIss.SELF_ISSUED_V2) {
@@ -96,7 +93,7 @@ export async function signDidJwtPayload(
 }
 
 async function signDidJwtInternal(
-  payload: IdTokenPayload | RequestObjectPayload,
+  payload: IDTokenPayload | RequestObjectPayload,
   issuer: string,
   hexPrivateKey: string,
   kid?: string
@@ -127,7 +124,7 @@ async function signDidJwtInternal(
 }
 
 async function signDidJwtExternal(
-  payload: IdTokenPayload | RequestObjectPayload,
+  payload: IDTokenPayload | RequestObjectPayload,
   signatureUri: string,
   authZToken: string,
   kid?: string
@@ -150,7 +147,7 @@ async function signDidJwtExternal(
 }
 
 async function signDidJwtSupplied(
-  payload: IdTokenPayload | RequestObjectPayload,
+  payload: IDTokenPayload | RequestObjectPayload,
   issuer: string,
   signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
   kid: string

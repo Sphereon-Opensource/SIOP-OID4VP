@@ -4,7 +4,7 @@ import { IPresentationDefinition } from '@sphereon/pex';
 import { IProofType } from '@sphereon/ssi-types';
 
 import {
-  AuthenticationRequestOpts,
+  AuthorizationRequestOpts,
   CheckLinkedDomain,
   PassBy,
   ResponseType,
@@ -75,7 +75,7 @@ describe('create Request Uri should', () => {
 
   it('return a reference url', async () => {
     expect.assertions(14);
-    const opts: AuthenticationRequestOpts = {
+    const opts: AuthorizationRequestOpts = {
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
@@ -138,7 +138,7 @@ describe('create Request Uri should', () => {
 
   it('return a reference url when using did:key', async () => {
     expect.assertions(4);
-    const opts: AuthenticationRequestOpts = {
+    const opts: AuthorizationRequestOpts = {
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
@@ -191,7 +191,7 @@ describe('create Request Uri should', () => {
 
   it('return an url with an embedded token value', async () => {
     expect.assertions(2);
-    const opts: AuthenticationRequestOpts = {
+    const opts: AuthorizationRequestOpts = {
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
@@ -382,7 +382,7 @@ describe('create Request JWT should', () => {
 
   it('succeed when all params are set', async () => {
     // expect.assertions(1);
-    const opts: AuthenticationRequestOpts = {
+    const opts: AuthorizationRequestOpts = {
       clientId: 'test_client_id',
       scope: 'test',
       responseType: 'id_token',
@@ -478,7 +478,7 @@ describe('create Request JWT should', () => {
   });
 
   it('succeed when requesting with a valid PD', async () => {
-    const opts: AuthenticationRequestOpts = {
+    const opts: AuthorizationRequestOpts = {
       clientId: WELL_KNOWN_OPENID_FEDERATION,
       scope: 'test',
       responseType: 'id_token',
@@ -542,7 +542,7 @@ describe('create Request JWT should', () => {
   });
 
   it('should throw error if presentation definition object is not valid', async () => {
-    const opts: AuthenticationRequestOpts = {
+    const opts: AuthorizationRequestOpts = {
       clientId: 'test_client_id',
       scope: 'test',
       responseType: 'id_token',

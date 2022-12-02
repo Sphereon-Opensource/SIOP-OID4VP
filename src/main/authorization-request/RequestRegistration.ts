@@ -1,7 +1,7 @@
 import Ajv from 'ajv';
 
-import { getWithUrl, LanguageTagUtils } from './functions';
-import { RPRegistrationMetadataPayloadSchema } from './schemas';
+import { getWithUrl, LanguageTagUtils } from '../functions';
+import { RPRegistrationMetadataPayloadSchema } from '../schemas';
 import {
   PassBy,
   RequestRegistrationOpts,
@@ -9,7 +9,7 @@ import {
   RPRegistrationMetadataOpts,
   RPRegistrationMetadataPayload,
   SIOPErrors,
-} from './types';
+} from '../types';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);

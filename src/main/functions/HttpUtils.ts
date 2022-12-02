@@ -1,6 +1,6 @@
 import { fetch } from 'cross-fetch';
 
-import { AuthenticationResponseWithJWT, JWTPayload, SIOPErrors } from '../types';
+import { AuthorizationResponseResult, JWTPayload, SIOPErrors } from '../types';
 
 export async function postWithBearerToken(url: string, body: JWTPayload, bearerToken: string): Promise<Response> {
   try {
@@ -20,8 +20,8 @@ export async function postWithBearerToken(url: string, body: JWTPayload, bearerT
   }
 }
 
-export async function postAuthenticationResponse(url: string, body: AuthenticationResponseWithJWT): Promise<Response> {
-  return postAuthenticationResponseJwt(url, body.jwt);
+export async function postAuthenticationResponse(url: string, body: AuthorizationResponseResult): Promise<Response> {
+  return postAuthenticationResponseJwt(url, body.idToken);
 }
 
 export async function postAuthenticationResponseJwt(url: string, jwt: string): Promise<Response> {
