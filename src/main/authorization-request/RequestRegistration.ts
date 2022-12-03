@@ -14,7 +14,7 @@ import {
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
-export function assertValidRequestRegistrationOpts(opts: RequestRegistrationOpts) {
+export const assertValidRequestRegistrationOpts = (opts: RequestRegistrationOpts) => {
   if (!opts) {
     throw new Error(SIOPErrors.REGISTRATION_NOT_SET);
   } else if (opts.registrationBy.type !== PassBy.REFERENCE && opts.registrationBy.type !== PassBy.VALUE) {
@@ -22,9 +22,9 @@ export function assertValidRequestRegistrationOpts(opts: RequestRegistrationOpts
   } else if (opts.registrationBy.type === PassBy.REFERENCE && !opts.registrationBy.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
-}
+};
 
-export async function createRequestRegistrationPayload(opts: RequestRegistrationOpts): Promise<RequestRegistrationPayloadProperties> {
+export const createRequestRegistrationPayload = async (opts: RequestRegistrationOpts): Promise<RequestRegistrationPayloadProperties> => {
   assertValidRequestRegistrationOpts(opts);
 
   if (opts.registrationBy.type == PassBy.VALUE) {
@@ -40,22 +40,24 @@ export async function createRequestRegistrationPayload(opts: RequestRegistration
     registration: regObjToValidate,
     registration_uri: opts.registrationBy.referenceUri,
   };
-}
+};
 
-export async function createRequestRegistration(opts: RequestRegistrationOpts): Promise<{
+export const createRequestRegistration = async (
+  opts: RequestRegistrationOpts
+): Promise<{
   requestRegistration: RequestRegistrationPayloadProperties;
   rpRegistrationMetadata: RPRegistrationMetadataPayload;
   opts: RequestRegistrationOpts;
-}> {
+}> => {
   const requestRegistrationPayload = await createRequestRegistrationPayload(opts);
   return {
     requestRegistration: requestRegistrationPayload,
     rpRegistrationMetadata: createRPRegistrationMetadataPayload(opts),
     opts,
   };
-}
+};
 
-function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): RPRegistrationMetadataPayload {
+const createRPRegistrationMetadataPayload = (opts: RPRegistrationMetadataOpts): RPRegistrationMetadataPayload => {
   const rpRegistrationMetadataPayload = {
     id_token_signing_alg_values_supported: opts.idTokenSigningAlgValuesSupported,
     request_object_signing_alg_values_supported: opts.requestObjectSigningAlgValuesSupported,
@@ -81,4 +83,4 @@ function createRPRegistrationMetadataPayload(opts: RPRegistrationMetadataOpts): 
   });
 
   return rpRegistrationMetadataPayload;
-}
+};

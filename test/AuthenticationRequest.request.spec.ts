@@ -14,6 +14,7 @@ import {
   SubjectType,
 } from '../src/main';
 import AuthorizationRequest from '../src/main/authorization-request/AuthorizationRequest';
+import { RequestObject } from '../src/main/request-object/RequestObject';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -319,7 +320,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
+    await expect((await RequestObject.fromAuthorizationRequestOpts(opts as never)).getJwt()).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
   });
 
   it('throw REGISTRATION_OBJECT_TYPE_NOT_SET when registrationBy type is neither REFERENCE nor VALUE', async () => {

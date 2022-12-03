@@ -2,6 +2,8 @@ import { decodeJWT } from 'did-jwt';
 
 import { PresentationExchange } from '../PresentationExchange';
 import { decodeUriAsJson, encodeJsonAsURI, fetchByReferenceOrUseByValue } from '../functions';
+import { assertValidRequestObjectPayload } from '../request-object/Payload';
+import { RequestObject } from '../request-object/RequestObject';
 import {
   AuthorizationRequestOpts,
   AuthorizationRequestPayload,
@@ -16,7 +18,7 @@ import {
 } from '../types';
 
 import AuthorizationRequest from './AuthorizationRequest';
-import Payload from './Payload';
+import { assertValidRPRegistrationMedataPayload } from './Payload';
 
 export default class URI {
   /**
@@ -29,22 +31,22 @@ export default class URI {
    * Normally you will want to use this method to create the request.
    */
   public async create(opts: AuthorizationRequestOpts): Promise<AuthorizationRequestURI> {
-    const { requestObject } = await AuthorizationRequest.createRequestObject(opts);
-    const authorizationRequest = await AuthorizationRequest.createAuthorizationRequest(opts, requestObject);
+    const requestObject = await RequestObject.fromAuthorizationRequestOpts(opts);
+    const authorizationRequest = await AuthorizationRequest.createAuthorizationRequest(opts, await requestObject.getJwt());
     const result = await this.fromRequest(opts, authorizationRequest);
-    return { authorizationRequest, ...result, ...{ requestObject } };
+    return { authorizationRequest, ...result, ...{ requestObject: await requestObject.getJwt() } };
   }
 
   public async parseAndResolve(uri: string) {
     const { uriScheme, requestObject, authorizationRequest } = await this.parseAndResolveRequestUri(uri);
     if (requestObject) {
-      Payload.assertValidRequestObject(decodeJWT(requestObject) as RequestObjectPayload);
+      assertValidRequestObjectPayload(decodeJWT(requestObject) as RequestObjectPayload);
     }
     const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
       authorizationRequest['registration_uri'],
       authorizationRequest['registration']
     );
-    Payload.assertValidRegistrationObject(registrationMetadata);
+    assertValidRPRegistrationMedataPayload(registrationMetadata);
 
     return { uriScheme, requestObject, authorizationRequest, registrationMetadata };
   }
@@ -85,13 +87,13 @@ export default class URI {
       // Only used to validate if it contains a presentation definition
       await PresentationExchange.findValidPresentationDefinitions(requestObjectPayload);
 
-      Payload.assertValidRequestObject(requestObjectPayload);
+      assertValidRequestObjectPayload(requestObjectPayload);
       // fixme. This should not be fetched at all. We should inspect the opts
       const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
         requestObjectPayload['registration_uri'],
         requestObjectPayload['registration']
       );
-      Payload.assertValidRegistrationObject(registrationMetadata);
+      assertValidRPRegistrationMedataPayload(registrationMetadata);
     }
     const authorizationRequest: AuthorizationRequestPayload = isJwt ? (requestObjectPayload as AuthorizationRequestPayload) : request;
     if (!authorizationRequest) {

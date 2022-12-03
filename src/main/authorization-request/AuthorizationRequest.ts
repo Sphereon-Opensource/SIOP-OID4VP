@@ -6,11 +6,12 @@ import {
   getResolver,
   getState,
   parseJWT,
-  signDidJwtPayload,
   validateLinkedDomainWithDid,
   verifyDidJWT,
 } from '../functions';
 import { authorizationRequestVersionDiscovery } from '../functions/SIOPVersionDiscovery';
+import { assertValidRequestObjectOpts } from '../request-object/Opts';
+import { RequestObject } from '../request-object/RequestObject';
 import {
   AuthorizationRequestOpts,
   AuthorizationRequestPayload,
@@ -28,8 +29,8 @@ import {
   VerifyAuthorizationRequestOpts,
 } from '../types';
 
-import Opts from './Opts';
-import Payload from './Payload';
+import { assertValidAuthorizationRequestOpts, assertValidVerifyAuthorizationRequestOpts } from './Opts';
+import { assertValidRPRegistrationMedataPayload, createClaimsProperties } from './Payload';
 import { createRequestRegistration } from './RequestRegistration';
 import URI from './URI';
 
@@ -37,13 +38,13 @@ export default class AuthorizationRequest {
   public static readonly URI: URI = new URI();
 
   static async createAuthorizationRequest(opts: AuthorizationRequestOpts, requestObject?: string): Promise<AuthorizationRequestPayload> {
-    Opts.assertValidRequestOpts(opts);
+    assertValidAuthorizationRequestOpts(opts);
     if (opts.requestBy && opts.requestBy.type === PassBy.VALUE && !requestObject) {
       throw Error(SIOPErrors.NO_JWT);
     }
     const state = getState(opts.state);
     const registration = await createRequestRegistration(opts['registration']);
-    const claims = Payload.createClaimsProperties(opts.claims);
+    const claims = createClaimsProperties(opts.claims);
     const clientId = opts.clientId ? opts.clientId : registration.requestRegistration.registration.client_id;
 
     return {
@@ -78,21 +79,23 @@ export default class AuthorizationRequest {
    * the URI will be constructed based on the Request Object only!
    */
   static async createRequestObject(opts: AuthorizationRequestOpts): Promise<RequestObjectResult> {
+    assertValidRequestObjectOpts(opts, false);
     if (opts && opts.requestBy?.type === PassBy.NONE) {
       throw Error(`Cannot create a Request Object when the passBy options is set to None`);
     }
-    const createdRequestObject = await Payload.createRequestObject(opts);
+    const createdRequestObject = await RequestObject.fromAuthorizationRequestOpts(opts);
+    /*const requestObject =
     const requestObjectPayload = JSON.parse(JSON.stringify(createdRequestObject));
     // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
     // request and request_uri parameters MUST NOT be included in Request Objects.
     delete requestObjectPayload.request;
     delete requestObjectPayload.request_uri;
-    const requestObject = await signDidJwtPayload(requestObjectPayload, opts);
+    const requestObject = await signDidJwtPayload(requestObjectPayload, opts);*/
 
     return {
       opts,
-      requestObject,
-      requestObjectPayload,
+      requestObject: await createdRequestObject.getJwt(),
+      requestObjectPayload: await createdRequestObject.getPayload(),
     };
   }
 
@@ -103,7 +106,7 @@ export default class AuthorizationRequest {
    * @param opts
    */
   static async verify(uriOrJwt: string, opts: VerifyAuthorizationRequestOpts): Promise<VerifiedAuthorizationRequest> {
-    Opts.assertValidVerifyOpts(opts);
+    assertValidVerifyAuthorizationRequestOpts(opts);
     if (!uriOrJwt) {
       throw new Error(SIOPErrors.NO_URI);
     }
@@ -146,7 +149,7 @@ export default class AuthorizationRequest {
       authorizationRequest['registration_uri'],
       authorizationRequest['registration']
     );
-    Payload.assertValidRegistrationObject(registrationMetadata);
+    assertValidRPRegistrationMedataPayload(registrationMetadata);
 
     if (authorizationRequest.client_id.startsWith('did:')) {
       if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {

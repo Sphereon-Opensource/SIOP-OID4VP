@@ -97,9 +97,6 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
-        "uriScheme": {
-          "type": "string"
-        },
         "requestBy": {
           "$ref": "#/definitions/RequestBy"
         },
@@ -119,11 +116,11 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
+        "uriScheme": {
+          "type": "string"
+        },
         "checkLinkedDomain": {
           "$ref": "#/definitions/CheckLinkedDomain"
-        },
-        "revocationVerificationCallback": {
-          "$ref": "#/definitions/RevocationVerificationCallback"
         },
         "registration": {
           "$ref": "#/definitions/RequestRegistrationOpts"
@@ -901,7 +898,7 @@ export const AuthorizationRequestOptsSchema = {
           "type": "string"
         },
         "request": {
-          "$ref": "#/definitions/RequestObjectOpts"
+          "$ref": "#/definitions/RequestObjectPayloadProperties"
         }
       },
       "additionalProperties": false,
@@ -917,7 +914,7 @@ export const AuthorizationRequestOptsSchema = {
         "VALUE"
       ]
     },
-    "RequestObjectOpts": {
+    "RequestObjectPayloadProperties": {
       "type": "object",
       "properties": {
         "scope": {
@@ -1097,14 +1094,6 @@ export const AuthorizationRequestOptsSchema = {
         "if_present",
         "always"
       ]
-    },
-    "RevocationVerificationCallback": {
-      "properties": {
-        "isFunction": {
-          "type": "boolean",
-          "const": true
-        }
-      }
     },
     "RequestRegistrationOpts": {
       "type": "object",
@@ -1342,9 +1331,6 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
-        "uriScheme": {
-          "type": "string"
-        },
         "requestBy": {
           "$ref": "#/definitions/RequestBy"
         },
@@ -1364,11 +1350,11 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
+        "uriScheme": {
+          "type": "string"
+        },
         "checkLinkedDomain": {
           "$ref": "#/definitions/CheckLinkedDomain"
-        },
-        "revocationVerificationCallback": {
-          "$ref": "#/definitions/RevocationVerificationCallback"
         },
         "clientMetadata": {
           "$ref": "#/definitions/RequestRegistrationOpts"

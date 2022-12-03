@@ -4,7 +4,6 @@ import { Resolvable } from 'did-resolver';
 
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
 import {
-  AuthorizationRequestOpts,
   AuthorizationResponseOpts,
   EcdsaSignature,
   expirationTime,
@@ -15,6 +14,7 @@ import {
   isResponsePayload,
   isSuppliedSignature,
   KeyAlgo,
+  RequestObjectOpts,
   RequestObjectPayload,
   ResponseIss,
   SignatureResponse,
@@ -74,7 +74,7 @@ export async function createDidJWT(
   return createJWT(payload, { issuer, signer, alg: header.alg, expiresIn, canonicalize }, header);
 }
 
-export async function signDidJwtPayload(payload: IDTokenPayload | RequestObjectPayload, opts: AuthorizationRequestOpts | AuthorizationResponseOpts) {
+export async function signDidJwtPayload(payload: IDTokenPayload | RequestObjectPayload, opts: RequestObjectOpts | AuthorizationResponseOpts) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
   if (isResponse) {
     if (!payload.iss || payload.iss !== ResponseIss.SELF_ISSUED_V2) {

@@ -19,10 +19,11 @@ export const expirationTime = 10 * 60;
 // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
 // request and request_uri parameters MUST NOT be included in Request Objects.
 export type RequestObjectPayload = Omit<AuthorizationRequestPayload, 'request' | 'request_uri'>;
+export type RequestObjectJwt = string;
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
 
-export interface RequestObjectOpts {
+export interface RequestObjectPayloadProperties {
   scope: string; // from openid-connect-self-issued-v2-1_0-ID1
   responseType: string; // from openid-connect-self-issued-v2-1_0-ID1
   clientId: string; // from openid-connect-self-issued-v2-1_0-ID1
@@ -39,12 +40,19 @@ export interface RequestObjectOpts {
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
 }
 
-interface AuthorizationRequestCommonOpts extends RequestObjectOpts {
-  uriScheme?: string; // Use a custom scheme for the URI. By default openid:// will be used
+export interface RequestObjectOpts {
   requestBy: RequestBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication), or supplied (callback supplied)
+}
+
+interface AuthorizationRequestCommonOpts extends RequestObjectOpts, RequestObjectPayloadProperties {
+  // Yes, this includes the payload properties both at the root level as well as in the requestBy.request property. That is to support OAuth2 together or without a requestObject  {
+  uriScheme?: string; // Use a custom scheme for the URI. By default openid:// will be used
+
+  // requestBy: RequestBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
+  // signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication), or supplied (callback supplied)
   checkLinkedDomain?: CheckLinkedDomain; // determines how we'll handle the linked domains for this RP
-  revocationVerificationCallback?: RevocationVerificationCallback;
+  // revocationVerificationCallback?: RevocationVerificationCallback;
 }
 
 export interface AuthorizationRequestOptsVD1 extends AuthorizationRequestCommonOpts {
@@ -463,7 +471,7 @@ export interface CommonSupportedMetadata {
 }
 
 export interface RequestBy extends ObjectBy {
-  request?: RequestObjectOpts; // for pass by value
+  request?: RequestObjectPayloadProperties; // for pass by value
 }
 
 export interface ObjectBy {
@@ -745,7 +753,7 @@ export const isNoSignature = (object: InternalSignature | ExternalSignature | No
 export const isRequestOpts = (object: AuthorizationRequestOpts | AuthorizationResponseOpts): object is AuthorizationRequestOpts =>
   'requestBy' in object;
 
-export const isResponseOpts = (object: AuthorizationRequestOpts | AuthorizationResponseOpts): object is AuthorizationResponseOpts => 'did' in object;
+export const isResponseOpts = (object: RequestObjectOpts | AuthorizationResponseOpts): object is RequestObjectOpts => 'did' in object;
 
 export const isRequestPayload = (
   object: RequestObjectPayload | AuthorizationResponsePayload | IDTokenPayload
