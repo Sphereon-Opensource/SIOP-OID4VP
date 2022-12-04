@@ -33,6 +33,8 @@ import { assertValidResponseOpts, assertValidVerifyOpts } from './ResponseOpts';
 import { createIDTokenPayload, createResponsePayload } from './ResponsePayload';
 
 export default class AuthorizationResponse {
+  // private requestObject: RequestObject
+
   /**
    * Creates a SIOP Response Object
    *
@@ -40,7 +42,7 @@ export default class AuthorizationResponse {
    * @param responseOpts
    * @param verifyOpts
    */
-  static async createFromRequestObject(
+  static async fromRequestObject(
     requestObject: string,
     responseOpts: AuthorizationResponseOpts,
     verifyOpts: VerifyAuthorizationRequestOpts

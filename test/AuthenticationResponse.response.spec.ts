@@ -23,7 +23,7 @@ import {
   VerificationMode,
   VerifyAuthorizationRequestOpts,
 } from '../src/main';
-import AuthorizationRequest from '../src/main/authorization-request/AuthorizationRequest';
+import { RequestObject } from '../src/main/request-object/RequestObject';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -94,17 +94,15 @@ describe('create JWT from Request JWT should', () => {
 
   it('throw NO_JWT when no jwt is passed', async () => {
     expect.assertions(1);
-    await expect(AuthorizationResponse.createFromRequestObject(undefined as never, responseOpts, verifyOpts)).rejects.toThrow(SIOPErrors.NO_JWT);
+    await expect(AuthorizationResponse.fromRequestObject(undefined as never, responseOpts, verifyOpts)).rejects.toThrow(SIOPErrors.NO_JWT);
   });
   it('throw BAD_PARAMS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthorizationResponse.createFromRequestObject(validButExpiredJWT, undefined as never, verifyOpts)).rejects.toThrow(
-      SIOPErrors.BAD_PARAMS
-    );
+    await expect(AuthorizationResponse.fromRequestObject(validButExpiredJWT, undefined as never, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
   it('throw VERIFY_BAD_PARAMS when no verifyOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthorizationResponse.createFromRequestObject(validButExpiredJWT, responseOpts, undefined as never)).rejects.toThrow(
+    await expect(AuthorizationResponse.fromRequestObject(validButExpiredJWT, responseOpts, undefined as never)).rejects.toThrow(
       SIOPErrors.VERIFY_BAD_PARAMS
     );
   });
@@ -184,10 +182,10 @@ describe('create JWT from Request JWT should', () => {
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
 
-    const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
-
+    const requestObject = await RequestObject.fromOpts(requestOpts);
+    const jwt = await requestObject.toJwt();
     jest.useRealTimers();
-    await expect(AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)).rejects.toThrow(
+    await expect(AuthorizationResponse.fromRequestObject(jwt, responseOpts, verifyOpts)).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1577837400/
     );
   });
@@ -265,9 +263,9 @@ describe('create JWT from Request JWT should', () => {
         responseMode: ResponseMode.POST,
       };
 
-      const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
-      console.log(JSON.stringify(await AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)));
-      await expect(AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
+      const requestObject = await RequestObject.fromOpts(requestOpts);
+      console.log(JSON.stringify(await AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)));
+      await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
     },
     UNIT_TEST_TIMEOUT
   );
@@ -441,11 +439,11 @@ describe('create JWT from Request JWT should', () => {
       responseMode: ResponseMode.POST,
     };
 
-    const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
+    const requestObject = await RequestObject.fromOpts(requestOpts);
     /* console.log(
       JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
     );*/
-    await expect(AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
+    await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 
   it('succeed when valid JWT with PD is passed in for id_token', async () => {
@@ -606,7 +604,7 @@ describe('create JWT from Request JWT should', () => {
       responseMode: ResponseMode.POST,
     };
 
-    const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
-    await expect(AuthorizationResponse.createFromRequestObject(requestWithJWT.requestObject, responseOpts, verifyOpts)).resolves.toBeDefined();
+    const requestObject = await RequestObject.fromOpts(requestOpts);
+    await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 });

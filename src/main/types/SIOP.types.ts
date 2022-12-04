@@ -118,15 +118,6 @@ export interface VerifiedAuthorizationRequest extends VerifiedJWT {
   version: SupportedVersion;
 }
 
-/**
- *
- */
-export interface RequestObjectResult {
-  opts: AuthorizationRequestOpts;
-  requestObject: string;
-  requestObjectPayload: RequestObjectPayload;
-}
-
 export type PresentationVerificationResult = { verified: boolean };
 
 export type PresentationVerificationCallback = (args: VerifiablePresentationPayload) => Promise<PresentationVerificationResult>;
@@ -649,15 +640,16 @@ export interface UriResponse extends SIOPURI {
 }
 
 export interface AuthorizationRequestURI extends SIOPURI {
-  requestBy: RequestBy; // The supplied request opts as passed in to the method
-  authorizationRequest: AuthorizationRequestPayload; // The authorization request payload
-  requestObject?: string; // The JWT request object
+  scheme: string;
+  requestObjectBy: ObjectBy; // The supplied request opts as passed in to the method
+  authorizationRequestPayload: AuthorizationRequestPayload; // The authorization request payload
+  requestObjectJwt?: RequestObjectJwt; // The JWT request object
 }
 
 export interface ParsedAuthorizationRequestURI extends SIOPURI {
-  uriScheme: string;
-  requestObject?: string;
-  authorizationRequest: AuthorizationRequestPayload; // The json payload that ends up signed in the JWT
+  scheme: string;
+  requestObjectJwt?: RequestObjectJwt;
+  authorizationRequestPayload: AuthorizationRequestPayload; // The json payload that ends up signed in the JWT
   registration: RPRegistrationMetadataPayload;
 }
 

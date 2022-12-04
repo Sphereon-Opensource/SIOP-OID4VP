@@ -4,6 +4,7 @@ import { Resolvable } from 'did-resolver';
 
 import OPBuilder from './OPBuilder';
 import AuthorizationRequest from './authorization-request/AuthorizationRequest';
+import { URI } from './authorization-request/URI';
 import AuthorizationResponse from './authorization-response/AuthorizationResponse';
 import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { authorizationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
@@ -109,14 +110,14 @@ export class OP {
    * @param encodedUri
    */
   public async parseAuthenticationRequestURI(encodedUri: string): Promise<ParsedAuthorizationRequestURI> {
-    const { uriScheme, requestObject, authorizationRequest, registrationMetadata } = await AuthorizationRequest.URI.parseAndResolve(encodedUri);
+    const { scheme, requestObjectJwt, authorizationRequestPayload, registrationMetadata } = await URI.parseAndResolve(encodedUri);
 
     return {
       encodedUri,
       encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
-      uriScheme,
-      requestObject,
-      authorizationRequest,
+      scheme: scheme,
+      requestObjectJwt,
+      authorizationRequestPayload,
       registration: registrationMetadata,
     };
   }

@@ -13,7 +13,7 @@ import {
   SubjectIdentifierType,
   SubjectType,
 } from '../src/main';
-import AuthorizationRequest from '../src/main/authorization-request/AuthorizationRequest';
+import { URI } from '../src/main/authorization-request/URI';
 import { RequestObject } from '../src/main/request-object/RequestObject';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -35,13 +35,13 @@ const KID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1';
 describe('create Request Uri should', () => {
   it('throw BAD_PARAMS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthorizationRequest.URI.create(undefined as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
+    await expect(URI.fromOpts(undefined as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
 
   it('throw BAD_PARAMS when no responseOpts.redirectUri is passed', async () => {
     expect.assertions(1);
     const opts = {};
-    await expect(AuthorizationRequest.URI.create(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
+    await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
 
   it('throw BAD_PARAMS when no responseOpts.requestBy is passed', async () => {
@@ -49,7 +49,7 @@ describe('create Request Uri should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
     };
-    await expect(AuthorizationRequest.URI.create(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
+    await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
 
   it('throw REQUEST_OBJECT_TYPE_NOT_SET when responseOpts.requestBy type is different from REFERENCE or VALUE', async () => {
@@ -60,7 +60,7 @@ describe('create Request Uri should', () => {
         type: 'other type',
       },
     };
-    await expect(AuthorizationRequest.URI.create(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
+    await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when responseOpts.requestBy type is REFERENCE and no referenceUri is passed', async () => {
@@ -71,7 +71,7 @@ describe('create Request Uri should', () => {
         type: PassBy.REFERENCE,
       },
     };
-    await expect(AuthorizationRequest.URI.create(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
+    await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('return a reference url', async () => {
@@ -116,13 +116,13 @@ describe('create Request Uri should', () => {
       },
     };
 
-    const uriRequest = await AuthorizationRequest.URI.create(opts);
+    const uriRequest = await URI.fromOpts(opts);
     expect(uriRequest).toBeDefined();
     expect(uriRequest).toHaveProperty('encodedUri');
     expect(uriRequest).toHaveProperty('encodingFormat');
-    expect(uriRequest).toHaveProperty('requestObject');
-    expect(uriRequest).toHaveProperty('authorizationRequest');
-    expect(uriRequest.authorizationRequest).toBeDefined();
+    expect(uriRequest).toHaveProperty('requestObjectJwt');
+    expect(uriRequest).toHaveProperty('authorizationRequestPayload');
+    expect(uriRequest.authorizationRequestPayload).toBeDefined();
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`openid://`);
@@ -180,14 +180,14 @@ describe('create Request Uri should', () => {
       },
     };
 
-    const uriRequest = await AuthorizationRequest.URI.create(opts);
+    const uriRequest = await URI.fromOpts(opts);
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
 
     const data = parse(uriDecoded);
     expect(data.request_uri).toStrictEqual(opts.requestBy.referenceUri);
-    expect(uriRequest).toHaveProperty('requestObject');
-    expect(uriRequest.authorizationRequest).toBeDefined();
-    expect(uriRequest.authorizationRequest.request_uri).toEqual(EXAMPLE_REFERENCE_URL);
+    expect(uriRequest).toHaveProperty('requestObjectJwt');
+    expect(uriRequest.authorizationRequestPayload).toBeDefined();
+    expect(uriRequest.authorizationRequestPayload.request_uri).toEqual(EXAMPLE_REFERENCE_URL);
   });
 
   it('return an url with an embedded token value', async () => {
@@ -231,7 +231,7 @@ describe('create Request Uri should', () => {
       },
     };
 
-    const uriRequest = await AuthorizationRequest.URI.create(opts);
+    const uriRequest = await URI.fromOpts(opts);
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`&request=`);
@@ -267,7 +267,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
+    await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when no referenceUri is passed with REFERENCE requestBy type is set', async () => {
@@ -295,7 +295,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
+    await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('throw BAD_SIGNATURE_PARAMS when signature Type is neither internal nor external', async () => {
@@ -320,7 +320,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect((await RequestObject.fromAuthorizationRequestOpts(opts as never)).getJwt()).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
+    await expect((await RequestObject.fromOpts(opts as never)).toJwt()).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
   });
 
   it('throw REGISTRATION_OBJECT_TYPE_NOT_SET when registrationBy type is neither REFERENCE nor VALUE', async () => {
@@ -349,7 +349,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
+    await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when registrationBy type is REFERENCE and no referenceUri is passed', async () => {
@@ -378,7 +378,7 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthorizationRequest.createRequestObject(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
+    await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('succeed when all params are set', async () => {
@@ -424,31 +424,30 @@ describe('create Request JWT should', () => {
     };
 
     const expected = {
-      requestObjectPayload: {
-        response_type: 'id_token',
-        scope: 'openid',
-        client_id: 'test_client_id',
-        redirect_uri: 'https://acme.com/hello',
-        registration: {
-          id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-          response_types_supported: [ResponseType.ID_TOKEN],
-          scopes_supported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-          subject_types_supported: [SubjectType.PAIRWISE],
-          subject_syntax_types_supported: ['did:ethr:', 'did'],
-          vp_formats: {
-            ldp_vc: {
-              proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
-            },
+      response_type: 'id_token',
+      scope: 'openid',
+      client_id: 'test_client_id',
+      redirect_uri: 'https://acme.com/hello',
+      registration: {
+        id_token_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        response_types_supported: [ResponseType.ID_TOKEN],
+        scopes_supported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subject_types_supported: [SubjectType.PAIRWISE],
+        subject_syntax_types_supported: ['did:ethr:', 'did'],
+        vp_formats: {
+          ldp_vc: {
+            proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
           },
-          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
-          client_name: VERIFIER_NAME_FOR_CLIENT,
-          'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100303',
-          client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+        client_name: VERIFIER_NAME_FOR_CLIENT,
+        'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100303',
+        client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
-      opts: {
+
+      /*opts: {
         redirectUri: 'https://acme.com/hello',
         requestBy: {
           type: 'REFERENCE',
@@ -471,11 +470,11 @@ describe('create Request JWT should', () => {
             type: 'VALUE',
           },
         },
-      },
+      },*/
     };
 
-    await AuthorizationRequest.URI.create(opts).then((uri) => console.log(uri.encodedUri));
-    await expect(AuthorizationRequest.createRequestObject(opts)).resolves.toMatchObject(expected);
+    await URI.fromOpts(opts).then((uri) => console.log(uri.encodedUri));
+    await expect((await RequestObject.fromOpts(opts)).getPayload()).resolves.toMatchObject(expected);
   });
 
   it('succeed when requesting with a valid PD', async () => {
@@ -536,7 +535,7 @@ describe('create Request JWT should', () => {
       },
     };
 
-    const uriRequest = await AuthorizationRequest.URI.create(opts);
+    const uriRequest = await URI.fromOpts(opts);
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`&claims=`);
@@ -597,6 +596,6 @@ describe('create Request JWT should', () => {
         },
       },
     };
-    await expect(AuthorizationRequest.URI.create(opts)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+    await expect(URI.fromOpts(opts)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
   });
 });

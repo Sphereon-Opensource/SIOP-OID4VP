@@ -1,16 +1,6 @@
 import { PresentationExchange } from '../PresentationExchange';
-import {
-  fetchByReferenceOrUseByValue,
-  getAudience,
-  getNonce,
-  getResolver,
-  getState,
-  parseJWT,
-  validateLinkedDomainWithDid,
-  verifyDidJWT,
-} from '../functions';
+import { fetchByReferenceOrUseByValue, getAudience, getResolver, parseJWT, validateLinkedDomainWithDid, verifyDidJWT } from '../functions';
 import { authorizationRequestVersionDiscovery } from '../functions/SIOPVersionDiscovery';
-import { assertValidRequestObjectOpts } from '../request-object/Opts';
 import { RequestObject } from '../request-object/RequestObject';
 import {
   AuthorizationRequestOpts,
@@ -18,11 +8,7 @@ import {
   CheckLinkedDomain,
   PassBy,
   RequestObjectPayload,
-  RequestObjectResult,
-  ResponseMode,
-  ResponseType,
   RPRegistrationMetadataPayload,
-  Scope,
   SIOPErrors,
   VerifiedAuthorizationRequest,
   VerifiedJWT,
@@ -30,73 +16,53 @@ import {
 } from '../types';
 
 import { assertValidAuthorizationRequestOpts, assertValidVerifyAuthorizationRequestOpts } from './Opts';
-import { assertValidRPRegistrationMedataPayload, createClaimsProperties } from './Payload';
-import { createRequestRegistration } from './RequestRegistration';
-import URI from './URI';
+import { assertValidRPRegistrationMedataPayload, createAuthorizationRequestPayload } from './Payload';
+import { URI } from './URI';
 
 export default class AuthorizationRequest {
-  public static readonly URI: URI = new URI();
+  // public static readonly URI: URI = new URI();
+  private readonly _requestObject: RequestObject;
+  private readonly _payload: AuthorizationRequestPayload;
+  private readonly _options: AuthorizationRequestOpts;
+  private _uri: URI;
 
-  static async createAuthorizationRequest(opts: AuthorizationRequestOpts, requestObject?: string): Promise<AuthorizationRequestPayload> {
-    assertValidAuthorizationRequestOpts(opts);
-    if (opts.requestBy && opts.requestBy.type === PassBy.VALUE && !requestObject) {
-      throw Error(SIOPErrors.NO_JWT);
-    }
-    const state = getState(opts.state);
-    const registration = await createRequestRegistration(opts['registration']);
-    const claims = createClaimsProperties(opts.claims);
-    const clientId = opts.clientId ? opts.clientId : registration.requestRegistration.registration.client_id;
-
-    return {
-      response_type: ResponseType.ID_TOKEN,
-      scope: Scope.OPENID,
-      //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
-      client_id: clientId ? clientId : opts.signatureType.did,
-      redirect_uri: opts.redirectUri,
-      response_mode: opts.responseMode || ResponseMode.POST,
-      id_token_hint: opts.idTokenHint,
-      registration_uri: opts['registrationUri'],
-      ...(opts.requestBy && opts.requestBy.type === PassBy.REFERENCE ? { request_uri: opts.requestBy.referenceUri } : {}),
-      ...(opts.requestBy && opts.requestBy.type === PassBy.VALUE ? { request: requestObject } : {}),
-      nonce: getNonce(state, opts.nonce),
-      state,
-      ...registration.requestRegistration,
-      claims,
-    };
+  private constructor(payload: AuthorizationRequestPayload, requestObject?: RequestObject, opts?: AuthorizationRequestOpts, uri?: URI) {
+    this._options = opts;
+    this._payload = payload;
+    this._requestObject = requestObject;
+    this._uri = uri;
   }
 
-  /**
-   * Create a signed SIOP request object as JWT on RP side, typically you will want to use the createURI version!
-   *
-   * @param opts Request input data to build a SIOP Request Object as JWT
-   * @remarks This method is used to generate a SIOP request Object with info provided by the RP.
-   * First it generates the request object payload, and then it creates the signed JWT.
-   *
-   * Normally you will want to use the createURI method. That creates a URI that includes the JWT from this method in the URI
-   * If you do use this method, you can call the `convertRequestObjectToURI` afterwards to get the URI.
-   * Please note that the createURI method allows you to differentiate between OAuth2 and OpenID parameters that become
-   * part of the URI and which become part of the Request Object. If you generate a URI based upon the result of this method,
-   * the URI will be constructed based on the Request Object only!
-   */
-  static async createRequestObject(opts: AuthorizationRequestOpts): Promise<RequestObjectResult> {
-    assertValidRequestObjectOpts(opts, false);
-    if (opts && opts.requestBy?.type === PassBy.NONE) {
-      throw Error(`Cannot create a Request Object when the passBy options is set to None`);
-    }
-    const createdRequestObject = await RequestObject.fromAuthorizationRequestOpts(opts);
-    /*const requestObject =
-    const requestObjectPayload = JSON.parse(JSON.stringify(createdRequestObject));
-    // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
-    // request and request_uri parameters MUST NOT be included in Request Objects.
-    delete requestObjectPayload.request;
-    delete requestObjectPayload.request_uri;
-    const requestObject = await signDidJwtPayload(requestObjectPayload, opts);*/
+  static async fromURI(uri: URI | string): Promise<AuthorizationRequest> {
+    const uriObject = typeof uri === 'string' ? await URI.fromValue(uri) : uri;
+    const requestObject = await RequestObject.fromJwt(uriObject.requestObjectJwt);
+    return new AuthorizationRequest(uriObject.authorizationRequestPayload, requestObject, undefined, uriObject);
+  }
 
-    return {
-      opts,
-      requestObject: await createdRequestObject.getJwt(),
-      requestObjectPayload: await createdRequestObject.getPayload(),
-    };
+  static async fromOpts(opts: AuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
+    assertValidAuthorizationRequestOpts(opts);
+    const requestObjectArg = opts.requestBy.type !== PassBy.NONE ? (requestObject ? requestObject : await RequestObject.fromOpts(opts)) : undefined;
+    const requestPayload = await createAuthorizationRequestPayload(opts, requestObjectArg);
+    return new AuthorizationRequest(requestPayload, requestObjectArg, opts);
+  }
+
+  get payload(): AuthorizationRequestPayload {
+    return this._payload;
+  }
+
+  get requestObject(): RequestObject | undefined {
+    return this._requestObject;
+  }
+
+  get options(): AuthorizationRequestOpts | undefined {
+    return this._options;
+  }
+
+  async uri(): Promise<URI> {
+    if (!this._uri) {
+      this._uri = await URI.fromAuthorizationRequest(this);
+    }
+    return this._uri;
   }
 
   /**
@@ -111,9 +77,9 @@ export default class AuthorizationRequest {
       throw new Error(SIOPErrors.NO_URI);
     }
     const isJwt = uriOrJwt.startsWith('ey');
-    const jwt = isJwt ? uriOrJwt : (await this.URI.parseAndResolve(uriOrJwt)).requestObject;
+    const jwt = isJwt ? uriOrJwt : (await URI.parseAndResolve(uriOrJwt)).requestObjectJwt;
 
-    const origAuthorizationRequest = isJwt ? (parseJWT(jwt).payload as AuthorizationRequestPayload) : this.URI.parse(uriOrJwt).authorizationRequest;
+    const origAuthorizationRequest = isJwt ? (parseJWT(jwt).payload as AuthorizationRequestPayload) : URI.parse(uriOrJwt).authorizationRequestPayload;
     let requestObjectPayload: RequestObjectPayload;
     let verifiedJwt: VerifiedJWT;
     if (isJwt) {

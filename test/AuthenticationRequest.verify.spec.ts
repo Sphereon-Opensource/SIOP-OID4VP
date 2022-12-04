@@ -16,6 +16,7 @@ import {
   VerifyAuthorizationRequestOpts,
 } from '../src/main';
 import AuthorizationRequest from '../src/main/authorization-request/AuthorizationRequest';
+import { RequestObject } from '../src/main/request-object/RequestObject';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { metadata, mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -94,7 +95,7 @@ describe('verifyJWT should', () => {
       },
     };
 
-    const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
+    const requestObject = await RequestObject.fromOpts(requestOpts);
 
     const verifyOpts: VerifyAuthorizationRequestOpts = {
       verification: {
@@ -110,7 +111,7 @@ describe('verifyJWT should', () => {
     };
 
     // expect.assertions(1);
-    await expect(AuthorizationRequest.verify(requestWithJWT.requestObject, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
+    await expect(AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
   });
   it(
     'succeed if a valid JWT is passed',
@@ -152,7 +153,7 @@ describe('verifyJWT should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
       };
-      const requestWithJWT = await AuthorizationRequest.createRequestObject(requestOpts);
+      const requestObject = await RequestObject.fromOpts(requestOpts);
 
       const verifyOpts: VerifyAuthorizationRequestOpts = {
         verification: {
@@ -166,7 +167,7 @@ describe('verifyJWT should', () => {
         verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
       };
 
-      const verifyJWT = await AuthorizationRequest.verify(requestWithJWT.requestObject, verifyOpts);
+      const verifyJWT = await AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts);
       expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
     },
     UNIT_TEST_TIMEOUT

@@ -208,10 +208,10 @@ describe('RP and OP interaction should', () => {
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObject);
+      nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObjectJwt);
 
       //The schema validation needs to be done here otherwise it fails because of JWT properties
-      await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequest);
+      await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
       // The create method also calls the verifyRequest method, so no need to do it manually
       const verifiedRequest = await op.verifyAuthenticationRequest(requestURI.encodedUri);
       const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedRequest);
@@ -309,14 +309,14 @@ describe('RP and OP interaction should', () => {
     });
 
     //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequest);
+    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
-    expect(parsedAuthReqURI.requestObject).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
@@ -410,14 +410,14 @@ describe('RP and OP interaction should', () => {
     });
 
     //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequest);
+    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
-    expect(parsedAuthReqURI.requestObject).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     await expect(op.createAuthenticationResponse(verifiedAuthReqWithJWT)).rejects.toThrow(
@@ -509,19 +509,19 @@ describe('RP and OP interaction should', () => {
     });
 
     //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequest);
+    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
-    expect(parsedAuthReqURI.requestObject).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequest
+      parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = (await pex.submissionFrom(
@@ -631,19 +631,19 @@ describe('RP and OP interaction should', () => {
       });
 
       //The schema validation needs to be done here otherwise it fails because of JWT properties
-      await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequest);
+      await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
       // Let's test the parsing
       const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-      expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
-      expect(parsedAuthReqURI.requestObject).toBeDefined();
+      expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+      expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
       expect(parsedAuthReqURI.registration).toBeDefined();
 
-      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
+      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-        parsedAuthReqURI.authorizationRequest
+        parsedAuthReqURI.authorizationRequestPayload
       );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
       const vp = (await pex.submissionFrom(
@@ -777,19 +777,19 @@ describe('RP and OP interaction should', () => {
     });
 
     //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequest);
+    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
-    expect(parsedAuthReqURI.requestObject).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequest
+      parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = (await pex.submissionFrom(
@@ -912,19 +912,19 @@ describe('RP and OP interaction should', () => {
       });
 
       //The schema validation needs to be done here otherwise it fails because of JWT properties
-      await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequest);
+      await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
       // Let's test the parsing
       const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-      expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
-      expect(parsedAuthReqURI.requestObject).toBeDefined();
+      expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+      expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
       expect(parsedAuthReqURI.registration).toBeDefined();
 
-      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
+      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-        parsedAuthReqURI.authorizationRequest
+        parsedAuthReqURI.authorizationRequestPayload
       );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
       const vp = (await pex.submissionFrom(
@@ -1054,20 +1054,20 @@ describe('RP and OP interaction should', () => {
     });
 
     //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequest);
+    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
-    expect(parsedAuthReqURI.requestObject).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject); //, rp.authRequestOpts
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt); //, rp.authRequestOpts
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequest
+      parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = (await pex.submissionFrom(
@@ -1356,16 +1356,16 @@ describe('RP and OP interaction should', () => {
 
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.authorizationRequest).toBeDefined();
-    expect(parsedAuthReqURI.requestObject).toBeDefined();
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObject);
+    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequest
+      parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const vp = (await pex.submissionFrom(

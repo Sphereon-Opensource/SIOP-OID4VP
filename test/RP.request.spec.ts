@@ -200,9 +200,9 @@ describe('RP should', () => {
       state: 'b32f0087fc9816eb813fd11f',
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
     });
-    expect(request.authorizationRequest).toMatchObject(expectedPayloadWithoutRequest);
+    expect(request.authorizationRequestPayload).toMatchObject(expectedPayloadWithoutRequest);
     expect(request.encodedUri).toMatch(expectedUri);
-    expect(request.requestObject).toMatch(expectedJwtRegex);
+    expect(request.requestObjectJwt).toMatch(expectedJwtRegex);
   });
 
   it('succeed from builder when all params are set', async () => {
@@ -285,8 +285,8 @@ describe('RP should', () => {
         state: 'b32f0087fc9816eb813fd11f',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       });
-    expect(request.authorizationRequest).toMatchObject(expectedPayloadWithoutRequest);
+    expect(request.authorizationRequestPayload).toMatchObject(expectedPayloadWithoutRequest);
     expect(request.encodedUri).toMatch(expectedUri);
-    expect(request.requestObject).toMatch(expectedJwtRegex);
+    expect(request.requestObjectJwt).toMatch(expectedJwtRegex);
   });
 });

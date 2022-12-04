@@ -2,7 +2,7 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
-import AuthorizationRequest from './authorization-request/AuthorizationRequest';
+import { URI } from './authorization-request/URI';
 import { verifyPresentations } from './authorization-response/OpenID4VP';
 import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
 import { AuthorizationRequestOptsSchema } from './schemas';
@@ -45,8 +45,8 @@ export class RP {
     return this._verifyAuthResponseOpts;
   }
 
-  public createAuthenticationRequest(opts?: { nonce?: string; state?: string }): Promise<AuthorizationRequestURI> {
-    return AuthorizationRequest.URI.create(this.newAuthenticationRequestOpts(opts));
+  public async createAuthenticationRequest(opts?: { nonce?: string; state?: string }): Promise<AuthorizationRequestURI> {
+    return await URI.fromOpts(this.newAuthenticationRequestOpts(opts));
   }
 
   public async verifyAuthenticationResponse(

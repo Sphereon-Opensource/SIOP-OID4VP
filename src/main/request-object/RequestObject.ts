@@ -4,6 +4,7 @@ import { assertValidAuthorizationRequestOpts } from '../authorization-request/Op
 import { signDidJwtPayload } from '../functions';
 import { AuthorizationRequestOpts, RequestObjectJwt, RequestObjectOpts, RequestObjectPayload, SIOPErrors } from '../types';
 
+import { assertValidRequestObjectOpts } from './Opts';
 import { assertValidRequestObjectPayload, createRequestObjectPayload } from './Payload';
 
 export class RequestObject {
@@ -17,7 +18,20 @@ export class RequestObject {
     this.jwt = jwt;
   }
 
-  public static async fromAuthorizationRequestOpts(authorizationRequestOpts: AuthorizationRequestOpts) {
+  /**
+   * Create a request object that typically is used as a JWT on RP side, typically this method is called automatically when creating an Authorization Request, but you could use it directly!
+   *
+   * @param authorizationRequestOpts Request Object options to build a Request Object
+   * @remarks This method is used to generate a SIOP request Object.
+   * First it generates the request object payload, and then it a signed JWT can be accessed on request.
+   *
+   * Normally you will want to use the Authorization Request class. That class creates a URI that includes the JWT from this class in the URI
+   * If you do use this class directly, you can call the `convertRequestObjectToURI` afterwards to get the URI.
+   * Please note that the Authorization Request allows you to differentiate between OAuth2 and OpenID parameters that become
+   * part of the URI and which become part of the Request Object. If you generate a URI based upon the result of this class,
+   * the URI will be constructed based on the Request Object only!
+   */
+  public static async fromOpts(authorizationRequestOpts: AuthorizationRequestOpts) {
     assertValidAuthorizationRequestOpts(authorizationRequestOpts);
     const opts = RequestObject.mergeOAuth2AndOpenIdProperties(authorizationRequestOpts);
     return new RequestObject(authorizationRequestOpts, await createRequestObjectPayload(opts));
@@ -31,24 +45,19 @@ export class RequestObject {
     return new RequestObject(authorizationRequestOpts, requestObjectPayload);
   }
 
-  private static mergeOAuth2AndOpenIdProperties(opts: AuthorizationRequestOpts | RequestObjectOpts) {
-    if (!opts.requestBy) {
-      throw Error(SIOPErrors.BAD_PARAMS);
-    }
-    const mergedOpts = JSON.parse(JSON.stringify(opts));
-    mergedOpts.requestBy.request = { ...mergedOpts, ...mergedOpts.requestBy.request };
-    delete mergedOpts.requestBy.request['requestBy'];
-    return mergedOpts;
-  }
-
-  public async getJwt(): Promise<RequestObjectJwt> {
+  public async toJwt(): Promise<RequestObjectJwt> {
     if (!this.jwt) {
-      if (!this.payload) {
-        throw Error(`Cannot create JWT if there is no payload`);
-      } else if (!this.opts) {
+      if (!this.opts) {
         throw Error(SIOPErrors.BAD_PARAMS);
+      } else if (!this.payload) {
+        throw Error(`Cannot create JWT if there is no payload`);
       }
       this.removeRequestProperties();
+      if (this.payload.registration_uri) {
+        delete this.payload.registration;
+      }
+      assertValidRequestObjectPayload(this.payload);
+
       this.jwt = await signDidJwtPayload(this.payload, this.opts);
     }
     return this.jwt;
@@ -59,14 +68,21 @@ export class RequestObject {
       if (!this.jwt) {
         throw Error(SIOPErrors.NO_JWT);
       }
-      this.payload = decodeJWT(await this.getJwt()) as RequestObjectPayload;
+      this.payload = decodeJWT(this.jwt) as RequestObjectPayload;
       this.removeRequestProperties();
-      assertValidRequestObjectPayload(this.payload);
     }
+    assertValidRequestObjectPayload(this.payload);
     return this.payload;
   }
 
-  public getOptions(): RequestObjectOpts | undefined {
+  public async assertValid(): Promise<void> {
+    if (this.options) {
+      assertValidRequestObjectOpts(this.options, false);
+    }
+    assertValidRequestObjectPayload(await this.getPayload());
+  }
+
+  public get options(): RequestObjectOpts | undefined {
     return this.opts;
   }
 
@@ -77,5 +93,15 @@ export class RequestObject {
       delete this.payload.request;
       delete this.payload.request_uri;
     }
+  }
+
+  private static mergeOAuth2AndOpenIdProperties(opts: AuthorizationRequestOpts | RequestObjectOpts) {
+    if (!opts.requestBy) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
+    const mergedOpts = JSON.parse(JSON.stringify(opts));
+    mergedOpts.requestBy.request = { ...mergedOpts, ...mergedOpts.requestBy.request };
+    delete mergedOpts.requestBy.request['requestBy'];
+    return mergedOpts;
   }
 }

@@ -33,7 +33,7 @@ export const createRequestObjectPayload = async (opts: RequestObjectOpts): Promi
 };
 
 export const assertValidRequestObjectPayload = (verPayload: RequestObjectPayload): void => {
-  if (verPayload['registration_uri'] || verPayload['registration']) {
+  if (verPayload['registration_uri'] && verPayload['registration']) {
     throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
   }
 };

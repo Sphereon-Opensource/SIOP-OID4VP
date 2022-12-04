@@ -8,10 +8,11 @@ import {
   AuthorizationRequestOpts,
   AuthorizationRequestPayload,
   AuthorizationRequestURI,
+  ObjectBy,
   PassBy,
   RequestBy,
+  RequestObjectJwt,
   RequestObjectPayload,
-  RequestObjectResult,
   RPRegistrationMetadataPayload,
   SIOPErrors,
   UrlEncodingFormat,
@@ -20,7 +21,42 @@ import {
 import AuthorizationRequest from './AuthorizationRequest';
 import { assertValidRPRegistrationMedataPayload } from './Payload';
 
-export default class URI {
+export class URI implements AuthorizationRequestURI {
+  private readonly _scheme: string;
+  private readonly _requestObjectJwt: RequestObjectJwt | undefined;
+  private readonly _authorizationRequestPayload: AuthorizationRequestPayload;
+  private readonly _encodedUri: string; // The encoded URI
+  private readonly _encodingFormat: UrlEncodingFormat;
+  // private _requestObjectBy: ObjectBy;
+
+  private _registrationMetadataPayload: RPRegistrationMetadataPayload;
+
+  private constructor({ scheme, encodedUri, encodingFormat, authorizationRequestPayload, requestObjectJwt }: Partial<AuthorizationRequestURI>) {
+    this._scheme = scheme;
+    this._encodedUri = encodedUri;
+    this._encodingFormat = encodingFormat;
+    this._authorizationRequestPayload = authorizationRequestPayload;
+    this._requestObjectJwt = requestObjectJwt;
+  }
+
+  public static async fromValue(uri: string): Promise<URI> {
+    const { scheme, requestObjectJwt, authorizationRequestPayload, registrationMetadata } = await URI.parseAndResolve(uri);
+    const requestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt) as RequestObjectPayload) : undefined;
+    if (requestObjectPayload) {
+      assertValidRequestObjectPayload(requestObjectPayload);
+    }
+
+    const result = new URI({
+      scheme,
+      encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
+      encodedUri: uri,
+      authorizationRequestPayload,
+      requestObjectJwt,
+    });
+    result._registrationMetadataPayload = registrationMetadata;
+    return result;
+  }
+
   /**
    * Create a signed URL encoded URI with a signed SIOP request token on RP side
    *
@@ -30,25 +66,33 @@ export default class URI {
    *
    * Normally you will want to use this method to create the request.
    */
-  public async create(opts: AuthorizationRequestOpts): Promise<AuthorizationRequestURI> {
-    const requestObject = await RequestObject.fromAuthorizationRequestOpts(opts);
-    const authorizationRequest = await AuthorizationRequest.createAuthorizationRequest(opts, await requestObject.getJwt());
-    const result = await this.fromRequest(opts, authorizationRequest);
-    return { authorizationRequest, ...result, ...{ requestObject: await requestObject.getJwt() } };
+  public static async fromOpts(opts: AuthorizationRequestOpts): Promise<URI> {
+    const authorizationRequest = await AuthorizationRequest.fromOpts(opts);
+    return await URI.fromAuthorizationRequest(authorizationRequest);
   }
 
-  public async parseAndResolve(uri: string) {
-    const { uriScheme, requestObject, authorizationRequest } = await this.parseAndResolveRequestUri(uri);
-    if (requestObject) {
-      assertValidRequestObjectPayload(decodeJWT(requestObject) as RequestObjectPayload);
-    }
-    const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
-      authorizationRequest['registration_uri'],
-      authorizationRequest['registration']
-    );
-    assertValidRPRegistrationMedataPayload(registrationMetadata);
+  public async toAuthorizationRequest(): Promise<AuthorizationRequest> {
+    return await AuthorizationRequest.fromURI(this);
+  }
 
-    return { uriScheme, requestObject, authorizationRequest, registrationMetadata };
+  get requestObjectBy(): ObjectBy {
+    if (!this.requestObjectJwt) {
+      return { type: PassBy.NONE };
+    }
+    if (this.authorizationRequestPayload.request_uri) {
+      return { type: PassBy.REFERENCE, referenceUri: this.authorizationRequestPayload.request_uri };
+    }
+    return { type: PassBy.VALUE };
+  }
+
+  get metadataObjectBy(): ObjectBy {
+    if (!this.authorizationRequestPayload.registration_uri && !this.authorizationRequestPayload.registration) {
+      return { type: PassBy.NONE };
+    }
+    if (this.authorizationRequestPayload.registration_uri) {
+      return { type: PassBy.REFERENCE, referenceUri: this.authorizationRequestPayload.registration_uri };
+    }
+    return { type: PassBy.VALUE };
   }
 
   /**
@@ -61,8 +105,12 @@ export default class URI {
    * part of the URI and which become part of the Request Object. If you generate a URI based upon the result of this method,
    * the URI will be constructed based on the Request Object only!
    */
-  async fromRequestObject(request: RequestObjectResult): Promise<AuthorizationRequestURI> {
-    return await this.fromRequest(request.opts, request.requestObject);
+  static async fromRequestObject(requestObject: RequestObject): Promise<URI> {
+    return await URI.fromAuthorizationRequestPayload(requestObject.options, await requestObject.toJwt());
+  }
+
+  static async fromAuthorizationRequest(authorizationRequest: AuthorizationRequest): Promise<URI> {
+    return await URI.fromAuthorizationRequestPayload(authorizationRequest.options, authorizationRequest.payload, authorizationRequest.requestObject);
   }
 
   /**
@@ -71,17 +119,18 @@ export default class URI {
    * @param request
    *
    */
-  private async fromRequest(
+  private static async fromAuthorizationRequestPayload(
     opts: { uriScheme?: string; requestBy: RequestBy },
-    request: AuthorizationRequestPayload | string
-  ): Promise<AuthorizationRequestURI> {
+    request: AuthorizationRequestPayload | string,
+    requestObject?: RequestObject
+  ): Promise<URI> {
     const scheme = opts.uriScheme ? (opts.uriScheme.endsWith('://') ? opts.uriScheme : `${opts.uriScheme}://`) : 'openid://';
     const isJwt = typeof request === 'string';
-    const requestObject = isJwt ? request : request.request;
-    if (isJwt && (!requestObject || !requestObject.startsWith('ey'))) {
+    const requestObjectJwt = requestObject ? await requestObject.toJwt() : isJwt ? request : request.request;
+    if (isJwt && (!requestObjectJwt || !requestObjectJwt.startsWith('ey'))) {
       throw Error(SIOPErrors.NO_JWT);
     }
-    const requestObjectPayload: RequestObjectPayload = requestObject ? (decodeJWT(requestObject) as RequestObjectPayload) : undefined;
+    const requestObjectPayload: RequestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt) as RequestObjectPayload) : undefined;
 
     if (requestObjectPayload) {
       // Only used to validate if it contains a presentation definition
@@ -111,16 +160,17 @@ export default class URI {
       authorizationRequest.request_uri = opts.requestBy.referenceUri;
       delete authorizationRequest.request;
     } else if (type === PassBy.VALUE) {
-      authorizationRequest.request = requestObject;
+      authorizationRequest.request = requestObjectJwt;
       delete authorizationRequest.request_uri;
     }
-    return {
+    return new URI({
+      scheme,
       encodedUri: `${scheme}?${encodeJsonAsURI(authorizationRequest)}`,
       encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
-      requestBy: opts.requestBy,
-      authorizationRequest,
-      requestObject,
-    };
+      // requestObjectBy: opts.requestBy,
+      authorizationRequestPayload: authorizationRequest,
+      requestObjectJwt: requestObjectJwt,
+    });
   }
 
   /**
@@ -128,16 +178,45 @@ export default class URI {
    *
    * @param uri
    */
-  parse(uri: string): { uriScheme: string; authorizationRequest: AuthorizationRequestPayload } {
+  public static parse(uri: string): { scheme: string; authorizationRequestPayload: AuthorizationRequestPayload } {
     // We strip the uri scheme before passing it to the decode function
-    const uriScheme: string = uri.match(/^.*:\/\/\??/)[0];
-    const authorizationRequest = decodeUriAsJson(uri.replace(/^.*:\/\/\??/, '')) as AuthorizationRequestPayload;
-    return { uriScheme, authorizationRequest };
+    const scheme: string = uri.match(/^.*:\/\/\??/)[0];
+    const authorizationRequestPayload = decodeUriAsJson(uri.replace(/^.*:\/\/\??/, '')) as AuthorizationRequestPayload;
+    return { scheme, authorizationRequestPayload };
   }
 
-  protected async parseAndResolveRequestUri(uri: string) {
-    const { authorizationRequest, uriScheme } = this.parse(uri);
-    const requestObject = await fetchByReferenceOrUseByValue(authorizationRequest.request_uri, authorizationRequest.request, true);
-    return { uriScheme, authorizationRequest, requestObject };
+  public static async parseAndResolve(uri: string) {
+    const { authorizationRequestPayload, scheme } = this.parse(uri);
+    const requestObjectJwt = await fetchByReferenceOrUseByValue(authorizationRequestPayload.request_uri, authorizationRequestPayload.request, true);
+    const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
+      authorizationRequestPayload['registration_uri'],
+      authorizationRequestPayload['registration']
+    );
+    assertValidRPRegistrationMedataPayload(registrationMetadata);
+    return { scheme, authorizationRequestPayload, requestObjectJwt, registrationMetadata };
+  }
+
+  get encodingFormat(): UrlEncodingFormat {
+    return this._encodingFormat;
+  }
+
+  get encodedUri(): string {
+    return this._encodedUri;
+  }
+
+  get authorizationRequestPayload(): AuthorizationRequestPayload {
+    return this._authorizationRequestPayload;
+  }
+
+  get requestObjectJwt(): RequestObjectJwt | undefined {
+    return this._requestObjectJwt;
+  }
+
+  get scheme(): string {
+    return this._scheme;
+  }
+
+  get registrationMetadataPayload(): RPRegistrationMetadataPayload {
+    return this._registrationMetadataPayload;
   }
 }

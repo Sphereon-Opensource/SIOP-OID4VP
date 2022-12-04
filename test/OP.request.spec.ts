@@ -176,7 +176,7 @@ describe('OP should', () => {
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObject);
+      nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObjectJwt);
 
       const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.encodedUri);
       console.log(JSON.stringify(verifiedRequest));
