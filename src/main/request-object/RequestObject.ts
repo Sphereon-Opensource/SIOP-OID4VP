@@ -13,7 +13,7 @@ export class RequestObject {
   private readonly opts: RequestObjectOpts;
 
   private constructor(opts?: AuthorizationRequestOpts | RequestObjectOpts, payload?: RequestObjectPayload, jwt?: string) {
-    this.opts = RequestObject.mergeOAuth2AndOpenIdProperties(opts);
+    this.opts = opts ? RequestObject.mergeOAuth2AndOpenIdProperties(opts) : undefined;
     this.payload = payload;
     this.jwt = jwt;
   }
@@ -68,7 +68,7 @@ export class RequestObject {
       if (!this.jwt) {
         throw Error(SIOPErrors.NO_JWT);
       }
-      this.payload = decodeJWT(this.jwt) as RequestObjectPayload;
+      this.payload = decodeJWT(this.jwt).payload as RequestObjectPayload;
       this.removeRequestProperties();
     }
     assertValidRequestObjectPayload(this.payload);

@@ -7,6 +7,7 @@ import {
   AuthorizationRequestPayload,
   CheckLinkedDomain,
   PassBy,
+  RequestObjectJwt,
   RequestObjectPayload,
   RPRegistrationMetadataPayload,
   SIOPErrors,
@@ -20,7 +21,6 @@ import { assertValidRPRegistrationMedataPayload, createAuthorizationRequestPaylo
 import { URI } from './URI';
 
 export default class AuthorizationRequest {
-  // public static readonly URI: URI = new URI();
   private readonly _requestObject: RequestObject;
   private readonly _payload: AuthorizationRequestPayload;
   private readonly _options: AuthorizationRequestOpts;
@@ -33,13 +33,38 @@ export default class AuthorizationRequest {
     this._uri = uri;
   }
 
+  static async fromJwt(jwt: string): Promise<AuthorizationRequest> {
+    if (!jwt) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
+    const requestObject = await RequestObject.fromJwt(jwt);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const payload: AuthorizationRequestPayload = { ...(await requestObject.getPayload()) };
+    payload.request = jwt;
+    return new AuthorizationRequest({ ...payload }, requestObject);
+  }
+
   static async fromURI(uri: URI | string): Promise<AuthorizationRequest> {
-    const uriObject = typeof uri === 'string' ? await URI.fromValue(uri) : uri;
+    if (!uri) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
+    const uriObject = typeof uri === 'string' ? await URI.fromUri(uri) : uri;
     const requestObject = await RequestObject.fromJwt(uriObject.requestObjectJwt);
     return new AuthorizationRequest(uriObject.authorizationRequestPayload, requestObject, undefined, uriObject);
   }
 
+  static async fromUriOrJwt(jwtOrUri: string): Promise<AuthorizationRequest> {
+    if (!jwtOrUri) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
+    return jwtOrUri.startsWith('ey') ? await AuthorizationRequest.fromJwt(jwtOrUri) : await AuthorizationRequest.fromURI(jwtOrUri);
+  }
+
   static async fromOpts(opts: AuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
+    if (!opts) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
     assertValidAuthorizationRequestOpts(opts);
     const requestObjectArg = opts.requestBy.type !== PassBy.NONE ? (requestObject ? requestObject : await RequestObject.fromOpts(opts)) : undefined;
     const requestPayload = await createAuthorizationRequestPayload(opts, requestObjectArg);
@@ -71,20 +96,16 @@ export default class AuthorizationRequest {
    * @param uriOrJwt
    * @param opts
    */
-  static async verify(uriOrJwt: string, opts: VerifyAuthorizationRequestOpts): Promise<VerifiedAuthorizationRequest> {
+  async verify(opts: VerifyAuthorizationRequestOpts): Promise<VerifiedAuthorizationRequest> {
     assertValidVerifyAuthorizationRequestOpts(opts);
-    if (!uriOrJwt) {
-      throw new Error(SIOPErrors.NO_URI);
-    }
-    const isJwt = uriOrJwt.startsWith('ey');
-    const jwt = isJwt ? uriOrJwt : (await URI.parseAndResolve(uriOrJwt)).requestObjectJwt;
+    const isJwt = this.requestObject !== undefined;
+    const jwt = isJwt ? await this.requestObject.toJwt() : undefined;
 
-    const origAuthorizationRequest = isJwt ? (parseJWT(jwt).payload as AuthorizationRequestPayload) : URI.parse(uriOrJwt).authorizationRequestPayload;
     let requestObjectPayload: RequestObjectPayload;
     let verifiedJwt: VerifiedJWT;
-    if (isJwt) {
+    if (isJwt && !this.payload.request_uri) {
       // Put back the request object as that won't be present in the Jwt
-      origAuthorizationRequest.request = jwt;
+      this.payload.request = jwt;
     }
     if (jwt) {
       parseJWT(jwt);
@@ -102,36 +123,46 @@ export default class AuthorizationRequest {
     // AuthorizationRequest.assertValidRequestObject(origAuthenticationRequest);
 
     // We use the orig request for default values, but the JWT payload contains signed request object properties
-    const authorizationRequest = { ...origAuthorizationRequest, ...requestObjectPayload };
-    const version = authorizationRequestVersionDiscovery(authorizationRequest);
+    const authorizationRequestPayload = { ...this.payload, ...requestObjectPayload };
+    const version = authorizationRequestVersionDiscovery(authorizationRequestPayload);
     if (opts.verification.supportedVersions && !opts.verification.supportedVersions.includes(version)) {
       throw new Error(SIOPErrors.SIOP_VERSION_NOT_SUPPORTED);
-    } else if (opts.nonce && authorizationRequest.nonce !== opts.nonce) {
-      throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${authorizationRequest.nonce}, supplied: ${opts.nonce}`);
+    } else if (opts.nonce && authorizationRequestPayload.nonce !== opts.nonce) {
+      throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${authorizationRequestPayload.nonce}, supplied: ${opts.nonce}`);
     }
 
     // todo: We can use client_metadata here as well probably
     const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
-      authorizationRequest['registration_uri'],
-      authorizationRequest['registration']
+      authorizationRequestPayload['registration_uri'],
+      authorizationRequestPayload['registration']
     );
     assertValidRPRegistrationMedataPayload(registrationMetadata);
 
-    if (authorizationRequest.client_id.startsWith('did:')) {
+    if (authorizationRequestPayload.client_id.startsWith('did:')) {
       if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-        await validateLinkedDomainWithDid(authorizationRequest.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
+        await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
       } else if (!opts.verification.checkLinkedDomain) {
-        await validateLinkedDomainWithDid(authorizationRequest.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
+        await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
       }
     }
-    const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(authorizationRequest);
+    const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(authorizationRequestPayload);
     return {
       ...verifiedJwt,
       verifyOpts: opts,
       presentationDefinitions,
-      payload: requestObjectPayload,
-      authorizationRequest: authorizationRequest,
+      requestObject: this.requestObject,
+      authorizationRequestPayload: authorizationRequestPayload,
       version,
     };
+  }
+
+  static async verify(requestOrUri: string, verifyOpts: VerifyAuthorizationRequestOpts) {
+    assertValidVerifyAuthorizationRequestOpts(verifyOpts);
+    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestOrUri);
+    return await authorizationRequest.verify(verifyOpts);
+  }
+
+  public async requestObjectJwt(): Promise<RequestObjectJwt | undefined> {
+    return await this.requestObject?.toJwt();
   }
 }

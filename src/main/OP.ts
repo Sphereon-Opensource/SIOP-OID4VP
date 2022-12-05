@@ -74,7 +74,10 @@ export class OP {
     opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthorizationRequest> {
     const verifyCallback = (this._verifyAuthRequestOpts.verification as Verification).verifyCallback || this._verifyAuthRequestOpts.verifyCallback;
-    return AuthorizationRequest.verify(requestJwtOrUri, this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
+    const authorizationRequest = requestJwtOrUri.startsWith('ey')
+      ? await AuthorizationRequest.fromJwt(requestJwtOrUri)
+      : await AuthorizationRequest.fromURI(requestJwtOrUri);
+    return await authorizationRequest.verify(this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
   }
 
   public async createAuthenticationResponse(

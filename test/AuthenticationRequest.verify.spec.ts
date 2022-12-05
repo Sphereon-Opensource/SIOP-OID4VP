@@ -42,12 +42,16 @@ describe('verifyJWT should', () => {
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthorizationRequest.verify('a valid JWT', undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthorizationRequest.verify('an invalid JWT bypassing the undefined check', undefined as never)).rejects.toThrow(
+      SIOPErrors.VERIFY_BAD_PARAMS
+    );
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts.verification is passed', async () => {
     expect.assertions(1);
-    await expect(AuthorizationRequest.verify('a valid JWT', {} as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthorizationRequest.verify('an invalid JWT bypassing the undefined check', {} as never)).rejects.toThrow(
+      SIOPErrors.VERIFY_BAD_PARAMS
+    );
   });
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {

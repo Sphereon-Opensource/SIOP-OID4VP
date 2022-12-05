@@ -12,6 +12,8 @@ import {
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 
+import { RequestObject } from '../request-object/RequestObject';
+
 import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
 
 export const expirationTime = 10 * 60;
@@ -111,8 +113,8 @@ export interface RequestRegistrationPayloadProperties {
 }
 
 export interface VerifiedAuthorizationRequest extends VerifiedJWT {
-  authorizationRequest: AuthorizationRequestPayload;
-  payload: RequestObjectPayload; // The unsigned Request payload
+  authorizationRequestPayload: AuthorizationRequestPayload;
+  requestObject?: RequestObject; // The Request object
   presentationDefinitions?: PresentationDefinitionWithLocation[]; // The optional presentation definition objects that the RP requests
   verifyOpts: VerifyAuthorizationRequestOpts; // The verification options for the authentication request
   version: SupportedVersion;

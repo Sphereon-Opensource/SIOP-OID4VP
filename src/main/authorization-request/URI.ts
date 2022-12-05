@@ -39,9 +39,12 @@ export class URI implements AuthorizationRequestURI {
     this._requestObjectJwt = requestObjectJwt;
   }
 
-  public static async fromValue(uri: string): Promise<URI> {
+  public static async fromUri(uri: string): Promise<URI> {
+    if (!uri) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
     const { scheme, requestObjectJwt, authorizationRequestPayload, registrationMetadata } = await URI.parseAndResolve(uri);
-    const requestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt) as RequestObjectPayload) : undefined;
+    const requestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt).payload as RequestObjectPayload) : undefined;
     if (requestObjectPayload) {
       assertValidRequestObjectPayload(requestObjectPayload);
     }
@@ -67,6 +70,9 @@ export class URI implements AuthorizationRequestURI {
    * Normally you will want to use this method to create the request.
    */
   public static async fromOpts(opts: AuthorizationRequestOpts): Promise<URI> {
+    if (!opts) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
     const authorizationRequest = await AuthorizationRequest.fromOpts(opts);
     return await URI.fromAuthorizationRequest(authorizationRequest);
   }
@@ -106,10 +112,16 @@ export class URI implements AuthorizationRequestURI {
    * the URI will be constructed based on the Request Object only!
    */
   static async fromRequestObject(requestObject: RequestObject): Promise<URI> {
+    if (!requestObject) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
     return await URI.fromAuthorizationRequestPayload(requestObject.options, await requestObject.toJwt());
   }
 
   static async fromAuthorizationRequest(authorizationRequest: AuthorizationRequest): Promise<URI> {
+    if (!authorizationRequest) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
     return await URI.fromAuthorizationRequestPayload(authorizationRequest.options, authorizationRequest.payload, authorizationRequest.requestObject);
   }
 
@@ -124,6 +136,9 @@ export class URI implements AuthorizationRequestURI {
     request: AuthorizationRequestPayload | string,
     requestObject?: RequestObject
   ): Promise<URI> {
+    if (!request) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
     const scheme = opts.uriScheme ? (opts.uriScheme.endsWith('://') ? opts.uriScheme : `${opts.uriScheme}://`) : 'openid://';
     const isJwt = typeof request === 'string';
     const requestObjectJwt = requestObject ? await requestObject.toJwt() : isJwt ? request : request.request;
@@ -179,6 +194,9 @@ export class URI implements AuthorizationRequestURI {
    * @param uri
    */
   public static parse(uri: string): { scheme: string; authorizationRequestPayload: AuthorizationRequestPayload } {
+    if (!uri) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
     // We strip the uri scheme before passing it to the decode function
     const scheme: string = uri.match(/^.*:\/\/\??/)[0];
     const authorizationRequestPayload = decodeUriAsJson(uri.replace(/^.*:\/\/\??/, '')) as AuthorizationRequestPayload;
@@ -186,6 +204,9 @@ export class URI implements AuthorizationRequestURI {
   }
 
   public static async parseAndResolve(uri: string) {
+    if (!uri) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
     const { authorizationRequestPayload, scheme } = this.parse(uri);
     const requestObjectJwt = await fetchByReferenceOrUseByValue(authorizationRequestPayload.request_uri, authorizationRequestPayload.request, true);
     const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(

@@ -2,6 +2,7 @@ import { JWTHeader } from 'did-jwt';
 import { JWK } from 'jose';
 
 import AuthorizationRequest from '../authorization-request/AuthorizationRequest';
+import { assertValidVerifyAuthorizationRequestOpts } from '../authorization-request/Opts';
 import {
   getPublicJWKFromHexPrivateKey,
   getResolver,
@@ -47,11 +48,13 @@ export default class AuthorizationResponse {
     responseOpts: AuthorizationResponseOpts,
     verifyOpts: VerifyAuthorizationRequestOpts
   ): Promise<AuthorizationResponseResult> {
+    assertValidVerifyAuthorizationRequestOpts(verifyOpts);
     assertValidResponseOpts(responseOpts);
     if (!requestObject || !requestObject.startsWith('ey')) {
       throw new Error(SIOPErrors.NO_JWT);
     }
-    const verifiedRequest = await AuthorizationRequest.verify(requestObject, verifyOpts);
+    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestObject);
+    const verifiedRequest = await authorizationRequest.verify(verifyOpts);
     return AuthorizationResponse.createFromVerifiedAuthorizationRequest(verifiedRequest, responseOpts);
   }
 
