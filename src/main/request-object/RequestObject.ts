@@ -1,8 +1,15 @@
 import { decodeJWT } from 'did-jwt';
 
 import { assertValidAuthorizationRequestOpts } from '../authorization-request/Opts';
-import { signDidJwtPayload } from '../functions';
-import { AuthorizationRequestOpts, RequestObjectJwt, RequestObjectOpts, RequestObjectPayload, SIOPErrors } from '../types';
+import { fetchByReferenceOrUseByValue, signDidJwtPayload } from '../functions';
+import {
+  AuthorizationRequestOpts,
+  AuthorizationRequestPayload,
+  RequestObjectJwt,
+  RequestObjectOpts,
+  RequestObjectPayload,
+  SIOPErrors,
+} from '../types';
 
 import { assertValidRequestObjectOpts } from './Opts';
 import { assertValidRequestObjectPayload, createRequestObjectPayload } from './Payload';
@@ -43,6 +50,12 @@ export class RequestObject {
 
   public static async fromPayload(requestObjectPayload: RequestObjectPayload, authorizationRequestOpts: AuthorizationRequestOpts) {
     return new RequestObject(authorizationRequestOpts, requestObjectPayload);
+  }
+
+  public static async fromAuthorizationRequestPayload(payload: AuthorizationRequestPayload): Promise<RequestObject | undefined> {
+    const requestObjectJwt =
+      payload.request || payload.request_uri ? await fetchByReferenceOrUseByValue(payload.request_uri, payload.request, true) : undefined;
+    return requestObjectJwt ? await RequestObject.fromJwt(requestObjectJwt) : undefined;
   }
 
   public async toJwt(): Promise<RequestObjectJwt> {

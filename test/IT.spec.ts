@@ -208,7 +208,7 @@ describe('RP and OP interaction should', () => {
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObjectJwt);
+      nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
 
       //The schema validation needs to be done here otherwise it fails because of JWT properties
       await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
@@ -321,7 +321,8 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
     const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT);
-    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
+    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,
@@ -541,7 +542,8 @@ describe('RP and OP interaction should', () => {
         ],
       },
     });
-    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
+    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,
@@ -663,7 +665,7 @@ describe('RP and OP interaction should', () => {
           ],
         },
       });
-      expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
+      expect(authenticationResponseWithJWT.payload).toBeDefined();
       await expect(
         rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
           audience: EXAMPLE_REDIRECT_URL,
@@ -809,7 +811,7 @@ describe('RP and OP interaction should', () => {
         ],
       },
     });
-    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
+    expect(authenticationResponseWithJWT.payload).toBeDefined();
 
     const DID_CONFIGURATION = {
       '@context': 'https://identity.foundation/.well-known/did-configuration/v1',
@@ -944,7 +946,8 @@ describe('RP and OP interaction should', () => {
           ],
         },
       });
-      expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
+      expect(authenticationResponseWithJWT.payload).toBeDefined();
+      expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
       const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
         audience: EXAMPLE_REDIRECT_URL,
@@ -1088,7 +1091,8 @@ describe('RP and OP interaction should', () => {
         ],
       },
     });
-    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
+    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
     const DID_CONFIGURATION = {
       '@context': 'https://identity.foundation/.well-known/did-configuration/v1',
@@ -1385,7 +1389,8 @@ describe('RP and OP interaction should', () => {
         ],
       },
     });
-    expect(authenticationResponseWithJWT.responsePayload).toBeDefined();
+    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
       audience: EXAMPLE_REDIRECT_URL,

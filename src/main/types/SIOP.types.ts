@@ -12,6 +12,7 @@ import {
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
 
+import AuthorizationRequest from '../authorization-request/AuthorizationRequest';
 import { RequestObject } from '../request-object/RequestObject';
 
 import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
@@ -113,6 +114,7 @@ export interface RequestRegistrationPayloadProperties {
 }
 
 export interface VerifiedAuthorizationRequest extends VerifiedJWT {
+  authorizationRequest: AuthorizationRequest;
   authorizationRequestPayload: AuthorizationRequestPayload;
   requestObject?: RequestObject; // The Request object
   presentationDefinitions?: PresentationDefinitionWithLocation[]; // The optional presentation definition objects that the RP requests
@@ -150,6 +152,7 @@ export interface PresentationExchangeOpts {
   _vp_token?: { presentation_submission: PresentationSubmission };
 }
 
+export type IDTokenJwt = string;
 export interface IDTokenPayload extends JWTPayload {
   iss?: ResponseIss.SELF_ISSUED_V2 | string;
   sub?: string; // did (or thumbprint of sub_jwk key when type is jkt)

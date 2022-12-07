@@ -61,6 +61,14 @@ export default class AuthorizationRequest {
     return jwtOrUri.startsWith('ey') ? await AuthorizationRequest.fromJwt(jwtOrUri) : await AuthorizationRequest.fromURI(jwtOrUri);
   }
 
+  static async fromPayload(payload: AuthorizationRequestPayload): Promise<AuthorizationRequest> {
+    if (!payload) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
+    const requestObject = await RequestObject.fromAuthorizationRequestPayload(payload);
+    return new AuthorizationRequest(payload, requestObject);
+  }
+
   static async fromOpts(opts: AuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
     if (!opts) {
       throw Error(SIOPErrors.BAD_PARAMS);
@@ -148,6 +156,7 @@ export default class AuthorizationRequest {
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(authorizationRequestPayload);
     return {
       ...verifiedJwt,
+      authorizationRequest: this,
       verifyOpts: opts,
       presentationDefinitions,
       requestObject: this.requestObject,

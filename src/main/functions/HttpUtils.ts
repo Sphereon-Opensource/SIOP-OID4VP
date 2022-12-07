@@ -25,6 +25,7 @@ export async function postAuthenticationResponse(url: string, body: Authorizatio
 }
 
 export async function postAuthenticationResponseJwt(url: string, jwt: string): Promise<Response> {
+  //fixme: Account for other post types and full AuthzResponse
   try {
     const response = await fetch(url, {
       method: 'POST',

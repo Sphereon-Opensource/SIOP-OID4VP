@@ -15,10 +15,8 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
-  SupportedVersion,
   VerifiablePresentationPayload,
   VerifiablePresentationTypeFormat,
-  VerifiedAuthorizationRequest,
 } from '../src/main';
 import { SIOPErrors } from '../src/main/types';
 
@@ -209,19 +207,8 @@ describe('presentation exchange manager tests', () => {
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
-    const verifiedJwt: VerifiedAuthorizationRequest = {
-      didResolutionResult: undefined,
-      issuer: '',
-      jwt: payload.request,
-      signer: undefined,
-      payload: undefined,
-      authorizationRequestPayload: payload,
-      presentationDefinitions: pd,
-      verifyOpts: null,
-      version: SupportedVersion.SIOPv2_ID1,
-    };
     await expect(
-      PresentationExchange.validatePresentationAgainstDefinition(verifiedJwt.presentationDefinitions[0].definition, {
+      PresentationExchange.validatePresentationAgainstDefinition(pd[0].definition, {
         '@context': ['https://www.w3.org/2018/credentials/v1'],
         type: ['VerifiablePresentation'],
         verifiableCredential: vcs,
@@ -267,19 +254,8 @@ describe('presentation exchange manager tests', () => {
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
-    const verifiedJwt: VerifiedAuthorizationRequest = {
-      didResolutionResult: undefined,
-      issuer: '',
-      jwt: payload.request,
-      signer: undefined,
-      payload: undefined,
-      authorizationRequestPayload: payload,
-      presentationDefinitions: pd,
-      verifyOpts: null,
-      version: SupportedVersion.SIOPv2_ID1,
-    };
     await expect(
-      PresentationExchange.validatePresentationAgainstDefinition(verifiedJwt.presentationDefinitions[0].definition, {
+      PresentationExchange.validatePresentationAgainstDefinition(pd[0].definition, {
         '@context': ['https://www.w3.org/2018/credentials/v1'],
         type: ['VerifiablePresentation'],
         verifiableCredential: vcs,
@@ -300,18 +276,7 @@ describe('presentation exchange manager tests', () => {
     const payload: AuthorizationRequestPayload = await getPayloadPdVal();
     const vcs = getVCs();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
-    const verifiedJwt: VerifiedAuthorizationRequest = {
-      didResolutionResult: undefined,
-      issuer: '',
-      jwt: payload.request,
-      signer: undefined,
-      payload: undefined,
-      authorizationRequestPayload: payload,
-      presentationDefinitions: pd,
-      verifyOpts: null,
-      version: SupportedVersion.SIOPv2_ID1,
-    };
-    const result = await PresentationExchange.validatePresentationAgainstDefinition(verifiedJwt.presentationDefinitions[0].definition, {
+    const result = await PresentationExchange.validatePresentationAgainstDefinition(pd[0].definition, {
       '@context': ['https://www.w3.org/2018/credentials/v1'],
       type: ['VerifiablePresentation'],
       verifiableCredential: vcs,

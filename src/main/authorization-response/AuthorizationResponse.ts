@@ -1,26 +1,9 @@
-import { JWTHeader } from 'did-jwt';
-import { JWK } from 'jose';
-
 import AuthorizationRequest from '../authorization-request/AuthorizationRequest';
 import { assertValidVerifyAuthorizationRequestOpts } from '../authorization-request/Opts';
-import {
-  getPublicJWKFromHexPrivateKey,
-  getResolver,
-  getSubDidFromPayload,
-  getThumbprint,
-  parseJWT,
-  validateLinkedDomainWithDid,
-  verifyDidJWT,
-} from '../functions';
+import { IDToken } from '../id-token/IDToken';
 import {
   AuthorizationResponseOpts,
-  AuthorizationResponseResult,
-  CheckLinkedDomain,
-  IDTokenPayload,
-  isInternalSignature,
-  isSuppliedSignature,
-  JWTPayload,
-  ResponseIss,
+  AuthorizationResponsePayload,
   SIOPErrors,
   VerifiablePresentationPayload,
   VerifiedAuthenticationResponse,
@@ -30,11 +13,37 @@ import {
 } from '../types';
 
 import { assertValidVerifiablePresentations } from './OpenID4VP';
-import { assertValidResponseOpts, assertValidVerifyOpts } from './ResponseOpts';
-import { createIDTokenPayload, createResponsePayload } from './ResponsePayload';
+import { assertValidResponseOpts } from './Opts';
+import { createResponsePayload } from './Payload';
 
-export default class AuthorizationResponse {
-  // private requestObject: RequestObject
+export class AuthorizationResponse {
+  get idToken(): IDToken {
+    return this._idToken;
+  }
+
+  constructor({
+    authorizationResponsePayload,
+    idToken,
+    responseOpts,
+    authorizationRequest,
+  }: {
+    authorizationResponsePayload: AuthorizationResponsePayload;
+    idToken: IDToken;
+    responseOpts: AuthorizationResponseOpts;
+    authorizationRequest?: AuthorizationRequest;
+  }) {
+    this._authorizationRequest = authorizationRequest;
+    this._options = responseOpts;
+    this._idToken = idToken;
+    this._payload = authorizationResponsePayload;
+  }
+
+  private readonly _authorizationRequest?: AuthorizationRequest | undefined;
+  // private _requestObject?: RequestObject | undefined
+  private readonly _idToken?: IDToken;
+  private readonly _payload: AuthorizationResponsePayload;
+
+  private readonly _options: AuthorizationResponseOpts;
 
   /**
    * Creates a SIOP Response Object
@@ -47,7 +56,7 @@ export default class AuthorizationResponse {
     requestObject: string,
     responseOpts: AuthorizationResponseOpts,
     verifyOpts: VerifyAuthorizationRequestOpts
-  ): Promise<AuthorizationResponseResult> {
+  ): Promise<AuthorizationResponse> {
     assertValidVerifyAuthorizationRequestOpts(verifyOpts);
     assertValidResponseOpts(responseOpts);
     if (!requestObject || !requestObject.startsWith('ey')) {
@@ -55,118 +64,45 @@ export default class AuthorizationResponse {
     }
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestObject);
     const verifiedRequest = await authorizationRequest.verify(verifyOpts);
-    return AuthorizationResponse.createFromVerifiedAuthorizationRequest(verifiedRequest, responseOpts);
+    return AuthorizationResponse.fromVerifiedAuthorizationRequest(verifiedRequest, responseOpts);
   }
 
   // TODO SK Can you please put some documentation on it?
-  static async createFromVerifiedAuthorizationRequest(
+  static async fromVerifiedAuthorizationRequest(
     authorizationRequest: VerifiedAuthorizationRequest,
     responseOpts: AuthorizationResponseOpts
-  ): Promise<AuthorizationResponseResult> {
-    const idToken = await createIDTokenPayload(authorizationRequest, responseOpts);
-    const authorizationResponse = await createResponsePayload(authorizationRequest, idToken, responseOpts);
+  ): Promise<AuthorizationResponse> {
+    const idToken = await IDToken.fromAuthorizationRequestPayload(authorizationRequest.authorizationRequestPayload, responseOpts);
+    const idTokenPayload = await idToken.payload();
+    const authorizationResponsePayload = await createResponsePayload(authorizationRequest, idTokenPayload, responseOpts);
     await assertValidVerifiablePresentations({
       presentationDefinitions: authorizationRequest.presentationDefinitions,
-      presentationPayloads: authorizationResponse.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
+      presentationPayloads: authorizationResponsePayload.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
       verificationCallback: responseOpts.presentationExchange?.presentationVerificationCallback,
     });
 
-    return {
-      state: authorizationResponse.state,
-      nonce: idToken.nonce,
-      idToken: authorizationResponse.id_token,
-      idTokenPayload: idToken,
-      responsePayload: authorizationResponse,
+    return new AuthorizationResponse({
+      authorizationResponsePayload,
+      idToken,
       responseOpts,
-    };
-  }
-
-  /**
-   * Verifies a SIOP ID Response JWT on the RP Side
-   *
-   * @param idToken ID token to be validated
-   * @param verifyOpts
-   */
-  static async verifyIDToken(idToken: string, verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
-    if (!idToken) {
-      throw new Error(SIOPErrors.NO_JWT);
-    }
-    assertValidVerifyOpts(verifyOpts);
-
-    const { header, payload } = parseJWT(idToken);
-    assertValidResponseJWT({ header, payload });
-
-    const verifiedJWT = await verifyDidJWT(idToken, getResolver(verifyOpts.verification.resolveOpts), {
-      audience: verifyOpts.audience,
+      authorizationRequest: authorizationRequest.authorizationRequest,
     });
-
-    const issuerDid = getSubDidFromPayload(payload);
-    if (verifyOpts.verification.checkLinkedDomain && verifyOpts.verification.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, verifyOpts.verification.checkLinkedDomain);
-    } else if (!verifyOpts.verification.checkLinkedDomain) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
-    }
-    const verPayload = verifiedJWT.payload as IDTokenPayload;
-    assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
-    // Enforces verifyPresentationCallback function on the RP side,
-    if (!verifyOpts?.presentationVerificationCallback) {
-      throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_VERIFICATION_FUNCTION_MISSING);
-    }
-    return {
-      signer: verifiedJWT.signer,
-      didResolutionResult: verifiedJWT.didResolutionResult,
-      jwt: idToken,
-      verifyOpts,
-      issuer: issuerDid,
-      payload: {
-        ...verPayload,
-      },
-    };
-  }
-}
-
-function assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload; verPayload?: IDTokenPayload; audience?: string }) {
-  if (!opts.header) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
-  }
-  if (opts.payload) {
-    if (opts.payload.iss !== ResponseIss.SELF_ISSUED_V2) {
-      throw new Error(`${SIOPErrors.NO_SELFISSUED_ISS}, got: ${opts.payload.iss}`);
-    }
   }
 
-  if (opts.verPayload) {
-    if (!opts.verPayload.nonce) {
-      throw Error(SIOPErrors.NO_NONCE);
-    } else if (!opts.verPayload.exp || opts.verPayload.exp < Date.now() / 1000) {
-      throw Error(SIOPErrors.EXPIRED);
-      /*} else if (!opts.verPayload.iat || opts.verPayload.iat > (Date.now() / 1000)) {
-                        throw Error(SIOPErrors.EXPIRED);*/
-      // todo: Add iat check
-    }
-    if ((opts.verPayload.aud && !opts.audience) || (!opts.verPayload.aud && opts.audience)) {
-      throw Error(SIOPErrors.BAD_PARAMS);
-    } else if (opts.audience && opts.audience != opts.verPayload.aud) {
-      throw Error(SIOPErrors.INVALID_AUDIENCE);
-    }
+  public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
+    // TODO: Add response verification next to idToken verification
+    return await this.idToken.verify(verifyOpts);
   }
-}
 
-export async function createThumbprintAndJWK(resOpts: AuthorizationResponseOpts): Promise<{ thumbprint: string; subJwk: JWK }> {
-  let thumbprint;
-  let subJwk;
-  if (isInternalSignature(resOpts.signatureType)) {
-    thumbprint = await getThumbprint(resOpts.signatureType.hexPrivateKey, resOpts.did);
-    subJwk = getPublicJWKFromHexPrivateKey(
-      resOpts.signatureType.hexPrivateKey,
-      resOpts.signatureType.kid || `${resOpts.signatureType.did}#key-1`,
-      resOpts.did
-    );
-  } else if (isSuppliedSignature(resOpts.signatureType)) {
-    // fixme: These are uninitialized. Probably we have to extend the supplied signature to provide these.
-    return { thumbprint, subJwk };
-  } else {
-    throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
+  get authorizationRequest(): AuthorizationRequest | undefined {
+    return this._authorizationRequest;
   }
-  return { thumbprint, subJwk };
+
+  get payload(): AuthorizationResponsePayload {
+    return this._payload;
+  }
+
+  get options(): AuthorizationResponseOpts {
+    return this._options;
+  }
 }

@@ -2,14 +2,15 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
+import RPBuilder from './RPBuilder';
 import { URI } from './authorization-request/URI';
+import { AuthorizationResponse } from './authorization-response';
 import { verifyPresentations } from './authorization-response/OpenID4VP';
 import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
 import { AuthorizationRequestOptsSchema } from './schemas';
 import {
   AuthorizationRequestOpts,
   AuthorizationRequestURI,
-  AuthorizationResponseResult,
   CheckLinkedDomain,
   ClaimOpts,
   ExternalVerification,
@@ -21,8 +22,6 @@ import {
   VerifiedAuthenticationResponse,
   VerifyAuthorizationResponseOpts,
 } from './types';
-
-import { AuthorizationResponse, RPBuilder } from './';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validate = ajv.compile(AuthorizationRequestOptsSchema);
@@ -50,7 +49,7 @@ export class RP {
   }
 
   public async verifyAuthenticationResponse(
-    authenticationResponseWithJWT: AuthorizationResponseResult,
+    authorizationResponse: AuthorizationResponse,
     opts?: {
       audience: string;
       state?: string;
@@ -65,8 +64,8 @@ export class RP {
     const presentationVerificationCallback =
       verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
     const verifyAuthenticationResponseOpts = this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback });
-    await verifyPresentations(authenticationResponseWithJWT.responsePayload, verifyAuthenticationResponseOpts);
-    return AuthorizationResponse.verifyIDToken(authenticationResponseWithJWT.idToken, verifyAuthenticationResponseOpts);
+    await verifyPresentations(authorizationResponse.payload, verifyAuthenticationResponseOpts);
+    return await authorizationResponse.idToken.verify(verifyAuthenticationResponseOpts);
   }
 
   public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthorizationRequestOpts {

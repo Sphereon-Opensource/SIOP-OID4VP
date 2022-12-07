@@ -4,7 +4,7 @@ import { PresentationExchange } from './PresentationExchange';
 import { RP } from './RP';
 import RPBuilder from './RPBuilder';
 import * as RPRegistrationMetadata from './authorization-request/RequestRegistration';
-import AuthorizationResponse from './authorization-response/AuthorizationResponse';
+import { AuthorizationResponse } from './authorization-response';
 export * from './functions';
 export * from './types';
 export * from './authorization-request';

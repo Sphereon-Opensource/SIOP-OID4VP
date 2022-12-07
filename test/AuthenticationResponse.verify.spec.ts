@@ -1,6 +1,7 @@
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
-import { AuthorizationResponse, VerificationMode, VerifyAuthorizationResponseOpts } from '../src/main';
+import { VerificationMode, VerifyAuthorizationResponseOpts } from '../src/main';
+import { IDToken } from '../src/main/id-token/IDToken';
 import SIOPErrors from '../src/main/types/Errors';
 
 // const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
@@ -24,23 +25,23 @@ describe('verify JWT from Request JWT should', () => {
 
   it('throw NO_JWT when no jwt is passed', async () => {
     expect.assertions(1);
-    await expect(AuthorizationResponse.verifyIDToken(undefined as never, verifyOpts)).rejects.toThrow(SIOPErrors.NO_JWT);
+    await expect(IDToken.verify(undefined as never, verifyOpts)).rejects.toThrow(SIOPErrors.NO_JWT);
   });
   it('throw VERIFY_BAD_PARAMS when no verifyOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthorizationResponse.verifyIDToken(validButExpiredResJWT, undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(IDToken.verify(validButExpiredResJWT, undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
   });
 
   it('throw JWT_ERROR when expired but valid JWT is passed in', async () => {
     expect.assertions(1);
-    await expect(AuthorizationResponse.verifyIDToken(validButExpiredResJWT, { ...verifyOpts, audience: 'https://acme.com/hello' })).rejects.toThrow(
+    await expect(IDToken.verify(validButExpiredResJWT, { ...verifyOpts, audience: 'https://acme.com/hello' })).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1632272403/
     );
   });
 
   it('throw JWT_ERROR when expired but valid JWT is passed in', async () => {
     expect.assertions(1);
-    await expect(AuthorizationResponse.verifyIDToken(validButExpiredResJWT, { ...verifyOpts, audience: 'https://acme.com/hello' })).rejects.toThrow(
+    await expect(IDToken.verify(validButExpiredResJWT, { ...verifyOpts, audience: 'https://acme.com/hello' })).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1632272403/
     );
   });

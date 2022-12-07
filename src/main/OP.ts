@@ -5,7 +5,7 @@ import { Resolvable } from 'did-resolver';
 import OPBuilder from './OPBuilder';
 import AuthorizationRequest from './authorization-request/AuthorizationRequest';
 import { URI } from './authorization-request/URI';
-import AuthorizationResponse from './authorization-response/AuthorizationResponse';
+import { AuthorizationResponse } from './authorization-response';
 import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { authorizationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { AuthorizationResponseOptsSchema } from './schemas';
@@ -91,20 +91,22 @@ export class OP {
         vps?: VerifiablePresentationWithLocation[];
       };
     }
-  ): Promise<AuthorizationResponseResult> {
-    return AuthorizationResponse.createFromVerifiedAuthorizationRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
+  ): Promise<AuthorizationResponse> {
+    return await AuthorizationResponse.fromVerifiedAuthorizationRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
   }
 
   // TODO SK Can you please put some documentation on it?
-  public async submitAuthenticationResponse(verifiedJwt: AuthorizationResponseResult): Promise<Response> {
+  public async submitAuthenticationResponse(verifiedJwt: AuthorizationResponse): Promise<Response> {
     if (
       !verifiedJwt ||
-      (verifiedJwt.responseOpts.responseMode &&
-        !(verifiedJwt.responseOpts.responseMode == ResponseMode.POST || verifiedJwt.responseOpts.responseMode == ResponseMode.FORM_POST))
+      (verifiedJwt.options.responseMode &&
+        !(verifiedJwt.options.responseMode == ResponseMode.POST || verifiedJwt.options.responseMode == ResponseMode.FORM_POST))
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    return postAuthenticationResponseJwt(verifiedJwt.idTokenPayload.aud, verifiedJwt.idToken);
+    const payload = await verifiedJwt.idToken.payload();
+    const jwt = await verifiedJwt.idToken.jwt();
+    return await postAuthenticationResponseJwt(payload.aud, jwt);
   }
 
   /**
