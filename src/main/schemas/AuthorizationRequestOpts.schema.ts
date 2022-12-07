@@ -97,33 +97,11 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
-        "type": {
-          "$ref": "#/definitions/PassBy"
-        },
-        "referenceUri": {
-          "type": "string"
-        },
-        "request": {
-          "$ref": "#/definitions/RequestObjectPayloadOpts"
-        },
-        "signatureType": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/InternalSignature"
-            },
-            {
-              "$ref": "#/definitions/ExternalSignature"
-            },
-            {
-              "$ref": "#/definitions/SuppliedSignature"
-            },
-            {
-              "$ref": "#/definitions/NoSignature"
-            }
-          ]
-        },
         "clientMetadata": {
           "$ref": "#/definitions/ClientMetadataOpts"
+        },
+        "requestObject": {
+          "$ref": "#/definitions/RequestObjectOpts"
         },
         "uriScheme": {
           "type": "string"
@@ -132,15 +110,14 @@ export const AuthorizationRequestOptsSchema = {
           "$ref": "#/definitions/CheckLinkedDomain"
         }
       },
-      "additionalProperties": false,
       "required": [
         "clientId",
         "redirectUri",
+        "requestObject",
         "responseType",
-        "scope",
-        "signatureType",
-        "type"
-      ]
+        "scope"
+      ],
+      "additionalProperties": false
     },
     "ClaimOpts": {
       "type": "object",
@@ -891,6 +868,137 @@ export const AuthorizationRequestOptsSchema = {
         "none"
       ]
     },
+    "ClientMetadataOpts": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/PassBy"
+        },
+        "referenceUri": {
+          "type": "string"
+        },
+        "id_token_encrypted_response_alg": {
+          "$ref": "#/definitions/EncKeyAlgorithm"
+        },
+        "id_token_encrypted_response_enc": {
+          "$ref": "#/definitions/EncSymmetricAlgorithmCode"
+        },
+        "clientId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
+        "idTokenSigningAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "requestObjectSigningAlgValuesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "responseTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
+        },
+        "scopesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subjectTypesSupported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
+        },
+        "subjectSyntaxTypesSupported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vpFormatsSupported": {
+          "anyOf": [
+            {},
+            {
+              "$ref": "#/definitions/Format"
+            }
+          ]
+        },
+        "clientName": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
+        "logoUri": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
+        "clientPurpose": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ]
+    },
     "PassBy": {
       "type": "string",
       "enum": [
@@ -898,6 +1006,49 @@ export const AuthorizationRequestOptsSchema = {
         "REFERENCE",
         "VALUE"
       ]
+    },
+    "EncKeyAlgorithm": {
+      "type": "string",
+      "const": "ECDH-ES"
+    },
+    "EncSymmetricAlgorithmCode": {
+      "type": "string",
+      "const": "XC20P"
+    },
+    "RequestObjectOpts": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/PassBy"
+        },
+        "referenceUri": {
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/definitions/RequestObjectPayloadOpts"
+        },
+        "signatureType": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/InternalSignature"
+            },
+            {
+              "$ref": "#/definitions/ExternalSignature"
+            },
+            {
+              "$ref": "#/definitions/SuppliedSignature"
+            },
+            {
+              "$ref": "#/definitions/NoSignature"
+            }
+          ]
+        }
+      },
+      "required": [
+        "signatureType",
+        "type"
+      ],
+      "additionalProperties": false
     },
     "RequestObjectPayloadOpts": {
       "type": "object",
@@ -1072,145 +1223,6 @@ export const AuthorizationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "ClientMetadataOpts": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "$ref": "#/definitions/PassBy"
-        },
-        "referenceUri": {
-          "type": "string"
-        },
-        "id_token_encrypted_response_alg": {
-          "$ref": "#/definitions/EncKeyAlgorithm"
-        },
-        "id_token_encrypted_response_enc": {
-          "$ref": "#/definitions/EncSymmetricAlgorithmCode"
-        },
-        "clientId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {}
-          ]
-        },
-        "idTokenSigningAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "requestObjectSigningAlgValuesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SigningAlgo"
-              }
-            },
-            {
-              "$ref": "#/definitions/SigningAlgo"
-            }
-          ]
-        },
-        "responseTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/ResponseType"
-              }
-            },
-            {
-              "$ref": "#/definitions/ResponseType"
-            }
-          ]
-        },
-        "scopesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Scope"
-              }
-            },
-            {
-              "$ref": "#/definitions/Scope"
-            }
-          ]
-        },
-        "subjectTypesSupported": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/SubjectType"
-              }
-            },
-            {
-              "$ref": "#/definitions/SubjectType"
-            }
-          ]
-        },
-        "subjectSyntaxTypesSupported": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "vpFormatsSupported": {
-          "anyOf": [
-            {},
-            {
-              "$ref": "#/definitions/Format"
-            }
-          ]
-        },
-        "clientName": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {}
-          ]
-        },
-        "logoUri": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {}
-          ]
-        },
-        "clientPurpose": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {}
-          ]
-        }
-      },
-      "required": [
-        "type"
-      ]
-    },
-    "EncKeyAlgorithm": {
-      "type": "string",
-      "const": "ECDH-ES"
-    },
-    "EncSymmetricAlgorithmCode": {
-      "type": "string",
-      "const": "XC20P"
-    },
     "CheckLinkedDomain": {
       "type": "string",
       "enum": [
@@ -1304,33 +1316,11 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
-        "type": {
-          "$ref": "#/definitions/PassBy"
-        },
-        "referenceUri": {
-          "type": "string"
-        },
-        "request": {
-          "$ref": "#/definitions/RequestObjectPayloadOpts"
-        },
-        "signatureType": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/InternalSignature"
-            },
-            {
-              "$ref": "#/definitions/ExternalSignature"
-            },
-            {
-              "$ref": "#/definitions/SuppliedSignature"
-            },
-            {
-              "$ref": "#/definitions/NoSignature"
-            }
-          ]
-        },
         "clientMetadata": {
           "$ref": "#/definitions/ClientMetadataOpts"
+        },
+        "requestObject": {
+          "$ref": "#/definitions/RequestObjectOpts"
         },
         "uriScheme": {
           "type": "string"
@@ -1346,10 +1336,9 @@ export const AuthorizationRequestOptsSchema = {
       "required": [
         "clientId",
         "redirectUri",
+        "requestObject",
         "responseType",
-        "scope",
-        "signatureType",
-        "type"
+        "scope"
       ]
     }
   }

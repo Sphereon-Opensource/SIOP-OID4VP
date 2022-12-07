@@ -120,7 +120,11 @@ export class URI implements AuthorizationRequestURI {
     if (!authorizationRequest) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
-    return await URI.fromAuthorizationRequestPayload(authorizationRequest.options, authorizationRequest.payload, authorizationRequest.requestObject);
+    return await URI.fromAuthorizationRequestPayload(
+      authorizationRequest.options.requestObject,
+      authorizationRequest.payload,
+      authorizationRequest.requestObject
+    );
   }
 
   /**

@@ -136,13 +136,15 @@ describe('OP should', () => {
         checkLinkedDomain: CheckLinkedDomain.NEVER,
         redirectUri: EXAMPLE_REDIRECT_URL,
 
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
+        requestObject: {
+          type: PassBy.REFERENCE,
+          referenceUri: EXAMPLE_REFERENCE_URL,
 
-        signatureType: {
-          hexPrivateKey: mockEntity.hexPrivateKey,
-          did: mockEntity.did,
-          kid: `${mockEntity.did}#controller`,
+          signatureType: {
+            hexPrivateKey: mockEntity.hexPrivateKey,
+            did: mockEntity.did,
+            kid: `${mockEntity.did}#controller`,
+          },
         },
         clientMetadata: {
           clientId: WELL_KNOWN_OPENID_FEDERATION,

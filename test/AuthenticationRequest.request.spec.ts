@@ -44,10 +44,17 @@ describe('create Request Uri should', () => {
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
 
+  it('throw BAD_PARAMS when no responseOpts.requestObject is passed', async () => {
+    expect.assertions(1);
+    const opts = { redirectUri: EXAMPLE_REDIRECT_URL };
+    await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
+  });
+
   it('throw BAD_PARAMS when no responseOpts.requestBy is passed', async () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
+      requestObject: {},
     };
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
@@ -57,7 +64,9 @@ describe('create Request Uri should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: 'other type',
+      requestObject: {
+        type: 'other type',
+      },
     };
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
@@ -66,7 +75,9 @@ describe('create Request Uri should', () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
-      type: PassBy.REFERENCE,
+      requestObject: {
+        type: PassBy.REFERENCE,
+      },
     };
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
@@ -81,13 +92,14 @@ describe('create Request Uri should', () => {
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
-
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -128,7 +140,7 @@ describe('create Request Uri should', () => {
     expect(uriDecoded).toContain('client_name#nl-NL');
 
     const data = parse(uriDecoded);
-    expect(data.request_uri).toStrictEqual(opts.referenceUri);
+    expect(data.request_uri).toStrictEqual(opts.requestObject.referenceUri);
     expect(data.registration).toContain('client_purpose#nl-NL');
   });
 
@@ -141,13 +153,15 @@ describe('create Request Uri should', () => {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
-      signatureType: {
-        hexPrivateKey:
-          'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
-        did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
-        kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#keys-1',
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
+        signatureType: {
+          hexPrivateKey:
+            'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
+          did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
+          kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#keys-1',
+        },
       },
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -175,7 +189,7 @@ describe('create Request Uri should', () => {
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
 
     const data = parse(uriDecoded);
-    expect(data.request_uri).toStrictEqual(opts.referenceUri);
+    expect(data.request_uri).toStrictEqual(opts.requestObject.referenceUri);
     expect(uriRequest).toHaveProperty('requestObjectJwt');
     expect(uriRequest.authorizationRequestPayload).toBeDefined();
     expect(uriRequest.authorizationRequestPayload.request_uri).toEqual(EXAMPLE_REFERENCE_URL);
@@ -191,12 +205,14 @@ describe('create Request Uri should', () => {
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: PassBy.VALUE,
+      requestObject: {
+        type: PassBy.VALUE,
 
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -236,12 +252,14 @@ describe('create Request JWT should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: 'other type',
+      requestObject: {
+        type: 'other type',
 
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       registration: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -262,12 +280,14 @@ describe('create Request JWT should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: PassBy.REFERENCE,
+      requestObject: {
+        type: PassBy.REFERENCE,
 
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       registration: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -288,10 +308,12 @@ describe('create Request JWT should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
 
-      signatureType: {},
+        signatureType: {},
+      },
       clientMetadata: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -310,13 +332,14 @@ describe('create Request JWT should', () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
-
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       registration: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -337,13 +360,15 @@ describe('create Request JWT should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
 
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       registration: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -369,12 +394,14 @@ describe('create Request JWT should', () => {
       requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       clientMetadata: {
         clientId: 'test_client_id',
@@ -463,13 +490,15 @@ describe('create Request JWT should', () => {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
 
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
 
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -527,13 +556,15 @@ describe('create Request JWT should', () => {
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
 
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
 
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       clientMetadata: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],

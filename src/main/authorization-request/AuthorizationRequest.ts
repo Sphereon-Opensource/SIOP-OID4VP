@@ -50,11 +50,12 @@ export class AuthorizationRequest {
   }
 
   public static async fromOpts(opts: AuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
-    if (!opts) {
+    if (!opts || !opts.requestObject) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
     assertValidAuthorizationRequestOpts(opts);
-    const requestObjectArg = opts.type !== PassBy.NONE ? (requestObject ? requestObject : await RequestObject.fromOpts(opts)) : undefined;
+    const requestObjectArg =
+      opts.requestObject.type !== PassBy.NONE ? (requestObject ? requestObject : await RequestObject.fromOpts(opts)) : undefined;
     const requestPayload = await createAuthorizationRequestPayload(opts, requestObjectArg);
     return new AuthorizationRequest(requestPayload, requestObjectArg, opts);
   }

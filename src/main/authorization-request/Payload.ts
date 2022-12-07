@@ -56,7 +56,7 @@ export const createAuthorizationRequestPayload = async (
   const claims = createClaimsProperties(opts.claims);
   const clientId = opts.clientId ? opts.clientId : registration.requestRegistration.registration.client_id;
 
-  const isRequestByValue = opts.type === PassBy.VALUE;
+  const isRequestByValue = opts.requestObject.type === PassBy.VALUE;
 
   if (isRequestByValue && !requestObject) {
     throw Error(SIOPErrors.NO_JWT);
@@ -67,12 +67,12 @@ export const createAuthorizationRequestPayload = async (
     response_type: ResponseType.ID_TOKEN,
     scope: Scope.OPENID,
     //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
-    client_id: clientId ? clientId : opts.signatureType.did,
+    client_id: clientId ? clientId : opts.requestObject.signatureType.did,
     redirect_uri: opts.redirectUri,
     response_mode: opts.responseMode || ResponseMode.POST,
     id_token_hint: opts.idTokenHint,
     registration_uri: registration?.requestRegistration?.registration_uri, //opts['registrationUri'],
-    ...(opts.type === PassBy.REFERENCE ? { request_uri: opts.referenceUri } : {}),
+    ...(opts.requestObject.type === PassBy.REFERENCE ? { request_uri: opts.requestObject.referenceUri } : {}),
     ...(isRequestByValue ? { request } : {}),
     nonce: getNonce(state, opts.nonce),
     state,

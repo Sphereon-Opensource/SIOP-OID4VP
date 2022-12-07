@@ -13,9 +13,9 @@ import {
   SupportedVersion,
   VerificationMode,
 } from '../src/main';
-import { AuthorizationRequest } from '../src/main/authorization-request/AuthorizationRequest';
-import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main/authorization-request/types';
-import { RequestObject } from '../src/main/request-object/RequestObject';
+import { AuthorizationRequest } from '../src/main';
+import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main';
+import { RequestObject } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { metadata, mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -64,16 +64,18 @@ describe('verifyJWT should', () => {
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
 
-      nonce: 'expected nonce',
-      signatureType: {
-        hexPrivateKey:
-          'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
-        did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
-        kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
+        signatureType: {
+          hexPrivateKey:
+            'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
+          did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
+          kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
+        },
       },
+      nonce: 'expected nonce',
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -127,12 +129,14 @@ describe('verifyJWT should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         authorizationEndpoint: '',
         redirectUri: 'https://acme.com/hello',
-        type: PassBy.REFERENCE,
-        referenceUri: 'https://my-request.com/here',
-        signatureType: {
-          hexPrivateKey: mockEntity.hexPrivateKey,
-          did: mockEntity.did,
-          kid: `${mockEntity.did}#controller`,
+        requestObject: {
+          type: PassBy.REFERENCE,
+          referenceUri: 'https://my-request.com/here',
+          signatureType: {
+            hexPrivateKey: mockEntity.hexPrivateKey,
+            did: mockEntity.did,
+            kid: `${mockEntity.did}#controller`,
+          },
         },
         clientMetadata: {
           clientId: WELL_KNOWN_OPENID_FEDERATION,

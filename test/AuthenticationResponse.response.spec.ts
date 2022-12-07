@@ -18,9 +18,9 @@ import {
   VerifiablePresentationTypeFormat,
   VerificationMode,
 } from '../src/main';
-import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main/authorization-request/types';
-import { AuthorizationResponseOpts, PresentationLocation, PresentationSignCallback } from '../src/main/authorization-response/types';
-import { RequestObject } from '../src/main/request-object/RequestObject';
+import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main';
+import { AuthorizationResponseOpts, PresentationLocation, PresentationSignCallback } from '../src/main';
+import { RequestObject } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -116,12 +116,14 @@ describe('create JWT from Request JWT should', () => {
       responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
-      type: PassBy.REFERENCE,
-      referenceUri: 'https://my-request.com/here',
-      signatureType: {
-        hexPrivateKey: mockReqEntity.hexPrivateKey,
-        did: mockReqEntity.did,
-        kid: `${mockReqEntity.did}#controller`,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: 'https://my-request.com/here',
+        signatureType: {
+          hexPrivateKey: mockReqEntity.hexPrivateKey,
+          did: mockReqEntity.did,
+          kid: `${mockReqEntity.did}#controller`,
+        },
       },
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -201,12 +203,14 @@ describe('create JWT from Request JWT should', () => {
         responseType: 'id_token',
         checkLinkedDomain: CheckLinkedDomain.NEVER,
         redirectUri: EXAMPLE_REDIRECT_URL,
-        type: PassBy.REFERENCE,
-        referenceUri: 'https://my-request.com/here',
-        signatureType: {
-          hexPrivateKey: mockReqEntity.hexPrivateKey,
-          did: mockReqEntity.did,
-          kid: `${mockReqEntity.did}#controller`,
+        requestObject: {
+          type: PassBy.REFERENCE,
+          referenceUri: 'https://my-request.com/here',
+          signatureType: {
+            hexPrivateKey: mockReqEntity.hexPrivateKey,
+            did: mockReqEntity.did,
+            kid: `${mockReqEntity.did}#controller`,
+          },
         },
         clientMetadata: {
           clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -318,12 +322,14 @@ describe('create JWT from Request JWT should', () => {
       responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
-      type: PassBy.REFERENCE,
-      referenceUri: 'https://my-request.com/here',
-      signatureType: {
-        hexPrivateKey: mockReqEntity.hexPrivateKey,
-        did: mockReqEntity.did,
-        kid: `${mockReqEntity.did}#controller`,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: 'https://my-request.com/here',
+        signatureType: {
+          hexPrivateKey: mockReqEntity.hexPrivateKey,
+          did: mockReqEntity.did,
+          kid: `${mockReqEntity.did}#controller`,
+        },
       },
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -483,12 +489,14 @@ describe('create JWT from Request JWT should', () => {
       responseType: 'token_id',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
-      type: PassBy.REFERENCE,
-      referenceUri: 'https://my-request.com/here',
-      signatureType: {
-        hexPrivateKey: mockReqEntity.hexPrivateKey,
-        did: mockReqEntity.did,
-        kid: `${mockReqEntity.did}#controller`,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: 'https://my-request.com/here',
+        signatureType: {
+          hexPrivateKey: mockReqEntity.hexPrivateKey,
+          did: mockReqEntity.did,
+          kid: `${mockReqEntity.did}#controller`,
+        },
       },
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,

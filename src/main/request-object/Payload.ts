@@ -9,7 +9,7 @@ import { RequestObjectOpts } from './types';
 export const createRequestObjectPayload = async (opts: RequestObjectOpts): Promise<RequestObjectPayload> => {
   assertValidRequestObjectOpts(opts, true);
 
-  const requestObjectOpts = opts.request;
+  const requestObjectOpts = opts.payload;
 
   const state = getState(requestObjectOpts.state);
   const registration = await createRequestRegistration(requestObjectOpts['clientMetadata']);

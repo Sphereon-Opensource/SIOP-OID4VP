@@ -31,10 +31,11 @@ export interface RequestObjectPayloadOpts {
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
 }
 
-interface AuthorizationRequestCommonOpts extends RequestObjectOpts, RequestObjectPayloadOpts {
+interface AuthorizationRequestCommonOpts extends RequestObjectPayloadOpts {
   // Yes, this includes the payload properties both at the root level as well as in the requestBy.request property. That is to support OAuth2 with or without a signed OpenID requestObject  {
 
   clientMetadata?: ClientMetadataOpts; // this maps to 'registration' for older SIOPv2 specs! OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
+  requestObject: RequestObjectOpts;
 
   uriScheme?: string; // Use a custom scheme for the URI. By default openid:// will be used
 

@@ -107,9 +107,12 @@ export class RequestObject {
     if (!opts) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
+    const isAuthReq = opts['requestObject'] !== undefined;
     const mergedOpts = JSON.parse(JSON.stringify(opts));
-    mergedOpts.request = { ...mergedOpts, ...mergedOpts.request };
-    delete mergedOpts.request['request'];
-    return mergedOpts;
+    mergedOpts.requestObject.payload = isAuthReq
+      ? { ...mergedOpts, ...mergedOpts['requestObject']?.payload }
+      : { ...mergedOpts, ...mergedOpts.request };
+    delete mergedOpts?.request?.requestObject;
+    return isAuthReq ? mergedOpts.requestObject : mergedOpts;
   }
 }

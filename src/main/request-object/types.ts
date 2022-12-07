@@ -7,5 +7,5 @@ export interface RequestObjectOpts extends RequestBy {
 }
 
 export interface RequestBy extends ObjectBy {
-  request?: RequestObjectPayloadOpts; // for pass by value
+  payload?: RequestObjectPayloadOpts; // for pass by value
 }

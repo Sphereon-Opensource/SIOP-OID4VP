@@ -83,14 +83,15 @@ describe('RP should', () => {
       responseType: 'test',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
 
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
-
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       clientMetadata: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -126,13 +127,15 @@ describe('RP should', () => {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
 
-      type: PassBy.REFERENCE,
-      referenceUri: EXAMPLE_REFERENCE_URL,
+      requestObject: {
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
 
-      signatureType: {
-        hexPrivateKey: HEX_KEY,
-        did: DID,
-        kid: KID,
+        signatureType: {
+          hexPrivateKey: HEX_KEY,
+          did: DID,
+          kid: KID,
+        },
       },
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,

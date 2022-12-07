@@ -11,9 +11,9 @@ export const assertValidVerifyAuthorizationRequestOpts = (opts: VerifyAuthorizat
 };
 
 export const assertValidAuthorizationRequestOpts = (opts: AuthorizationRequestOpts) => {
-  if (!opts || !opts.redirectUri) {
+  if (!opts || !opts.redirectUri || !opts.requestObject) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
-  assertValidRequestObjectOpts(opts, false);
+  assertValidRequestObjectOpts(opts.requestObject, false);
   assertValidRequestRegistrationOpts(opts['registration'] ? opts['registration'] : opts.clientMetadata);
 };
