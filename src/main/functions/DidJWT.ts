@@ -2,11 +2,12 @@ import { createJWT, decodeJWT, EdDSASigner, ES256KSigner, hexToBytes, JWTHeader,
 import { JWTDecoded } from 'did-jwt/lib/JWT';
 import { Resolvable } from 'did-resolver';
 
+import { AuthorizationResponseOpts } from '../authorization-response';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
+import { RequestObjectOpts } from '../request-object';
 import {
-  AuthorizationResponseOpts,
+  DEFAULT_EXPIRATION_TIME,
   EcdsaSignature,
-  expirationTime,
   IDTokenPayload,
   isExternalSignature,
   isInternalSignature,
@@ -14,7 +15,6 @@ import {
   isResponsePayload,
   isSuppliedSignature,
   KeyAlgo,
-  RequestObjectOpts,
   RequestObjectPayload,
   ResponseIss,
   SignatureResponse,
@@ -117,7 +117,7 @@ async function signDidJwtInternal(
   const options = {
     issuer,
     signer,
-    expiresIn: expirationTime,
+    expiresIn: DEFAULT_EXPIRATION_TIME,
   };
 
   return await createDidJWT({ ...payload }, options, header);
@@ -136,7 +136,7 @@ async function signDidJwtExternal(
     issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.sub,
     payload,
     type: alg === KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
-    expiresIn: expirationTime,
+    expiresIn: DEFAULT_EXPIRATION_TIME,
     alg,
     selfIssued: payload.iss.includes(ResponseIss.SELF_ISSUED_V2) ? payload.iss : undefined,
     kid,
@@ -168,7 +168,7 @@ async function signDidJwtSupplied(
   const options = {
     issuer,
     signer,
-    expiresIn: expirationTime,
+    expiresIn: DEFAULT_EXPIRATION_TIME,
   };
 
   return await createDidJWT({ ...payload }, options, header);

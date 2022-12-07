@@ -1,16 +1,13 @@
 import { decodeJWT } from 'did-jwt';
 
-import { PresentationExchange } from '../PresentationExchange';
+import { PresentationExchange } from '../authorization-response/PresentationExchange';
 import { decodeUriAsJson, encodeJsonAsURI, fetchByReferenceOrUseByValue } from '../functions';
-import { assertValidRequestObjectPayload } from '../request-object/Payload';
-import { RequestObject } from '../request-object/RequestObject';
+import { assertValidRequestObjectPayload, RequestObject } from '../request-object';
 import {
-  AuthorizationRequestOpts,
   AuthorizationRequestPayload,
   AuthorizationRequestURI,
   ObjectBy,
   PassBy,
-  RequestBy,
   RequestObjectJwt,
   RequestObjectPayload,
   RPRegistrationMetadataPayload,
@@ -18,8 +15,9 @@ import {
   UrlEncodingFormat,
 } from '../types';
 
-import AuthorizationRequest from './AuthorizationRequest';
+import { AuthorizationRequest } from './AuthorizationRequest';
 import { assertValidRPRegistrationMedataPayload } from './Payload';
+import { AuthorizationRequestOpts } from './types';
 
 export class URI implements AuthorizationRequestURI {
   private readonly _scheme: string;
@@ -78,7 +76,7 @@ export class URI implements AuthorizationRequestURI {
   }
 
   public async toAuthorizationRequest(): Promise<AuthorizationRequest> {
-    return await AuthorizationRequest.fromURI(this);
+    return await AuthorizationRequest.fromUriOrJwt(this);
   }
 
   get requestObjectBy(): ObjectBy {
@@ -132,7 +130,7 @@ export class URI implements AuthorizationRequestURI {
    *
    */
   private static async fromAuthorizationRequestPayload(
-    opts: { uriScheme?: string; requestBy: RequestBy },
+    opts: { uriScheme?: string; type: PassBy; referenceUri?: string },
     request: AuthorizationRequestPayload | string,
     requestObject?: RequestObject
   ): Promise<URI> {
@@ -152,27 +150,24 @@ export class URI implements AuthorizationRequestURI {
       await PresentationExchange.findValidPresentationDefinitions(requestObjectPayload);
 
       assertValidRequestObjectPayload(requestObjectPayload);
-      // fixme. This should not be fetched at all. We should inspect the opts
-      const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
-        requestObjectPayload['registration_uri'],
-        requestObjectPayload['registration']
-      );
-      assertValidRPRegistrationMedataPayload(registrationMetadata);
+      if (requestObjectPayload.registration) {
+        assertValidRPRegistrationMedataPayload(requestObjectPayload.registration);
+      }
     }
     const authorizationRequest: AuthorizationRequestPayload = isJwt ? (requestObjectPayload as AuthorizationRequestPayload) : request;
     if (!authorizationRequest) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
-    const type = opts.requestBy?.type;
+    const type = opts.type;
     if (!type) {
       throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
     }
 
     if (type === PassBy.REFERENCE) {
-      if (!opts.requestBy.referenceUri) {
+      if (!opts.referenceUri) {
         throw new Error(SIOPErrors.NO_REFERENCE_URI);
       }
-      authorizationRequest.request_uri = opts.requestBy.referenceUri;
+      authorizationRequest.request_uri = opts.referenceUri;
       delete authorizationRequest.request;
     } else if (type === PassBy.VALUE) {
       authorizationRequest.request = requestObjectJwt;

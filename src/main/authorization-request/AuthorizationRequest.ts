@@ -1,9 +1,8 @@
-import { PresentationExchange } from '../PresentationExchange';
+import { PresentationExchange } from '../authorization-response/PresentationExchange';
 import { fetchByReferenceOrUseByValue, getAudience, getResolver, parseJWT, validateLinkedDomainWithDid, verifyDidJWT } from '../functions';
 import { authorizationRequestVersionDiscovery } from '../functions/SIOPVersionDiscovery';
 import { RequestObject } from '../request-object/RequestObject';
 import {
-  AuthorizationRequestOpts,
   AuthorizationRequestPayload,
   CheckLinkedDomain,
   PassBy,
@@ -13,14 +12,14 @@ import {
   SIOPErrors,
   VerifiedAuthorizationRequest,
   VerifiedJWT,
-  VerifyAuthorizationRequestOpts,
 } from '../types';
 
 import { assertValidAuthorizationRequestOpts, assertValidVerifyAuthorizationRequestOpts } from './Opts';
 import { assertValidRPRegistrationMedataPayload, createAuthorizationRequestPayload } from './Payload';
 import { URI } from './URI';
+import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
-export default class AuthorizationRequest {
+export class AuthorizationRequest {
   private readonly _requestObject: RequestObject;
   private readonly _payload: AuthorizationRequestPayload;
   private readonly _options: AuthorizationRequestOpts;
@@ -33,35 +32,16 @@ export default class AuthorizationRequest {
     this._uri = uri;
   }
 
-  static async fromJwt(jwt: string): Promise<AuthorizationRequest> {
-    if (!jwt) {
-      throw Error(SIOPErrors.BAD_PARAMS);
-    }
-    const requestObject = await RequestObject.fromJwt(jwt);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const payload: AuthorizationRequestPayload = { ...(await requestObject.getPayload()) };
-    payload.request = jwt;
-    return new AuthorizationRequest({ ...payload }, requestObject);
-  }
-
-  static async fromURI(uri: URI | string): Promise<AuthorizationRequest> {
-    if (!uri) {
-      throw Error(SIOPErrors.BAD_PARAMS);
-    }
-    const uriObject = typeof uri === 'string' ? await URI.fromUri(uri) : uri;
-    const requestObject = await RequestObject.fromJwt(uriObject.requestObjectJwt);
-    return new AuthorizationRequest(uriObject.authorizationRequestPayload, requestObject, undefined, uriObject);
-  }
-
-  static async fromUriOrJwt(jwtOrUri: string): Promise<AuthorizationRequest> {
+  public static async fromUriOrJwt(jwtOrUri: string | URI): Promise<AuthorizationRequest> {
     if (!jwtOrUri) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
-    return jwtOrUri.startsWith('ey') ? await AuthorizationRequest.fromJwt(jwtOrUri) : await AuthorizationRequest.fromURI(jwtOrUri);
+    return typeof jwtOrUri === 'string' && jwtOrUri.startsWith('ey')
+      ? await AuthorizationRequest.fromJwt(jwtOrUri)
+      : await AuthorizationRequest.fromURI(jwtOrUri);
   }
 
-  static async fromPayload(payload: AuthorizationRequestPayload): Promise<AuthorizationRequest> {
+  public static async fromPayload(payload: AuthorizationRequestPayload): Promise<AuthorizationRequest> {
     if (!payload) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
@@ -69,12 +49,12 @@ export default class AuthorizationRequest {
     return new AuthorizationRequest(payload, requestObject);
   }
 
-  static async fromOpts(opts: AuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
+  public static async fromOpts(opts: AuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
     if (!opts) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
     assertValidAuthorizationRequestOpts(opts);
-    const requestObjectArg = opts.requestBy.type !== PassBy.NONE ? (requestObject ? requestObject : await RequestObject.fromOpts(opts)) : undefined;
+    const requestObjectArg = opts.type !== PassBy.NONE ? (requestObject ? requestObject : await RequestObject.fromOpts(opts)) : undefined;
     const requestPayload = await createAuthorizationRequestPayload(opts, requestObjectArg);
     return new AuthorizationRequest(requestPayload, requestObjectArg, opts);
   }
@@ -173,5 +153,25 @@ export default class AuthorizationRequest {
 
   public async requestObjectJwt(): Promise<RequestObjectJwt | undefined> {
     return await this.requestObject?.toJwt();
+  }
+
+  private static async fromJwt(jwt: string): Promise<AuthorizationRequest> {
+    if (!jwt) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
+    const requestObject = await RequestObject.fromJwt(jwt);
+    const payload: AuthorizationRequestPayload = { ...(await requestObject.getPayload()) } as AuthorizationRequestPayload;
+    // Although this was a RequestObject we instantiate it as AuthzRequest and then copy in the JWT as the request Object
+    payload.request = jwt;
+    return new AuthorizationRequest({ ...payload }, requestObject);
+  }
+
+  private static async fromURI(uri: URI | string): Promise<AuthorizationRequest> {
+    if (!uri) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
+    const uriObject = typeof uri === 'string' ? await URI.fromUri(uri) : uri;
+    const requestObject = await RequestObject.fromJwt(uriObject.requestObjectJwt);
+    return new AuthorizationRequest(uriObject.authorizationRequestPayload, requestObject, undefined, uriObject);
   }
 }

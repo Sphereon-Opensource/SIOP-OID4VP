@@ -68,7 +68,7 @@ export const AuthorizationResponseOptsSchema = {
           "type": "object",
           "properties": {
             "registrationBy": {
-              "$ref": "#/definitions/RegistrationType"
+              "$ref": "#/definitions/ClientMetadataProperties"
             },
             "authorizationEndpoint": {
               "anyOf": [
@@ -464,7 +464,7 @@ export const AuthorizationResponseOptsSchema = {
           "type": "object",
           "properties": {
             "registrationBy": {
-              "$ref": "#/definitions/RegistrationType"
+              "$ref": "#/definitions/ClientMetadataProperties"
             },
             "authorizationEndpoint": {
               "anyOf": [
@@ -854,7 +854,7 @@ export const AuthorizationResponseOptsSchema = {
           "type": "object",
           "properties": {
             "registrationBy": {
-              "$ref": "#/definitions/RegistrationType"
+              "$ref": "#/definitions/ClientMetadataProperties"
             },
             "authorizationEndpoint": {
               "anyOf": [
@@ -1224,7 +1224,7 @@ export const AuthorizationResponseOptsSchema = {
         }
       ]
     },
-    "RegistrationType": {
+    "ClientMetadataProperties": {
       "type": "object",
       "properties": {
         "type": {

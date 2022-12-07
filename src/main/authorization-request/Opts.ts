@@ -1,7 +1,8 @@
 import { assertValidRequestObjectOpts } from '../request-object/Opts';
-import { AuthorizationRequestOpts, isExternalVerification, isInternalVerification, SIOPErrors, VerifyAuthorizationRequestOpts } from '../types';
+import { isExternalVerification, isInternalVerification, SIOPErrors } from '../types';
 
 import { assertValidRequestRegistrationOpts } from './RequestRegistration';
+import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
 export const assertValidVerifyAuthorizationRequestOpts = (opts: VerifyAuthorizationRequestOpts) => {
   if (!opts || !opts.verification || (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))) {
@@ -14,5 +15,5 @@ export const assertValidAuthorizationRequestOpts = (opts: AuthorizationRequestOp
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
   assertValidRequestObjectOpts(opts, false);
-  assertValidRequestRegistrationOpts(opts['registration']);
+  assertValidRequestRegistrationOpts(opts['registration'] ? opts['registration'] : opts.clientMetadata);
 };

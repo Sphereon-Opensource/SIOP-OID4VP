@@ -1,13 +1,6 @@
-import {
-  AuthorizationResponseOpts,
-  isExternalSignature,
-  isExternalVerification,
-  isInternalSignature,
-  isInternalVerification,
-  isSuppliedSignature,
-  SIOPErrors,
-  VerifyAuthorizationResponseOpts,
-} from '../types';
+import { isExternalSignature, isExternalVerification, isInternalSignature, isInternalVerification, isSuppliedSignature, SIOPErrors } from '../types';
+
+import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from './types';
 
 export const assertValidResponseOpts = (opts: AuthorizationResponseOpts) => {
   if (!opts /*|| !opts.redirectUri*/ || !opts.signatureType /*|| !opts.nonce*/ || !opts.did) {

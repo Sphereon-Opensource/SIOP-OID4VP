@@ -3,13 +3,13 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { OP } from './OP';
+import { PresentationSignCallback } from './authorization-response';
 import { getMethodFromDid } from './functions';
 import {
   CheckLinkedDomain,
   EcdsaSignature,
   ExternalSignature,
   InternalSignature,
-  PresentationSignCallback,
   ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,

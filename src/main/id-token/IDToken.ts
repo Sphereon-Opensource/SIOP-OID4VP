@@ -1,10 +1,10 @@
 import { JWTHeader } from 'did-jwt';
 
+import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { assertValidVerifyOpts } from '../authorization-response/Opts';
 import { getResolver, getSubDidFromPayload, parseJWT, signDidJwtPayload, validateLinkedDomainWithDid, verifyDidJWT } from '../functions';
 import {
   AuthorizationRequestPayload,
-  AuthorizationResponseOpts,
   CheckLinkedDomain,
   IDTokenJwt,
   IDTokenPayload,
@@ -12,7 +12,6 @@ import {
   ResponseIss,
   SIOPErrors,
   VerifiedAuthenticationResponse,
-  VerifyAuthorizationResponseOpts,
 } from '../types';
 
 import { createIDTokenPayload } from './Payload';

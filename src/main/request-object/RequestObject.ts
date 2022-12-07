@@ -1,18 +1,13 @@
 import { decodeJWT } from 'did-jwt';
 
+import { AuthorizationRequestOpts } from '../authorization-request';
 import { assertValidAuthorizationRequestOpts } from '../authorization-request/Opts';
 import { fetchByReferenceOrUseByValue, signDidJwtPayload } from '../functions';
-import {
-  AuthorizationRequestOpts,
-  AuthorizationRequestPayload,
-  RequestObjectJwt,
-  RequestObjectOpts,
-  RequestObjectPayload,
-  SIOPErrors,
-} from '../types';
+import { AuthorizationRequestPayload, RequestObjectJwt, RequestObjectPayload, SIOPErrors } from '../types';
 
 import { assertValidRequestObjectOpts } from './Opts';
 import { assertValidRequestObjectPayload, createRequestObjectPayload } from './Payload';
+import { RequestObjectOpts } from './types';
 
 export class RequestObject {
   private payload: RequestObjectPayload;
@@ -109,12 +104,12 @@ export class RequestObject {
   }
 
   private static mergeOAuth2AndOpenIdProperties(opts: AuthorizationRequestOpts | RequestObjectOpts) {
-    if (!opts.requestBy) {
+    if (!opts) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
     const mergedOpts = JSON.parse(JSON.stringify(opts));
-    mergedOpts.requestBy.request = { ...mergedOpts, ...mergedOpts.requestBy.request };
-    delete mergedOpts.requestBy.request['requestBy'];
+    mergedOpts.request = { ...mergedOpts, ...mergedOpts.request };
+    delete mergedOpts.request['request'];
     return mergedOpts;
   }
 }

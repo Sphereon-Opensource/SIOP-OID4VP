@@ -1,24 +1,19 @@
+import { AuthorizationRequest } from '../authorization-request';
 import { getState, signDidJwtPayload } from '../functions';
-import { RequestObject } from '../request-object/RequestObject';
-import {
-  AuthorizationRequestPayload,
-  AuthorizationResponseOpts,
-  AuthorizationResponsePayload,
-  IDTokenPayload,
-  SIOPErrors,
-  VerifiedAuthorizationRequest,
-} from '../types';
+import { RequestObject } from '../request-object';
+import { AuthorizationRequestPayload, AuthorizationResponsePayload, IDTokenPayload, SIOPErrors } from '../types';
 
 import { extractPresentations } from './OpenID4VP';
 import { assertValidResponseOpts } from './Opts';
+import { AuthorizationResponseOpts } from './types';
 
 export const createResponsePayload = async (
-  authorizationRequest: VerifiedAuthorizationRequest,
-  idToken: IDTokenPayload,
+  authorizationRequest: AuthorizationRequest,
+  idTokenPayload: IDTokenPayload,
   responseOpts: AuthorizationResponseOpts
 ): Promise<AuthorizationResponsePayload> => {
   assertValidResponseOpts(responseOpts);
-  if (!authorizationRequest || !authorizationRequest.jwt) {
+  if (!authorizationRequest || !(await authorizationRequest.requestObjectJwt())) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
   const state = responseOpts.state || getState(authorizationRequest.payload.state);
@@ -30,7 +25,7 @@ export const createResponsePayload = async (
     expires_in: responseOpts.expiresIn,
     // fixme: The or definitely is wrong. The verifiable_presentations should end up in the ID token if present
     vp_token: vp_token || verifiable_presentations,
-    id_token: await signDidJwtPayload(idToken, responseOpts),
+    id_token: await signDidJwtPayload(idTokenPayload, responseOpts),
     state,
   };
 };

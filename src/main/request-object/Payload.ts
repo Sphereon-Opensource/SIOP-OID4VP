@@ -1,17 +1,18 @@
 import { createClaimsProperties } from '../authorization-request';
 import { createRequestRegistration } from '../authorization-request/RequestRegistration';
 import { getNonce, getState } from '../functions';
-import { RequestObjectOpts, RequestObjectPayload, ResponseMode, ResponseType, Scope, SIOPErrors } from '../types';
+import { RequestObjectPayload, ResponseMode, ResponseType, Scope, SIOPErrors } from '../types';
 
 import { assertValidRequestObjectOpts } from './Opts';
+import { RequestObjectOpts } from './types';
 
 export const createRequestObjectPayload = async (opts: RequestObjectOpts): Promise<RequestObjectPayload> => {
   assertValidRequestObjectOpts(opts, true);
 
-  const requestObjectOpts = opts.requestBy.request;
+  const requestObjectOpts = opts.request;
 
   const state = getState(requestObjectOpts.state);
-  const registration = await createRequestRegistration(requestObjectOpts['registration']);
+  const registration = await createRequestRegistration(requestObjectOpts['clientMetadata']);
   const claims = createClaimsProperties(requestObjectOpts.claims);
 
   const clientId = requestObjectOpts.clientId ? requestObjectOpts.clientId : registration.requestRegistration.registration.client_id;
@@ -24,7 +25,7 @@ export const createRequestObjectPayload = async (opts: RequestObjectOpts): Promi
     redirect_uri: requestObjectOpts.redirectUri,
     response_mode: requestObjectOpts.responseMode || ResponseMode.POST,
     id_token_hint: requestObjectOpts.idTokenHint,
-    registration_uri: requestObjectOpts['registrationUri'],
+    registration_uri: registration.opts.referenceUri, //requestObjectOpts['registrationUri'],
     nonce: getNonce(state, requestObjectOpts.nonce),
     state,
     ...registration.requestRegistration,

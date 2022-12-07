@@ -4,19 +4,18 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { RP } from './RP';
+import { ClaimOpts, PresentationVerificationCallback } from './authorization-response';
 import { getMethodFromDid } from './functions';
 import {
   CheckLinkedDomain,
-  ClaimOpts,
+  ClientMetadataOpts,
   EcdsaSignature,
   ExternalSignature,
   InternalSignature,
   NoSignature,
   ObjectBy,
   PassBy,
-  PresentationVerificationCallback,
   RequestObjectPayload,
-  RequestRegistrationOpts,
   ResponseContext,
   ResponseIss,
   ResponseMode,
@@ -32,7 +31,7 @@ export default class RPBuilder {
   issuer: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   customResolver?: Resolvable;
-  requestRegistration: Partial<RequestRegistrationOpts> = {};
+  requestRegistration: Partial<ClientMetadataOpts> = {};
   redirectUri: string;
   requestObjectBy: ObjectBy;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
@@ -138,7 +137,7 @@ export default class RPBuilder {
     return this;
   }
 
-  withRegistrationBy(requestRegistration: RequestRegistrationOpts): RPBuilder {
+  withRegistrationBy(requestRegistration: ClientMetadataOpts): RPBuilder {
     this.requestRegistration = {
       ...requestRegistration,
     };

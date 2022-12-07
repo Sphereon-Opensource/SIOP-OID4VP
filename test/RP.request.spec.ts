@@ -53,10 +53,8 @@ describe('RP Builder should', () => {
         .withRequestBy(PassBy.VALUE)
         .withResponseMode(ResponseMode.POST)
         .withRegistrationBy({
-          registrationBy: {
-            type: PassBy.REFERENCE,
-            referenceUri: 'https://registration.here',
-          },
+          type: PassBy.REFERENCE,
+          referenceUri: 'https://registration.here',
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100339',
@@ -85,16 +83,16 @@ describe('RP should', () => {
       responseType: 'test',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
+
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
         kid: KID,
       },
-      registration: {
+      clientMetadata: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -106,9 +104,8 @@ describe('RP should', () => {
           jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
           jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '202210040',
@@ -128,16 +125,16 @@ describe('RP should', () => {
       responseType: 'test',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
+
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
         kid: KID,
       },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
@@ -151,9 +148,7 @@ describe('RP should', () => {
           jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 00',
         clientName: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 00',
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 00',
@@ -270,7 +265,7 @@ describe('RP should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
-        registrationBy: { type: PassBy.VALUE },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 01',
         clientName: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 01',
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 01',

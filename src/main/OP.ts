@@ -3,29 +3,27 @@ import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
 import OPBuilder from './OPBuilder';
-import AuthorizationRequest from './authorization-request/AuthorizationRequest';
+import { AuthorizationRequest } from './authorization-request';
 import { URI } from './authorization-request/URI';
+import { VerifyAuthorizationRequestOpts } from './authorization-request/types';
 import { AuthorizationResponse } from './authorization-response';
+import { AuthorizationResponseOpts, PresentationExchangeOpts, VerifiablePresentationWithLocation } from './authorization-response/types';
 import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
 import { authorizationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
 import { AuthorizationResponseOptsSchema } from './schemas';
 import {
   AuthorizationRequestPayload,
-  AuthorizationResponseOpts,
   AuthorizationResponseResult,
   ExternalVerification,
   InternalVerification,
   ParsedAuthorizationRequestURI,
-  PresentationExchangeOpts,
   ResponseMode,
   SIOPErrors,
   SupportedVersion,
   UrlEncodingFormat,
-  VerifiablePresentationWithLocation,
   Verification,
   VerificationMode,
   VerifiedAuthorizationRequest,
-  VerifyAuthorizationRequestOpts,
 } from './types';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
@@ -73,10 +71,9 @@ export class OP {
     requestJwtOrUri: string,
     opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthorizationRequest> {
-    const verifyCallback = (this._verifyAuthRequestOpts.verification as Verification).verifyCallback || this._verifyAuthRequestOpts.verifyCallback;
-    const authorizationRequest = requestJwtOrUri.startsWith('ey')
-      ? await AuthorizationRequest.fromJwt(requestJwtOrUri)
-      : await AuthorizationRequest.fromURI(requestJwtOrUri);
+    const verifyCallback =
+      (this._verifyAuthRequestOpts.verification as Verification).wellknownDIDVerifyCallback || this._verifyAuthRequestOpts.verifyCallback;
+    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri);
     return await authorizationRequest.verify(this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
   }
 
@@ -280,7 +277,7 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
         verification: {
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
-          verifyCallback: opts.builder.verifyCallback,
+          wellknownDIDVerifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,

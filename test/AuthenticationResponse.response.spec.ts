@@ -3,14 +3,10 @@ import { ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
-  AuthorizationRequestOpts,
   AuthorizationResponse,
-  AuthorizationResponseOpts,
   CheckLinkedDomain,
   PassBy,
   PresentationExchange,
-  PresentationLocation,
-  PresentationSignCallback,
   ResponseIss,
   ResponseMode,
   ResponseType,
@@ -21,8 +17,9 @@ import {
   SupportedVersion,
   VerifiablePresentationTypeFormat,
   VerificationMode,
-  VerifyAuthorizationRequestOpts,
 } from '../src/main';
+import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main/authorization-request/types';
+import { AuthorizationResponseOpts, PresentationLocation, PresentationSignCallback } from '../src/main/authorization-response/types';
 import { RequestObject } from '../src/main/request-object/RequestObject';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -119,13 +116,14 @@ describe('create JWT from Request JWT should', () => {
       responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+      type: PassBy.REFERENCE,
+      referenceUri: 'https://my-request.com/here',
       signatureType: {
         hexPrivateKey: mockReqEntity.hexPrivateKey,
         did: mockReqEntity.did,
         kid: `${mockReqEntity.did}#controller`,
       },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -138,7 +136,7 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: { type: PassBy.VALUE },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100311',
@@ -203,13 +201,14 @@ describe('create JWT from Request JWT should', () => {
         responseType: 'id_token',
         checkLinkedDomain: CheckLinkedDomain.NEVER,
         redirectUri: EXAMPLE_REDIRECT_URL,
-        requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+        type: PassBy.REFERENCE,
+        referenceUri: 'https://my-request.com/here',
         signatureType: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
         },
-        registration: {
+        clientMetadata: {
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -222,7 +221,7 @@ describe('create JWT from Request JWT should', () => {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
             },
           },
-          registrationBy: { type: PassBy.VALUE },
+          type: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100313',
@@ -319,13 +318,14 @@ describe('create JWT from Request JWT should', () => {
       responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+      type: PassBy.REFERENCE,
+      referenceUri: 'https://my-request.com/here',
       signatureType: {
         hexPrivateKey: mockReqEntity.hexPrivateKey,
         did: mockReqEntity.did,
         kid: `${mockReqEntity.did}#controller`,
       },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -338,7 +338,7 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: { type: PassBy.VALUE },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100315',
@@ -483,13 +483,14 @@ describe('create JWT from Request JWT should', () => {
       responseType: 'token_id',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+      type: PassBy.REFERENCE,
+      referenceUri: 'https://my-request.com/here',
       signatureType: {
         hexPrivateKey: mockReqEntity.hexPrivateKey,
         did: mockReqEntity.did,
         kid: `${mockReqEntity.did}#controller`,
       },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -502,7 +503,7 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: { type: PassBy.VALUE },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,

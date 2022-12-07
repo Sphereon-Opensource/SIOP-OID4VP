@@ -4,23 +4,21 @@ import { Resolvable } from 'did-resolver';
 
 import RPBuilder from './RPBuilder';
 import { URI } from './authorization-request/URI';
+import { AuthorizationRequestOpts } from './authorization-request/types';
 import { AuthorizationResponse } from './authorization-response';
 import { verifyPresentations } from './authorization-response/OpenID4VP';
+import { ClaimOpts, PresentationVerificationCallback, VerifyAuthorizationResponseOpts } from './authorization-response/types';
 import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
 import { AuthorizationRequestOptsSchema } from './schemas';
 import {
-  AuthorizationRequestOpts,
   AuthorizationRequestURI,
   CheckLinkedDomain,
-  ClaimOpts,
+  ClientMetadataOpts,
   ExternalVerification,
   InternalVerification,
-  PresentationVerificationCallback,
-  RequestRegistrationOpts,
   Verification,
   VerificationMode,
   VerifiedAuthenticationResponse,
-  VerifyAuthorizationResponseOpts,
 } from './types';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
@@ -60,7 +58,7 @@ export class RP {
     }
   ): Promise<VerifiedAuthenticationResponse> {
     const verification: Verification = this._verifyAuthResponseOpts.verification;
-    const verifyCallback = verification.verifyCallback || this._verifyAuthResponseOpts.verifyCallback;
+    const verifyCallback = verification.wellknownDIDVerifyCallback || this._verifyAuthResponseOpts.verifyCallback;
     const presentationVerificationCallback =
       verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
     const verifyAuthenticationResponseOpts = this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback });
@@ -113,9 +111,9 @@ function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder;
   const requestOpts: AuthorizationRequestOpts = opts.builder
     ? {
         authorizationEndpoint: opts.builder.authorizationEndpoint,
-        registration: opts.builder.requestRegistration as RequestRegistrationOpts,
+        clientMetadata: opts.builder.requestRegistration as ClientMetadataOpts,
         redirectUri: opts.builder.redirectUri,
-        requestBy: opts.builder.requestObjectBy,
+        ...opts.builder.requestObjectBy,
         responseTypesSupported: opts.builder.requestRegistration.responseTypesSupported,
         scopesSupported: opts.builder.requestRegistration.scopesSupported,
         signatureType: opts.builder.signatureType,
@@ -153,7 +151,7 @@ function createVerifyResponseOptsFromBuilderOrExistingOpts(opts: { builder?: RPB
         verification: {
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
-          verifyCallback: opts.builder.verifyCallback,
+          wellknownDIDVerifyCallback: opts.builder.verifyCallback,
           presentationVerificationCallback: opts.builder.presentationVerificationCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,

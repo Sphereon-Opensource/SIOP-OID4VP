@@ -13,8 +13,8 @@ import {
   SubjectIdentifierType,
   SubjectType,
 } from '../src/main';
+import { RequestObject } from '../src/main';
 import { URI } from '../src/main/authorization-request/URI';
-import { RequestObject } from '../src/main/request-object/RequestObject';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -49,16 +49,15 @@ describe('create Request Uri should', () => {
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
     };
-    await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
+    await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw REQUEST_OBJECT_TYPE_NOT_SET when responseOpts.requestBy type is different from REFERENCE or VALUE', async () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: 'other type',
-      },
+
+      type: 'other type',
     };
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
@@ -67,9 +66,7 @@ describe('create Request Uri should', () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-      },
+      type: PassBy.REFERENCE,
     };
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
@@ -83,16 +80,16 @@ describe('create Request Uri should', () => {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
+
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
         kid: KID,
       },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -105,9 +102,7 @@ describe('create Request Uri should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100300',
@@ -133,7 +128,7 @@ describe('create Request Uri should', () => {
     expect(uriDecoded).toContain('client_name#nl-NL');
 
     const data = parse(uriDecoded);
-    expect(data.request_uri).toStrictEqual(opts.requestBy.referenceUri);
+    expect(data.request_uri).toStrictEqual(opts.referenceUri);
     expect(data.registration).toContain('client_purpose#nl-NL');
   });
 
@@ -146,17 +141,15 @@ describe('create Request Uri should', () => {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
       signatureType: {
         hexPrivateKey:
           'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
         did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
         kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#keys-1',
       },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -169,9 +162,7 @@ describe('create Request Uri should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100301',
@@ -184,7 +175,7 @@ describe('create Request Uri should', () => {
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
 
     const data = parse(uriDecoded);
-    expect(data.request_uri).toStrictEqual(opts.requestBy.referenceUri);
+    expect(data.request_uri).toStrictEqual(opts.referenceUri);
     expect(uriRequest).toHaveProperty('requestObjectJwt');
     expect(uriRequest.authorizationRequestPayload).toBeDefined();
     expect(uriRequest.authorizationRequestPayload.request_uri).toEqual(EXAMPLE_REFERENCE_URL);
@@ -199,15 +190,15 @@ describe('create Request Uri should', () => {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.VALUE,
-      },
+
+      type: PassBy.VALUE,
+
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
         kid: KID,
       },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -220,9 +211,7 @@ describe('create Request Uri should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100302',
@@ -246,9 +235,9 @@ describe('create Request JWT should', () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: 'other type',
-      },
+
+      type: 'other type',
+
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
@@ -262,9 +251,7 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+        type: PassBy.VALUE,
       },
     };
     await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
@@ -274,9 +261,9 @@ describe('create Request JWT should', () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-      },
+
+      type: PassBy.REFERENCE,
+
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
@@ -290,9 +277,7 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+        type: PassBy.VALUE,
       },
     };
     await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
@@ -302,12 +287,12 @@ describe('create Request JWT should', () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
+
       signatureType: {},
-      registration: {
+      clientMetadata: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormatsSupported: {
@@ -315,9 +300,7 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+        type: PassBy.VALUE,
       },
     };
     await expect((await RequestObject.fromOpts(opts as never)).toJwt()).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
@@ -327,10 +310,9 @@ describe('create Request JWT should', () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
@@ -344,9 +326,7 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: 'FAILURE',
-        },
+        type: 'FAILURE',
       },
     };
     await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
@@ -356,10 +336,10 @@ describe('create Request JWT should', () => {
     expect.assertions(1);
     const opts = {
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
+
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
@@ -373,9 +353,7 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.REFERENCE,
-        },
+        type: PassBy.REFERENCE,
       },
     };
     await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
@@ -390,16 +368,15 @@ describe('create Request JWT should', () => {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
         kid: KID,
       },
-      registration: {
+      clientMetadata: {
         clientId: 'test_client_id',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -412,9 +389,9 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+
+        type: PassBy.VALUE,
+
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100303',
@@ -485,16 +462,16 @@ describe('create Request JWT should', () => {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
+
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
         kid: KID,
       },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -507,9 +484,9 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+
+        type: PassBy.VALUE,
+
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100305',
@@ -549,16 +526,16 @@ describe('create Request JWT should', () => {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
+
       signatureType: {
         hexPrivateKey: HEX_KEY,
         did: DID,
         kid: KID,
       },
-      registration: {
+      clientMetadata: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -570,9 +547,9 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+
+        type: PassBy.VALUE,
+
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100306',

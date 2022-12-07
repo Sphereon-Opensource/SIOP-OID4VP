@@ -1,25 +1,28 @@
-import AuthorizationRequest from '../authorization-request/AuthorizationRequest';
+import { AuthorizationRequest } from '../authorization-request';
+import { VerifyAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidVerifyAuthorizationRequestOpts } from '../authorization-request/Opts';
-import { IDToken } from '../id-token/IDToken';
+import { IDToken } from '../id-token';
 import {
-  AuthorizationResponseOpts,
   AuthorizationResponsePayload,
   SIOPErrors,
   VerifiablePresentationPayload,
   VerifiedAuthenticationResponse,
   VerifiedAuthorizationRequest,
-  VerifyAuthorizationRequestOpts,
-  VerifyAuthorizationResponseOpts,
 } from '../types';
 
 import { assertValidVerifiablePresentations } from './OpenID4VP';
 import { assertValidResponseOpts } from './Opts';
 import { createResponsePayload } from './Payload';
+import { PresentationExchange } from './PresentationExchange';
+import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from './types';
 
 export class AuthorizationResponse {
-  get idToken(): IDToken {
-    return this._idToken;
-  }
+  private readonly _authorizationRequest?: AuthorizationRequest | undefined;
+  // private _requestObject?: RequestObject | undefined
+  private readonly _idToken?: IDToken;
+  private readonly _payload: AuthorizationResponsePayload;
+
+  private readonly _options: AuthorizationResponseOpts;
 
   constructor({
     authorizationResponsePayload,
@@ -37,13 +40,6 @@ export class AuthorizationResponse {
     this._idToken = idToken;
     this._payload = authorizationResponsePayload;
   }
-
-  private readonly _authorizationRequest?: AuthorizationRequest | undefined;
-  // private _requestObject?: RequestObject | undefined
-  private readonly _idToken?: IDToken;
-  private readonly _payload: AuthorizationResponsePayload;
-
-  private readonly _options: AuthorizationResponseOpts;
 
   /**
    * Creates a SIOP Response Object
@@ -63,20 +59,23 @@ export class AuthorizationResponse {
       throw new Error(SIOPErrors.NO_JWT);
     }
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestObject);
-    const verifiedRequest = await authorizationRequest.verify(verifyOpts);
-    return AuthorizationResponse.fromVerifiedAuthorizationRequest(verifiedRequest, responseOpts);
+    return AuthorizationResponse.fromAuthorizationRequest(authorizationRequest, responseOpts, verifyOpts);
   }
 
-  // TODO SK Can you please put some documentation on it?
-  static async fromVerifiedAuthorizationRequest(
-    authorizationRequest: VerifiedAuthorizationRequest,
-    responseOpts: AuthorizationResponseOpts
+  static async fromAuthorizationRequest(
+    authorizationRequest: AuthorizationRequest,
+    responseOpts: AuthorizationResponseOpts,
+    verifyOpts?: VerifyAuthorizationRequestOpts
   ): Promise<AuthorizationResponse> {
-    const idToken = await IDToken.fromAuthorizationRequestPayload(authorizationRequest.authorizationRequestPayload, responseOpts);
+    if (verifyOpts) {
+      await authorizationRequest.verify(verifyOpts);
+    }
+    const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(authorizationRequest.payload);
+    const idToken = await IDToken.fromAuthorizationRequestPayload(authorizationRequest.payload, responseOpts);
     const idTokenPayload = await idToken.payload();
     const authorizationResponsePayload = await createResponsePayload(authorizationRequest, idTokenPayload, responseOpts);
     await assertValidVerifiablePresentations({
-      presentationDefinitions: authorizationRequest.presentationDefinitions,
+      presentationDefinitions,
       presentationPayloads: authorizationResponsePayload.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
       verificationCallback: responseOpts.presentationExchange?.presentationVerificationCallback,
     });
@@ -85,8 +84,15 @@ export class AuthorizationResponse {
       authorizationResponsePayload,
       idToken,
       responseOpts,
-      authorizationRequest: authorizationRequest.authorizationRequest,
+      authorizationRequest,
     });
+  }
+
+  static async fromVerifiedAuthorizationRequest(
+    verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
+    responseOpts: AuthorizationResponseOpts
+  ): Promise<AuthorizationResponse> {
+    return await AuthorizationResponse.fromAuthorizationRequest(verifiedAuthorizationRequest.authorizationRequest, responseOpts);
   }
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
@@ -104,5 +110,9 @@ export class AuthorizationResponse {
 
   get options(): AuthorizationResponseOpts {
     return this._options;
+  }
+
+  get idToken(): IDToken {
+    return this._idToken;
   }
 }

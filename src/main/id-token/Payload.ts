@@ -1,11 +1,11 @@
 import { JWK } from 'jose';
 
+import { AuthorizationResponseOpts } from '../authorization-response';
+import { mergeOAuth2AndOpenIdInRequestPayload } from '../authorization-response';
 import { assertValidResponseOpts } from '../authorization-response/Opts';
-import { mergeOAuth2AndOpenIdInRequestPayload } from '../authorization-response/Payload';
 import { getNonce, getPublicJWKFromHexPrivateKey, getState, getThumbprint } from '../functions';
 import {
   AuthorizationRequestPayload,
-  AuthorizationResponseOpts,
   IDTokenPayload,
   isInternalSignature,
   isSuppliedSignature,

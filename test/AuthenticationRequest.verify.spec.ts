@@ -3,7 +3,6 @@ import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknow
 import * as dotenv from 'dotenv';
 
 import {
-  AuthorizationRequestOpts,
   CheckLinkedDomain,
   PassBy,
   ResponseType,
@@ -13,9 +12,9 @@ import {
   SubjectType,
   SupportedVersion,
   VerificationMode,
-  VerifyAuthorizationRequestOpts,
 } from '../src/main';
-import AuthorizationRequest from '../src/main/authorization-request/AuthorizationRequest';
+import { AuthorizationRequest } from '../src/main/authorization-request/AuthorizationRequest';
+import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main/authorization-request/types';
 import { RequestObject } from '../src/main/request-object/RequestObject';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -64,10 +63,10 @@ describe('verifyJWT should', () => {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
       redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
-      },
+
+      type: PassBy.REFERENCE,
+      referenceUri: EXAMPLE_REFERENCE_URL,
+
       nonce: 'expected nonce',
       signatureType: {
         hexPrivateKey:
@@ -75,7 +74,7 @@ describe('verifyJWT should', () => {
         did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
         kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
       },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
@@ -88,9 +87,7 @@ describe('verifyJWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100308',
@@ -130,13 +127,14 @@ describe('verifyJWT should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         authorizationEndpoint: '',
         redirectUri: 'https://acme.com/hello',
-        requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
+        type: PassBy.REFERENCE,
+        referenceUri: 'https://my-request.com/here',
         signatureType: {
           hexPrivateKey: mockEntity.hexPrivateKey,
           did: mockEntity.did,
           kid: `${mockEntity.did}#controller`,
         },
-        registration: {
+        clientMetadata: {
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           responseTypesSupported: [ResponseType.ID_TOKEN],
           scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
@@ -149,7 +147,7 @@ describe('verifyJWT should', () => {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
             },
           },
-          registrationBy: { type: PassBy.VALUE },
+          type: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100309',

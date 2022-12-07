@@ -135,16 +135,16 @@ describe('OP should', () => {
       const requestOpts: AuthorizationRequestOpts = {
         checkLinkedDomain: CheckLinkedDomain.NEVER,
         redirectUri: EXAMPLE_REDIRECT_URL,
-        requestBy: {
-          type: PassBy.REFERENCE,
-          referenceUri: EXAMPLE_REFERENCE_URL,
-        },
+
+        type: PassBy.REFERENCE,
+        referenceUri: EXAMPLE_REFERENCE_URL,
+
         signatureType: {
           hexPrivateKey: mockEntity.hexPrivateKey,
           did: mockEntity.did,
           kid: `${mockEntity.did}#controller`,
         },
-        registration: {
+        clientMetadata: {
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
@@ -157,9 +157,7 @@ describe('OP should', () => {
             jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
             jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
           },
-          registrationBy: {
-            type: PassBy.VALUE,
-          },
+          type: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100334',
@@ -214,7 +212,7 @@ describe('OP should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-        registrationBy: { type: PassBy.VALUE },
+        type: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100335',

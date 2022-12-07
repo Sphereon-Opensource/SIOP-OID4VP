@@ -1,6 +1,7 @@
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
-import { VerificationMode, VerifyAuthorizationResponseOpts } from '../src/main';
+import { VerificationMode } from '../src/main';
+import { VerifyAuthorizationResponseOpts } from '../src/main/authorization-response/types';
 import { IDToken } from '../src/main/id-token/IDToken';
 import SIOPErrors from '../src/main/types/Errors';
 

@@ -97,8 +97,14 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
-        "requestBy": {
-          "$ref": "#/definitions/RequestBy"
+        "type": {
+          "$ref": "#/definitions/PassBy"
+        },
+        "referenceUri": {
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/definitions/RequestObjectPayloadOpts"
         },
         "signatureType": {
           "anyOf": [
@@ -116,27 +122,24 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
+        "clientMetadata": {
+          "$ref": "#/definitions/ClientMetadataOpts"
+        },
         "uriScheme": {
           "type": "string"
         },
         "checkLinkedDomain": {
           "$ref": "#/definitions/CheckLinkedDomain"
-        },
-        "registration": {
-          "$ref": "#/definitions/RequestRegistrationOpts"
-        },
-        "registrationUri": {
-          "type": "string"
         }
       },
       "additionalProperties": false,
       "required": [
         "clientId",
         "redirectUri",
-        "requestBy",
         "responseType",
         "scope",
-        "signatureType"
+        "signatureType",
+        "type"
       ]
     },
     "ClaimOpts": {
@@ -888,24 +891,6 @@ export const AuthorizationRequestOptsSchema = {
         "none"
       ]
     },
-    "RequestBy": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "$ref": "#/definitions/PassBy"
-        },
-        "referenceUri": {
-          "type": "string"
-        },
-        "request": {
-          "$ref": "#/definitions/RequestObjectPayloadProperties"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "type"
-      ]
-    },
     "PassBy": {
       "type": "string",
       "enum": [
@@ -914,7 +899,7 @@ export const AuthorizationRequestOptsSchema = {
         "VALUE"
       ]
     },
-    "RequestObjectPayloadProperties": {
+    "RequestObjectPayloadOpts": {
       "type": "object",
       "properties": {
         "scope": {
@@ -1087,19 +1072,20 @@ export const AuthorizationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "CheckLinkedDomain": {
-      "type": "string",
-      "enum": [
-        "never",
-        "if_present",
-        "always"
-      ]
-    },
-    "RequestRegistrationOpts": {
+    "ClientMetadataOpts": {
       "type": "object",
       "properties": {
-        "registrationBy": {
-          "$ref": "#/definitions/RegistrationType"
+        "type": {
+          "$ref": "#/definitions/PassBy"
+        },
+        "referenceUri": {
+          "type": "string"
+        },
+        "id_token_encrypted_response_alg": {
+          "$ref": "#/definitions/EncKeyAlgorithm"
+        },
+        "id_token_encrypted_response_enc": {
+          "$ref": "#/definitions/EncSymmetricAlgorithmCode"
         },
         "clientId": {
           "anyOf": [
@@ -1214,27 +1200,6 @@ export const AuthorizationRequestOptsSchema = {
         }
       },
       "required": [
-        "registrationBy"
-      ]
-    },
-    "RegistrationType": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "$ref": "#/definitions/PassBy"
-        },
-        "referenceUri": {
-          "type": "string"
-        },
-        "id_token_encrypted_response_alg": {
-          "$ref": "#/definitions/EncKeyAlgorithm"
-        },
-        "id_token_encrypted_response_enc": {
-          "$ref": "#/definitions/EncSymmetricAlgorithmCode"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
         "type"
       ]
     },
@@ -1245,6 +1210,14 @@ export const AuthorizationRequestOptsSchema = {
     "EncSymmetricAlgorithmCode": {
       "type": "string",
       "const": "XC20P"
+    },
+    "CheckLinkedDomain": {
+      "type": "string",
+      "enum": [
+        "never",
+        "if_present",
+        "always"
+      ]
     },
     "AuthorizationRequestOptsVD11": {
       "type": "object",
@@ -1331,8 +1304,14 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
-        "requestBy": {
-          "$ref": "#/definitions/RequestBy"
+        "type": {
+          "$ref": "#/definitions/PassBy"
+        },
+        "referenceUri": {
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/definitions/RequestObjectPayloadOpts"
         },
         "signatureType": {
           "anyOf": [
@@ -1350,17 +1329,14 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         },
+        "clientMetadata": {
+          "$ref": "#/definitions/ClientMetadataOpts"
+        },
         "uriScheme": {
           "type": "string"
         },
         "checkLinkedDomain": {
           "$ref": "#/definitions/CheckLinkedDomain"
-        },
-        "clientMetadata": {
-          "$ref": "#/definitions/RequestRegistrationOpts"
-        },
-        "clientMetadataUri": {
-          "type": "string"
         },
         "idTokenType": {
           "type": "string"
@@ -1370,10 +1346,10 @@ export const AuthorizationRequestOptsSchema = {
       "required": [
         "clientId",
         "redirectUri",
-        "requestBy",
         "responseType",
         "scope",
-        "signatureType"
+        "signatureType",
+        "type"
       ]
     }
   }

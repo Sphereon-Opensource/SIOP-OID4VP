@@ -3,8 +3,8 @@ import Ajv from 'ajv';
 import { getWithUrl, LanguageTagUtils } from '../functions';
 import { RPRegistrationMetadataPayloadSchema } from '../schemas';
 import {
+  ClientMetadataOpts,
   PassBy,
-  RequestRegistrationOpts,
   RequestRegistrationPayloadProperties,
   RPRegistrationMetadataOpts,
   RPRegistrationMetadataPayload,
@@ -14,40 +14,42 @@ import {
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
-export const assertValidRequestRegistrationOpts = (opts: RequestRegistrationOpts) => {
+export const assertValidRequestRegistrationOpts = (opts: ClientMetadataOpts) => {
   if (!opts) {
     throw new Error(SIOPErrors.REGISTRATION_NOT_SET);
-  } else if (opts.registrationBy.type !== PassBy.REFERENCE && opts.registrationBy.type !== PassBy.VALUE) {
+  } else if (opts.type !== PassBy.REFERENCE && opts.type !== PassBy.VALUE) {
     throw new Error(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
-  } else if (opts.registrationBy.type === PassBy.REFERENCE && !opts.registrationBy.referenceUri) {
+  } else if (opts.type === PassBy.REFERENCE && !opts.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
 };
 
-export const createRequestRegistrationPayload = async (opts: RequestRegistrationOpts): Promise<RequestRegistrationPayloadProperties> => {
+export const createRequestRegistrationPayload = async (
+  opts: ClientMetadataOpts /*, keyName: string*/
+): Promise<RequestRegistrationPayloadProperties> => {
   assertValidRequestRegistrationOpts(opts);
 
-  if (opts.registrationBy.type == PassBy.VALUE) {
+  if (opts.type == PassBy.VALUE) {
     return { registration: createRPRegistrationMetadataPayload(opts) };
   }
 
   // pass by ref
-  const regObjToValidate = (await getWithUrl(opts.registrationBy.referenceUri)) as unknown as RPRegistrationMetadataPayload;
+  const regObjToValidate = (await getWithUrl(opts.referenceUri)) as unknown as RPRegistrationMetadataPayload;
   if (!regObjToValidate || !validateRPRegistrationMetadata(regObjToValidate)) {
     throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
   }
   return {
     registration: regObjToValidate,
-    registration_uri: opts.registrationBy.referenceUri,
+    registration_uri: opts.referenceUri,
   };
 };
 
 export const createRequestRegistration = async (
-  opts: RequestRegistrationOpts
+  opts: ClientMetadataOpts
 ): Promise<{
   requestRegistration: RequestRegistrationPayloadProperties;
   rpRegistrationMetadata: RPRegistrationMetadataPayload;
-  opts: RequestRegistrationOpts;
+  opts: ClientMetadataOpts;
 }> => {
   const requestRegistrationPayload = await createRequestRegistrationPayload(opts);
   return {

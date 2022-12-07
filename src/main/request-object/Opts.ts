@@ -1,17 +1,17 @@
 import { assertValidRequestRegistrationOpts } from '../authorization-request/RequestRegistration';
-import { PassBy, RequestObjectOpts, SIOPErrors } from '../types';
+import { PassBy, SIOPErrors } from '../types';
+
+import { RequestObjectOpts } from './types';
 
 export const assertValidRequestObjectOpts = (opts: RequestObjectOpts, checkRequestObject: boolean) => {
   if (!opts) {
     throw new Error(SIOPErrors.BAD_PARAMS);
-  } else if (!opts.requestBy) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
-  } else if (opts.requestBy.type !== PassBy.REFERENCE && opts.requestBy.type !== PassBy.VALUE) {
+  } else if (opts.type !== PassBy.REFERENCE && opts.type !== PassBy.VALUE) {
     throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
-  } else if (opts.requestBy.type === PassBy.REFERENCE && !opts.requestBy.referenceUri) {
+  } else if (opts.type === PassBy.REFERENCE && !opts.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
-  } else if (checkRequestObject && !opts.requestBy.request) {
+  } else if (checkRequestObject && !opts.request) {
     throw Error(SIOPErrors.BAD_PARAMS);
   }
-  assertValidRequestRegistrationOpts(opts['registration']);
+  assertValidRequestRegistrationOpts(opts['registration'] ? opts['registration'] : opts['clientMetadata']);
 };

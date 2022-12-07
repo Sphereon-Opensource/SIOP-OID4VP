@@ -1,14 +1,14 @@
 import { PEX } from '@sphereon/pex';
 import Ajv from 'ajv';
 
+import { ClaimOpts } from '../authorization-response';
 import { getNonce, getState } from '../functions';
-import { RequestObject } from '../request-object/RequestObject';
+import { RequestObject } from '../request-object';
 import { RPRegistrationMetadataPayloadSchema } from '../schemas';
 import {
-  AuthorizationRequestOpts,
   AuthorizationRequestPayload,
-  ClaimOpts,
   ClaimPayload,
+  ClientMetadataOpts,
   PassBy,
   ResponseMode,
   ResponseType,
@@ -18,6 +18,7 @@ import {
 } from '../types';
 
 import { createRequestRegistration } from './RequestRegistration';
+import { AuthorizationRequestOpts } from './types';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
@@ -50,11 +51,12 @@ export const createAuthorizationRequestPayload = async (
   requestObject?: RequestObject
 ): Promise<AuthorizationRequestPayload> => {
   const state = getState(opts.state);
-  const registration = await createRequestRegistration(opts['registration']);
+  const clientMetadata = opts['registration'] ? opts['registration'] : (opts.clientMetadata as ClientMetadataOpts);
+  const registration = await createRequestRegistration(clientMetadata);
   const claims = createClaimsProperties(opts.claims);
   const clientId = opts.clientId ? opts.clientId : registration.requestRegistration.registration.client_id;
 
-  const isRequestByValue = opts.requestBy && opts.requestBy.type === PassBy.VALUE;
+  const isRequestByValue = opts.type === PassBy.VALUE;
 
   if (isRequestByValue && !requestObject) {
     throw Error(SIOPErrors.NO_JWT);
@@ -69,8 +71,8 @@ export const createAuthorizationRequestPayload = async (
     redirect_uri: opts.redirectUri,
     response_mode: opts.responseMode || ResponseMode.POST,
     id_token_hint: opts.idTokenHint,
-    registration_uri: opts['registrationUri'],
-    ...(opts.requestBy && opts.requestBy.type === PassBy.REFERENCE ? { request_uri: opts.requestBy.referenceUri } : {}),
+    registration_uri: registration?.requestRegistration?.registration_uri, //opts['registrationUri'],
+    ...(opts.type === PassBy.REFERENCE ? { request_uri: opts.referenceUri } : {}),
     ...(isRequestByValue ? { request } : {}),
     nonce: getNonce(state, opts.nonce),
     state,

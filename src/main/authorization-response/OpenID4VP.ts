@@ -1,18 +1,16 @@
 import { PresentationSubmission } from '@sphereon/ssi-types';
 
-import { PresentationExchange } from '../PresentationExchange';
 import { verifyRevocation } from '../functions';
+import { AuthorizationResponsePayload, RevocationVerification, SIOPErrors, VerifiablePresentationPayload } from '../types';
+
+import { PresentationExchange } from './PresentationExchange';
 import {
   AuthorizationResponseOpts,
-  AuthorizationResponsePayload,
   PresentationDefinitionWithLocation,
   PresentationLocation,
   PresentationVerificationCallback,
-  RevocationVerification,
-  SIOPErrors,
-  VerifiablePresentationPayload,
   VerifyAuthorizationResponseOpts,
-} from '../types';
+} from './types';
 
 export const verifyPresentations = async (
   authorizationResponse: AuthorizationResponsePayload,
