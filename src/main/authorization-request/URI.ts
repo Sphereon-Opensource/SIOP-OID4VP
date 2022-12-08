@@ -81,22 +81,22 @@ export class URI implements AuthorizationRequestURI {
 
   get requestObjectBy(): ObjectBy {
     if (!this.requestObjectJwt) {
-      return { type: PassBy.NONE };
+      return { passBy: PassBy.NONE };
     }
     if (this.authorizationRequestPayload.request_uri) {
-      return { type: PassBy.REFERENCE, referenceUri: this.authorizationRequestPayload.request_uri };
+      return { passBy: PassBy.REFERENCE, referenceUri: this.authorizationRequestPayload.request_uri };
     }
-    return { type: PassBy.VALUE };
+    return { passBy: PassBy.VALUE };
   }
 
   get metadataObjectBy(): ObjectBy {
     if (!this.authorizationRequestPayload.registration_uri && !this.authorizationRequestPayload.registration) {
-      return { type: PassBy.NONE };
+      return { passBy: PassBy.NONE };
     }
     if (this.authorizationRequestPayload.registration_uri) {
-      return { type: PassBy.REFERENCE, referenceUri: this.authorizationRequestPayload.registration_uri };
+      return { passBy: PassBy.REFERENCE, referenceUri: this.authorizationRequestPayload.registration_uri };
     }
-    return { type: PassBy.VALUE };
+    return { passBy: PassBy.VALUE };
   }
 
   /**
@@ -134,7 +134,7 @@ export class URI implements AuthorizationRequestURI {
    *
    */
   private static async fromAuthorizationRequestPayload(
-    opts: { uriScheme?: string; type: PassBy; referenceUri?: string },
+    opts: { uriScheme?: string; passBy: PassBy; referenceUri?: string },
     request: AuthorizationRequestPayload | string,
     requestObject?: RequestObject
   ): Promise<URI> {
@@ -162,7 +162,7 @@ export class URI implements AuthorizationRequestURI {
     if (!authorizationRequest) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
-    const type = opts.type;
+    const type = opts.passBy;
     if (!type) {
       throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
     }

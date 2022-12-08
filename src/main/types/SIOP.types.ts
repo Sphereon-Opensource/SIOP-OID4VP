@@ -360,7 +360,7 @@ export interface CommonSupportedMetadata {
 }
 
 export interface ObjectBy {
-  type: PassBy;
+  passBy: PassBy;
   referenceUri?: string; // for pass by reference
 }
 

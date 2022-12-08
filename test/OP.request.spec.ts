@@ -55,7 +55,7 @@ describe('OP Builder should', () => {
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .response(ResponseMode.POST)
         .registrationBy({
-          registrationBy: { type: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
+          registrationBy: { passBy: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100332',
@@ -96,7 +96,7 @@ describe('OP should', () => {
       //TODO: fill it up with actual value
       issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
       },
     },
     responseMode: ResponseMode.POST,
@@ -134,10 +134,15 @@ describe('OP should', () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
       const requestOpts: AuthorizationRequestOpts = {
         checkLinkedDomain: CheckLinkedDomain.NEVER,
-        redirectUri: EXAMPLE_REDIRECT_URL,
+        payload: {
+          redirect_uri: EXAMPLE_REDIRECT_URL,
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+        },
 
         requestObject: {
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
 
           signatureType: {
@@ -159,16 +164,13 @@ describe('OP should', () => {
             jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
             jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
           },
-          type: PassBy.VALUE,
+          passBy: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100334',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        responseType: 'id_token',
       };
 
       const requestURI = await RP.fromRequestOpts(requestOpts).createAuthenticationRequest({
@@ -214,7 +216,7 @@ describe('OP should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100335',
@@ -243,7 +245,7 @@ describe('OP should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-        registrationBy: { type: PassBy.VALUE },
+        registrationBy: { passBy: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100336',

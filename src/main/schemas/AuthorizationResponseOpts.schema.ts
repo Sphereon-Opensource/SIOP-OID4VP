@@ -1227,7 +1227,7 @@ export const AuthorizationResponseOptsSchema = {
     "ClientMetadataProperties": {
       "type": "object",
       "properties": {
-        "type": {
+        "passBy": {
           "$ref": "#/definitions/PassBy"
         },
         "referenceUri": {
@@ -1242,7 +1242,7 @@ export const AuthorizationResponseOptsSchema = {
       },
       "additionalProperties": false,
       "required": [
-        "type"
+        "passBy"
       ]
     },
     "PassBy": {

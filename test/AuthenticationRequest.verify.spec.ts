@@ -56,16 +56,18 @@ describe('verifyJWT should', () => {
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
     const requestOpts: AuthorizationRequestOpts = {
-      state: 'expected state',
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      redirectUri: EXAMPLE_REDIRECT_URL,
-
+      payload: {
+        state: 'expected state',
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+        nonce: 'expected nonce',
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
 
         signatureType: {
@@ -75,7 +77,6 @@ describe('verifyJWT should', () => {
           kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
         },
       },
-      nonce: 'expected nonce',
       clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -89,7 +90,7 @@ describe('verifyJWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100308',
@@ -121,16 +122,18 @@ describe('verifyJWT should', () => {
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
       const requestOpts: AuthorizationRequestOpts = {
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        responseType: 'id_token',
-        state: '12345',
-        nonce: '12345',
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        authorizationEndpoint: '',
-        redirectUri: 'https://acme.com/hello',
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          state: '12345',
+          nonce: '12345',
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          authorization_endpoint: '',
+          redirect_uri: 'https://acme.com/hello',
+        },
         requestObject: {
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: 'https://my-request.com/here',
           signatureType: {
             hexPrivateKey: mockEntity.hexPrivateKey,
@@ -151,7 +154,7 @@ describe('verifyJWT should', () => {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
             },
           },
-          type: PassBy.VALUE,
+          passBy: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100309',

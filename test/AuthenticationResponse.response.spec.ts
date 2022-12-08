@@ -49,6 +49,7 @@ describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthorizationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
+    responseMode: ResponseMode.POST,
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
       responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -60,7 +61,7 @@ describe('create JWT from Request JWT should', () => {
       },
       issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       logoUri: VERIFIER_LOGO_FOR_CLIENT,
@@ -75,7 +76,6 @@ describe('create JWT from Request JWT should', () => {
       kid: KID,
     },
     did: DID,
-    responseMode: ResponseMode.POST,
   };
   const verifyOpts: VerifyAuthorizationRequestOpts = {
     verification: {
@@ -109,15 +109,17 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthorizationRequestOpts = {
-      nonce: '12345',
-      state: '12345',
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      payload: {
+        nonce: '12345',
+        state: '12345',
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: 'https://my-request.com/here',
         signatureType: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
@@ -138,7 +140,7 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100311',
@@ -161,7 +163,7 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         registrationBy: {
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
         },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
@@ -198,13 +200,15 @@ describe('create JWT from Request JWT should', () => {
       const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
       const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
       const requestOpts: AuthorizationRequestOpts = {
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        responseType: 'id_token',
         checkLinkedDomain: CheckLinkedDomain.NEVER,
-        redirectUri: EXAMPLE_REDIRECT_URL,
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          redirect_uri: EXAMPLE_REDIRECT_URL,
+        },
         requestObject: {
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: 'https://my-request.com/here',
           signatureType: {
             hexPrivateKey: mockReqEntity.hexPrivateKey,
@@ -225,7 +229,7 @@ describe('create JWT from Request JWT should', () => {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
             },
           },
-          type: PassBy.VALUE,
+          passBy: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100313',
@@ -248,7 +252,7 @@ describe('create JWT from Request JWT should', () => {
             },
           },
           registrationBy: {
-            type: PassBy.REFERENCE,
+            passBy: PassBy.REFERENCE,
             referenceUri: EXAMPLE_REFERENCE_URL,
           },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
@@ -317,13 +321,20 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthorizationRequestOpts = {
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      payload: {
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+        claims: {
+          vpToken: {
+            presentationDefinition: definition,
+          },
+        },
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: 'https://my-request.com/here',
         signatureType: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
@@ -344,17 +355,12 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100315',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-      },
-      claims: {
-        vpToken: {
-          presentationDefinition: definition,
-        },
       },
     };
     const vc: ICredential = {
@@ -412,7 +418,7 @@ describe('create JWT from Request JWT should', () => {
         issuer: ResponseIss.SELF_ISSUED_V2,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         registrationBy: {
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
         },
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -484,13 +490,20 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthorizationRequestOpts = {
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'token_id',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      payload: {
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'token_id',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+        claims: {
+          vpToken: {
+            presentationDefinition: definition,
+          },
+        },
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: 'https://my-request.com/here',
         signatureType: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
@@ -511,17 +524,12 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-      },
-      claims: {
-        vpToken: {
-          presentationDefinition: definition,
-        },
       },
     };
     const vc: ICredential = {
@@ -578,7 +586,7 @@ describe('create JWT from Request JWT should', () => {
         issuer: ResponseIss.SELF_ISSUED_V2,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         registrationBy: {
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
         },
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],

@@ -35,8 +35,9 @@ export class RequestObject {
    */
   public static async fromOpts(authorizationRequestOpts: AuthorizationRequestOpts) {
     assertValidAuthorizationRequestOpts(authorizationRequestOpts);
-    const opts = RequestObject.mergeOAuth2AndOpenIdProperties(authorizationRequestOpts);
-    return new RequestObject(authorizationRequestOpts, await createRequestObjectPayload(opts));
+    const requestObjectOpts = RequestObject.mergeOAuth2AndOpenIdProperties(authorizationRequestOpts);
+    const mergedOpts = { ...authorizationRequestOpts, requestObject: requestObjectOpts };
+    return new RequestObject(mergedOpts, await createRequestObjectPayload(mergedOpts));
   }
 
   public static async fromJwt(requestObjectJwt: RequestObjectJwt) {
@@ -103,15 +104,15 @@ export class RequestObject {
     }
   }
 
-  private static mergeOAuth2AndOpenIdProperties(opts: AuthorizationRequestOpts | RequestObjectOpts) {
+  private static mergeOAuth2AndOpenIdProperties(opts: AuthorizationRequestOpts | RequestObjectOpts): RequestObjectOpts {
     if (!opts) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
     const isAuthReq = opts['requestObject'] !== undefined;
     const mergedOpts = JSON.parse(JSON.stringify(opts));
     mergedOpts.requestObject.payload = isAuthReq
-      ? { ...mergedOpts, ...mergedOpts['requestObject']?.payload }
-      : { ...mergedOpts, ...mergedOpts.request };
+      ? { ...mergedOpts.payload, ...mergedOpts['requestObject']?.payload }
+      : { ...mergedOpts.payload, ...mergedOpts.request };
     delete mergedOpts?.request?.requestObject;
     return isAuthReq ? mergedOpts.requestObject : mergedOpts;
   }

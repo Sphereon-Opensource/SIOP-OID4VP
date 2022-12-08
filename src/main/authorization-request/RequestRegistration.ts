@@ -17,9 +17,9 @@ const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayload
 export const assertValidRequestRegistrationOpts = (opts: ClientMetadataOpts) => {
   if (!opts) {
     throw new Error(SIOPErrors.REGISTRATION_NOT_SET);
-  } else if (opts.type !== PassBy.REFERENCE && opts.type !== PassBy.VALUE) {
+  } else if (opts.passBy !== PassBy.REFERENCE && opts.passBy !== PassBy.VALUE) {
     throw new Error(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
-  } else if (opts.type === PassBy.REFERENCE && !opts.referenceUri) {
+  } else if (opts.passBy === PassBy.REFERENCE && !opts.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
 };
@@ -29,7 +29,7 @@ export const createRequestRegistrationPayload = async (
 ): Promise<RequestRegistrationPayloadProperties> => {
   assertValidRequestRegistrationOpts(opts);
 
-  if (opts.type == PassBy.VALUE) {
+  if (opts.passBy == PassBy.VALUE) {
     return { registration: createRPRegistrationMetadataPayload(opts) };
   }
 

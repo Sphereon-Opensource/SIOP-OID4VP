@@ -50,13 +50,14 @@ export const createAuthorizationRequestPayload = async (
   opts: AuthorizationRequestOpts,
   requestObject?: RequestObject
 ): Promise<AuthorizationRequestPayload> => {
-  const state = getState(opts.state);
+  const payload = opts.payload;
+  const state = getState(payload.state);
   const clientMetadata = opts['registration'] ? opts['registration'] : (opts.clientMetadata as ClientMetadataOpts);
   const registration = await createRequestRegistration(clientMetadata);
-  const claims = createClaimsProperties(opts.claims);
-  const clientId = opts.clientId ? opts.clientId : registration.requestRegistration.registration.client_id;
+  const claims = createClaimsProperties(payload.claims);
+  const clientId = payload.client_id ? payload.client_id : registration.requestRegistration.registration.client_id;
 
-  const isRequestByValue = opts.requestObject.type === PassBy.VALUE;
+  const isRequestByValue = opts.requestObject.passBy === PassBy.VALUE;
 
   if (isRequestByValue && !requestObject) {
     throw Error(SIOPErrors.NO_JWT);
@@ -68,13 +69,13 @@ export const createAuthorizationRequestPayload = async (
     scope: Scope.OPENID,
     //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
     client_id: clientId ? clientId : opts.requestObject.signatureType.did,
-    redirect_uri: opts.redirectUri,
-    response_mode: opts.responseMode || ResponseMode.POST,
-    id_token_hint: opts.idTokenHint,
+    redirect_uri: payload.redirect_uri,
+    response_mode: payload.response_mode || ResponseMode.POST,
+    id_token_hint: payload.id_token_hint,
     registration_uri: registration?.requestRegistration?.registration_uri, //opts['registrationUri'],
-    ...(opts.requestObject.type === PassBy.REFERENCE ? { request_uri: opts.requestObject.referenceUri } : {}),
+    ...(opts.requestObject.passBy === PassBy.REFERENCE ? { request_uri: opts.requestObject.referenceUri } : {}),
     ...(isRequestByValue ? { request } : {}),
-    nonce: getNonce(state, opts.nonce),
+    nonce: getNonce(state, payload.nonce),
     state,
     ...registration.requestRegistration,
     claims,

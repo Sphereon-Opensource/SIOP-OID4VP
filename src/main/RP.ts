@@ -30,8 +30,9 @@ export class RP {
 
   public constructor(opts: { builder?: RPBuilder; requestOpts?: AuthorizationRequestOpts; verifyOpts?: VerifyAuthorizationResponseOpts }) {
     const claims = opts.builder?.claims;
-    this._authRequestOpts = { claims, ...createRequestOptsFromBuilderOrExistingOpts(opts) };
-    this._verifyAuthResponseOpts = { claims, ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
+    const authReqOpts = createRequestOptsFromBuilderOrExistingOpts(opts);
+    this._authRequestOpts = { ...authReqOpts, payload: { ...authReqOpts.payload, claims } };
+    this._verifyAuthResponseOpts = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts), claims };
   }
 
   get authRequestOpts(): AuthorizationRequestOpts {
@@ -61,7 +62,11 @@ export class RP {
     const verifyCallback = verification.wellknownDIDVerifyCallback || this._verifyAuthResponseOpts.verifyCallback;
     const presentationVerificationCallback =
       verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
-    const verifyAuthenticationResponseOpts = this.newVerifyAuthenticationResponseOpts({ ...opts, verifyCallback, presentationVerificationCallback });
+    const verifyAuthenticationResponseOpts = this.newVerifyAuthenticationResponseOpts({
+      ...opts,
+      verifyCallback,
+      presentationVerificationCallback,
+    });
     await verifyPresentations(authorizationResponse.payload, verifyAuthenticationResponseOpts);
     return await authorizationResponse.idToken.verify(verifyAuthenticationResponseOpts);
   }
@@ -71,8 +76,7 @@ export class RP {
     const nonce = opts?.nonce || getNonce(state, opts?.nonce);
     return {
       ...this._authRequestOpts,
-      state,
-      nonce,
+      payload: { ...this._authRequestOpts.payload, state, nonce },
     };
   }
 
@@ -110,23 +114,25 @@ export class RP {
 function createRequestOptsFromBuilderOrExistingOpts(opts: { builder?: RPBuilder; requestOpts?: AuthorizationRequestOpts }) {
   const requestOpts: AuthorizationRequestOpts = opts.builder
     ? {
-        authorizationEndpoint: opts.builder.authorizationEndpoint,
-        clientMetadata: opts.builder.requestRegistration as ClientMetadataOpts,
-        redirectUri: opts.builder.redirectUri,
-        responseTypesSupported: opts.builder.requestRegistration.responseTypesSupported,
-        scopesSupported: opts.builder.requestRegistration.scopesSupported,
+        payload: {
+          authorization_endpoint: opts.builder.authorizationEndpoint,
+          subject_types_supported: opts.builder.requestRegistration.subjectTypesSupported,
+          request_object_signing_alg_values_supported: opts.builder.requestRegistration.requestObjectSigningAlgValuesSupported,
+          response_mode: opts.builder.responseMode,
+          // responseContext: opts.builder.responseContext,
+          claims: opts.builder.claims,
+          scope: opts.builder.scope,
+          response_type: opts.builder.responseType,
+          client_id: opts.builder.clientId,
+          redirect_uri: opts.builder.redirectUri,
+          response_types_supported: opts.builder.requestRegistration.responseTypesSupported,
+          scopes_supported: opts.builder.requestRegistration.scopesSupported,
+        },
         requestObject: {
           ...opts.builder.requestObjectBy,
           signatureType: opts.builder.signatureType,
         },
-        subjectTypesSupported: opts.builder.requestRegistration.subjectTypesSupported,
-        requestObjectSigningAlgValuesSupported: opts.builder.requestRegistration.requestObjectSigningAlgValuesSupported,
-        responseMode: opts.builder.responseMode,
-        // responseContext: opts.builder.responseContext,
-        claims: opts.builder.claims,
-        scope: opts.builder.scope,
-        responseType: opts.builder.responseType,
-        clientId: opts.builder.clientId,
+        clientMetadata: opts.builder.requestRegistration as ClientMetadataOpts,
       }
     : opts.requestOpts;
 

@@ -124,9 +124,9 @@ export default class RPBuilder {
     return this;
   }
 
-  withRequestBy(type: PassBy, referenceUri?: string): RPBuilder {
+  withRequestBy(passBy: PassBy, referenceUri?: string): RPBuilder {
     this.requestObjectBy = {
-      type,
+      passBy,
       referenceUri,
     };
     return this;

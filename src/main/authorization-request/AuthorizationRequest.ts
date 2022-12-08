@@ -55,7 +55,7 @@ export class AuthorizationRequest {
     }
     assertValidAuthorizationRequestOpts(opts);
     const requestObjectArg =
-      opts.requestObject.type !== PassBy.NONE ? (requestObject ? requestObject : await RequestObject.fromOpts(opts)) : undefined;
+      opts.requestObject.passBy !== PassBy.NONE ? (requestObject ? requestObject : await RequestObject.fromOpts(opts)) : undefined;
     const requestPayload = await createAuthorizationRequestPayload(opts, requestObjectArg);
     return new AuthorizationRequest(requestPayload, requestObjectArg, opts);
   }

@@ -53,7 +53,7 @@ describe('RP Builder should', () => {
         .withRequestBy(PassBy.VALUE)
         .withResponseMode(ResponseMode.POST)
         .withRegistrationBy({
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: 'https://registration.here',
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
@@ -78,13 +78,15 @@ describe('RP should', () => {
     expect.assertions(1);
 
     const opts: AuthorizationRequestOpts = {
-      clientId: 'test',
-      scope: 'test',
-      responseType: 'test',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      payload: {
+        client_id: 'test',
+        scope: 'test',
+        response_type: 'test',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
 
         signatureType: {
@@ -106,7 +108,7 @@ describe('RP should', () => {
           jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
         },
 
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '202210040',
@@ -121,14 +123,15 @@ describe('RP should', () => {
   it('succeed from request opts when all params are set', async () => {
     // expect.assertions(1);
     const opts: AuthorizationRequestOpts = {
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'test',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
-
+      payload: {
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'test',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
 
         signatureType: {
@@ -151,7 +154,7 @@ describe('RP should', () => {
           jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 00',
         clientName: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 00',
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 00',
@@ -268,7 +271,7 @@ describe('RP should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 01',
         clientName: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 01',
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 01',

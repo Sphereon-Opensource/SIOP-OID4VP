@@ -46,14 +46,16 @@ describe('create Request Uri should', () => {
 
   it('throw BAD_PARAMS when no responseOpts.requestObject is passed', async () => {
     expect.assertions(1);
-    const opts = { redirectUri: EXAMPLE_REDIRECT_URL };
+    const opts = { payload: { redirect_uri: EXAMPLE_REDIRECT_URL } };
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
 
   it('throw BAD_PARAMS when no responseOpts.requestBy is passed', async () => {
     expect.assertions(1);
     const opts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      payload: {
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       requestObject: {},
     };
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
@@ -62,10 +64,11 @@ describe('create Request Uri should', () => {
   it('throw REQUEST_OBJECT_TYPE_NOT_SET when responseOpts.requestBy type is different from REFERENCE or VALUE', async () => {
     expect.assertions(1);
     const opts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
-
+      payload: {
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       requestObject: {
-        type: 'other type',
+        passBy: 'other type',
       },
     };
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
@@ -74,9 +77,11 @@ describe('create Request Uri should', () => {
   it('throw NO_REFERENCE_URI when responseOpts.requestBy type is REFERENCE and no referenceUri is passed', async () => {
     expect.assertions(1);
     const opts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      payload: {
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
       },
     };
     await expect(URI.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
@@ -85,15 +90,17 @@ describe('create Request Uri should', () => {
   it('return a reference url', async () => {
     expect.assertions(14);
     const opts: AuthorizationRequestOpts = {
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
+      payload: {
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      redirectUri: EXAMPLE_REDIRECT_URL,
 
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
         signatureType: {
           hexPrivateKey: HEX_KEY,
@@ -114,7 +121,7 @@ describe('create Request Uri should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100300',
@@ -134,7 +141,7 @@ describe('create Request Uri should', () => {
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`openid://`);
     expect(uriDecoded).toContain(`?response_type=${ResponseType.ID_TOKEN}`);
-    expect(uriDecoded).toContain(`&redirect_uri=${opts.redirectUri}`);
+    expect(uriDecoded).toContain(`&redirect_uri=${opts.payload.redirect_uri}`);
     expect(uriDecoded).toContain(`&scope=${Scope.OPENID}`);
     expect(uriDecoded).toContain(`&request_uri=`);
     expect(uriDecoded).toContain('client_name#nl-NL');
@@ -147,14 +154,16 @@ describe('create Request Uri should', () => {
   it('return a reference url when using did:key', async () => {
     expect.assertions(4);
     const opts: AuthorizationRequestOpts = {
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
+      payload: {
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        request_object_signing_alg_values_supported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
-      redirectUri: EXAMPLE_REDIRECT_URL,
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
         signatureType: {
           hexPrivateKey:
@@ -176,7 +185,7 @@ describe('create Request Uri should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100301',
@@ -198,15 +207,17 @@ describe('create Request Uri should', () => {
   it('return an url with an embedded token value', async () => {
     expect.assertions(2);
     const opts: AuthorizationRequestOpts = {
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
+      payload: {
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      redirectUri: EXAMPLE_REDIRECT_URL,
 
       requestObject: {
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
 
         signatureType: {
           hexPrivateKey: HEX_KEY,
@@ -227,7 +238,7 @@ describe('create Request Uri should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100302',
@@ -250,10 +261,12 @@ describe('create Request JWT should', () => {
   it('throw REQUEST_OBJECT_TYPE_NOT_SET when requestBy type is different from REFERENCE and VALUE', async () => {
     expect.assertions(1);
     const opts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      payload: {
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
 
       requestObject: {
-        type: 'other type',
+        passBy: 'other type',
 
         signatureType: {
           hexPrivateKey: HEX_KEY,
@@ -269,7 +282,7 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
       },
     };
     await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
@@ -278,10 +291,12 @@ describe('create Request JWT should', () => {
   it('throw NO_REFERENCE_URI when no referenceUri is passed with REFERENCE requestBy type is set', async () => {
     expect.assertions(1);
     const opts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      payload: {
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
 
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
 
         signatureType: {
           hexPrivateKey: HEX_KEY,
@@ -297,7 +312,7 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
       },
     };
     await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
@@ -306,10 +321,11 @@ describe('create Request JWT should', () => {
   it('throw BAD_SIGNATURE_PARAMS when signature Type is neither internal nor external', async () => {
     expect.assertions(1);
     const opts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
-
+      payload: {
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
 
         signatureType: {},
@@ -322,7 +338,7 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
       },
     };
     await expect((await RequestObject.fromOpts(opts as never)).toJwt()).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
@@ -331,9 +347,11 @@ describe('create Request JWT should', () => {
   it('throw REGISTRATION_OBJECT_TYPE_NOT_SET when registrationBy type is neither REFERENCE nor VALUE', async () => {
     expect.assertions(1);
     const opts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      payload: {
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
         signatureType: {
           hexPrivateKey: HEX_KEY,
@@ -358,10 +376,11 @@ describe('create Request JWT should', () => {
   it('throw NO_REFERENCE_URI when registrationBy type is REFERENCE and no referenceUri is passed', async () => {
     expect.assertions(1);
     const opts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
-
+      payload: {
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
 
         signatureType: {
@@ -378,7 +397,7 @@ describe('create Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
       },
     };
     await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
@@ -387,15 +406,17 @@ describe('create Request JWT should', () => {
   it('succeed when all params are set', async () => {
     // expect.assertions(1);
     const opts: AuthorizationRequestOpts = {
-      clientId: 'test_client_id',
-      scope: 'test',
-      responseType: 'id_token',
+      payload: {
+        client_id: 'test_client_id',
+        scope: 'test',
+        response_type: 'id_token',
+        request_object_signing_alg_values_supported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+      },
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
-      redirectUri: EXAMPLE_REDIRECT_URL,
 
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
         signatureType: {
           hexPrivateKey: HEX_KEY,
@@ -417,7 +438,7 @@ describe('create Request JWT should', () => {
           },
         },
 
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
 
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
@@ -483,15 +504,33 @@ describe('create Request JWT should', () => {
 
   it('succeed when requesting with a valid PD', async () => {
     const opts: AuthorizationRequestOpts = {
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-
+      payload: {
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        claims: {
+          vpToken: {
+            presentationDefinition: {
+              id: 'Insurance Plans',
+              input_descriptors: [
+                {
+                  id: 'Ontario Health Insurance Plan',
+                  schema: [
+                    {
+                      uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      },
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
 
         signatureType: {
@@ -514,30 +553,13 @@ describe('create Request JWT should', () => {
           },
         },
 
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
 
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100305',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-      },
-      claims: {
-        vpToken: {
-          presentationDefinition: {
-            id: 'Insurance Plans',
-            input_descriptors: [
-              {
-                id: 'Ontario Health Insurance Plan',
-                schema: [
-                  {
-                    uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
-                  },
-                ],
-              },
-            ],
-          },
-        },
       },
     };
 
@@ -549,15 +571,33 @@ describe('create Request JWT should', () => {
 
   it('should throw error if presentation definition object is not valid', async () => {
     const opts: AuthorizationRequestOpts = {
-      clientId: 'test_client_id',
-      scope: 'test',
-      responseType: 'id_token',
+      payload: {
+        client_id: 'test_client_id',
+        scope: 'test',
+        response_type: 'id_token',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        claims: {
+          vpToken: {
+            presentationDefinition: {
+              input_descriptors: [
+                {
+                  id: 'Ontario Health Insurance Plan',
+                  schema: [
+                    {
+                      uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+                    },
+                  ],
+                },
+              ],
+            } as IPresentationDefinition,
+          },
+        },
+      },
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
 
       requestObject: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
 
         signatureType: {
@@ -579,29 +619,13 @@ describe('create Request JWT should', () => {
           },
         },
 
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
 
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100306',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-      },
-      claims: {
-        vpToken: {
-          presentationDefinition: {
-            input_descriptors: [
-              {
-                id: 'Ontario Health Insurance Plan',
-                schema: [
-                  {
-                    uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
-                  },
-                ],
-              },
-            ],
-          } as IPresentationDefinition,
-        },
       },
     };
     await expect(URI.fromOpts(opts)).rejects.toThrow(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
