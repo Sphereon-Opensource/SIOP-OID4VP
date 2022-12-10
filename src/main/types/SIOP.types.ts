@@ -73,7 +73,7 @@ export interface VerifiedAuthorizationRequest extends VerifiedJWT {
   requestObject?: RequestObject; // The Request object
   presentationDefinitions?: PresentationDefinitionWithLocation[]; // The optional presentation definition objects that the RP requests
   verifyOpts: VerifyAuthorizationRequestOpts; // The verification options for the authentication request
-  version: SupportedVersion;
+  versions: SupportedVersion[];
 }
 
 export type IDTokenJwt = string;
@@ -458,7 +458,6 @@ export interface Verification {
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
-  supportedVersions?: SupportedVersion[];
 }
 
 export type InternalVerification = Verification;

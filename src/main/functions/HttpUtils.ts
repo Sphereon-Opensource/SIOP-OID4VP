@@ -20,11 +20,11 @@ export async function postWithBearerToken(url: string, body: JWTPayload, bearerT
   }
 }
 
-export async function postAuthenticationResponse(url: string, body: AuthorizationResponseResult): Promise<Response> {
-  return postAuthenticationResponseJwt(url, body.idToken);
+export async function postAuthorizationResponse(url: string, body: AuthorizationResponseResult): Promise<Response> {
+  return postAuthorizationResponseJwt(url, body.idToken);
 }
 
-export async function postAuthenticationResponseJwt(url: string, jwt: string): Promise<Response> {
+export async function postAuthorizationResponseJwt(url: string, jwt: string): Promise<Response> {
   //fixme: Account for other post types and full AuthzResponse
   try {
     const response = await fetch(url, {

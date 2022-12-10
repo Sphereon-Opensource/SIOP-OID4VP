@@ -96,14 +96,14 @@ export class IDToken {
 
     const issuerDid = getSubDidFromPayload(payload);
     if (verifyOpts.verification.checkLinkedDomain && verifyOpts.verification.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, verifyOpts.verification.checkLinkedDomain);
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification.wellknownDIDVerifyCallback, verifyOpts.verification.checkLinkedDomain);
     } else if (!verifyOpts.verification.checkLinkedDomain) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification.wellknownDIDVerifyCallback, CheckLinkedDomain.IF_PRESENT);
     }
     const verPayload = verifiedJWT.payload as IDTokenPayload;
     this.assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
     // Enforces verifyPresentationCallback function on the RP side,
-    if (!verifyOpts?.presentationVerificationCallback) {
+    if (!verifyOpts?.verification.presentationVerificationCallback) {
       throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_VERIFICATION_FUNCTION_MISSING);
     }
     return {

@@ -78,7 +78,6 @@ describe('RP should', () => {
     expect.assertions(1);
 
     const opts: AuthorizationRequestOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       payload: {
         client_id: 'test',
         scope: 'test',
@@ -123,7 +122,6 @@ describe('RP should', () => {
   it('succeed from request opts when all params are set', async () => {
     // expect.assertions(1);
     const opts: AuthorizationRequestOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -197,7 +195,7 @@ describe('RP should', () => {
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.ey.*$/;
 
-    const request = await RP.fromRequestOpts(opts).createAuthenticationRequest({
+    const request = await RP.fromRequestOpts(opts).createAuthorizationRequestURI({
       state: 'b32f0087fc9816eb813fd11f',
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
     });
@@ -282,7 +280,7 @@ describe('RP should', () => {
       .withSupportedVersions([SupportedVersion.SIOPv2_D11])
       .build()
 
-      .createAuthenticationRequest({
+      .createAuthorizationRequestURI({
         state: 'b32f0087fc9816eb813fd11f',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       });

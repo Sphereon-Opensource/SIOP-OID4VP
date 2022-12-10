@@ -1,4 +1,3 @@
-import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
@@ -8,20 +7,16 @@ import { URI } from './authorization-request/URI';
 import { VerifyAuthorizationRequestOpts } from './authorization-request/types';
 import { AuthorizationResponse } from './authorization-response';
 import { AuthorizationResponseOpts, PresentationExchangeOpts, VerifiablePresentationWithLocation } from './authorization-response/types';
-import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthenticationResponse, postAuthenticationResponseJwt } from './functions';
-import { authorizationRequestVersionDiscovery } from './functions/SIOPVersionDiscovery';
+import { getResolverUnion, LanguageTagUtils, mergeAllDidMethods, postAuthorizationResponse, postAuthorizationResponseJwt } from './functions';
 import { AuthorizationResponseOptsSchema } from './schemas';
 import {
-  AuthorizationRequestPayload,
   AuthorizationResponseResult,
   ExternalVerification,
   InternalVerification,
   ParsedAuthorizationRequestURI,
   ResponseMode,
   SIOPErrors,
-  SupportedVersion,
   UrlEncodingFormat,
-  Verification,
   VerificationMode,
   VerifiedAuthorizationRequest,
 } from './types';
@@ -32,53 +27,45 @@ const validate = ajv.compile(AuthorizationResponseOptsSchema);
 
 // The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
 export class OP {
-  private readonly _authResponseOpts: AuthorizationResponseOpts;
-  private readonly _verifyAuthRequestOpts: Partial<VerifyAuthorizationRequestOpts>;
+  private readonly _authorizationResponseOptions: AuthorizationResponseOpts;
+  private readonly _verifyAuthorizationRequestOptions: Partial<VerifyAuthorizationRequestOpts>;
 
   public constructor(opts: { builder?: OPBuilder; responseOpts?: AuthorizationResponseOpts; verifyOpts?: VerifyAuthorizationRequestOpts }) {
-    this._authResponseOpts = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
-    this._verifyAuthRequestOpts = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
+    this._authorizationResponseOptions = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
+    this._verifyAuthorizationRequestOptions = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
   }
 
-  get authResponseOpts(): AuthorizationResponseOpts {
-    return this._authResponseOpts;
+  get authorizationResponseOptions(): AuthorizationResponseOpts {
+    return this._authorizationResponseOptions;
   }
 
-  get verifyAuthRequestOpts(): Partial<VerifyAuthorizationRequestOpts> {
-    return this._verifyAuthRequestOpts;
+  get verifyAuthorizationRequestOptions(): Partial<VerifyAuthorizationRequestOpts> {
+    return this._verifyAuthorizationRequestOptions;
   }
 
   // TODO SK Can you please put some documentation on it?
   public async postAuthenticationResponse(authenticationResponse: AuthorizationResponseResult): Promise<Response> {
-    return postAuthenticationResponse(authenticationResponse.responsePayload.idToken.aud, authenticationResponse);
+    return postAuthorizationResponse(authenticationResponse.responsePayload.idToken.aud, authenticationResponse);
   }
 
   /**
    * This method tries to infer the SIOP specs version based on the request payload.
    * If the version cannot be inferred or is not supported it throws an exception.
    * This method needs to be called to ensure the OP can handle the request
-   * @param payload is the authentication request payload
+   * @param requestJwtOrUri
+   * @param requestOpts
    */
-  public async checkSIOPSpecVersionSupported(payload: AuthorizationRequestPayload): Promise<SupportedVersion> {
-    const version: SupportedVersion = authorizationRequestVersionDiscovery(payload);
-    if (!this._verifyAuthRequestOpts.verification.supportedVersions.includes(version)) {
-      throw new Error(`SIOP ${version} is not supported`);
-    }
-    return version;
-  }
 
-  public async verifyAuthenticationRequest(
-    requestJwtOrUri: string,
-    opts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
+  public async verifyAuthorizationRequest(
+    requestJwtOrUri: string | URI,
+    requestOpts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthorizationRequest> {
-    const verifyCallback =
-      (this._verifyAuthRequestOpts.verification as Verification).wellknownDIDVerifyCallback || this._verifyAuthRequestOpts.verifyCallback;
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri);
-    return await authorizationRequest.verify(this.newVerifyAuthenticationRequestOpts({ ...opts, verifyCallback }));
+    return await authorizationRequest.verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }));
   }
 
-  public async createAuthenticationResponse(
-    verifiedJwt: VerifiedAuthorizationRequest,
+  public async createAuthorizationResponse(
+    authorizationRequest: VerifiedAuthorizationRequest,
     responseOpts?: {
       nonce?: string;
       state?: string;
@@ -89,21 +76,21 @@ export class OP {
       };
     }
   ): Promise<AuthorizationResponse> {
-    return await AuthorizationResponse.fromVerifiedAuthorizationRequest(verifiedJwt, this.newAuthenticationResponseOpts(responseOpts));
+    return await AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts));
   }
 
   // TODO SK Can you please put some documentation on it?
-  public async submitAuthenticationResponse(verifiedJwt: AuthorizationResponse): Promise<Response> {
+  public async submitAuthorizationResponse(authorizationResponse: AuthorizationResponse): Promise<Response> {
     if (
-      !verifiedJwt ||
-      (verifiedJwt.options.responseMode &&
-        !(verifiedJwt.options.responseMode == ResponseMode.POST || verifiedJwt.options.responseMode == ResponseMode.FORM_POST))
+      !authorizationResponse ||
+      (authorizationResponse.options.responseMode &&
+        !(authorizationResponse.options.responseMode == ResponseMode.POST || authorizationResponse.options.responseMode == ResponseMode.FORM_POST))
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    const payload = await verifiedJwt.idToken.payload();
-    const jwt = await verifiedJwt.idToken.jwt();
-    return await postAuthenticationResponseJwt(payload.aud, jwt);
+    const payload = await authorizationResponse.idToken.payload();
+    const jwt = await authorizationResponse.idToken.jwt();
+    return await postAuthorizationResponseJwt(payload.aud, jwt);
   }
 
   /**
@@ -111,7 +98,7 @@ export class OP {
    *
    * @param encodedUri
    */
-  public async parseAuthenticationRequestURI(encodedUri: string): Promise<ParsedAuthorizationRequestURI> {
+  public async parseAuthorizationRequestURI(encodedUri: string): Promise<ParsedAuthorizationRequestURI> {
     const { scheme, requestObjectJwt, authorizationRequestPayload, registrationMetadata } = await URI.parseAndResolve(encodedUri);
 
     return {
@@ -124,7 +111,7 @@ export class OP {
     };
   }
 
-  public newAuthenticationResponseOpts(opts?: {
+  private newAuthorizationResponseOpts(opts?: {
     nonce?: string;
     state?: string;
     audience?: string;
@@ -132,23 +119,23 @@ export class OP {
   }): AuthorizationResponseOpts {
     return {
       ...(opts?.audience ? { redirectUri: opts.audience } : {}),
-      ...this._authResponseOpts,
+      ...this._authorizationResponseOptions,
       ...(opts?.nonce ? { nonce: opts.nonce } : {}),
       ...(opts?.state ? { state: opts.state } : {}),
       ...(opts?.presentationExchange ? { presentationExchange: opts.presentationExchange } : {}),
     };
   }
 
-  public newVerifyAuthenticationRequestOpts(opts?: {
+  private newVerifyAuthorizationRequestOpts(opts?: {
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
-    verifyCallback?: VerifyCallback;
+    // verifyCallback?: VerifyCallback;
   }): VerifyAuthorizationRequestOpts {
     return {
-      ...this._verifyAuthRequestOpts,
-      nonce: opts?.nonce || this._verifyAuthRequestOpts.nonce,
-      verification: opts?.verification || this._verifyAuthRequestOpts.verification,
-      verifyCallback: opts?.verifyCallback,
+      ...this._verifyAuthorizationRequestOptions,
+      nonce: opts?.nonce || this._verifyAuthorizationRequestOptions.nonce,
+      verification: opts?.verification || this._verifyAuthorizationRequestOptions.verification,
+      // wellknownDIDverifyCallback: opts?.verifyCallback,
     };
   }
 
@@ -282,8 +269,8 @@ function createVerifyRequestOptsFromBuilderOrExistingOpts(opts: {
             subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
             resolver: resolver,
           },
-          supportedVersions: opts.builder.supportedVersions,
         } as InternalVerification,
+        supportedVersions: opts.builder.supportedVersions,
       }
     : opts.verifyOpts;
 }

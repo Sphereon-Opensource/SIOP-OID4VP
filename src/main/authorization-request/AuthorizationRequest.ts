@@ -1,10 +1,9 @@
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
-import { fetchByReferenceOrUseByValue, getAudience, getResolver, parseJWT, validateLinkedDomainWithDid, verifyDidJWT } from '../functions';
-import { authorizationRequestVersionDiscovery } from '../functions/SIOPVersionDiscovery';
-import { RequestObject } from '../request-object/RequestObject';
+import { fetchByReferenceOrUseByValue, getAudience, getResolver, parseJWT, verifyDidJWT } from '../functions';
+import { checkSIOPSpecVersionSupported } from '../functions/SIOPVersionDiscovery';
+import { RequestObject } from '../request-object';
 import {
   AuthorizationRequestPayload,
-  CheckLinkedDomain,
   PassBy,
   RequestObjectJwt,
   RequestObjectPayload,
@@ -15,7 +14,7 @@ import {
 } from '../types';
 
 import { assertValidAuthorizationRequestOpts, assertValidVerifyAuthorizationRequestOpts } from './Opts';
-import { assertValidRPRegistrationMedataPayload, createAuthorizationRequestPayload } from './Payload';
+import { assertValidRPRegistrationMedataPayload, checkWellknownDIDFromRequest, createAuthorizationRequestPayload } from './Payload';
 import { URI } from './URI';
 import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
@@ -72,6 +71,10 @@ export class AuthorizationRequest {
     return this._options;
   }
 
+  public hasRequestObject(): boolean {
+    return this.requestObject !== undefined;
+  }
+
   async uri(): Promise<URI> {
     if (!this._uri) {
       this._uri = await URI.fromAuthorizationRequest(this);
@@ -87,15 +90,11 @@ export class AuthorizationRequest {
    */
   async verify(opts: VerifyAuthorizationRequestOpts): Promise<VerifiedAuthorizationRequest> {
     assertValidVerifyAuthorizationRequestOpts(opts);
-    const isJwt = this.requestObject !== undefined;
-    const jwt = isJwt ? await this.requestObject.toJwt() : undefined;
 
     let requestObjectPayload: RequestObjectPayload;
     let verifiedJwt: VerifiedJWT;
-    if (isJwt && !this.payload.request_uri) {
-      // Put back the request object as that won't be present in the Jwt
-      this.payload.request = jwt;
-    }
+
+    const jwt = await this.requestObjectJwt();
     if (jwt) {
       parseJWT(jwt);
       const options = {
@@ -107,16 +106,19 @@ export class AuthorizationRequest {
         throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
       }
       requestObjectPayload = verifiedJwt.payload as RequestObjectPayload;
+
+      if (this.hasRequestObject() && !this.payload.request_uri) {
+        // Put back the request object as that won't be present yet
+        this.payload.request = jwt;
+      }
     }
 
     // AuthorizationRequest.assertValidRequestObject(origAuthenticationRequest);
 
     // We use the orig request for default values, but the JWT payload contains signed request object properties
     const authorizationRequestPayload = { ...this.payload, ...requestObjectPayload };
-    const version = authorizationRequestVersionDiscovery(authorizationRequestPayload);
-    if (opts.verification.supportedVersions && !opts.verification.supportedVersions.includes(version)) {
-      throw new Error(SIOPErrors.SIOP_VERSION_NOT_SUPPORTED);
-    } else if (opts.nonce && authorizationRequestPayload.nonce !== opts.nonce) {
+    const versions = await checkSIOPSpecVersionSupported(authorizationRequestPayload, opts.supportedVersions);
+    if (opts.nonce && authorizationRequestPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${authorizationRequestPayload.nonce}, supplied: ${opts.nonce}`);
     }
 
@@ -126,14 +128,7 @@ export class AuthorizationRequest {
       authorizationRequestPayload['registration']
     );
     assertValidRPRegistrationMedataPayload(registrationMetadata);
-
-    if (authorizationRequestPayload.client_id.startsWith('did:')) {
-      if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-        await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verifyCallback, opts.verification.checkLinkedDomain);
-      } else if (!opts.verification.checkLinkedDomain) {
-        await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verifyCallback, CheckLinkedDomain.IF_PRESENT);
-      }
-    }
+    await checkWellknownDIDFromRequest(authorizationRequestPayload, opts);
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(authorizationRequestPayload);
     return {
       ...verifiedJwt,
@@ -142,7 +137,7 @@ export class AuthorizationRequest {
       presentationDefinitions,
       requestObject: this.requestObject,
       authorizationRequestPayload: authorizationRequestPayload,
-      version,
+      versions,
     };
   }
 

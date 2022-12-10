@@ -22,7 +22,7 @@ export class AuthorizationResponse {
   private readonly _idToken?: IDToken;
   private readonly _payload: AuthorizationResponsePayload;
 
-  private readonly _options: AuthorizationResponseOpts;
+  private readonly _options?: AuthorizationResponseOpts;
 
   constructor({
     authorizationResponsePayload,
@@ -32,7 +32,7 @@ export class AuthorizationResponse {
   }: {
     authorizationResponsePayload: AuthorizationResponsePayload;
     idToken: IDToken;
-    responseOpts: AuthorizationResponseOpts;
+    responseOpts?: AuthorizationResponseOpts;
     authorizationRequest?: AuthorizationRequest;
   }) {
     this._authorizationRequest = authorizationRequest;
@@ -62,11 +62,29 @@ export class AuthorizationResponse {
     return AuthorizationResponse.fromAuthorizationRequest(authorizationRequest, responseOpts, verifyOpts);
   }
 
+  static async fromPayload(
+    authorizationResponsePayload: AuthorizationResponsePayload,
+    responseOpts?: AuthorizationResponseOpts
+  ): Promise<AuthorizationResponse> {
+    if (!authorizationResponsePayload) {
+      throw new Error(SIOPErrors.NO_RESPONSE);
+    }
+    if (responseOpts) {
+      assertValidResponseOpts(responseOpts);
+    }
+    const idToken = await IDToken.fromIDToken(authorizationResponsePayload.id_token);
+    return new AuthorizationResponse({ authorizationResponsePayload, idToken, responseOpts });
+  }
+
   static async fromAuthorizationRequest(
     authorizationRequest: AuthorizationRequest,
     responseOpts: AuthorizationResponseOpts,
     verifyOpts?: VerifyAuthorizationRequestOpts
   ): Promise<AuthorizationResponse> {
+    assertValidResponseOpts(responseOpts);
+    if (!authorizationRequest) {
+      throw new Error(SIOPErrors.NO_REQUEST);
+    }
     if (verifyOpts) {
       await authorizationRequest.verify(verifyOpts);
     }
@@ -108,7 +126,7 @@ export class AuthorizationResponse {
     return this._payload;
   }
 
-  get options(): AuthorizationResponseOpts {
+  get options(): AuthorizationResponseOpts | undefined {
     return this._options;
   }
 

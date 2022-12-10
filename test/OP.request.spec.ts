@@ -64,7 +64,7 @@ describe('OP Builder should', () => {
         })
         .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
         .withExpiresIn(1000)
-        .withSupportedVersions([SupportedVersion['SIOPv2_ID1']])
+        .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
         .build()
     ).toBeInstanceOf(OP);
   });
@@ -110,11 +110,11 @@ describe('OP should', () => {
       resolveOpts: {
         subjectSyntaxTypesSupported: ['did:ethr'],
       },
-      supportedVersions: [SupportedVersion.SIOPv2_ID1],
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
+    supportedVersions: [SupportedVersion.SIOPv2_ID1],
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
   };
 
   it('throw Error when build from request opts without enough params', async () => {
@@ -133,7 +133,6 @@ describe('OP should', () => {
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
       const requestOpts: AuthorizationRequestOpts = {
-        checkLinkedDomain: CheckLinkedDomain.NEVER,
         payload: {
           redirect_uri: EXAMPLE_REDIRECT_URL,
           client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -173,14 +172,14 @@ describe('OP should', () => {
         },
       };
 
-      const requestURI = await RP.fromRequestOpts(requestOpts).createAuthenticationRequest({
+      const requestURI = await RP.fromRequestOpts(requestOpts).createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
 
       nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObjectJwt);
 
-      const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.encodedUri);
+      const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthorizationRequest(requestURI.encodedUri);
       console.log(JSON.stringify(verifiedRequest));
       expect(verifiedRequest.issuer).toMatch(mockEntity.did);
       expect(verifiedRequest.signer).toMatchObject({
@@ -226,7 +225,7 @@ describe('OP should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build()
 
-      .createAuthenticationRequest({
+      .createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
@@ -255,7 +254,7 @@ describe('OP should', () => {
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .build()
 
-      .verifyAuthenticationRequest(requestURI.encodedUri);
+      .verifyAuthorizationRequest(requestURI.encodedUri);
     console.log(JSON.stringify(verifiedRequest));
     expect(verifiedRequest.issuer).toMatch(rpMockEntity.did);
     expect(verifiedRequest.signer).toMatchObject({

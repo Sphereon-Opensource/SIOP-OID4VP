@@ -3,17 +3,7 @@ import { parse } from 'querystring';
 import { IPresentationDefinition } from '@sphereon/pex';
 import { IProofType } from '@sphereon/ssi-types';
 
-import {
-  AuthorizationRequestOpts,
-  CheckLinkedDomain,
-  PassBy,
-  ResponseType,
-  Scope,
-  SigningAlgo,
-  SubjectIdentifierType,
-  SubjectType,
-} from '../src/main';
-import { RequestObject } from '../src/main';
+import { AuthorizationRequestOpts, PassBy, RequestObject, ResponseType, Scope, SigningAlgo, SubjectIdentifierType, SubjectType } from '../src/main';
 import { URI } from '../src/main/authorization-request/URI';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -97,7 +87,6 @@ describe('create Request Uri should', () => {
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
 
       requestObject: {
         passBy: PassBy.REFERENCE,
@@ -161,7 +150,6 @@ describe('create Request Uri should', () => {
         request_object_signing_alg_values_supported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -214,7 +202,6 @@ describe('create Request Uri should', () => {
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
 
       requestObject: {
         passBy: PassBy.VALUE,
@@ -413,7 +400,6 @@ describe('create Request JWT should', () => {
         request_object_signing_alg_values_supported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
 
       requestObject: {
         passBy: PassBy.REFERENCE,
@@ -504,7 +490,6 @@ describe('create Request JWT should', () => {
 
   it('succeed when requesting with a valid PD', async () => {
     const opts: AuthorizationRequestOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -594,7 +579,6 @@ describe('create Request JWT should', () => {
           },
         },
       },
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
 
       requestObject: {
         passBy: PassBy.REFERENCE,

@@ -82,11 +82,11 @@ describe('create JWT from Request JWT should', () => {
       resolveOpts: {
         subjectSyntaxTypesSupported: ['did:ethr'],
       },
-      supportedVersions: [SupportedVersion.SIOPv2_ID1],
       mode: VerificationMode.INTERNAL,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+    supportedVersions: [SupportedVersion.SIOPv2_ID1],
   };
 
   it('throw NO_JWT when no jwt is passed', async () => {
@@ -109,7 +109,6 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: AuthorizationRequestOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       payload: {
         nonce: '12345',
         state: '12345',
@@ -200,7 +199,6 @@ describe('create JWT from Request JWT should', () => {
       const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
       const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
       const requestOpts: AuthorizationRequestOpts = {
-        checkLinkedDomain: CheckLinkedDomain.NEVER,
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
@@ -321,7 +319,6 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthorizationRequestOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -490,7 +487,6 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: AuthorizationRequestOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',

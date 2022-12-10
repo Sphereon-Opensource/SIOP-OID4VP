@@ -26,9 +26,6 @@ export const AuthorizationRequestOptsSchema = {
         },
         "uriScheme": {
           "type": "string"
-        },
-        "checkLinkedDomain": {
-          "$ref": "#/definitions/CheckLinkedDomain"
         }
       },
       "required": [
@@ -1144,14 +1141,6 @@ export const AuthorizationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "CheckLinkedDomain": {
-      "type": "string",
-      "enum": [
-        "never",
-        "if_present",
-        "always"
-      ]
-    },
     "AuthorizationRequestOptsVD11": {
       "type": "object",
       "properties": {
@@ -1166,9 +1155,6 @@ export const AuthorizationRequestOptsSchema = {
         },
         "uriScheme": {
           "type": "string"
-        },
-        "checkLinkedDomain": {
-          "$ref": "#/definitions/CheckLinkedDomain"
         },
         "idTokenType": {
           "type": "string"

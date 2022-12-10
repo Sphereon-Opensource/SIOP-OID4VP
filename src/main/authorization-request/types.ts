@@ -1,9 +1,6 @@
-import { VerifyCallback } from '@sphereon/wellknown-dids-client';
-
 import { ClaimOpts } from '../authorization-response';
 import { RequestObjectOpts } from '../request-object';
 import {
-  CheckLinkedDomain,
   ClientMetadataOpts,
   ExternalVerification,
   InternalVerification,
@@ -12,6 +9,7 @@ import {
   Scope,
   SigningAlgo,
   SubjectType,
+  SupportedVersion,
 } from '../types';
 
 export type AuthorizationRequestPayloadOpts = RequestObjectPayloadOpts;
@@ -42,7 +40,7 @@ interface AuthorizationRequestCommonOpts {
   uriScheme?: string; // Use a custom scheme for the URI. By default openid:// will be used
 
   // FIXME: Doesn't make sense. We are the RP, why would we check ourselves? Should be on the Verify Opts
-  checkLinkedDomain?: CheckLinkedDomain; // determines how we'll handle the linked domains for this RP
+  // checkLinkedDomain?: CheckLinkedDomain; // determines how we'll handle the linked domains for this RP
   // revocationVerificationCallback?: RevocationVerificationCallback;
 }
 
@@ -60,6 +58,8 @@ export interface VerifyAuthorizationRequestOpts {
   verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // If provided the nonce in the request needs to match
+
+  supportedVersions?: SupportedVersion[];
   // redirectUri?: string;
-  verifyCallback?: VerifyCallback;
+  // wellknownDIDverifyCallback?: WellknownDIDVerifyCallback;
 }

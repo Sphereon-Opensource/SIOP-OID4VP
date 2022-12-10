@@ -1,4 +1,3 @@
-import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
@@ -7,16 +6,15 @@ import { URI } from './authorization-request/URI';
 import { AuthorizationRequestOpts } from './authorization-request/types';
 import { AuthorizationResponse } from './authorization-response';
 import { verifyPresentations } from './authorization-response/OpenID4VP';
-import { ClaimOpts, PresentationVerificationCallback, VerifyAuthorizationResponseOpts } from './authorization-response/types';
+import { ClaimOpts, VerifyAuthorizationResponseOpts } from './authorization-response/types';
 import { getNonce, getResolverUnion, getState, mergeAllDidMethods } from './functions';
 import { AuthorizationRequestOptsSchema } from './schemas';
 import {
-  AuthorizationRequestURI,
+  AuthorizationResponsePayload,
   CheckLinkedDomain,
   ClientMetadataOpts,
   ExternalVerification,
   InternalVerification,
-  Verification,
   VerificationMode,
   VerifiedAuthenticationResponse,
 } from './types';
@@ -25,80 +23,70 @@ const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validate = ajv.compile(AuthorizationRequestOptsSchema);
 
 export class RP {
-  private readonly _authRequestOpts: AuthorizationRequestOpts;
-  private readonly _verifyAuthResponseOpts: Partial<VerifyAuthorizationResponseOpts>;
+  private readonly _authorizationRequestOptions: AuthorizationRequestOpts;
+  private readonly _verifyAuthorizationResponseOptions: Partial<VerifyAuthorizationResponseOpts>;
 
   public constructor(opts: { builder?: RPBuilder; requestOpts?: AuthorizationRequestOpts; verifyOpts?: VerifyAuthorizationResponseOpts }) {
-    const claims = opts.builder?.claims;
+    const claims = opts.builder?.claims || opts.requestOpts?.payload.claims;
     const authReqOpts = createRequestOptsFromBuilderOrExistingOpts(opts);
-    this._authRequestOpts = { ...authReqOpts, payload: { ...authReqOpts.payload, claims } };
-    this._verifyAuthResponseOpts = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts), claims };
+    this._authorizationRequestOptions = { ...authReqOpts, payload: { ...authReqOpts.payload, claims } };
+    this._verifyAuthorizationResponseOptions = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts), claims };
   }
 
-  get authRequestOpts(): AuthorizationRequestOpts {
-    return this._authRequestOpts;
+  get authorizationRequestOptions(): AuthorizationRequestOpts {
+    return this._authorizationRequestOptions;
   }
 
-  get verifyAuthResponseOpts(): Partial<VerifyAuthorizationResponseOpts> {
-    return this._verifyAuthResponseOpts;
+  get verifyAuthorizationResponseOptions(): Partial<VerifyAuthorizationResponseOpts> {
+    return this._verifyAuthorizationResponseOptions;
   }
 
-  public async createAuthenticationRequest(opts?: { nonce?: string; state?: string }): Promise<AuthorizationRequestURI> {
-    return await URI.fromOpts(this.newAuthenticationRequestOpts(opts));
+  public async createAuthorizationRequestURI(opts?: { nonce?: string; state?: string }): Promise<URI> {
+    return await URI.fromOpts(this.newAuthorizationRequestOpts(opts));
   }
 
-  public async verifyAuthenticationResponse(
-    authorizationResponse: AuthorizationResponse,
+  public async verifyAuthorizationResponse(
+    authorizationResponsePayload: AuthorizationResponsePayload,
     opts?: {
-      audience: string;
+      audience?: string;
       state?: string;
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
       claims?: ClaimOpts;
-      checkLinkedDomain?: CheckLinkedDomain;
     }
   ): Promise<VerifiedAuthenticationResponse> {
-    const verification: Verification = this._verifyAuthResponseOpts.verification;
-    const verifyCallback = verification.wellknownDIDVerifyCallback || this._verifyAuthResponseOpts.verifyCallback;
-    const presentationVerificationCallback =
-      verification.presentationVerificationCallback || this.verifyAuthResponseOpts.presentationVerificationCallback;
-    const verifyAuthenticationResponseOpts = this.newVerifyAuthenticationResponseOpts({
+    const verifyAuthenticationResponseOpts = this.newVerifyAuthorizationResponseOpts({
       ...opts,
-      verifyCallback,
-      presentationVerificationCallback,
     });
-    await verifyPresentations(authorizationResponse.payload, verifyAuthenticationResponseOpts);
-    return await authorizationResponse.idToken.verify(verifyAuthenticationResponseOpts);
+    await verifyPresentations(authorizationResponsePayload, verifyAuthenticationResponseOpts);
+    const authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload);
+    return await authorizationResponse.verify(verifyAuthenticationResponseOpts);
   }
 
-  public newAuthenticationRequestOpts(opts?: { nonce?: string; state?: string }): AuthorizationRequestOpts {
+  private newAuthorizationRequestOpts(opts?: { nonce?: string; state?: string }): AuthorizationRequestOpts {
     const state = opts?.state || getState(opts?.state);
     const nonce = opts?.nonce || getNonce(state, opts?.nonce);
     return {
-      ...this._authRequestOpts,
-      payload: { ...this._authRequestOpts.payload, state, nonce },
+      ...this._authorizationRequestOptions,
+      payload: { ...this._authorizationRequestOptions.payload, state, nonce },
     };
   }
 
-  public newVerifyAuthenticationResponseOpts(opts?: {
+  private newVerifyAuthorizationResponseOpts(opts?: {
     state?: string;
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
     claims?: ClaimOpts;
-    audience: string;
+    audience?: string;
     checkLinkedDomain?: CheckLinkedDomain;
-    verifyCallback?: VerifyCallback;
-    presentationVerificationCallback?: PresentationVerificationCallback;
   }): VerifyAuthorizationResponseOpts {
     return {
-      ...this._verifyAuthResponseOpts,
-      audience: opts.audience,
-      state: opts?.state || this._verifyAuthResponseOpts.state,
-      nonce: opts?.nonce || this._verifyAuthResponseOpts.nonce,
-      claims: { ...this._verifyAuthResponseOpts.claims, ...opts.claims },
-      verification: opts?.verification || this._verifyAuthResponseOpts.verification,
-      verifyCallback: opts?.verifyCallback,
-      presentationVerificationCallback: opts?.presentationVerificationCallback,
+      ...this._verifyAuthorizationResponseOptions,
+      audience: opts?.audience || this._verifyAuthorizationResponseOptions.audience,
+      state: opts?.state || this._verifyAuthorizationResponseOptions.state,
+      nonce: opts?.nonce || this._verifyAuthorizationResponseOptions.nonce,
+      claims: { ...this._verifyAuthorizationResponseOptions.claims, ...opts.claims },
+      verification: opts?.verification || this._verifyAuthorizationResponseOptions.verification,
     };
   }
 

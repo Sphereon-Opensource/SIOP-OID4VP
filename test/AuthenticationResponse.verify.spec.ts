@@ -19,9 +19,9 @@ describe('verify JWT from Request JWT should', () => {
         subjectSyntaxTypesSupported: ['did:ethr'],
       },
       mode: VerificationMode.INTERNAL,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
   };
 
   it('throw NO_JWT when no jwt is passed', async () => {

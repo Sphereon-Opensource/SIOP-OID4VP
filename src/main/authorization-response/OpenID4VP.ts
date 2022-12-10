@@ -24,7 +24,7 @@ export const verifyPresentations = async (
       },
     ],
     presentationPayloads: authorizationResponse.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
-    verificationCallback: verifyOpts.presentationVerificationCallback,
+    verificationCallback: verifyOpts.verification.presentationVerificationCallback,
   });
   const revocationVerification = verifyOpts.verification?.revocationOpts
     ? verifyOpts.verification.revocationOpts.revocationVerification

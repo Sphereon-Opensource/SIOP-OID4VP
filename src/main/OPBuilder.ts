@@ -90,6 +90,7 @@ export default class OPBuilder {
   idTokenSigningAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
 */
+
   // Only internal | supplied supported for now
   signature(signatureType: InternalSignature | SuppliedSignature): OPBuilder {
     this.signatureType = signatureType;
@@ -111,24 +112,18 @@ export default class OPBuilder {
     return this;
   }
 
-  private initSupportedVersions() {
-    if (!this.supportedVersions) {
-      this.supportedVersions = [];
-    }
-  }
-
-  withSupportedVersions(supportedVersion: SupportedVersion[] | SupportedVersion): OPBuilder {
-    this.initSupportedVersions();
-    if (Array.isArray(supportedVersion)) {
-      this.supportedVersions.push(...supportedVersion);
-    } else {
-      this.supportedVersions.push(supportedVersion);
+  withSupportedVersions(supportedVersions: SupportedVersion[] | SupportedVersion | string[] | string): OPBuilder {
+    const versions = Array.isArray(supportedVersions) ? supportedVersions : [supportedVersions];
+    for (const version of versions) {
+      this.addSupportedVersion(version);
     }
     return this;
   }
 
   addSupportedVersion(supportedVersion: string | SupportedVersion): OPBuilder {
-    this.initSupportedVersions();
+    if (!this.supportedVersions) {
+      this.supportedVersions = [];
+    }
     if (typeof supportedVersion === 'string') {
       this.supportedVersions.push(SupportedVersion[supportedVersion]);
     } else if (Array.isArray(supportedVersion)) {

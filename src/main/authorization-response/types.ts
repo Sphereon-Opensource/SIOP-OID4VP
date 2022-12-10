@@ -1,7 +1,6 @@
 import { PresentationSignCallBackParams } from '@sphereon/pex';
 import { PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import { PresentationSubmission, W3CVerifiablePresentation } from '@sphereon/ssi-types';
-import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 
 import {
   CheckLinkedDomain,
@@ -77,6 +76,6 @@ export interface VerifyAuthorizationResponseOpts {
   state?: string; // mandatory? // To verify the response against the supplied state
   audience: string; // The audience/redirect_uri
   claims?: ClaimOpts; // The claims, typically the same values used during request creation
-  verifyCallback?: VerifyCallback;
-  presentationVerificationCallback?: PresentationVerificationCallback;
+  // verifyCallback?: VerifyCallback;
+  // presentationVerificationCallback?: PresentationVerificationCallback;
 }

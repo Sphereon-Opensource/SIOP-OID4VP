@@ -26,6 +26,7 @@ import {
   VerificationMode,
   verifyRevocation,
 } from '../src/main';
+import { checkSIOPSpecVersionSupported } from '../src/main/functions/SIOPVersionDiscovery';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
@@ -203,24 +204,23 @@ describe('RP and OP interaction should', () => {
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
-      const requestURI = await rp.createAuthenticationRequest({
+      const requestURI = await rp.createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
 
       nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
 
-      //The schema validation needs to be done here otherwise it fails because of JWT properties
-      await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
+      await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyAuthorizationRequestOptions.supportedVersions);
       // The create method also calls the verifyRequest method, so no need to do it manually
-      const verifiedRequest = await op.verifyAuthenticationRequest(requestURI.encodedUri);
-      const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedRequest);
+      const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
+      const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedRequest);
 
       nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, { result: 'ok' });
-      const response = await op.submitAuthenticationResponse(authenticationResponseWithJWT);
+      const response = await op.submitAuthorizationResponse(authenticationResponseWithJWT);
       await expect(response.json()).resolves.toMatchObject({ result: 'ok' });
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
         audience: EXAMPLE_REDIRECT_URL,
       });
 
@@ -303,28 +303,26 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT);
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT);
     expect(authenticationResponseWithJWT.payload).toBeDefined();
     expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
     });
 
@@ -405,23 +403,23 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
     //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
+    await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyAuthorizationRequestOptions.supportedVersions);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
-    await expect(op.createAuthenticationResponse(verifiedAuthReqWithJWT)).rejects.toThrow(
+    await expect(op.createAuthorizationResponse(verifiedAuthReqWithJWT)).rejects.toThrow(
       Error('authentication request expects a verifiable presentation in the response')
     );
 
@@ -504,20 +502,18 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
@@ -529,9 +525,9 @@ describe('RP and OP interaction should', () => {
       pd[0].definition,
       getVCs(),
       {},
-      op.authResponseOpts.presentationExchange.presentationSignCallback
+      op.authorizationResponseOptions.presentationExchange.presentationSignCallback
     )) as IVerifiablePresentation;
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
         vps: [
           {
@@ -545,7 +541,7 @@ describe('RP and OP interaction should', () => {
     expect(authenticationResponseWithJWT.payload).toBeDefined();
     expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
     });
 
@@ -627,20 +623,18 @@ describe('RP and OP interaction should', () => {
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
-      const requestURI = await rp.createAuthenticationRequest({
+      const requestURI = await rp.createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      //The schema validation needs to be done here otherwise it fails because of JWT properties
-      await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
       // Let's test the parsing
-      const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+      const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
       expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
       expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
       expect(parsedAuthReqURI.registration).toBeDefined();
 
-      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
+      const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
@@ -652,9 +646,9 @@ describe('RP and OP interaction should', () => {
         pd[0].definition,
         getVCs(),
         {},
-        op.authResponseOpts.presentationExchange.presentationSignCallback
+        op.authorizationResponseOptions.presentationExchange.presentationSignCallback
       )) as IVerifiablePresentation;
-      const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
+      const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
           vps: [
             {
@@ -667,7 +661,7 @@ describe('RP and OP interaction should', () => {
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
       await expect(
-        rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+        rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
           audience: EXAMPLE_REDIRECT_URL,
           verification: {
             mode: VerificationMode.INTERNAL,
@@ -676,6 +670,7 @@ describe('RP and OP interaction should', () => {
               subjectSyntaxTypesSupported: ['did', 'did:eth'],
             },
             checkLinkedDomain: CheckLinkedDomain.ALWAYS,
+            wellknownDIDVerifyCallback: verifyCallback,
             revocationOpts: {
               revocationVerification: RevocationVerification.ALWAYS,
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -773,20 +768,18 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
@@ -798,9 +791,9 @@ describe('RP and OP interaction should', () => {
       pd[0].definition,
       getVCs(),
       {},
-      op.authResponseOpts.presentationExchange.presentationSignCallback
+      op.authorizationResponseOptions.presentationExchange.presentationSignCallback
     )) as IVerifiablePresentation;
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
         vps: [
           {
@@ -820,9 +813,9 @@ describe('RP and OP interaction should', () => {
         'eyJhbGciOiJSUzI1NiIsImtpZCI6ImRpZDprZXk6ejZNa29USHNnTk5yYnk4SnpDTlExaVJMeVc1UVE2UjhYdXU2QUE4aWdHck1WUFVNI3o2TWtvVEhzZ05OcmJ5OEp6Q05RMWlSTHlXNVFRNlI4WHV1NkFBOGlnR3JNVlBVTSJ9.eyJleHAiOjE3NjQ4NzkxMzksImlzcyI6ImRpZDprZXk6b3RoZXIiLCJuYmYiOjE2MDcxMTI3MzksInN1YiI6ImRpZDprZXk6b3RoZXIiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vaWRlbnRpdHkuZm91bmRhdGlvbi8ud2VsbC1rbm93bi9kaWQtY29uZmlndXJhdGlvbi92MSJdLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDprZXk6b3RoZXIiLCJvcmlnaW4iOiJodHRwczovL2lkZW50aXR5LmZvdW5kYXRpb24ifSwiZXhwaXJhdGlvbkRhdGUiOiIyMDI1LTEyLTA0VDE0OjEyOjE5LTA2OjAwIiwiaXNzdWFuY2VEYXRlIjoiMjAyMC0xMi0wNFQxNDoxMjoxOS0wNjowMCIsImlzc3VlciI6ImRpZDprZXk6b3RoZXIiLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiRG9tYWluTGlua2FnZUNyZWRlbnRpYWwiXX19.rRuc-ojuEgyq8p_tBYK7BayuiNTBeXNyAnC14Rnjs-jsnhae4_E1Q12W99K2NGCGBi5KjNsBcZmdNJPxejiKPrjjcB99poFCgTY8tuRzDjVo0lIeBwfx9qqjKHTRTUR8FGM_imlOpVfBF4AHYxjkHvZn6c9lYvatYcDpB2UfH4BNXkdSVrUXy_kYjpMpAdRtyCAnD_isN1YpEHBqBmnfuVUbYcQK5kk6eiokRFDtWruL1OEeJMYPqjuBSd2m-H54tSM84Oic_pg2zXDjjBlXNelat6MPNT2QxmkwJg7oyewQWX2Ot2yyhSp9WyAQWMlQIe2x84R0lADUmZ1TPQchNw',
       ],
     };
-    expect(rp.verifyAuthResponseOpts.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
+    expect(rp.verifyAuthorizationResponseOptions.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -908,20 +901,18 @@ describe('RP and OP interaction should', () => {
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
-      const requestURI = await rp.createAuthenticationRequest({
+      const requestURI = await rp.createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      //The schema validation needs to be done here otherwise it fails because of JWT properties
-      await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
       // Let's test the parsing
-      const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+      const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
       expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
       expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
       expect(parsedAuthReqURI.registration).toBeDefined();
 
-      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
+      const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
@@ -933,9 +924,9 @@ describe('RP and OP interaction should', () => {
         pd[0].definition,
         getVCs(),
         {},
-        op.authResponseOpts.presentationExchange.presentationSignCallback
+        op.authorizationResponseOptions.presentationExchange.presentationSignCallback
       )) as IVerifiablePresentation;
-      const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
+      const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
           vps: [
             {
@@ -949,7 +940,7 @@ describe('RP and OP interaction should', () => {
       expect(authenticationResponseWithJWT.payload).toBeDefined();
       expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
         audience: EXAMPLE_REDIRECT_URL,
       });
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -1051,20 +1042,19 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload);
+    await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyAuthorizationRequestOptions.supportedVersions);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt); //, rp.authRequestOpts
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt); //, rp.authRequestOpts
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
@@ -1077,10 +1067,10 @@ describe('RP and OP interaction should', () => {
       pd[0].definition,
       getVCs(),
       {},
-      op.authResponseOpts.presentationExchange.presentationSignCallback
+      op.authorizationResponseOptions.presentationExchange.presentationSignCallback
     )) as IVerifiablePresentation;
 
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
         vps: [
           {
@@ -1102,7 +1092,7 @@ describe('RP and OP interaction should', () => {
       ],
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -1353,18 +1343,18 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.requestObjectJwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
@@ -1376,9 +1366,9 @@ describe('RP and OP interaction should', () => {
       pd[0].definition,
       getVCs(),
       {},
-      op.authResponseOpts.presentationExchange.presentationSignCallback
+      op.authorizationResponseOptions.presentationExchange.presentationSignCallback
     )) as IVerifiablePresentation;
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
         vps: [
           {
@@ -1392,7 +1382,7 @@ describe('RP and OP interaction should', () => {
     expect(authenticationResponseWithJWT.payload).toBeDefined();
     expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();

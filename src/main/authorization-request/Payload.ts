@@ -2,14 +2,16 @@ import { PEX } from '@sphereon/pex';
 import Ajv from 'ajv';
 
 import { ClaimOpts } from '../authorization-response';
-import { getNonce, getState } from '../functions';
+import { getNonce, getState, validateLinkedDomainWithDid } from '../functions';
 import { RequestObject } from '../request-object';
 import { RPRegistrationMetadataPayloadSchema } from '../schemas';
 import {
   AuthorizationRequestPayload,
+  CheckLinkedDomain,
   ClaimPayload,
   ClientMetadataOpts,
   PassBy,
+  RequestObjectPayload,
   ResponseMode,
   ResponseType,
   RPRegistrationMetadataPayload,
@@ -18,7 +20,7 @@ import {
 } from '../types';
 
 import { createRequestRegistration } from './RequestRegistration';
-import { AuthorizationRequestOpts } from './types';
+import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
@@ -87,5 +89,26 @@ export const assertValidRPRegistrationMedataPayload = (regObj: RPRegistrationMet
     throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
   } else if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
     throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
+  }
+};
+
+export const checkWellknownDIDFromRequest = async (
+  authorizationRequestPayload: RequestObjectPayload,
+  opts: VerifyAuthorizationRequestOpts
+): Promise<void> => {
+  if (authorizationRequestPayload.client_id.startsWith('did:')) {
+    if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
+      await validateLinkedDomainWithDid(
+        authorizationRequestPayload.client_id,
+        opts.verification.wellknownDIDVerifyCallback,
+        opts.verification.checkLinkedDomain
+      );
+    } else if (!opts.verification.checkLinkedDomain) {
+      await validateLinkedDomainWithDid(
+        authorizationRequestPayload.client_id,
+        opts.verification.wellknownDIDVerifyCallback,
+        CheckLinkedDomain.IF_PRESENT
+      );
+    }
   }
 };

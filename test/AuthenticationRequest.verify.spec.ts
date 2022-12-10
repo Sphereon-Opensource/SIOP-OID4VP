@@ -3,8 +3,10 @@ import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknow
 import * as dotenv from 'dotenv';
 
 import {
-  CheckLinkedDomain,
+  AuthorizationRequest,
+  AuthorizationRequestOpts,
   PassBy,
+  RequestObject,
   ResponseType,
   Scope,
   SigningAlgo,
@@ -12,10 +14,8 @@ import {
   SubjectType,
   SupportedVersion,
   VerificationMode,
+  VerifyAuthorizationRequestOpts,
 } from '../src/main';
-import { AuthorizationRequest } from '../src/main';
-import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main';
-import { RequestObject } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { metadata, mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -56,7 +56,6 @@ describe('verifyJWT should', () => {
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
     const requestOpts: AuthorizationRequestOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       payload: {
         state: 'expected state',
         client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -107,11 +106,11 @@ describe('verifyJWT should', () => {
         resolveOpts: {
           subjectSyntaxTypesSupported: ['did:key'],
         },
-        supportedVersions: [SupportedVersion.SIOPv2_ID1],
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
       },
+      supportedVersions: [SupportedVersion.SIOPv2_ID1],
       nonce: 'This nonce is different and should throw error',
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     };
 
     // expect.assertions(1);
@@ -170,10 +169,10 @@ describe('verifyJWT should', () => {
           resolveOpts: {
             subjectSyntaxTypesSupported: ['did:ethr'],
           },
-          supportedVersions: [SupportedVersion.SIOPv2_ID1],
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
         },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+        supportedVersions: [SupportedVersion.SIOPv2_ID1],
       };
 
       const verifyJWT = await AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts);
