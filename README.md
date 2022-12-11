@@ -1,38 +1,38 @@
 <h1 style="text-align: center; vertical-align: middle">
-  <center><a href="https://www.gimly.io/"><img src="https://avatars.githubusercontent.com/u/64525639?s=200&v=4" alt="Gimly" width="120" style="vertical-align: middle"></a> &nbsp;and &nbsp; <a href="https://www.sphereon.com"><img src="https://sphereon.com/content/themes/sphereon/assets/img/logo.svg" alt="Sphereon" width="320" style="vertical-align: middle" ></a></center>
+  <div style="text-align: center;"><a href="https://www.sphereon.com"><img src="https://sphereon.com/content/themes/sphereon/assets/img/logo.svg" alt="Sphereon" width="320" style="vertical-align: middle" ></a></div>
 
-Self Issued OpenID Provider v2 (SIOP)
+Self Issued OpenID Provider v2 (SIOPv2) and<br/>
+OpenID for Verifiable Presentations (OpenID4VP)
 </h1>
 <br>
 
-[![CI](https://github.com/Sphereon-Opensource/did-auth-siop/actions/workflows/main.yml/badge.svg)](https://github.com/Sphereon-Opensource/did-auth-siop/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/Sphereon-Opensource/did-auth-siop/branch/develop/graph/badge.svg?token=9P1JGUYA35)](https://codecov.io/gh/Sphereon-Opensource/did-auth-siop) [![NPM Version](https://img.shields.io/npm/v/@sphereon/did-auth-siop.svg)](https://npm.im/@sphereon/did-auth-siop)
+[![CI](https://github.com/Sphereon-Opensource/SIOP-OpenID4VP/actions/workflows/main.yml/badge.svg)](https://github.com/Sphereon-Opensource/SIOP-OpenID4VP/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/Sphereon-Opensource/SIOP-OpenID4VP/branch/develop/graph/badge.svg?token=9P1JGUYA35)](https://codecov.io/gh/Sphereon-Opensource/SIOP-OpenID4VP) [![NPM Version](https://img.shields.io/npm/v/@sphereon/did-auth-siop.svg)](https://npm.im/@sphereon/did-auth-siop)
 
-An authentication library for having clients/people conforming to
+An OpenID authentication library conforming to
 the [Self Issued OpenID Provider v2 (SIOPv2)](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html)
-and  [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html)
+and  [OpenID for Verifiable Presentations (OpenID4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html)
 as specified in the OpenID Connect working group.
 
 ## Introduction
 
+[SIOP v2](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html) is an extension of OpenID to allow End-users to act as OpenID Providers (OPs) themselves. Using
+Self-Issued OPs, End-users can authenticate themselves and present claims directly to a Relying Party (RP),
+typically a webapp, without involving a third-party Identity Provider. This makes the interactions fully self sovereign, as
+it doesn't depend on any third parties and strictly happens peer 2 peer, yet still using well known constructs from the OpenID protocol.
 
-SIOP v2 is an extension of OpenID Connect to allow End-users to act as OpenID Providers (OPs) themselves. Using
-Self-Issued OPs, End-users can authenticate themselves and present claims directly to the Relying Parties (RPs),
-typically a webapp, without relying on a third-party Identity Provider. This makes the solution fully self sovereign, as
-it does not rely on any third parties and strictly happens peer 2 peer, but still uses the OpenID Connect protocol.
-
-Next to the user acting as an OpenID Provider, this library also includes support for Verifiable Presentations using
-the [Presentation Exchange](https://identity.foundation/presentation-exchange/) support provided by
-our [PEX](https://github.com/Sphereon-Opensource/pex) library. This means that the Relying Party can pose submission
-requirements on the Verifiable Credentials it would like to receive from the client/OP. The OP then checks whether it
-has the credentials to support the submission requirements. Only if that is the case it will send the relevant (parts of
-the) credentials as a Verifiable Presentation in the Authentication Response destined for the Webapp/Relying Party. The
+Next to the user acting as an OpenID Provider, this library also has support for Verifiable Presentations using
+the [Presentation Exchange](https://identity.foundation/presentation-exchange/) provided by
+our [PEX](https://github.com/Sphereon-Opensource/pex) library. This means that the Relying Party can express submission
+requirements in the form of Presentation Definitions, defining the Verifiable Credentials(s) types it would like to receive from the User/OP. 
+The OP then checks whether it has the credentials to support the Presentation Definition. Only if that is the case it will send the relevant (parts of
+the) credentials as a Verifiable Presentation in the Authorization Response destined for the Webapp/Relying Party. The
 relying party in turn checks validity of the Verifiable Presentation(s) as well as the match with the submission
 requirements. Only if everything is verified successfully the RP serves the protected page(s). This means that the
 authentication can be extended with claims about the authenticating entity, but it can also be used to easily consume
-credentials from supporting applications, without having to setup DIDComm connections for instance.
+credentials from supporting applications, without having to setup DIDComm connections for instance. These credentials can either be self-asserted or from trusted 3rd party issuer.
 
 The term Self-Issued comes from the fact that the End-users (OP) issue self-signed ID Tokens to prove validity of the
-identifiers and claims. This is a trust model different from that of the rest of OpenID Connect where OP is run by the
+identifiers and claims. This is a trust model different from regular OpenID Connect where the OP is run by the
 third party who issues ID Tokens on behalf of the End-user to the Relying Party upon the End-user's consent. This means
 the End-User is in control about his/her data instead of the 3rd party OP.
 
@@ -40,20 +40,25 @@ Demo: https://vimeo.com/630104529 and a more stripped down demo: https://youtu.b
 
 ## Active Development
 
-_IMPORTANT: This software still is in **VERY** early development stage. As such you should expect breaking changes in APIs, we
-expect to keep that to a minimum though._
+_IMPORTANT:_
+* _This software still is in early development stage. As such you should expect breaking changes in APIs, we
+expect to keep that to a minimum though. Version 0.3.X and onwards have change the external API especially on the Requests and Responses and slightly on the RP/OP classes._
+* _The name of the package also changed from [@sphereon/did-auth-siop](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html) to [@sphereon/SIOP-OpenID4VP], to better reflect specification name changes_
+
 
 ## Functionality
 
-The DID Auth SIOP v2 library consists of a group of services and classes to:
+This library supports:
 
 - [Decentralized Identifiers (DID)](https://www.w3.org/TR/did-core/) method neutral: Resolve DIDs using
   DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and
   Sphereon's [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client)
-- Verify and Create Json Web Tokens (JWTs) as used in OpenID Connect using Decentralized Identifiers (DIDs)
-- OP class to create Authentication Requests and verify Authentication Responses
-- RP class to verify Authentication Requests and create Authentication Responses
-- Verifiable Presentation and Presentation Exchange support on the RP and OP sides
+- Verify and Create/sign Json Web Tokens (JWTs) as used in OpenID Connect using Decentralized Identifiers (DIDs) or JSON Web Keys (JWK)
+- OP class to create Authorization Requests and verify Authorization Responses
+- RP class to verify Authorization Requests and create Authorization Responses
+- Verifiable Presentation and Presentation Exchange support on the RP and OP sides, according to the OpenID4VP and Presentation Exchange specifications
+- [Well-known DID Configuration](https://identity.foundation/.well-known/resources/did-configuration/) support to bind domain names to DIDs.
+- SIOPv2 specification version discovery with support for the latest [development version (draft 11)](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html), [Implementers Draft 1](https://openid.net/specs/openid-connect-self-issued-v2-1_0-ID1.html) and the [JWT VC Presentation Interop Profile](https://identity.foundation/jwt-vc-presentation-profile/)
 
 ## Steps involved
 
@@ -90,19 +95,19 @@ Flow diagram:
           "registration": {
              "did_methods_supported": [
               "did:ethr:",
-              "did:eosio:"
+              "did:web:"
              ],
              "subject_identifiers_supported": "did"
           }
        }
         ```
 
-        2. The Signed JWT, called the JWS follows the following scheme (JWS Compact
+        2. The Signed JWT, including the JWS follows the following scheme (JWS Compact
            Serialization, https://datatracker.ietf.org/doc/html/rfc7515#section-7.1):
 
        `BASE64URL(UTF8(JWT Protected Header)) || '.' || BASE64URL(JWT Payload) || '.' || BASE64URL(JWS Signature)`
 
-        3. Create the URI containing the JWS:
+        3. Create the URI containing the JWT:
        ```
        openid://?response_type=id_token 
           &scope=openid
@@ -114,7 +119,7 @@ Flow diagram:
           &state=af0ifjsldkj
           &nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f
           &registration=%5Bobject%20Object%5D
-          &request=<JWS here>
+          &request=<JWT here>
        ```
         4. `claims` param can be either a `vp_token` or an `id_token`:
        ````json
@@ -174,12 +179,12 @@ Flow diagram:
 
 3. Web receives the Auth Request URI Object from RP
 4. Web sends the Auth Request URI in the response body to the client
-5. Client accesses OP object to create an Authentication response
-6. OP verifies the authentication request, including checks on whether the RP did and keytypes are supported, next to
+5. Client uses the OP instance to create an Auth response
+6. OP verifies the auth request, including checks on whether the RP DID method and key types are supported, next to
    whether the OP can satisfy the RPs requested Verifiable Credentials
-7. Presentation Exchange process in case the RP requested presentation definitions in the claims (see Presentation
+7. Presentation Exchange process in case the RP had presentation definition(s) in the claims (see Presentation
    Exchange chapter)
-8. OP creates the authentication response object as follows:
+8. OP creates the auth response object as follows:
     1. Create an ID token as shown below:
 
     ````json
@@ -232,9 +237,9 @@ Flow diagram:
    `BASE64URL(UTF8(JWS Protected Header)) || '.' || BASE64URL(JWS Payload) || '.' || BASE64URL(JWS Signature)`
 
 9. OP returns the Auth response and jwt object to the client
-10. Client does an HTTP POST to redirect_uri from the request (and the aud in the
+10. Client does a HTTP POST to redirect_uri from the request (and the aud in the
     response): https://acme.com/siop/v1/sessions using "application/x-www-form-urlencoded"
-11. Web receives the ID token (auth response) and uses the RP's object verify method
+11. Web receives the ID token (auth response) and uses the RP's verify method
 12. RP performs the validation of the token, including signature validation, expiration and Verifiable Presentations if
     any. It returns the Verified Auth Response to WEB
 13. WEB returns a 200 response to Client with a redirect to another page (logged in or confirmation of VP receipt etc).
@@ -242,8 +247,8 @@ Flow diagram:
 
 ## OP and RP setup and interactions
 
-This chapter is a walk-through for using the SIOP authentication library using the highlevel OP and RP classes. To keep
-it simple, the examples work without the HTTP endpoints involved in the above schema.
+This chapter is a walk-through for using the library using the high-level OP and RP classes. To keep
+it simple, the examples work without hosting partial request/response related objects using HTTP endpoints. They are passed by value, inlined in the respective payloads versus passed by reference.
 
 ---
 **NOTE**
@@ -256,8 +261,8 @@ You could also use the actual example keys and DIDs, as they are valid Ethr Rops
 
 ### Relying Party and SIOP should have keys and DIDs
 
-Since the SIOP Auth library uses DIDs for both the Relying Party and the Self-Issued OpenID Provider, we expect these
-DIDs to be present on both sides, as well as the respective parties having access to their private key(s). How DIDs are
+Since the library uses DIDs for both the RP and the OP, we expect these
+DIDs to be present on both sides, and the respective parties should have access to their private key(s). How DIDs are
 created is out of scope of this library, but we provide a [ethereum DID example](ethr-dids-testnet.md)
 and [manual eosio DID walk-through](eosio-dids-testnet.md) if you want to test it yourself without having DIDs.
 
@@ -266,10 +271,10 @@ and [manual eosio DID walk-through](eosio-dids-testnet.md) if you want to test i
 The Relying Party, typically a web app, but can also be something else, like a mobile app.
 
 We will use an example private key and DID on the Ethereum Ropsten testnet network. Both the actual JWT request and the
-registration metadata will be sent as part of the AuthRequest since we pass them by value instead of by reference where
+registration metadata will be sent as part of the Auth Request since we pass them by value instead of by reference where
 we would have to host the data at the reference URL. The redirect URL means that the OP will need to deliver the
-authentication response at the URL specified by the RP. Lastly we have enabled the 'ethr' DID method on the RP side for
-doing Authentication Response checks with Ethereum DIDs in them. Please note that you can add multiple DID methods, and
+auth response at the URL specified by the RP. Lastly we have enabled the 'ethr' DID method on the RP side for
+doing Auth Response checks with Ethereum DIDs in them. Please note that you can add multiple DID methods, and
 they have no influence on the DIDs being used to sign, the internal signature. We also populated the RP with
 a `PresentationDefinition` claim, meaning we expect the OP to send in a Verifiable Presentation that matches our
 definition. You can pass where you expect this presentation_definition to end up via the required `location` property.
@@ -278,86 +283,92 @@ This is either a top-level vp_token or it becomes part of the id_token.
 ````typescript
 
 // The relying party (web) private key and DID and DID key (public key)
+import { SigningAlgo } from './SIOP.types';
+
 const rpKeys = {
-    hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-    did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-    didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller'
+  hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
+  did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
+  didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller',
+  alg: SigningAlgo.ES256K
 }
 const rp = RP.builder()
-    .redirect(EXAMPLE_REDIRECT_URL)
-    .requestBy(PassBy.VALUE)
-    .withPresentationVerification(presentationVerificationCallback)
-    .addVerifyCallback(verifyCallback)
-    .withRevocationVerification(RevocationVerification.NEVER)
-    .internalSignature(rpKeys.hexPrivateKey, rpKeys.did, rpKeys.didKey)
-    .addDidMethod("ethr")
-    .registrationBy({
-      idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      responseTypesSupported: [ResponseType.ID_TOKEN],
-      vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
-      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-      subjectTypesSupported: [SubjectType.PAIRWISE],
-      subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-      registrationBy: { type: PassBy.VALUE },
-    })
-    .addPresentationDefinitionClaim({
-        definition: {
-            "input_descriptors": [
-                {
-                    "schema": [
-                        {
-                            "uri": "https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan"
-                        }
-                    ]
-                }
-            ]
-        },
-        location: PresentationLocation.VP_TOKEN, // Toplevel vp_token response expected. This also can be ID_TOKEN
-    })
-    .build();
+  .redirect(EXAMPLE_REDIRECT_URL)
+  .requestBy(PassBy.VALUE)
+  .withPresentationVerification(presentationVerificationCallback)
+  .addVerifyCallback(verifyCallback)
+  .withRevocationVerification(RevocationVerification.NEVER)
+  .internalSignature(rpKeys.hexPrivateKey, rpKeys.did, rpKeys.didKey, rpKeys.alg)
+  .addDidMethod("ethr")
+  .withClientMetadata({
+    idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+    requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+    responseTypesSupported: [ResponseType.ID_TOKEN],
+    vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
+    scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+    subjectTypesSupported: [SubjectType.PAIRWISE],
+    subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+    passBY: PassBy.VALUE
+  })
+  .addPresentationDefinitionClaim({
+    definition: {
+      "input_descriptors": [
+        {
+          "schema": [
+            {
+              "uri": "https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan"
+            }
+          ]
+        }
+      ]
+    },
+    location: PresentationLocation.VP_TOKEN, // Toplevel vp_token response expected. This also can be ID_TOKEN
+  })
+  .build();
 ````
 
-### OpenID Provider (SIOP)
+### OpenID Provider (OP)
 
-The SIOP, typically a browser together with a mobile phone is accessing a protected resource at the RP, or needs to sent
+The OP, typically a useragent together with a mobile phone in a cross device flow is accessing a protected resource at the RP, or needs to sent
 in Verifiable Presentations. In the example below we are expressing that the OP supports the 'ethr' didMethod, we are
 passing the signing information, which will never leave the OP's computer and we are configuring to send the JWT as part
 of the payload (by value).
 
 ````typescript
 // The OpenID Provider (client) private key and DID and DID key (public key)
+import { SigningAlgo } from './SIOP.types';
+
 const opKeys = {
-    hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
-    did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
-    didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller'
+  hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
+  did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
+  didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
+  alg: SigningAlgo.alg
 }
 
 const op = OP.builder()
-    .withExpiresIn(6000)
-    .addDidMethod("ethr")
-    .addVerifyCallback(verifyCallback)
-    .addIssuer(ResponseIss.SELF_ISSUED_V2)
-    .internalSignature(opKeys.hexPrivateKey, opKeys.did, opKeys.didKey)
-    .registrationBy({
-      authorizationEndpoint: 'www.myauthorizationendpoint.com',
-      idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
-      issuer: ResponseIss.SELF_ISSUED_V2,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      responseTypesSupported: [ResponseType.ID_TOKEN],
-      vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
-      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-      subjectTypesSupported: [SubjectType.PAIRWISE],
-      subjectSyntaxTypesSupported: ['did:ethr'],
-      registrationBy: { type: PassBy.VALUE },
-    })
-    .build();
+  .withExpiresIn(6000)
+  .addDidMethod("ethr")
+  .addVerifyCallback(verifyCallback)
+  .addIssuer(ResponseIss.SELF_ISSUED_V2)
+  .internalSignature(opKeys.hexPrivateKey, opKeys.did, opKeys.didKey, opKeys.alg)
+  .withClientMetadata({
+    authorizationEndpoint: 'www.myauthorizationendpoint.com',
+    idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+    issuer: ResponseIss.SELF_ISSUED_V2,
+    requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+    responseTypesSupported: [ResponseType.ID_TOKEN],
+    vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
+    scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+    subjectTypesSupported: [SubjectType.PAIRWISE],
+    subjectSyntaxTypesSupported: ['did:ethr'],
+    passBy: PassBy.VALUE,
+  })
+  .build();
 ````
 
-### RP creates the Authentication Request
+### RP creates the Auth Request
 
-The Relying Party creates the request. This could have been triggered by the OP accessing a URL, or clicking a button
-for instance. The Created SIOP V2 Authentication Request could be transported by QR code if one wishes. Here we are
+The Relying Party creates the Auth Request. This could have been triggered by the OP accessing a URL, or clicking a button
+for instance. The Created SIOP V2 Auth Request could also be displayed as a QR code for cross-device flows. In the below text we are
 leaving the transport out of scope.
 
 Given we already have configured the RP itself, all we need to provide is a nonce and state for this request. These will
@@ -382,14 +393,14 @@ console.log(reqURI.encodedUri)
 // openid://?response_type=id_token&scope=openid&client_id=did.......&jwt=ey..........
 ````
 
-#### Optional: OP Authentication Request Payload parsing access
+#### Optional: OP Auth Request Payload parsing access
 
-The OP class has a method that both parses the Authentication Request URI as it was created by the RP, but it als
-resolves both the JWT and the Registration values from the Authentication Request Payload. Both values can be either
-passed by value in the Authentication Request, meaning they are present in the request, or passed by reference, meaning
-they are hosted by the OP. In the latter case the values have to be retrieved. The parseAuthenticationRequestURI takes
+The OP class has a method that both parses the Auth Request URI as it was created by the RP, but it als
+resolves both the JWT and the Registration values from the Auth Request Payload. Both values can be either
+passed by value in the Auth Request, meaning they are present in the request, or passed by reference, meaning
+they are hosted by the OP. In the latter case the values have to be retrieved from an https endpoint. The parseAuthenticationRequestURI takes
 care of both values and returns the Authentication Request Payload for easy access, the resolved signed JWT as well as
-the resolved registration metadata of the RP. Please note that the Authentication Request Payload that is also returned
+the resolved registration metadata of the RP. Please note that the Auth Request Payload that is also returned
 is the original payload from the URI, so it will not contain the resolved JWT nor Registration if the OP passed one of
 them by reference instead of value. Only the direct access to jwt and registration in the Parsed Authentication Request
 URI are guaranteed to be resolved.
@@ -414,16 +425,16 @@ console.log(parsedReqURI.jwt);
 
 ````
 
-#### OP Authentication Request verification
+#### OP Auth Request verification
 
-The Authentication Request from the RP in the form of a URI or JWT string needs to be verified. The
+The Auth Request from the RP in the form of a URI or JWT string needs to be verified by the OP. The
 verifyAuthenticationRequest method of the OP class takes care of this. As input it expects either the URI or the JWT
 string together with optional verify options. IF a JWT is supplied it will use the JWT directly, if a URI is provided it
 will internally parse the URI and extract/resolve the jwt. The options can contain an optional nonce, which means the
 request will be checked against the supplied nonce, otherwise the supplied nonce is only checked for presence. Normally
 the OP doesn't know. the nonce beforehand so this option can be left out.
 
-The verified authentication request object returned again contains the Authentication Request payload, the DID
+The verified Auth Request object returned again contains the Authentication Request payload, the DID
 resolution result, including DID document of the RP, the issuer (DID of RP) and the signer (the DID verification method
 that signed). The verification method will throw an error if something is of with the JWT, or if the JWT has not been
 signed by the DID of the RP.
@@ -1331,3 +1342,11 @@ Services and objects:
 DID JWTs:
 
 [![](https://mermaid.ink/img/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5jbGFzcyBEaWRSZXNvbHV0aW9uT3B0aW9ucyB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIGFjY2VwdD86IHN0cmluZ1xufVxuY2xhc3MgUmVzb2x2YWJsZSB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIHJlc29sdmUoZGlkVXJsOiBzdHJpbmcsIG9wdGlvbnM6IERpZFJlc29sdXRpb25PcHRpb25zKSBQcm9taXNlKERpZFJlc29sdXRpb25SZXN1bHQpXG59XG5EaWRSZXNvbHV0aW9uT3B0aW9ucyA8LS0gUmVzb2x2YWJsZVxuRElEUmVzb2x1dGlvblJlc3VsdCA8LS0gUmVzb2x2YWJsZVxuXG5jbGFzcyAgRElEUmVzb2x1dGlvblJlc3VsdCB7XG4gIGRpZFJlc29sdXRpb25NZXRhZGF0YTogRElEUmVzb2x1dGlvbk1ldGFkYXRhXG4gIGRpZERvY3VtZW50OiBESUREb2N1bWVudCB8IG51bGxcbiAgZGlkRG9jdW1lbnRNZXRhZGF0YTogRElERG9jdW1lbnRNZXRhZGF0YVxufVxuRElERG9jdW1lbnRNZXRhZGF0YSA8LS0gRElEUmVzb2x1dGlvblJlc3VsdFxuRElERG9jdW1lbnQgPC0tIERJRFJlc29sdXRpb25SZXN1bHRcblxuY2xhc3MgRElERG9jdW1lbnRNZXRhZGF0YSB7XG4gIGNyZWF0ZWQ_OiBzdHJpbmdcbiAgdXBkYXRlZD86IHN0cmluZ1xuICBkZWFjdGl2YXRlZD86IGJvb2xlYW5cbiAgdmVyc2lvbklkPzogc3RyaW5nXG4gIG5leHRVcGRhdGU_OiBzdHJpbmdcbiAgbmV4dFZlcnNpb25JZD86IHN0cmluZ1xuICBlcXVpdmFsZW50SWQ_OiBzdHJpbmdcbiAgY2Fub25pY2FsSWQ_OiBzdHJpbmdcbn1cblxuY2xhc3MgRElERG9jdW1lbnQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICAnQGNvbnRleHQnPzogJ2h0dHBzOi8vd3d3LnczLm9yZy9ucy9kaWQvdjEnIHwgc3RyaW5nIHwgc3RyaW5nW11cbiAgICBpZDogc3RyaW5nXG4gICAgYWxzb0tub3duQXM_OiBzdHJpbmdbXVxuICAgIGNvbnRyb2xsZXI_OiBzdHJpbmcgfCBzdHJpbmdbXVxuICAgIHZlcmlmaWNhdGlvbk1ldGhvZD86IFZlcmlmaWNhdGlvbk1ldGhvZFtdXG4gICAgYXV0aGVudGljYXRpb24_OiAoc3RyaW5nIHwgVmVyaWZpY2F0aW9uTWV0aG9kKVtdXG4gICAgYXNzZXJ0aW9uTWV0aG9kPzogKHN0cmluZyB8IFZlcmlmaWNhdGlvbk1ldGhvZClbXVxuICAgIGtleUFncmVlbWVudD86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5SW52b2NhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5RGVsZWdhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBzZXJ2aWNlPzogU2VydmljZUVuZHBvaW50W11cbn1cblZlcmlmaWNhdGlvbk1ldGhvZCA8LS0gRElERG9jdW1lbnRcblxuY2xhc3MgVmVyaWZpY2F0aW9uTWV0aG9kIHtcbiAgICA8PGludGVyZmFjZT4-XG4gICAgaWQ6IHN0cmluZ1xuICAgIHR5cGU6IHN0cmluZ1xuICAgIGNvbnRyb2xsZXI6IHN0cmluZ1xuICAgIHB1YmxpY0tleUJhc2U1OD86IHN0cmluZ1xuICAgIHB1YmxpY0tleUp3az86IEpzb25XZWJLZXlcbiAgICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgICBibG9ja2NoYWluQWNjb3VudElkPzogc3RyaW5nXG4gICAgZXRoZXJldW1BZGRyZXNzPzogc3RyaW5nXG59XG5cbmNsYXNzIEpXVFBheWxvYWQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICBpc3M6IHN0cmluZ1xuICAgIHN1Yj86IHN0cmluZ1xuICAgIGF1ZD86IHN0cmluZyB8IHN0cmluZ1tdXG4gICAgaWF0PzogbnVtYmVyXG4gICAgbmJmPzogbnVtYmVyXG4gICAgZXhwPzogbnVtYmVyXG4gICAgcmV4cD86IG51bWJlclxufVxuY2xhc3MgSldUSGVhZGVyIHsgLy8gVGhpcyBpcyBhIHN0YW5kYXJkIEpXVCBoZWFkZXJcbiAgICB0eXA6ICdKV1QnXG4gICAgYWxnOiBzdHJpbmcgICAvLyBUaGUgSldUIHNpZ25pbmcgYWxnb3JpdGhtIHRvIHVzZS4gU3VwcG9ydHM6IFtFUzI1NkssIEVTMjU2Sy1SLCBFZDI1NTE5LCBFZERTQV0sIERlZmF1bHRzIHRvOiBFUzI1NktcbiAgICBbeDogc3RyaW5nXTogYW55XG59XG5cbmNsYXNzIFZlcmlmaWNhdGlvbk1ldGhvZCB7XG4gIGlkOiBzdHJpbmdcbiAgdHlwZTogc3RyaW5nXG4gIGNvbnRyb2xsZXI6IHN0cmluZ1xuICBwdWJsaWNLZXlCYXNlNTg_OiBzdHJpbmdcbiAgcHVibGljS2V5SndrPzogSnNvbldlYktleVxuICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgYmxvY2tjaGFpbkFjY291bnRJZD86IHN0cmluZ1xuICBldGhlcmV1bUFkZHJlc3M_OiBzdHJpbmdcbn1cblxuSnNvbldlYktleSA8fC0tIFZlcmlmaWNhdGlvbk1ldGhvZFxuY2xhc3MgSnNvbldlYktleSB7XG4gIGFsZz86IHN0cmluZ1xuICBjcnY_OiBzdHJpbmdcbiAgZT86IHN0cmluZ1xuICBleHQ_OiBib29sZWFuXG4gIGtleV9vcHM_OiBzdHJpbmdbXVxuICBraWQ_OiBzdHJpbmdcbiAga3R5OiBzdHJpbmdcbiAgbj86IHN0cmluZ1xuICB1c2U_OiBzdHJpbmdcbiAgeD86IHN0cmluZ1xuICB5Pzogc3RyaW5nXG59XG5cblxuY2xhc3MgRGlkSldUIHtcbiAgICA8PHNlcnZpY2U-PlxuICAgIGNyZWF0ZURpZEpXVChwYXlsb2FkOiBKV1RQYXlsb2FkLCBvcHRpb25zOiBKV1RPcHRpb25zLCBoZWFkZXI6IEpXVEpIZWFkZXIpIFByb21pc2Uoc3RyaW5nKVxuICAgIHZlcmlmeURpZEpXVChqd3Q6IHN0cmluZywgcmVzb2x2ZXI6IFJlc29sdmFibGUpIFByb21pc2UoYm9vbGVhbilcbn1cbkpXVFBheWxvYWQgPC0tIERpZEpXVFxuSldUT3B0aW9ucyA8LS0gRGlkSldUXG5KV1RIZWFkZXIgPC0tIERpZEpXVFxuUmVzb2x2YWJsZSA8LS0gRGlkSldUXG4iLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9LCJ1cGRhdGVFZGl0b3IiOmZhbHNlLCJhdXRvU3luYyI6ZmFsc2UsInVwZGF0ZURpYWdyYW0iOmZhbHNlfQ)](https://mermaid-js.github.io/mermaid-live-editor/edit##eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5jbGFzcyBEaWRSZXNvbHV0aW9uT3B0aW9ucyB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIGFjY2VwdD86IHN0cmluZ1xufVxuY2xhc3MgUmVzb2x2YWJsZSB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIHJlc29sdmUoZGlkVXJsOiBzdHJpbmcsIG9wdGlvbnM6IERpZFJlc29sdXRpb25PcHRpb25zKSBQcm9taXNlKERpZFJlc29sdXRpb25SZXN1bHQpXG59XG5EaWRSZXNvbHV0aW9uT3B0aW9ucyA8LS0gUmVzb2x2YWJsZVxuRElEUmVzb2x1dGlvblJlc3VsdCA8LS0gUmVzb2x2YWJsZVxuXG5jbGFzcyAgRElEUmVzb2x1dGlvblJlc3VsdCB7XG4gIGRpZFJlc29sdXRpb25NZXRhZGF0YTogRElEUmVzb2x1dGlvbk1ldGFkYXRhXG4gIGRpZERvY3VtZW50OiBESUREb2N1bWVudCB8IG51bGxcbiAgZGlkRG9jdW1lbnRNZXRhZGF0YTogRElERG9jdW1lbnRNZXRhZGF0YVxufVxuRElERG9jdW1lbnRNZXRhZGF0YSA8LS0gRElEUmVzb2x1dGlvblJlc3VsdFxuRElERG9jdW1lbnQgPC0tIERJRFJlc29sdXRpb25SZXN1bHRcblxuY2xhc3MgRElERG9jdW1lbnRNZXRhZGF0YSB7XG4gIGNyZWF0ZWQ_OiBzdHJpbmdcbiAgdXBkYXRlZD86IHN0cmluZ1xuICBkZWFjdGl2YXRlZD86IGJvb2xlYW5cbiAgdmVyc2lvbklkPzogc3RyaW5nXG4gIG5leHRVcGRhdGU_OiBzdHJpbmdcbiAgbmV4dFZlcnNpb25JZD86IHN0cmluZ1xuICBlcXVpdmFsZW50SWQ_OiBzdHJpbmdcbiAgY2Fub25pY2FsSWQ_OiBzdHJpbmdcbn1cblxuY2xhc3MgRElERG9jdW1lbnQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICAnQGNvbnRleHQnPzogJ2h0dHBzOi8vd3d3LnczLm9yZy9ucy9kaWQvdjEnIHwgc3RyaW5nIHwgc3RyaW5nW11cbiAgICBpZDogc3RyaW5nXG4gICAgYWxzb0tub3duQXM_OiBzdHJpbmdbXVxuICAgIGNvbnRyb2xsZXI_OiBzdHJpbmcgfCBzdHJpbmdbXVxuICAgIHZlcmlmaWNhdGlvbk1ldGhvZD86IFZlcmlmaWNhdGlvbk1ldGhvZFtdXG4gICAgYXV0aGVudGljYXRpb24_OiAoc3RyaW5nIHwgVmVyaWZpY2F0aW9uTWV0aG9kKVtdXG4gICAgYXNzZXJ0aW9uTWV0aG9kPzogKHN0cmluZyB8IFZlcmlmaWNhdGlvbk1ldGhvZClbXVxuICAgIGtleUFncmVlbWVudD86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5SW52b2NhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5RGVsZWdhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBzZXJ2aWNlPzogU2VydmljZUVuZHBvaW50W11cbn1cblZlcmlmaWNhdGlvbk1ldGhvZCA8LS0gRElERG9jdW1lbnRcblxuY2xhc3MgVmVyaWZpY2F0aW9uTWV0aG9kIHtcbiAgICA8PGludGVyZmFjZT4-XG4gICAgaWQ6IHN0cmluZ1xuICAgIHR5cGU6IHN0cmluZ1xuICAgIGNvbnRyb2xsZXI6IHN0cmluZ1xuICAgIHB1YmxpY0tleUJhc2U1OD86IHN0cmluZ1xuICAgIHB1YmxpY0tleUp3az86IEpzb25XZWJLZXlcbiAgICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgICBibG9ja2NoYWluQWNjb3VudElkPzogc3RyaW5nXG4gICAgZXRoZXJldW1BZGRyZXNzPzogc3RyaW5nXG59XG5cbmNsYXNzIEpXVFBheWxvYWQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICBpc3M6IHN0cmluZ1xuICAgIHN1Yj86IHN0cmluZ1xuICAgIGF1ZD86IHN0cmluZyB8IHN0cmluZ1tdXG4gICAgaWF0PzogbnVtYmVyXG4gICAgbmJmPzogbnVtYmVyXG4gICAgZXhwPzogbnVtYmVyXG4gICAgcmV4cD86IG51bWJlclxufVxuY2xhc3MgSldUSGVhZGVyIHsgLy8gVGhpcyBpcyBhIHN0YW5kYXJkIEpXVCBoZWFkZXJcbiAgICB0eXA6ICdKV1QnXG4gICAgYWxnOiBzdHJpbmcgICAvLyBUaGUgSldUIHNpZ25pbmcgYWxnb3JpdGhtIHRvIHVzZS4gU3VwcG9ydHM6IFtFUzI1NkssIEVTMjU2Sy1SLCBFZDI1NTE5LCBFZERTQV0sIERlZmF1bHRzIHRvOiBFUzI1NktcbiAgICBbeDogc3RyaW5nXTogYW55XG59XG5cbmNsYXNzIFZlcmlmaWNhdGlvbk1ldGhvZCB7XG4gIGlkOiBzdHJpbmdcbiAgdHlwZTogc3RyaW5nXG4gIGNvbnRyb2xsZXI6IHN0cmluZ1xuICBwdWJsaWNLZXlCYXNlNTg_OiBzdHJpbmdcbiAgcHVibGljS2V5SndrPzogSnNvbldlYktleVxuICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgYmxvY2tjaGFpbkFjY291bnRJZD86IHN0cmluZ1xuICBldGhlcmV1bUFkZHJlc3M_OiBzdHJpbmdcbn1cblxuSnNvbldlYktleSA8fC0tIFZlcmlmaWNhdGlvbk1ldGhvZFxuY2xhc3MgSnNvbldlYktleSB7XG4gIGFsZz86IHN0cmluZ1xuICBjcnY_OiBzdHJpbmdcbiAgZT86IHN0cmluZ1xuICBleHQ_OiBib29sZWFuXG4gIGtleV9vcHM_OiBzdHJpbmdbXVxuICBraWQ_OiBzdHJpbmdcbiAga3R5OiBzdHJpbmdcbiAgbj86IHN0cmluZ1xuICB1c2U_OiBzdHJpbmdcbiAgeD86IHN0cmluZ1xuICB5Pzogc3RyaW5nXG59XG5cblxuY2xhc3MgRGlkSldUIHtcbiAgICA8PHNlcnZpY2U-PlxuICAgIGNyZWF0ZURpZEpXVChwYXlsb2FkOiBKV1RQYXlsb2FkLCBvcHRpb25zOiBKV1RPcHRpb25zLCBoZWFkZXI6IEpXVEpIZWFkZXIpIFByb21pc2Uoc3RyaW5nKVxuICAgIHZlcmlmeURpZEpXVChqd3Q6IHN0cmluZywgcmVzb2x2ZXI6IFJlc29sdmFibGUpIFByb21pc2UoYm9vbGVhbilcbn1cbkpXVFBheWxvYWQgPC0tIERpZEpXVFxuSldUT3B0aW9ucyA8LS0gRGlkSldUXG5KV1RIZWFkZXIgPC0tIERpZEpXVFxuUmVzb2x2YWJsZSA8LS0gRGlkSldUXG4iLCJtZXJtYWlkIjoie1xuICBcInRoZW1lXCI6IFwiZGVmYXVsdFwiXG59IiwidXBkYXRlRWRpdG9yIjpmYWxzZSwiYXV0b1N5bmMiOmZhbHNlLCJ1cGRhdGVEaWFncmFtIjp0cnVlfQ)
+
+
+
+## Acknowledgements
+
+This library has been partially sponsored by [Gimly](https://www.gimly.io/) as part the [NGI Ontochain](https://ontochain.ngi.eu/) project. NGI Ontochain has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 957338
+
+<a href="https://www.gimly.io/"><img src="https://avatars.githubusercontent.com/u/64525639?s=200&v=4" alt="Gimly" height="80"></a> &nbsp; <a href="https://ontochain.ngi.eu" target="_blank"><img src="https://ontochain.ngi.eu/sites/default/files/logo-ngi-ontochain-positive.png" height="100px" alt="ONTOCHAIN Logo"/></a> &nbsp; <img src="https://ontochain.ngi.eu/sites/default/files/images/EU_flag.png" height="80px" alt="European Union Flag"/>
