@@ -1,5 +1,6 @@
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
+import { Signer } from 'did-jwt';
 import { Resolvable, Resolver } from 'did-resolver';
 
 import { PresentationSignCallback } from '../authorization-response';
@@ -12,6 +13,7 @@ import {
   ResponseIss,
   ResponseMode,
   ResponseRegistrationOpts,
+  SigningAlgo,
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
   SupportedVersion,
@@ -88,23 +90,23 @@ export class Builder {
   authorizationEndpoint?: Schema.OPENID | string;
   scopesSupported?: Scope[] | Scope;
   subjectTypesSupported?: SubjectType[] | SubjectType;
-  idTokenSigningAlgValuesSupported?: KeyAlgo[] | KeyAlgo;
+  idTokenSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
 */
 
-  // Only internal | supplied supported for now
+  // Only internal and supplied signatures supported for now
   signature(signatureType: InternalSignature | SuppliedSignature): Builder {
     this.signatureType = signatureType;
     return this;
   }
 
-  internalSignature(hexPrivateKey: string, did: string, kid: string): Builder {
-    this.signature({ hexPrivateKey, did, kid });
+  internalSignature(hexPrivateKey: string, did: string, kid: string, alg: SigningAlgo, customJwtSigner?: Signer): Builder {
+    this.signature({ hexPrivateKey, did, kid, alg, customJwtSigner });
     return this;
   }
 
-  suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): Builder {
-    this.signature({ signature, did, kid });
+  suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string, alg: SigningAlgo): Builder {
+    this.signature({ signature, did, kid, alg });
     return this;
   }
 

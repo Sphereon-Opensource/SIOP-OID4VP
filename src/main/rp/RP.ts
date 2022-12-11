@@ -1,5 +1,4 @@
-import { AuthorizationRequest, CreateAuthorizationRequestOpts } from '../authorization-request';
-import { URI } from '../authorization-request/URI';
+import { AuthorizationRequest, CreateAuthorizationRequestOpts, URI } from '../authorization-request';
 import { AuthorizationResponse, ClaimOpts, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { verifyPresentations } from '../authorization-response/OpenID4VP';
 import { getNonce, getState } from '../helpers';

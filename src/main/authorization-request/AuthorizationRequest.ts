@@ -1,7 +1,7 @@
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
 import { getAudience, getResolver, parseJWT, verifyDidJWT } from '../did';
 import { fetchByReferenceOrUseByValue } from '../helpers';
-import { checkSIOPSpecVersionSupported } from '../helpers/SIOPVersionDiscovery';
+import { checkSIOPSpecVersionSupported } from '../helpers/SIOPSpecVersion';
 import { RequestObject } from '../request-object';
 import {
   AuthorizationRequestPayload,

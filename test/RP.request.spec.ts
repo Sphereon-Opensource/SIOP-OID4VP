@@ -62,7 +62,7 @@ describe('RP Builder should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
 
-        .withInternalSignature('myprivatekye', 'did:example:123', 'did:example:123#key')
+        .withInternalSignature('myprivatekye', 'did:example:123', 'did:example:123#key', SigningAlgo.ES256K)
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build()
     ).toBeInstanceOf(RP);
@@ -92,6 +92,7 @@ describe('RP should', () => {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
+          alg: SigningAlgo.ES256K,
         },
       },
       clientMetadata: {
@@ -136,6 +137,7 @@ describe('RP should', () => {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
+          alg: SigningAlgo.ES256K,
         },
       },
       clientMetadata: {
@@ -249,7 +251,7 @@ describe('RP should', () => {
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
-      .withInternalSignature(HEX_KEY, DID, KID)
+      .withInternalSignature(HEX_KEY, DID, KID, SigningAlgo.ES256K)
       .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],

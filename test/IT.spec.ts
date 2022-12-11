@@ -5,7 +5,6 @@ import nock from 'nock';
 
 import {
   CheckLinkedDomain,
-  KeyAlgo,
   OP,
   PassBy,
   PresentationDefinitionWithLocation,
@@ -26,7 +25,7 @@ import {
   VerificationMode,
   verifyRevocation,
 } from '../src/main';
-import { checkSIOPSpecVersionSupported } from '../src/main/helpers/SIOPVersionDiscovery';
+import { checkSIOPSpecVersionSupported } from '../src/main/helpers/SIOPSpecVersion';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
@@ -157,14 +156,14 @@ describe('RP and OP interaction should', () => {
         .withRevocationVerification(RevocationVerification.NEVER)
         .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
         .withIssuer(ResponseIss.SELF_ISSUED_V2)
-        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`, SigningAlgo.ES256K)
         .addDidMethod('ethr')
         .withClientMetadata({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did', 'did:ethr'],
@@ -182,7 +181,7 @@ describe('RP and OP interaction should', () => {
         .withExpiresIn(1000)
         .addVerifyCallback(verifyCallback)
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
-        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
+        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .registrationBy({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -190,7 +189,7 @@ describe('RP and OP interaction should', () => {
           issuer: ResponseIss.SELF_ISSUED_V2,
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did:ethr'],
@@ -258,14 +257,14 @@ describe('RP and OP interaction should', () => {
       .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.VALUE)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .addDidMethod('ethr')
       .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
@@ -282,14 +281,14 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
@@ -357,14 +356,14 @@ describe('RP and OP interaction should', () => {
       .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.VALUE)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .addDidMethod('ethr')
       .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
@@ -382,14 +381,14 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
@@ -455,7 +454,7 @@ describe('RP and OP interaction should', () => {
       .withVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.VALUE)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
       .withClientMetadata({
@@ -463,7 +462,7 @@ describe('RP and OP interaction should', () => {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
@@ -481,14 +480,14 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
@@ -577,14 +576,14 @@ describe('RP and OP interaction should', () => {
         .withVerifyCallback(verifyCallback)
         .withRedirectUri(EXAMPLE_REDIRECT_URL)
         .withRequestBy(PassBy.VALUE)
-        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .withClientMetadata({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did', 'did:ethr'],
@@ -602,14 +601,14 @@ describe('RP and OP interaction should', () => {
         .withPresentationSignCallback(presentationSignCallback)
         .withExpiresIn(1000)
         .addVerifyCallback(verifyCallback)
-        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
         .registrationBy({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           issuer: ResponseIss.SELF_ISSUED_V2,
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did'],
@@ -712,7 +711,7 @@ describe('RP and OP interaction should', () => {
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withRequestBy(PassBy.VALUE)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -720,7 +719,7 @@ describe('RP and OP interaction should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormatsSupported: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -742,7 +741,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationSignCallback(presentationSignCallback)
       .addVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -750,7 +749,7 @@ describe('RP and OP interaction should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormats: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -852,7 +851,7 @@ describe('RP and OP interaction should', () => {
         .withVerifyCallback(verifyCallback)
         .withRedirectUri(EXAMPLE_REDIRECT_URL)
         .withRequestBy(PassBy.VALUE)
-        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .addDidMethod('ethr')
         .withClientMetadata({
@@ -860,7 +859,7 @@ describe('RP and OP interaction should', () => {
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did', 'did:ethr'],
@@ -880,14 +879,14 @@ describe('RP and OP interaction should', () => {
         .addVerifyCallback(verifyCallback)
         .withExpiresIn(1000)
         .addDidMethod('ethr')
-        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
         .registrationBy({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           issuer: ResponseIss.SELF_ISSUED_V2,
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: [],
@@ -979,7 +978,7 @@ describe('RP and OP interaction should', () => {
       })
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withRequestBy(PassBy.VALUE)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ion')
       .withClientMetadata({
@@ -988,8 +987,8 @@ describe('RP and OP interaction should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormatsSupported: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
-          jwt_vp: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
+          jwt_vp: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -1012,7 +1011,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationSignCallback(presentationSignCallback)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withPresentationSignCallback(presentationSignCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .addVerifyCallback(verifyCallback)
@@ -1023,8 +1022,8 @@ describe('RP and OP interaction should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormats: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
-          jwt_vp: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
+          jwt_vp: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -1290,7 +1289,7 @@ describe('RP and OP interaction should', () => {
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withRequestBy(PassBy.VALUE)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
@@ -1298,7 +1297,7 @@ describe('RP and OP interaction should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormatsSupported: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -1318,7 +1317,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationSignCallback(presentationSignCallback)
       .addVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -1327,7 +1326,7 @@ describe('RP and OP interaction should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormats: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },

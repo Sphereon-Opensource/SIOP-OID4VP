@@ -7,7 +7,6 @@ import {
   Builder,
   CheckLinkedDomain,
   CreateAuthorizationRequestOpts,
-  KeyAlgo,
   OP,
   PassBy,
   ResponseIss,
@@ -62,7 +61,7 @@ describe('OP Builder should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
+        .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key', SigningAlgo.ES256K)
         .withExpiresIn(1000)
         .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
         .build()
@@ -78,6 +77,7 @@ describe('OP should', () => {
       hexPrivateKey: HEX_KEY,
       did: DID,
       kid: KID,
+      alg: SigningAlgo.ES256K,
     },
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -148,6 +148,7 @@ describe('OP should', () => {
             hexPrivateKey: mockEntity.hexPrivateKey,
             did: mockEntity.did,
             kid: `${mockEntity.did}#controller`,
+            alg: SigningAlgo.ES256K,
           },
         },
         clientMetadata: {
@@ -204,14 +205,14 @@ describe('OP should', () => {
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withRedirectUri(EXAMPLE_REFERENCE_URL)
       .withRequestBy(PassBy.VALUE)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`, SigningAlgo.ES256K)
       .addDidMethod('ethr')
       .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
@@ -235,7 +236,7 @@ describe('OP should', () => {
       .withExpiresIn(1000)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
       .registrationBy({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],

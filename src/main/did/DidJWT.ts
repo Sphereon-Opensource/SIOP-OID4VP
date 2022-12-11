@@ -1,24 +1,35 @@
-import { createJWT, decodeJWT, EdDSASigner, ES256KSigner, hexToBytes, JWTHeader, JWTOptions, JWTPayload, JWTVerifyOptions, verifyJWT } from 'did-jwt';
+import {
+  createJWT,
+  decodeJWT,
+  EdDSASigner,
+  ES256KSigner,
+  ES256Signer,
+  hexToBytes,
+  JWTHeader,
+  JWTOptions,
+  JWTPayload,
+  JWTVerifyOptions,
+  Signer,
+  verifyJWT,
+} from 'did-jwt';
 import { JWTDecoded } from 'did-jwt/lib/JWT';
 import { Resolvable } from 'did-resolver';
 
 import { AuthorizationResponseOpts } from '../authorization-response';
-import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
-import { isEd25519DidKeyMethod, isEd25519JWK, post } from '../helpers';
+import { post } from '../helpers';
 import { RequestObjectOpts } from '../request-object';
 import {
   DEFAULT_EXPIRATION_TIME,
-  EcdsaSignature,
   IDTokenPayload,
   isExternalSignature,
   isInternalSignature,
   isResponseOpts,
   isResponsePayload,
   isSuppliedSignature,
-  KeyAlgo,
   RequestObjectPayload,
   ResponseIss,
   SignatureResponse,
+  SigningAlgo,
   SIOPErrors,
   SIOPResonse,
   VerifiedJWT,
@@ -71,22 +82,41 @@ export async function createDidJWT(
   { issuer, signer, expiresIn, canonicalize }: JWTOptions,
   header: Partial<JWTHeader>
 ): Promise<string> {
-  return createJWT(payload, { issuer, signer, alg: header.alg, expiresIn, canonicalize }, header);
+  return createJWT(payload, { issuer, signer, expiresIn, canonicalize }, header);
 }
 
 export async function signDidJwtPayload(payload: IDTokenPayload | RequestObjectPayload, opts: RequestObjectOpts | AuthorizationResponseOpts) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
   if (isResponse) {
-    if (!payload.iss || payload.iss !== ResponseIss.SELF_ISSUED_V2) {
+    if (!payload.iss || (payload.iss !== ResponseIss.SELF_ISSUED_V2 && payload.iss !== payload.sub)) {
       throw new Error(SIOPErrors.NO_SELFISSUED_ISS);
     }
   }
   if (isInternalSignature(opts.signatureType)) {
-    return signDidJwtInternal(payload, isResponse ? payload.iss : opts.signatureType.did, opts.signatureType.hexPrivateKey, opts.signatureType.kid);
+    return signDidJwtInternal(
+      payload,
+      isResponse ? payload.iss : opts.signatureType.did,
+      opts.signatureType.hexPrivateKey,
+      opts.signatureType.alg,
+      opts.signatureType.kid,
+      opts.signatureType.customJwtSigner
+    );
   } else if (isExternalSignature(opts.signatureType)) {
-    return signDidJwtExternal(payload, opts.signatureType.signatureUri, opts.signatureType.authZToken, opts.signatureType.kid);
+    return signDidJwtExternal(
+      payload,
+      opts.signatureType.signatureUri,
+      opts.signatureType.authZToken,
+      opts.signatureType.alg,
+      opts.signatureType.kid
+    );
   } else if (isSuppliedSignature(opts.signatureType)) {
-    return signDidJwtSupplied(payload, isResponse ? payload.iss : opts.signatureType.did, opts.signatureType.signature, opts.signatureType.kid);
+    return signDidJwtSupplied(
+      payload,
+      isResponse ? payload.iss : opts.signatureType.did,
+      opts.signatureType.signature,
+      opts.signatureType.alg,
+      opts.signatureType.kid
+    );
   } else {
     throw new Error(SIOPErrors.BAD_SIGNATURE_PARAMS);
   }
@@ -96,23 +126,14 @@ async function signDidJwtInternal(
   payload: IDTokenPayload | RequestObjectPayload,
   issuer: string,
   hexPrivateKey: string,
-  kid?: string
+  alg: SigningAlgo,
+  kid: string,
+  customJwtSigner?: Signer
 ): Promise<string> {
-  // todo: Create method. We are doing roughly the same multiple times
-  const algo =
-    isEd25519DidKeyMethod(issuer) ||
-    isEd25519DidKeyMethod(payload.kid) ||
-    isEd25519DidKeyMethod(kid) ||
-    isEd25519DidKeyMethod(payload.sub) ||
-    isEd25519JWK(payload.sub_jwk)
-      ? KeyAlgo.EDDSA
-      : KeyAlgo.ES256K;
-  // const request = !!payload.client_id;
-  const signer = algo == KeyAlgo.EDDSA ? EdDSASigner(hexToBytes(hexPrivateKey)) : ES256KSigner(hexToBytes(hexPrivateKey.replace('0x', '')));
-
+  const signer = determineSigner(alg, hexPrivateKey, customJwtSigner);
   const header = {
-    alg: algo,
-    kid: kid || `${payload.sub}#keys-1`,
+    alg,
+    kid,
   };
   const options = {
     issuer,
@@ -127,15 +148,12 @@ async function signDidJwtExternal(
   payload: IDTokenPayload | RequestObjectPayload,
   signatureUri: string,
   authZToken: string,
+  alg: SigningAlgo,
   kid?: string
 ): Promise<string> {
-  // todo: Create method. We are doing roughly the same multiple times
-  const alg = isEd25519DidKeyMethod(payload.sub) || isEd25519DidKeyMethod(payload.iss) || isEd25519DidKeyMethod(kid) ? KeyAlgo.EDDSA : KeyAlgo.ES256K;
-
   const body = {
     issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.sub,
     payload,
-    type: alg === KeyAlgo.EDDSA ? PROOF_TYPE_EDDSA : DEFAULT_PROOF_TYPE,
     expiresIn: DEFAULT_EXPIRATION_TIME,
     alg,
     selfIssued: payload.iss.includes(ResponseIss.SELF_ISSUED_V2) ? payload.iss : undefined,
@@ -149,20 +167,12 @@ async function signDidJwtExternal(
 async function signDidJwtSupplied(
   payload: IDTokenPayload | RequestObjectPayload,
   issuer: string,
-  signer: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
+  signer: Signer,
+  alg: SigningAlgo,
   kid: string
 ): Promise<string> {
-  // todo: Create method. We are doing roughly the same multiple times
-  const algo =
-    isEd25519DidKeyMethod(issuer) ||
-    isEd25519DidKeyMethod(payload.kid) ||
-    isEd25519DidKeyMethod(kid) ||
-    isEd25519DidKeyMethod(payload.sub) ||
-    isEd25519JWK(payload.sub_jwk)
-      ? KeyAlgo.EDDSA
-      : KeyAlgo.ES256K;
   const header = {
-    alg: algo,
+    alg,
     kid,
   };
   const options = {
@@ -173,6 +183,25 @@ async function signDidJwtSupplied(
 
   return await createDidJWT({ ...payload }, options, header);
 }
+
+const determineSigner = (alg: SigningAlgo, hexPrivateKey?: string, customSigner?: Signer): Signer => {
+  if (customSigner) {
+    return customSigner;
+  } else if (!hexPrivateKey) {
+    throw new Error('no private key provided');
+  }
+  const privateKey = hexToBytes(hexPrivateKey.replace('0x', ''));
+  switch (alg) {
+    case SigningAlgo.EDDSA:
+      return EdDSASigner(privateKey);
+    case SigningAlgo.ES256:
+      return ES256Signer(privateKey);
+    case SigningAlgo.ES256K:
+      return ES256KSigner(privateKey);
+    case SigningAlgo.RS256:
+      throw Error('RS256 is not supported yet');
+  }
+};
 
 export function getAudience(jwt: string) {
   const { payload } = decodeJWT(jwt);
@@ -213,7 +242,7 @@ export function getSubDidFromPayload(payload: JWTPayload, header?: JWTHeader): s
 }
 
 export function isIssSelfIssued(payload: JWTPayload): boolean {
-  return payload.iss.includes(ResponseIss.SELF_ISSUED_V1) || payload.iss.includes(ResponseIss.SELF_ISSUED_V2);
+  return payload.iss.includes(ResponseIss.SELF_ISSUED_V1) || payload.iss.includes(ResponseIss.SELF_ISSUED_V2) || payload.iss === payload.sub;
 }
 
 export function getIssuerDidFromJWT(jwt: string): string {

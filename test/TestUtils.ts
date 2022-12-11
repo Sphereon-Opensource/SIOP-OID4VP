@@ -13,7 +13,6 @@ import {
   assertValidMetadata,
   base64ToHexString,
   DiscoveryMetadataPayload,
-  KeyAlgo,
   KeyCurve,
   KeyType,
   ResponseIss,
@@ -133,7 +132,7 @@ const mockedEntityAuthNToken = async (
     nonce: uuidv4(),
   };
 
-  const privateKey = await importJWK(jwk, KeyAlgo.ES256K);
+  const privateKey = await importJWK(jwk, SigningAlgo.ES256K);
   const jwt = await new SignJWT(payload as unknown as JWTPayload)
     .setProtectedHeader({
       alg: 'ES256K',
@@ -170,7 +169,7 @@ export async function mockedGetEnterpriseAuthToken(enterpriseName?: string): Pro
     },
   };
 
-  const privateKey = await importJWK(testAuth.jwk, KeyAlgo.ES256K);
+  const privateKey = await importJWK(testAuth.jwk, SigningAlgo.ES256K);
   const jwt = await new SignJWT(testApiPayload)
     .setProtectedHeader({
       alg: 'ES256K',

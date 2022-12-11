@@ -1,8 +1,10 @@
-import { AuthorizationRequest } from '../authorization-request';
-import { URI } from '../authorization-request/URI';
-import { VerifyAuthorizationRequestOpts } from '../authorization-request/types';
-import { AuthorizationResponse } from '../authorization-response';
-import { AuthorizationResponseOpts, PresentationExchangeOpts, VerifiablePresentationWithLocation } from '../authorization-response/types';
+import { AuthorizationRequest, URI, VerifyAuthorizationRequestOpts } from '../authorization-request';
+import {
+  AuthorizationResponse,
+  AuthorizationResponseOpts,
+  PresentationExchangeOpts,
+  VerifiablePresentationWithLocation,
+} from '../authorization-response';
 import { encodeJsonAsURI, formPost, post } from '../helpers';
 import {
   AuthorizationResponseResult,

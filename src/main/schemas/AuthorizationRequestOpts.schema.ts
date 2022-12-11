@@ -187,8 +187,7 @@ export const AuthorizationRequestOptsSchema = {
         "EdDSA",
         "RS256",
         "ES256",
-        "ES256K",
-        "none"
+        "ES256K"
       ]
     },
     "ResponseType": {
@@ -1071,15 +1070,30 @@ export const AuthorizationRequestOptsSchema = {
         "did": {
           "type": "string"
         },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
         "kid": {
           "type": "string"
+        },
+        "customJwtSigner": {
+          "$ref": "#/definitions/Signer"
         }
       },
       "required": [
         "hexPrivateKey",
-        "did"
+        "did",
+        "alg"
       ],
       "additionalProperties": false
+    },
+    "Signer": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
+        }
+      }
     },
     "ExternalSignature": {
       "type": "object",
@@ -1096,19 +1110,34 @@ export const AuthorizationRequestOptsSchema = {
         "hexPublicKey": {
           "type": "string"
         },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
         "kid": {
           "type": "string"
         }
       },
       "required": [
         "signatureUri",
-        "did"
+        "did",
+        "alg"
       ],
       "additionalProperties": false
     },
     "SuppliedSignature": {
       "type": "object",
       "properties": {
+        "signature": {
+          "properties": {
+            "isFunction": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
         "did": {
           "type": "string"
         },
@@ -1117,10 +1146,12 @@ export const AuthorizationRequestOptsSchema = {
         }
       },
       "required": [
+        "signature",
+        "alg",
         "did",
         "kid"
       ],
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "NoSignature": {
       "type": "object",

@@ -3,6 +3,7 @@
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import { IPresentation, IVerifiablePresentation, PresentationSubmission, W3CVerifiableCredential } from '@sphereon/ssi-types';
 import { VerifyCallback as WellknownDIDVerifyCallback } from '@sphereon/wellknown-dids-client';
+import { Signer } from 'did-jwt';
 import { VerificationMethod } from 'did-resolver';
 
 import { AuthorizationRequest, CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../authorization-request';
@@ -186,7 +187,7 @@ interface DiscoveryMetadataCommonOpts {
   responseModesSupported?: ResponseMode[] | ResponseMode; // from openid connect discovery 1_0
   grantTypesSupported?: GrantType[] | GrantType; // from openid connect discovery 1_0
   acrValuesSupported?: AuthenticationContextReferences[] | AuthenticationContextReferences; // from openid connect discovery 1_0
-  idTokenEncryptionAlgValuesSupported?: KeyAlgo[] | KeyAlgo; // from openid connect discovery 1_0
+  idTokenEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
   idTokenEncryptionEncValuesSupported?: string[] | string; // from openid connect discovery 1_0
   userinfoSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
   userinfoEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
@@ -253,7 +254,7 @@ interface DiscoveryMetadataCommonPayload {
   response_modes_supported?: ResponseMode[] | ResponseMode;
   grant_types_supported?: GrantType[] | GrantType;
   acr_values_supported?: AuthenticationContextReferences[] | AuthenticationContextReferences;
-  id_token_encryption_alg_values_supported?: KeyAlgo[] | KeyAlgo;
+  id_token_encryption_alg_values_supported?: SigningAlgo[] | SigningAlgo;
   /**
    * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for the ID Token to encode the Claims in a JWT [JWT].
    */
@@ -432,11 +433,17 @@ export enum CheckLinkedDomain {
 export interface InternalSignature {
   hexPrivateKey: string; // hex private key Only secp256k1 format
   did: string;
+
+  alg: SigningAlgo;
   kid?: string; // Optional: key identifier
+
+  customJwtSigner?: Signer;
 }
 
 export interface SuppliedSignature {
   signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>;
+
+  alg: SigningAlgo;
   did: string;
   kid: string;
 }
@@ -452,6 +459,8 @@ export interface ExternalSignature {
   did: string;
   authZToken?: string; // Optional: bearer token to use to the call
   hexPublicKey?: string; // Optional: hex encoded public key to compute JWK key, if not possible from DIDres Document
+
+  alg: SigningAlgo;
   kid?: string; // Optional: key identifier. default did#keys-1
 }
 
@@ -562,17 +571,7 @@ export enum SigningAlgo {
   RS256 = 'RS256',
   ES256 = 'ES256',
   ES256K = 'ES256K',
-  NONE = 'none',
 }
-
-export enum KeyAlgo {
-  // ES256KR = "ES256K-R",
-  EDDSA = 'EdDSA',
-  RS256 = 'RS256',
-  ES256 = 'ES256',
-  ES256K = 'ES256K',
-}
-
 export enum Scope {
   OPENID = 'openid',
   OPENID_DIDAUTHN = 'openid did_authn',

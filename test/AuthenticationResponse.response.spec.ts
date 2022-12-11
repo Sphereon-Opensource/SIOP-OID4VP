@@ -74,6 +74,7 @@ describe('create JWT from Request JWT should', () => {
       did: DID,
       hexPrivateKey: HEX_KEY,
       kid: KID,
+      alg: SigningAlgo.ES256K,
     },
     did: DID,
   };
@@ -124,6 +125,7 @@ describe('create JWT from Request JWT should', () => {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
         },
       },
       clientMetadata: {
@@ -175,6 +177,7 @@ describe('create JWT from Request JWT should', () => {
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
+        alg: SigningAlgo.ES256K,
       },
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
@@ -212,6 +215,7 @@ describe('create JWT from Request JWT should', () => {
             hexPrivateKey: mockReqEntity.hexPrivateKey,
             did: mockReqEntity.did,
             kid: `${mockReqEntity.did}#controller`,
+            alg: SigningAlgo.ES256K,
           },
         },
         clientMetadata: {
@@ -263,6 +267,7 @@ describe('create JWT from Request JWT should', () => {
           did: mockResEntity.did,
           hexPrivateKey: mockResEntity.hexPrivateKey,
           kid: `${mockResEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
         },
         did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
         responseMode: ResponseMode.POST,
@@ -337,6 +342,7 @@ describe('create JWT from Request JWT should', () => {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
         },
       },
       clientMetadata: {
@@ -434,6 +440,7 @@ describe('create JWT from Request JWT should', () => {
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
+        alg: SigningAlgo.ES256K,
       },
       presentationExchange: {
         vps: [
@@ -505,6 +512,7 @@ describe('create JWT from Request JWT should', () => {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
         },
       },
       clientMetadata: {
@@ -601,6 +609,7 @@ describe('create JWT from Request JWT should', () => {
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
+        alg: SigningAlgo.ES256K,
       },
       presentationExchange: {
         vps: [

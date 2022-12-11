@@ -217,11 +217,11 @@ export const AuthorizationResponseOptsSchema = {
                 {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/KeyAlgo"
+                    "$ref": "#/definitions/SigningAlgo"
                   }
                 },
                 {
-                  "$ref": "#/definitions/KeyAlgo"
+                  "$ref": "#/definitions/SigningAlgo"
                 }
               ]
             },
@@ -613,11 +613,11 @@ export const AuthorizationResponseOptsSchema = {
                 {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/KeyAlgo"
+                    "$ref": "#/definitions/SigningAlgo"
                   }
                 },
                 {
-                  "$ref": "#/definitions/KeyAlgo"
+                  "$ref": "#/definitions/SigningAlgo"
                 }
               ]
             },
@@ -1003,11 +1003,11 @@ export const AuthorizationResponseOptsSchema = {
                 {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/KeyAlgo"
+                    "$ref": "#/definitions/SigningAlgo"
                   }
                 },
                 {
-                  "$ref": "#/definitions/KeyAlgo"
+                  "$ref": "#/definitions/SigningAlgo"
                 }
               ]
             },
@@ -1306,8 +1306,7 @@ export const AuthorizationResponseOptsSchema = {
         "EdDSA",
         "RS256",
         "ES256",
-        "ES256K",
-        "none"
+        "ES256K"
       ]
     },
     "ResponseMode": {
@@ -1331,15 +1330,6 @@ export const AuthorizationResponseOptsSchema = {
       "enum": [
         "phr",
         "phrh"
-      ]
-    },
-    "KeyAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K"
       ]
     },
     "TokenEndpointAuthMethod": {
@@ -1437,15 +1427,30 @@ export const AuthorizationResponseOptsSchema = {
         "did": {
           "type": "string"
         },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
         "kid": {
           "type": "string"
+        },
+        "customJwtSigner": {
+          "$ref": "#/definitions/Signer"
         }
       },
       "required": [
         "hexPrivateKey",
-        "did"
+        "did",
+        "alg"
       ],
       "additionalProperties": false
+    },
+    "Signer": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
+        }
+      }
     },
     "ExternalSignature": {
       "type": "object",
@@ -1462,19 +1467,34 @@ export const AuthorizationResponseOptsSchema = {
         "hexPublicKey": {
           "type": "string"
         },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
         "kid": {
           "type": "string"
         }
       },
       "required": [
         "signatureUri",
-        "did"
+        "did",
+        "alg"
       ],
       "additionalProperties": false
     },
     "SuppliedSignature": {
       "type": "object",
       "properties": {
+        "signature": {
+          "properties": {
+            "isFunction": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
         "did": {
           "type": "string"
         },
@@ -1483,10 +1503,12 @@ export const AuthorizationResponseOptsSchema = {
         }
       },
       "required": [
+        "signature",
+        "alg",
         "did",
         "kid"
       ],
-      "additionalProperties": true
+      "additionalProperties": false
     },
     "PresentationExchangeOpts": {
       "type": "object",

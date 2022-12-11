@@ -222,8 +222,7 @@ export const AuthorizationRequestPayloadSchemaVID1 = {
         "EdDSA",
         "RS256",
         "ES256",
-        "ES256K",
-        "none"
+        "ES256K"
       ]
     },
     "ResponseType": {
