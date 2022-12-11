@@ -3,12 +3,12 @@ import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknow
 import nock from 'nock';
 
 import {
-  AuthorizationRequestOpts,
   AuthorizationResponseOpts,
+  Builder,
   CheckLinkedDomain,
+  CreateAuthorizationRequestOpts,
   KeyAlgo,
   OP,
-  OPBuilder,
   PassBy,
   ResponseIss,
   ResponseMode,
@@ -43,7 +43,7 @@ const KID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#controller';
 describe('OP Builder should', () => {
   it('throw Error when no arguments are passed', async () => {
     expect.assertions(1);
-    await expect(() => new OPBuilder().build()).toThrowError(Error);
+    await expect(() => new Builder().build()).toThrowError(Error);
   });
   it('build an OP when all arguments are set', async () => {
     expect.assertions(1);
@@ -132,7 +132,7 @@ describe('OP should', () => {
     'succeed from request opts when all params are set',
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
-      const requestOpts: AuthorizationRequestOpts = {
+      const requestOpts: CreateAuthorizationRequestOpts = {
         payload: {
           redirect_uri: EXAMPLE_REDIRECT_URL,
           client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -206,7 +206,7 @@ describe('OP should', () => {
       .withRequestBy(PassBy.VALUE)
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
       .addDidMethod('ethr')
-      .withRegistrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],

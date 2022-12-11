@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv';
 
 import {
   AuthorizationRequest,
-  AuthorizationRequestOpts,
+  CreateAuthorizationRequestOpts,
   PassBy,
   RequestObject,
   ResponseType,
@@ -55,7 +55,7 @@ describe('verifyJWT should', () => {
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
-    const requestOpts: AuthorizationRequestOpts = {
+    const requestOpts: CreateAuthorizationRequestOpts = {
       payload: {
         state: 'expected state',
         client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -120,7 +120,7 @@ describe('verifyJWT should', () => {
     'succeed if a valid JWT is passed',
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-      const requestOpts: AuthorizationRequestOpts = {
+      const requestOpts: CreateAuthorizationRequestOpts = {
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',

@@ -1,11 +1,11 @@
-import { AuthorizationRequestOpts, createClaimsProperties } from '../authorization-request';
+import { CreateAuthorizationRequestOpts, createClaimsProperties } from '../authorization-request';
 import { createRequestRegistration } from '../authorization-request/RequestRegistration';
-import { getNonce, getState } from '../functions';
+import { getNonce, getState } from '../helpers';
 import { RequestObjectPayload, ResponseMode, ResponseType, Scope, SIOPErrors } from '../types';
 
 import { assertValidRequestObjectOpts } from './Opts';
 
-export const createRequestObjectPayload = async (opts: AuthorizationRequestOpts): Promise<RequestObjectPayload> => {
+export const createRequestObjectPayload = async (opts: CreateAuthorizationRequestOpts): Promise<RequestObjectPayload> => {
   assertValidRequestObjectOpts(opts.requestObject, true);
 
   const requestObjectOpts = opts.requestObject.payload;

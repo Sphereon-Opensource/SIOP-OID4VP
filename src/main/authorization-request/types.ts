@@ -52,7 +52,7 @@ export interface AuthorizationRequestOptsVD11 extends AuthorizationRequestCommon
   idTokenType?: string; // OPTIONAL. Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed.
 }
 
-export type AuthorizationRequestOpts = AuthorizationRequestOptsVD1 | AuthorizationRequestOptsVD11;
+export type CreateAuthorizationRequestOpts = AuthorizationRequestOptsVD1 | AuthorizationRequestOptsVD11;
 
 export interface VerifyAuthorizationRequestOpts {
   verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification

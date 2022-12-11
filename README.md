@@ -1043,7 +1043,7 @@ resolver.resolve('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda').then(doc
 The DidResolution file exposes 2 functions that help with the resolution as well:
 
 ```typescript
-import {getResolver, resolveDidDocument} from './functions/DIDResolution';
+import {getResolver, resolveDidDocument} from './helpers/DIDResolution';
 
 // combines 2 uni resolvers for ethr and eosio together with the myCustomResolver and return that as a single resolver
 const myCustomResolver = new MyCustomResolver();

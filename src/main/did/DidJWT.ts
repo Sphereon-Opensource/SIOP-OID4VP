@@ -4,6 +4,7 @@ import { Resolvable } from 'did-resolver';
 
 import { AuthorizationResponseOpts } from '../authorization-response';
 import { DEFAULT_PROOF_TYPE, PROOF_TYPE_EDDSA } from '../config';
+import { isEd25519DidKeyMethod, isEd25519JWK, post } from '../helpers';
 import { RequestObjectOpts } from '../request-object';
 import {
   DEFAULT_EXPIRATION_TIME,
@@ -19,10 +20,9 @@ import {
   ResponseIss,
   SignatureResponse,
   SIOPErrors,
+  SIOPResonse,
   VerifiedJWT,
 } from '../types';
-
-import { isEd25519DidKeyMethod, isEd25519JWK, postWithBearerToken } from './';
 
 /**
  *  Verifies given JWT. If the JWT is valid, the promise returns an object including the JWT, the payload of the JWT,
@@ -142,8 +142,8 @@ async function signDidJwtExternal(
     kid,
   };
 
-  const response = await postWithBearerToken(signatureUri, body, authZToken);
-  return ((await response.json()) as SignatureResponse).jws;
+  const response: SIOPResonse<SignatureResponse> = await post(signatureUri, JSON.stringify(body), { bearerToken: authZToken });
+  return response.successBody.jws;
 }
 
 async function signDidJwtSupplied(

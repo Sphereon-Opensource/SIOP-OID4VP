@@ -39,14 +39,14 @@ export function decodeUriAsJson(uri: string) {
   return json;
 }
 
-export function encodeJsonAsURI(json: unknown) {
+export function encodeJsonAsURI(json: unknown): string {
   if (typeof json === 'string') {
     return encodeJsonAsURI(JSON.parse(json));
   }
 
-  const results = [];
+  const results: string[] = [];
 
-  function encodeAndStripWhitespace(key: string) {
+  function encodeAndStripWhitespace(key: string): string {
     return encodeURIComponent(key.replace(' ', ''));
   }
 

@@ -3,13 +3,13 @@ import { IProofType } from '@sphereon/ssi-types';
 import { Resolver } from 'did-resolver';
 
 import {
-  AuthorizationRequestOpts,
+  Builder,
   CheckLinkedDomain,
+  CreateAuthorizationRequestOpts,
   PassBy,
   ResponseMode,
   ResponseType,
   RP,
-  RPBuilder,
   Scope,
   SigningAlgo,
   SubjectIdentifierType,
@@ -35,7 +35,7 @@ const KID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1';
 describe('RP Builder should', () => {
   it('throw Error when no arguments are passed', async () => {
     expect.assertions(1);
-    await expect(() => new RPBuilder().build()).toThrowError(Error);
+    await expect(() => new Builder().build()).toThrowError(Error);
   });
 
   it('build an RP when all arguments are set', async () => {
@@ -52,7 +52,7 @@ describe('RP Builder should', () => {
         .withRedirectUri('https://redirect.me')
         .withRequestBy(PassBy.VALUE)
         .withResponseMode(ResponseMode.POST)
-        .withRegistrationBy({
+        .withClientMetadata({
           passBy: PassBy.REFERENCE,
           referenceUri: 'https://registration.here',
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
@@ -77,7 +77,7 @@ describe('RP should', () => {
   it('return an RP when all request arguments are set', async () => {
     expect.assertions(1);
 
-    const opts: AuthorizationRequestOpts = {
+    const opts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: 'test',
         scope: 'test',
@@ -121,7 +121,7 @@ describe('RP should', () => {
 
   it('succeed from request opts when all params are set', async () => {
     // expect.assertions(1);
-    const opts: AuthorizationRequestOpts = {
+    const opts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -250,7 +250,7 @@ describe('RP should', () => {
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .withInternalSignature(HEX_KEY, DID, KID)
-      .withRegistrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],

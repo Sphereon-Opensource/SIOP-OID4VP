@@ -1,7 +1,7 @@
 import { decodeJWT } from 'did-jwt';
 
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
-import { decodeUriAsJson, encodeJsonAsURI, fetchByReferenceOrUseByValue } from '../functions';
+import { decodeUriAsJson, encodeJsonAsURI, fetchByReferenceOrUseByValue } from '../helpers';
 import { assertValidRequestObjectPayload, RequestObject } from '../request-object';
 import {
   AuthorizationRequestPayload,
@@ -17,7 +17,7 @@ import {
 
 import { AuthorizationRequest } from './AuthorizationRequest';
 import { assertValidRPRegistrationMedataPayload } from './Payload';
-import { AuthorizationRequestOpts } from './types';
+import { CreateAuthorizationRequestOpts } from './types';
 
 export class URI implements AuthorizationRequestURI {
   private readonly _scheme: string;
@@ -67,7 +67,7 @@ export class URI implements AuthorizationRequestURI {
    *
    * Normally you will want to use this method to create the request.
    */
-  public static async fromOpts(opts: AuthorizationRequestOpts): Promise<URI> {
+  public static async fromOpts(opts: CreateAuthorizationRequestOpts): Promise<URI> {
     if (!opts) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }

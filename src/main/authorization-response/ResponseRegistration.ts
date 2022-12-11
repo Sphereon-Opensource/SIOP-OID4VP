@@ -1,4 +1,4 @@
-import { LanguageTagUtils } from '../functions';
+import { LanguageTagUtils } from '../helpers';
 import { DiscoveryMetadataOpts, DiscoveryMetadataPayload, ResponseIss, ResponseType, Schema, Scope, SigningAlgo, SubjectType } from '../types';
 
 export const createDiscoveryMetadataPayload = (opts: DiscoveryMetadataOpts): DiscoveryMetadataPayload => {

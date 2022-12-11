@@ -3,7 +3,16 @@ import { parse } from 'querystring';
 import { IPresentationDefinition } from '@sphereon/pex';
 import { IProofType } from '@sphereon/ssi-types';
 
-import { AuthorizationRequestOpts, PassBy, RequestObject, ResponseType, Scope, SigningAlgo, SubjectIdentifierType, SubjectType } from '../src/main';
+import {
+  CreateAuthorizationRequestOpts,
+  PassBy,
+  RequestObject,
+  ResponseType,
+  Scope,
+  SigningAlgo,
+  SubjectIdentifierType,
+  SubjectType,
+} from '../src/main';
 import { URI } from '../src/main/authorization-request/URI';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -79,7 +88,7 @@ describe('create Request Uri should', () => {
 
   it('return a reference url', async () => {
     expect.assertions(14);
-    const opts: AuthorizationRequestOpts = {
+    const opts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -142,7 +151,7 @@ describe('create Request Uri should', () => {
 
   it('return a reference url when using did:key', async () => {
     expect.assertions(4);
-    const opts: AuthorizationRequestOpts = {
+    const opts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -194,7 +203,7 @@ describe('create Request Uri should', () => {
 
   it('return an url with an embedded token value', async () => {
     expect.assertions(2);
-    const opts: AuthorizationRequestOpts = {
+    const opts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -392,7 +401,7 @@ describe('create Request JWT should', () => {
 
   it('succeed when all params are set', async () => {
     // expect.assertions(1);
-    const opts: AuthorizationRequestOpts = {
+    const opts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: 'test_client_id',
         scope: 'test',
@@ -489,7 +498,7 @@ describe('create Request JWT should', () => {
   });
 
   it('succeed when requesting with a valid PD', async () => {
-    const opts: AuthorizationRequestOpts = {
+    const opts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -555,7 +564,7 @@ describe('create Request JWT should', () => {
   });
 
   it('should throw error if presentation definition object is not valid', async () => {
-    const opts: AuthorizationRequestOpts = {
+    const opts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: 'test_client_id',
         scope: 'test',

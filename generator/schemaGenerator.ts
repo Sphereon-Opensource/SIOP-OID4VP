@@ -93,9 +93,9 @@ function correctSchema(schemaString: string) {
 }
 
 const requestOptsConf = {
-  path: "../src/main/types/SIOP.types.ts",
+  path: "../src/main/authorization-request/types.ts",
   tsconfig: "tsconfig.json",
-  type: "AuthorizationRequestOpts", // Or <type-name> if you want to generate schema for that one type only
+  type: "CreateAuthorizationRequestOpts", // Or <type-name> if you want to generate schema for that one type only
   outputPath: "src/main/schemas/AuthorizationRequestOpts.schema.ts",
   outputConstName: "AuthorizationRequestOptsSchema",
   skipTypeCheck: true
@@ -103,7 +103,7 @@ const requestOptsConf = {
 
 
 const responseOptsConf = {
-  path: "../src/main/types/SIOP.types.ts",
+  path: "../src/main/authorization-response/types.ts",
   tsconfig: "tsconfig.json",
   type: "AuthorizationResponseOpts", // Or <type-name> if you want to generate schema for that one type only
   outputPath: "src/main/schemas/AuthorizationResponseOpts.schema.ts",

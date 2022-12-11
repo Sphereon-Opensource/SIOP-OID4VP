@@ -5,7 +5,7 @@ import { IPresentation, IVerifiablePresentation, PresentationSubmission, W3CVeri
 import { VerifyCallback as WellknownDIDVerifyCallback } from '@sphereon/wellknown-dids-client';
 import { VerificationMethod } from 'did-resolver';
 
-import { AuthorizationRequest, AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../authorization-request';
+import { AuthorizationRequest, CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import {
   AuthorizationResponseOpts,
   PresentationDefinitionWithLocation,
@@ -97,7 +97,7 @@ export interface IDTokenPayload extends JWTPayload {
 }
 
 export interface AuthorizationResponsePayload {
-  access_token?: ResponseIss.SELF_ISSUED_V2 | string;
+  access_token?: string;
   token_type?: string;
   refresh_token?: string;
   expires_in: number;
@@ -140,6 +140,15 @@ export interface ClaimPayload {
 export interface VerifiablePresentationPayload {
   format: VerifiablePresentationTypeFormat;
   presentation: IVerifiablePresentation;
+}
+
+export interface RequestStateInfo {
+  client_id: string; // RP ID
+
+  // sub: string
+  nonce: string;
+  state: string;
+  iat: number;
 }
 
 /**
@@ -495,6 +504,11 @@ export enum ResponseMode {
   QUERY = 'query',
 }
 
+export enum ProtocolFlow {
+  SAME_DEVICE = 'same_device',
+  CROSS_DEVICE = 'cross_device',
+}
+
 export interface SignatureResponse {
   jws: string;
 }
@@ -616,7 +630,7 @@ export const isSuppliedSignature = (object: InternalSignature | ExternalSignatur
 export const isNoSignature = (object: InternalSignature | ExternalSignature | NoSignature): object is NoSignature =>
   'hexPublicKey' in object && 'did' in object;
 
-export const isRequestOpts = (object: AuthorizationRequestOpts | AuthorizationResponseOpts): object is AuthorizationRequestOpts =>
+export const isRequestOpts = (object: CreateAuthorizationRequestOpts | AuthorizationResponseOpts): object is CreateAuthorizationRequestOpts =>
   'requestBy' in object;
 
 export const isResponseOpts = (object: RequestObjectOpts | AuthorizationResponseOpts): object is RequestObjectOpts => 'did' in object;
@@ -666,3 +680,23 @@ export enum SupportedVersion {
   SIOPv2_D11 = 'SIOPv2_D11',
   JWT_VC_PRESENTATION_PROFILE_v1 = 'JWT_VC_PRESENTATION_PROFILE_v1',
 }
+
+export interface SIOPResonse<T> {
+  origResponse: Response;
+  successBody?: T;
+  errorBody?: ErrorResponse;
+}
+
+export interface ErrorResponse extends Response {
+  error: string;
+  error_description?: string;
+  error_uri?: string;
+  state?: string;
+}
+
+export enum ContentType {
+  FORM_URL_ENCODED = 'application/x-www-form-urlencoded',
+  UTF_8 = 'UTF-8',
+}
+
+ResponseMode;

@@ -1,8 +1,9 @@
 import { decodeJWT } from 'did-jwt';
 
-import { AuthorizationRequestOpts } from '../authorization-request';
+import { CreateAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidAuthorizationRequestOpts } from '../authorization-request/Opts';
-import { fetchByReferenceOrUseByValue, signDidJwtPayload } from '../functions';
+import { signDidJwtPayload } from '../did';
+import { fetchByReferenceOrUseByValue } from '../helpers';
 import { AuthorizationRequestPayload, RequestObjectJwt, RequestObjectPayload, SIOPErrors } from '../types';
 
 import { assertValidRequestObjectOpts } from './Opts';
@@ -14,7 +15,7 @@ export class RequestObject {
   private jwt: RequestObjectJwt;
   private readonly opts: RequestObjectOpts;
 
-  private constructor(opts?: AuthorizationRequestOpts | RequestObjectOpts, payload?: RequestObjectPayload, jwt?: string) {
+  private constructor(opts?: CreateAuthorizationRequestOpts | RequestObjectOpts, payload?: RequestObjectPayload, jwt?: string) {
     this.opts = opts ? RequestObject.mergeOAuth2AndOpenIdProperties(opts) : undefined;
     this.payload = payload;
     this.jwt = jwt;
@@ -33,7 +34,7 @@ export class RequestObject {
    * part of the URI and which become part of the Request Object. If you generate a URI based upon the result of this class,
    * the URI will be constructed based on the Request Object only!
    */
-  public static async fromOpts(authorizationRequestOpts: AuthorizationRequestOpts) {
+  public static async fromOpts(authorizationRequestOpts: CreateAuthorizationRequestOpts) {
     assertValidAuthorizationRequestOpts(authorizationRequestOpts);
     const requestObjectOpts = RequestObject.mergeOAuth2AndOpenIdProperties(authorizationRequestOpts);
     const mergedOpts = { ...authorizationRequestOpts, requestObject: requestObjectOpts };
@@ -44,7 +45,7 @@ export class RequestObject {
     return new RequestObject(undefined, undefined, requestObjectJwt);
   }
 
-  public static async fromPayload(requestObjectPayload: RequestObjectPayload, authorizationRequestOpts: AuthorizationRequestOpts) {
+  public static async fromPayload(requestObjectPayload: RequestObjectPayload, authorizationRequestOpts: CreateAuthorizationRequestOpts) {
     return new RequestObject(authorizationRequestOpts, requestObjectPayload);
   }
 
@@ -104,7 +105,7 @@ export class RequestObject {
     }
   }
 
-  private static mergeOAuth2AndOpenIdProperties(opts: AuthorizationRequestOpts | RequestObjectOpts): RequestObjectOpts {
+  private static mergeOAuth2AndOpenIdProperties(opts: CreateAuthorizationRequestOpts | RequestObjectOpts): RequestObjectOpts {
     if (!opts) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }

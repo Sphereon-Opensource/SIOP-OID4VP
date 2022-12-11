@@ -2,7 +2,7 @@ import { EvaluationResults, IPresentationDefinition, KeyEncoding, PEX, Presentat
 import { PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmission } from '@sphereon/pex-models';
 import { IPresentation, IProofPurpose, IProofType, W3CVerifiableCredential, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 
-import { extractDataFromPath, getWithUrl } from '../functions';
+import { extractDataFromPath, getWithUrl } from '../helpers';
 import { JWTPayload, SIOPErrors, VerifiablePresentationPayload } from '../types';
 
 import { PresentationDefinitionWithLocation, PresentationLocation, PresentationSignCallback, PresentationVerificationCallback } from './types';

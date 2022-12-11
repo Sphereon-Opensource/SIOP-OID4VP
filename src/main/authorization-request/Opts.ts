@@ -2,7 +2,7 @@ import { assertValidRequestObjectOpts } from '../request-object/Opts';
 import { isExternalVerification, isInternalVerification, SIOPErrors } from '../types';
 
 import { assertValidRequestRegistrationOpts } from './RequestRegistration';
-import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
+import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
 export const assertValidVerifyAuthorizationRequestOpts = (opts: VerifyAuthorizationRequestOpts) => {
   if (!opts || !opts.verification || (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))) {
@@ -10,7 +10,7 @@ export const assertValidVerifyAuthorizationRequestOpts = (opts: VerifyAuthorizat
   }
 };
 
-export const assertValidAuthorizationRequestOpts = (opts: AuthorizationRequestOpts) => {
+export const assertValidAuthorizationRequestOpts = (opts: CreateAuthorizationRequestOpts) => {
   if (!opts || !opts.payload || !opts.payload.redirect_uri || !opts.requestObject) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }

@@ -2,7 +2,7 @@ import { JWTHeader } from 'did-jwt';
 
 import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { assertValidVerifyOpts } from '../authorization-response/Opts';
-import { getResolver, getSubDidFromPayload, parseJWT, signDidJwtPayload, validateLinkedDomainWithDid, verifyDidJWT } from '../functions';
+import { getResolver, getSubDidFromPayload, parseJWT, signDidJwtPayload, validateLinkedDomainWithDid, verifyDidJWT } from '../did';
 import {
   AuthorizationRequestPayload,
   CheckLinkedDomain,
@@ -159,5 +159,10 @@ export class IDToken {
   }
   get responseOpts(): AuthorizationResponseOpts {
     return this._responseOpts;
+  }
+
+  public async isSelfIssued(): Promise<boolean> {
+    const payload = await this.payload();
+    return payload.iss === ResponseIss.SELF_ISSUED_V2 || (payload.sub !== undefined && payload.sub === payload.iss);
   }
 }

@@ -18,7 +18,7 @@ import {
   VerifiablePresentationTypeFormat,
   VerificationMode,
 } from '../src/main';
-import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main';
+import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main';
 import { AuthorizationResponseOpts, PresentationLocation, PresentationSignCallback } from '../src/main';
 import { RequestObject } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
@@ -108,7 +108,7 @@ describe('create JWT from Request JWT should', () => {
     expect.assertions(1);
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-    const requestOpts: AuthorizationRequestOpts = {
+    const requestOpts: CreateAuthorizationRequestOpts = {
       payload: {
         nonce: '12345',
         state: '12345',
@@ -198,7 +198,7 @@ describe('create JWT from Request JWT should', () => {
 
       const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
       const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-      const requestOpts: AuthorizationRequestOpts = {
+      const requestOpts: CreateAuthorizationRequestOpts = {
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
@@ -318,7 +318,7 @@ describe('create JWT from Request JWT should', () => {
         },
       ],
     };
-    const requestOpts: AuthorizationRequestOpts = {
+    const requestOpts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -486,7 +486,7 @@ describe('create JWT from Request JWT should', () => {
         },
       ],
     };
-    const requestOpts: AuthorizationRequestOpts = {
+    const requestOpts: CreateAuthorizationRequestOpts = {
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',

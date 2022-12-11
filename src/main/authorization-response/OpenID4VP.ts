@@ -1,6 +1,6 @@
 import { PresentationSubmission } from '@sphereon/ssi-types';
 
-import { verifyRevocation } from '../functions';
+import { verifyRevocation } from '../helpers';
 import { AuthorizationResponsePayload, RevocationVerification, SIOPErrors, VerifiablePresentationPayload } from '../types';
 
 import { PresentationExchange } from './PresentationExchange';

@@ -1,12 +1,14 @@
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
-import { fetchByReferenceOrUseByValue, getAudience, getResolver, parseJWT, verifyDidJWT } from '../functions';
-import { checkSIOPSpecVersionSupported } from '../functions/SIOPVersionDiscovery';
+import { getAudience, getResolver, parseJWT, verifyDidJWT } from '../did';
+import { fetchByReferenceOrUseByValue } from '../helpers';
+import { checkSIOPSpecVersionSupported } from '../helpers/SIOPVersionDiscovery';
 import { RequestObject } from '../request-object';
 import {
   AuthorizationRequestPayload,
   PassBy,
   RequestObjectJwt,
   RequestObjectPayload,
+  RequestStateInfo,
   RPRegistrationMetadataPayload,
   SIOPErrors,
   VerifiedAuthorizationRequest,
@@ -16,15 +18,15 @@ import {
 import { assertValidAuthorizationRequestOpts, assertValidVerifyAuthorizationRequestOpts } from './Opts';
 import { assertValidRPRegistrationMedataPayload, checkWellknownDIDFromRequest, createAuthorizationRequestPayload } from './Payload';
 import { URI } from './URI';
-import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
+import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
 export class AuthorizationRequest {
   private readonly _requestObject: RequestObject;
   private readonly _payload: AuthorizationRequestPayload;
-  private readonly _options: AuthorizationRequestOpts;
+  private readonly _options: CreateAuthorizationRequestOpts;
   private _uri: URI;
 
-  private constructor(payload: AuthorizationRequestPayload, requestObject?: RequestObject, opts?: AuthorizationRequestOpts, uri?: URI) {
+  private constructor(payload: AuthorizationRequestPayload, requestObject?: RequestObject, opts?: CreateAuthorizationRequestOpts, uri?: URI) {
     this._options = opts;
     this._payload = payload;
     this._requestObject = requestObject;
@@ -48,7 +50,7 @@ export class AuthorizationRequest {
     return new AuthorizationRequest(payload, requestObject);
   }
 
-  public static async fromOpts(opts: AuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
+  public static async fromOpts(opts: CreateAuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
     if (!opts || !opts.requestObject) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
@@ -67,7 +69,7 @@ export class AuthorizationRequest {
     return this._requestObject;
   }
 
-  get options(): AuthorizationRequestOpts | undefined {
+  get options(): CreateAuthorizationRequestOpts | undefined {
     return this._options;
   }
 
@@ -169,5 +171,15 @@ export class AuthorizationRequest {
     const uriObject = typeof uri === 'string' ? await URI.fromUri(uri) : uri;
     const requestObject = await RequestObject.fromJwt(uriObject.requestObjectJwt);
     return new AuthorizationRequest(uriObject.authorizationRequestPayload, requestObject, undefined, uriObject);
+  }
+
+  public async toStateInfo(): Promise<RequestStateInfo> {
+    const requestObject = await this.requestObject.getPayload();
+    return {
+      client_id: this.options.clientMetadata.clientId,
+      iat: requestObject.iat ?? this.payload.iat,
+      nonce: requestObject.nonce ?? this.payload.nonce,
+      state: this.payload.state,
+    };
   }
 }

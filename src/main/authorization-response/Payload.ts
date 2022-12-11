@@ -1,5 +1,6 @@
 import { AuthorizationRequest } from '../authorization-request';
-import { getState, signDidJwtPayload } from '../functions';
+import { signDidJwtPayload } from '../did';
+import { getState } from '../helpers';
 import { RequestObject } from '../request-object';
 import { AuthorizationRequestPayload, AuthorizationResponsePayload, IDTokenPayload, SIOPErrors } from '../types';
 

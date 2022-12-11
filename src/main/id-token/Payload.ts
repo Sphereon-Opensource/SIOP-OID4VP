@@ -3,7 +3,7 @@ import { JWK } from 'jose';
 import { AuthorizationResponseOpts } from '../authorization-response';
 import { mergeOAuth2AndOpenIdInRequestPayload } from '../authorization-response';
 import { assertValidResponseOpts } from '../authorization-response/Opts';
-import { getNonce, getPublicJWKFromHexPrivateKey, getState, getThumbprint } from '../functions';
+import { getNonce, getPublicJWKFromHexPrivateKey, getState, getThumbprint } from '../helpers';
 import {
   AuthorizationRequestPayload,
   IDTokenPayload,

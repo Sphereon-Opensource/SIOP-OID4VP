@@ -2,7 +2,8 @@ import { PEX } from '@sphereon/pex';
 import Ajv from 'ajv';
 
 import { ClaimOpts } from '../authorization-response';
-import { getNonce, getState, validateLinkedDomainWithDid } from '../functions';
+import { validateLinkedDomainWithDid } from '../did';
+import { getNonce, getState } from '../helpers';
 import { RequestObject } from '../request-object';
 import { RPRegistrationMetadataPayloadSchema } from '../schemas';
 import {
@@ -20,7 +21,7 @@ import {
 } from '../types';
 
 import { createRequestRegistration } from './RequestRegistration';
-import { AuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
+import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
@@ -49,7 +50,7 @@ export const createClaimsProperties = (opts: ClaimOpts): ClaimPayload => {
 };
 
 export const createAuthorizationRequestPayload = async (
-  opts: AuthorizationRequestOpts,
+  opts: CreateAuthorizationRequestOpts,
   requestObject?: RequestObject
 ): Promise<AuthorizationRequestPayload> => {
   const payload = opts.payload;

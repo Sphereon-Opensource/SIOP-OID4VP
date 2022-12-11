@@ -2,9 +2,8 @@ import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Resolvable, Resolver } from 'did-resolver';
 
-import { OP } from './OP';
-import { PresentationSignCallback } from './authorization-response';
-import { getMethodFromDid } from './functions';
+import { PresentationSignCallback } from '../authorization-response';
+import { getMethodFromDid } from '../did';
 import {
   CheckLinkedDomain,
   EcdsaSignature,
@@ -16,9 +15,11 @@ import {
   SubjectSyntaxTypesSupportedValues,
   SuppliedSignature,
   SupportedVersion,
-} from './types';
+} from '../types';
 
-export default class OPBuilder {
+import { OP } from './OP';
+
+export class Builder {
   expiresIn?: number;
   issuer: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
@@ -31,7 +32,7 @@ export default class OPBuilder {
   presentationSignCallback?: PresentationSignCallback;
   supportedVersions: SupportedVersion[];
 
-  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
+  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): Builder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
     if (method === SubjectSyntaxTypesSupportedValues.DID.valueOf()) {
       opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
@@ -40,17 +41,17 @@ export default class OPBuilder {
     return this;
   }
 
-  addIssuer(issuer: ResponseIss): OPBuilder {
+  addIssuer(issuer: ResponseIss): Builder {
     this.issuer = issuer;
     return this;
   }
 
-  withCustomResolver(resolver: Resolvable): OPBuilder {
+  withCustomResolver(resolver: Resolvable): Builder {
     this.customResolver = resolver;
     return this;
   }
 
-  addResolver(didMethod: string, resolver: Resolvable): OPBuilder {
+  addResolver(didMethod: string, resolver: Resolvable): Builder {
     const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
     this.resolvers.set(qualifiedDidMethod, resolver);
     return this;
@@ -61,22 +62,22 @@ export default class OPBuilder {
     return this;
   }
 */
-  withExpiresIn(expiresIn: number): OPBuilder {
+  withExpiresIn(expiresIn: number): Builder {
     this.expiresIn = expiresIn;
     return this;
   }
 
-  withCheckLinkedDomain(mode: CheckLinkedDomain): OPBuilder {
+  withCheckLinkedDomain(mode: CheckLinkedDomain): Builder {
     this.checkLinkedDomain = mode;
     return this;
   }
 
-  response(responseMode: ResponseMode): OPBuilder {
+  response(responseMode: ResponseMode): Builder {
     this.responseMode = responseMode;
     return this;
   }
 
-  registrationBy(responseRegistration: ResponseRegistrationOpts): OPBuilder {
+  registrationBy(responseRegistration: ResponseRegistrationOpts): Builder {
     this.responseRegistration = {
       ...responseRegistration,
     };
@@ -92,17 +93,17 @@ export default class OPBuilder {
 */
 
   // Only internal | supplied supported for now
-  signature(signatureType: InternalSignature | SuppliedSignature): OPBuilder {
+  signature(signatureType: InternalSignature | SuppliedSignature): Builder {
     this.signatureType = signatureType;
     return this;
   }
 
-  internalSignature(hexPrivateKey: string, did: string, kid: string): OPBuilder {
+  internalSignature(hexPrivateKey: string, did: string, kid: string): Builder {
     this.signature({ hexPrivateKey, did, kid });
     return this;
   }
 
-  suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): OPBuilder {
+  suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string): Builder {
     this.signature({ signature, did, kid });
     return this;
   }
@@ -112,7 +113,7 @@ export default class OPBuilder {
     return this;
   }
 
-  withSupportedVersions(supportedVersions: SupportedVersion[] | SupportedVersion | string[] | string): OPBuilder {
+  withSupportedVersions(supportedVersions: SupportedVersion[] | SupportedVersion | string[] | string): Builder {
     const versions = Array.isArray(supportedVersions) ? supportedVersions : [supportedVersions];
     for (const version of versions) {
       this.addSupportedVersion(version);
@@ -120,7 +121,7 @@ export default class OPBuilder {
     return this;
   }
 
-  addSupportedVersion(supportedVersion: string | SupportedVersion): OPBuilder {
+  addSupportedVersion(supportedVersion: string | SupportedVersion): Builder {
     if (!this.supportedVersions) {
       this.supportedVersions = [];
     }
@@ -141,6 +142,9 @@ export default class OPBuilder {
     // this.responseRegistration.didMethodsSupported = this.didMethods;
     // this.responseRegistration.subjectIdentifiersSupported = this.subjectIdentifierTypes;
     // this.responseRegistration.credentialFormatsSupported = this.credentialFormats;
+    // We ignore the private visibility, as we don't want others to use the OP directly
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     return new OP({ builder: this });
   }
 }

@@ -1,8 +1,8 @@
 export const AuthorizationRequestOptsSchema = {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/AuthorizationRequestOpts",
+  "$ref": "#/definitions/CreateAuthorizationRequestOpts",
   "definitions": {
-    "AuthorizationRequestOpts": {
+    "CreateAuthorizationRequestOpts": {
       "anyOf": [
         {
           "$ref": "#/definitions/AuthorizationRequestOptsVD1"

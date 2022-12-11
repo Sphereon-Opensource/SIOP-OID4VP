@@ -26,7 +26,7 @@ import {
   VerificationMode,
   verifyRevocation,
 } from '../src/main';
-import { checkSIOPSpecVersionSupported } from '../src/main/functions/SIOPVersionDiscovery';
+import { checkSIOPSpecVersionSupported } from '../src/main/helpers/SIOPVersionDiscovery';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
@@ -159,7 +159,7 @@ describe('RP and OP interaction should', () => {
         .withIssuer(ResponseIss.SELF_ISSUED_V2)
         .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
         .addDidMethod('ethr')
-        .withRegistrationBy({
+        .withClientMetadata({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -211,7 +211,7 @@ describe('RP and OP interaction should', () => {
 
       nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
 
-      await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyAuthorizationRequestOptions.supportedVersions);
+      await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyRequestOptions.supportedVersions);
       // The create method also calls the verifyRequest method, so no need to do it manually
       const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedRequest);
@@ -260,7 +260,7 @@ describe('RP and OP interaction should', () => {
       .withRequestBy(PassBy.VALUE)
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
-      .withRegistrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -359,7 +359,7 @@ describe('RP and OP interaction should', () => {
       .withRequestBy(PassBy.VALUE)
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .addDidMethod('ethr')
-      .withRegistrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -409,7 +409,7 @@ describe('RP and OP interaction should', () => {
     });
 
     //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyAuthorizationRequestOptions.supportedVersions);
+    await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyRequestOptions.supportedVersions);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
@@ -458,7 +458,7 @@ describe('RP and OP interaction should', () => {
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
-      .withRegistrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -525,7 +525,7 @@ describe('RP and OP interaction should', () => {
       pd[0].definition,
       getVCs(),
       {},
-      op.authorizationResponseOptions.presentationExchange.presentationSignCallback
+      op.createResponseOptions.presentationExchange.presentationSignCallback
     )) as IVerifiablePresentation;
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
@@ -579,7 +579,7 @@ describe('RP and OP interaction should', () => {
         .withRequestBy(PassBy.VALUE)
         .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-        .withRegistrationBy({
+        .withClientMetadata({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -646,7 +646,7 @@ describe('RP and OP interaction should', () => {
         pd[0].definition,
         getVCs(),
         {},
-        op.authorizationResponseOptions.presentationExchange.presentationSignCallback
+        op.createResponseOptions.presentationExchange.presentationSignCallback
       )) as IVerifiablePresentation;
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
@@ -714,7 +714,7 @@ describe('RP and OP interaction should', () => {
       .withRequestBy(PassBy.VALUE)
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .withRegistrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -791,7 +791,7 @@ describe('RP and OP interaction should', () => {
       pd[0].definition,
       getVCs(),
       {},
-      op.authorizationResponseOptions.presentationExchange.presentationSignCallback
+      op.createResponseOptions.presentationExchange.presentationSignCallback
     )) as IVerifiablePresentation;
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
@@ -813,7 +813,7 @@ describe('RP and OP interaction should', () => {
         'eyJhbGciOiJSUzI1NiIsImtpZCI6ImRpZDprZXk6ejZNa29USHNnTk5yYnk4SnpDTlExaVJMeVc1UVE2UjhYdXU2QUE4aWdHck1WUFVNI3o2TWtvVEhzZ05OcmJ5OEp6Q05RMWlSTHlXNVFRNlI4WHV1NkFBOGlnR3JNVlBVTSJ9.eyJleHAiOjE3NjQ4NzkxMzksImlzcyI6ImRpZDprZXk6b3RoZXIiLCJuYmYiOjE2MDcxMTI3MzksInN1YiI6ImRpZDprZXk6b3RoZXIiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vaWRlbnRpdHkuZm91bmRhdGlvbi8ud2VsbC1rbm93bi9kaWQtY29uZmlndXJhdGlvbi92MSJdLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDprZXk6b3RoZXIiLCJvcmlnaW4iOiJodHRwczovL2lkZW50aXR5LmZvdW5kYXRpb24ifSwiZXhwaXJhdGlvbkRhdGUiOiIyMDI1LTEyLTA0VDE0OjEyOjE5LTA2OjAwIiwiaXNzdWFuY2VEYXRlIjoiMjAyMC0xMi0wNFQxNDoxMjoxOS0wNjowMCIsImlzc3VlciI6ImRpZDprZXk6b3RoZXIiLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiRG9tYWluTGlua2FnZUNyZWRlbnRpYWwiXX19.rRuc-ojuEgyq8p_tBYK7BayuiNTBeXNyAnC14Rnjs-jsnhae4_E1Q12W99K2NGCGBi5KjNsBcZmdNJPxejiKPrjjcB99poFCgTY8tuRzDjVo0lIeBwfx9qqjKHTRTUR8FGM_imlOpVfBF4AHYxjkHvZn6c9lYvatYcDpB2UfH4BNXkdSVrUXy_kYjpMpAdRtyCAnD_isN1YpEHBqBmnfuVUbYcQK5kk6eiokRFDtWruL1OEeJMYPqjuBSd2m-H54tSM84Oic_pg2zXDjjBlXNelat6MPNT2QxmkwJg7oyewQWX2Ot2yyhSp9WyAQWMlQIe2x84R0lADUmZ1TPQchNw',
       ],
     };
-    expect(rp.verifyAuthorizationResponseOptions.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
+    expect(rp.verifyResponseOptions.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
@@ -855,7 +855,7 @@ describe('RP and OP interaction should', () => {
         .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .addDidMethod('ethr')
-        .withRegistrationBy({
+        .withClientMetadata({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -924,7 +924,7 @@ describe('RP and OP interaction should', () => {
         pd[0].definition,
         getVCs(),
         {},
-        op.authorizationResponseOptions.presentationExchange.presentationSignCallback
+        op.createResponseOptions.presentationExchange.presentationSignCallback
       )) as IVerifiablePresentation;
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
@@ -982,7 +982,7 @@ describe('RP and OP interaction should', () => {
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ion')
-      .withRegistrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -1047,7 +1047,7 @@ describe('RP and OP interaction should', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyAuthorizationRequestOptions.supportedVersions);
+    await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyRequestOptions.supportedVersions);
     // Let's test the parsing
     const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
@@ -1067,7 +1067,7 @@ describe('RP and OP interaction should', () => {
       pd[0].definition,
       getVCs(),
       {},
-      op.authorizationResponseOptions.presentationExchange.presentationSignCallback
+      op.createResponseOptions.presentationExchange.presentationSignCallback
     )) as IVerifiablePresentation;
 
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
@@ -1292,7 +1292,7 @@ describe('RP and OP interaction should', () => {
       .withRequestBy(PassBy.VALUE)
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .withRegistrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -1366,7 +1366,7 @@ describe('RP and OP interaction should', () => {
       pd[0].definition,
       getVCs(),
       {},
-      op.authorizationResponseOptions.presentationExchange.presentationSignCallback
+      op.createResponseOptions.presentationExchange.presentationSignCallback
     )) as IVerifiablePresentation;
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
