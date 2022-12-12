@@ -1,4 +1,4 @@
-import { Resolvable } from 'did-resolver';
+import { DIDDocument as DIFDIDDocument, Resolvable } from 'did-resolver';
 import { JWK } from 'jose';
 
 export interface ResolveOpts {
@@ -47,3 +47,9 @@ export interface ServiceEndpoint {
     description?: string;
 }
 */
+export interface DIDDocument extends DIFDIDDocument {
+  owner?: string;
+  created?: string;
+  updated?: string;
+  proof?: LinkedDataProof;
+}

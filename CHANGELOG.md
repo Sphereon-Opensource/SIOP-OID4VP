@@ -1,6 +1,11 @@
 # Release Notes
 The DID Auth SIOP typescript library is still in an alpha state at this point. Please note that the interfaces might still change a bit as the software still is in active development.
 
+## v0.2.14 - 2022-10-27
+
+- Updated:
+  - Updated some dependencies
+
 ## v0.2.13 - 2022-08-15
 
 - Updated:

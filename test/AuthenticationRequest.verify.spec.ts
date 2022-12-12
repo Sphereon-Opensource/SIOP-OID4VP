@@ -3,10 +3,10 @@ import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknow
 import * as dotenv from 'dotenv';
 
 import {
-  AuthenticationRequest,
-  AuthenticationRequestOpts,
-  CheckLinkedDomain,
+  AuthorizationRequest,
+  CreateAuthorizationRequestOpts,
   PassBy,
+  RequestObject,
   ResponseType,
   Scope,
   SigningAlgo,
@@ -14,7 +14,7 @@ import {
   SubjectType,
   SupportedVersion,
   VerificationMode,
-  VerifyAuthenticationRequestOpts,
+  VerifyAuthorizationRequestOpts,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -36,41 +36,49 @@ dotenv.config();
 describe('verifyJWT should', () => {
   it('throw VERIFY_BAD_PARAMETERS when no JWT is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT(undefined as never, undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthorizationRequest.verify(undefined as never, undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT('a valid JWT', undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthorizationRequest.verify('an invalid JWT bypassing the undefined check', undefined as never)).rejects.toThrow(
+      SIOPErrors.VERIFY_BAD_PARAMS
+    );
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts.verification is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT('a valid JWT', {} as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthorizationRequest.verify('an invalid JWT bypassing the undefined check', {} as never)).rejects.toThrow(
+      SIOPErrors.VERIFY_BAD_PARAMS
+    );
   });
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
-    const requestOpts: AuthenticationRequestOpts = {
-      state: 'expected state',
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: PassBy.REFERENCE,
+    const requestOpts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
+      payload: {
+        state: 'expected state',
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+        nonce: 'expected nonce',
+      },
+      requestObject: {
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
+
+        signatureType: {
+          hexPrivateKey:
+            'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
+          did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
+          kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
+          alg: SigningAlgo.EDDSA,
+        },
       },
-      nonce: 'expected nonce',
-      signatureType: {
-        hexPrivateKey:
-          'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
-        did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
-        kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
-      },
-      registration: {
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
@@ -83,9 +91,7 @@ describe('verifyJWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          type: PassBy.VALUE,
-        },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100308',
@@ -94,44 +100,51 @@ describe('verifyJWT should', () => {
       },
     };
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+    const requestObject = await RequestObject.fromOpts(requestOpts);
 
-    const verifyOpts: VerifyAuthenticationRequestOpts = {
+    const verifyOpts: VerifyAuthorizationRequestOpts = {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          subjectSyntaxTypesSupported: ['key'],
+          subjectSyntaxTypesSupported: ['did:key'],
         },
-        supportedVersions: [SupportedVersion.SIOPv2_ID1],
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
       },
+      supportedVersions: [SupportedVersion.SIOPv2_ID1],
       nonce: 'This nonce is different and should throw error',
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     };
 
     // expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
+    await expect(AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
   });
   it(
     'succeed if a valid JWT is passed',
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-      const requestOpts: AuthenticationRequestOpts = {
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        responseType: 'id_token',
-        state: '12345',
-        nonce: '12345',
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        authorizationEndpoint: '',
-        redirectUri: 'https://acme.com/hello',
-        requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
-        signatureType: {
-          hexPrivateKey: mockEntity.hexPrivateKey,
-          did: mockEntity.did,
-          kid: `${mockEntity.did}#controller`,
+      const requestOpts: CreateAuthorizationRequestOpts = {
+        version: SupportedVersion.SIOPv2_ID1,
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          state: '12345',
+          nonce: '12345',
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          authorization_endpoint: '',
+          redirect_uri: 'https://acme.com/hello',
         },
-        registration: {
+        requestObject: {
+          passBy: PassBy.REFERENCE,
+          referenceUri: 'https://my-request.com/here',
+          signatureType: {
+            hexPrivateKey: mockEntity.hexPrivateKey,
+            did: mockEntity.did,
+            kid: `${mockEntity.did}#controller`,
+            alg: SigningAlgo.ES256K,
+          },
+        },
+        clientMetadata: {
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           responseTypesSupported: [ResponseType.ID_TOKEN],
           scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
@@ -144,7 +157,7 @@ describe('verifyJWT should', () => {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
             },
           },
-          registrationBy: { type: PassBy.VALUE },
+          passBy: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100309',
@@ -152,21 +165,21 @@ describe('verifyJWT should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
       };
-      const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+      const requestObject = await RequestObject.fromOpts(requestOpts);
 
-      const verifyOpts: VerifyAuthenticationRequestOpts = {
+      const verifyOpts: VerifyAuthorizationRequestOpts = {
         verification: {
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
             subjectSyntaxTypesSupported: ['did:ethr'],
           },
-          supportedVersions: [SupportedVersion.SIOPv2_ID1],
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
         },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+        supportedVersions: [SupportedVersion.SIOPv2_ID1],
       };
 
-      const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);
+      const verifyJWT = await AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts);
       expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
     },
     UNIT_TEST_TIMEOUT

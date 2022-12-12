@@ -1,143 +1,98 @@
 // noinspection JSUnusedGlobalSymbols
 
-import { PresentationSignCallBackParams } from '@sphereon/pex';
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
+import { IPresentation, IVerifiablePresentation, PresentationSubmission, W3CVerifiableCredential } from '@sphereon/ssi-types';
+import { VerifyCallback as WellknownDIDVerifyCallback } from '@sphereon/wellknown-dids-client';
+import { Signer } from 'did-jwt';
+import { VerificationMethod } from 'did-resolver';
+
+import { AuthorizationRequest, CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import {
-  IPresentation as PEPresentation,
-  IVerifiablePresentation as PEVerifiablePresentation,
-  PresentationSubmission,
-  W3CVerifiableCredential,
-  W3CVerifiablePresentation,
-} from '@sphereon/ssi-types';
-import { VerifyCallback } from '@sphereon/wellknown-dids-client';
-import { DIDDocument as DIFDIDDocument, VerificationMethod } from 'did-resolver';
+  AuthorizationResponseOpts,
+  PresentationDefinitionWithLocation,
+  PresentationVerificationCallback,
+  VerifyAuthorizationResponseOpts,
+} from '../authorization-response';
+import { RequestObject, RequestObjectOpts } from '../request-object';
 
-import { EcdsaSignature, JWTPayload, LinkedDataProof, ResolveOpts, VerifiedJWT } from './';
+import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './';
 
-export const expirationTime = 10 * 60;
+export const DEFAULT_EXPIRATION_TIME = 10 * 60;
 
-// https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
-interface AuthenticationRequestCommonOpts {
-  scope: string; // from openid-connect-self-issued-v2-1_0-ID1
-  responseType: string; // from openid-connect-self-issued-v2-1_0-ID1
-  clientId: string; // from openid-connect-self-issued-v2-1_0-ID1
-  redirectUri: string; // from openid-connect-self-issued-v2-1_0-ID1
-  idTokenHint?: string; // from openid-connect-self-issued-v2-1_0-ID1
-  claims?: ClaimOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#Claims
-  request?: string; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
-  requestUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
-  nonce?: string; // An optional nonce, will be generated if not provided
-  state?: string; // An optional state, will be generated if not provided
-  signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication), or supplied (callback supplied)
-  authorizationEndpoint?: string;
-  requestBy: ObjectBy; // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
-  checkLinkedDomain?: CheckLinkedDomain; // determines how we'll handle the linked domains for this RP
-  responseMode?: ResponseMode; // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
-  responseContext?: ResponseContext; // Defines the context of these opts. Either RP side or OP side
-  responseTypesSupported?: ResponseType[] | ResponseType;
-  scopesSupported?: Scope[] | Scope;
-  subjectTypesSupported?: SubjectType[] | SubjectType;
-  requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
-  revocationVerificationCallback?: RevocationVerificationCallback;
-}
-
-export interface AuthenticationRequestOptsVD1 extends AuthenticationRequestCommonOpts {
-  registration?: RequestRegistrationOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-registration-1_0.html
-  registrationUri?: string; // from openid-connect-self-issued-v2-1_0-ID1
-}
-
-export interface AuthenticationRequestOptsVD11 extends AuthenticationRequestCommonOpts {
-  clientMetadata?: object; // from openid-connect-self-issued-v2-1_0-11 look at https://openid.net/specs/openid-connect-registration-1_0.html
-  clientMetadataUri?: string; // from openid-connect-self-issued-v2-1_0-11
-  idTokenType?: string; // from openid-connect-self-issued-v2-1_0-11
-}
-
-export type AuthenticationRequestOpts = AuthenticationRequestOptsVD1 | AuthenticationRequestOptsVD11;
-
-export interface AuthenticationRequestCommonPayload extends JWTPayload {
+// https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
+// request and request_uri parameters MUST NOT be included in Request Objects.
+export interface RequestObjectPayload extends RequestCommonPayload, JWTPayload {
   scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
   response_type: ResponseType; // REQUIRED. Constant string value id_token.
   client_id: string; // REQUIRED. RP's identifier at the Self-Issued OP.
-  response_mode?: string;
   redirect_uri: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
-  id_token_hint?: string; // OPTIONAL. As specified in Section 3.1.2 of [OpenID.Core]. If the ID Token is encrypted for the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
-  claims?: ClaimPayload; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
-  request?: string; // OPTIONAL. Request Object value, as specified in Section 6.1 of [OpenID.Core]. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
-  request_uri?: string; // OPTIONAL. URL where Request Object value can be retrieved from, as specified in Section 6.2 of [OpenID.Core].
   nonce: string;
   state: string;
 }
+export type RequestObjectJwt = string;
 
-export type AuthenticationRequestPayloadVID1 = AuthenticationRequestCommonPayload & RequestRegistrationPayload;
+// https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
 
-export interface AuthenticationRequestPayloadVD11 extends AuthenticationRequestCommonPayload {
-  client_metadata?: unknown;
-  client_metadata_uri?: string;
-  id_token_type?: string;
+export interface AuthorizationRequestCommonPayload extends RequestCommonPayload, JWTPayload {
+  request?: string; // OPTIONAL. Request Object value, as specified in Section 6.1 of [OpenID.Core]. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
+  request_uri?: string; // OPTIONAL. URL where Request Object value can be retrieved from, as specified in Section 6.2 of [OpenID.Core].
+}
+export interface RequestCommonPayload extends JWTPayload {
+  scope?: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
+  response_type?: ResponseType; // REQUIRED. Constant string value id_token.
+  client_id?: string; // REQUIRED. RP's identifier at the Self-Issued OP.
+  redirect_uri?: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
+
+  id_token_hint?: string; // OPTIONAL. As specified in Section 3.1.2 of [OpenID.Core]. If the ID Token is encrypted for the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
+  // claims?: ClaimPayloadCommon; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
+  nonce?: string;
+  state?: string;
+  response_mode?: ResponseMode; // This specification introduces a new response mode post in accordance with [OAuth.Responses]. This response mode is used to request the Self-Issued OP to deliver the result of the authentication process to a certain endpoint using the HTTP POST method. The additional parameter response_mode is used to carry this value.
 }
 
-export interface JWTVcPresentationProfileAuthenticationRequestPayload {
-  /**
-   * Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed
-   * individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if
-   * ID token returned based on the comparison of the iss and subclaims values (see Section 12.1). In order to preserve compatibility with
-   * existing OpenID Connect deployments, the OP MAY return an ID token that does not fulfill the requirements as expressed in this parameter. So the
-   * RP SHOULD be prepared to reliably handle such an outcome.
-   */
-  id_token_type?: string;
+export interface AuthorizationRequestPayloadVID1 extends AuthorizationRequestCommonPayload, RequestRegistrationPayloadProperties {
+  claims?: ClaimPayloadVID1;
+}
+
+export interface AuthorizationRequestPayloadVD11
+  extends AuthorizationRequestCommonPayload,
+    RequestClientMetadataPayloadProperties,
+    RequestIdTokenPayloadProperties {
+  claims?: ClaimPayloadCommon; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
+  presentation_definition?: PresentationDefinitionV1 | PresentationDefinitionV2 | PresentationDefinitionV1[] | PresentationDefinitionV2[];
+  presentation_definition_uri?: string;
 }
 
 // https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
-export type AuthenticationRequestPayload = AuthenticationRequestPayloadVID1 | AuthenticationRequestPayloadVD11;
+export type AuthorizationRequestPayload = AuthorizationRequestPayloadVID1 | AuthorizationRequestPayloadVD11;
 
-export interface RequestRegistrationPayload {
+export type JWTVcPresentationProfileAuthenticationRequestPayload = RequestIdTokenPayloadProperties;
+
+export interface RequestIdTokenPayloadProperties {
+  id_token_type?: string; // OPTIONAL. Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed. The RP determines the type if ID token returned based on the comparison of the iss and sub claims values (see(see Section 12.1). In order to preserve compatibility with existing OpenID Connect deployments, the OP MAY return an ID token that does not fulfill the requirements as expressed in this parameter. So the RP SHOULD be prepared to reliably handle such an outcome.
+}
+
+export interface RequestClientMetadataPayloadProperties {
+  client_metadata?: RPRegistrationMetadataPayload; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
+  client_metadata_uri?: string; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
+}
+
+export interface RequestRegistrationPayloadProperties {
   registration?: RPRegistrationMetadataPayload; //This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in Section 2.2.1.
   registration_uri?: string; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in 2.2.1.
 }
 
-export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
-  payload: AuthenticationRequestPayload; // The unsigned Authentication Request payload
+export interface VerifiedAuthorizationRequest extends VerifiedJWT {
+  authorizationRequest: AuthorizationRequest;
+  authorizationRequestPayload: AuthorizationRequestPayload;
+  requestObject?: RequestObject; // The Request object
   presentationDefinitions?: PresentationDefinitionWithLocation[]; // The optional presentation definition objects that the RP requests
-  verifyOpts: VerifyAuthenticationRequestOpts; // The verification options for the authentication request
+  verifyOpts: VerifyAuthorizationRequestOpts; // The verification options for the authentication request
+  versions: SupportedVersion[];
 }
 
-/**
- *
- */
-export interface AuthenticationRequestWithJWT {
-  jwt: string;
-  nonce: string;
-  state: string;
-  payload: AuthenticationRequestPayload;
-  opts: AuthenticationRequestOpts;
-}
-
-export type PresentationVerificationResult = { verified: boolean };
-
-export type PresentationVerificationCallback = (args: VerifiablePresentationPayload) => Promise<PresentationVerificationResult>;
-
-export type PresentationSignCallback = (args: PresentationSignCallBackParams) => Promise<W3CVerifiablePresentation>;
-
-export interface AuthenticationResponseOpts {
-  redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
-  registration: ResponseRegistrationOpts;
-  checkLinkedDomain?: CheckLinkedDomain;
-  presentationVerificationCallback?: PresentationVerificationCallback;
-  presentationSignCallback?: PresentationSignCallback;
-  signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
-  nonce?: string;
-  state?: string;
-  responseMode?: ResponseMode;
-  did: string;
-  vp?: VerifiablePresentationResponseOpts[];
-  expiresIn?: number;
-  accessToken?: string;
-  tokenType?: string;
-  refreshToken?: string;
-  _vp_token?: { presentation_submission: PresentationSubmission };
-}
-
-export interface IdTokenPayload extends JWTPayload {
+export type IDTokenJwt = string;
+export interface IDTokenPayload extends JWTPayload {
   iss?: ResponseIss.SELF_ISSUED_V2 | string;
   sub?: string; // did (or thumbprint of sub_jwk key when type is jkt)
   aud?: string; // redirect_uri from request
@@ -156,70 +111,41 @@ export interface IdTokenPayload extends JWTPayload {
   };
 }
 
-export interface AuthenticationResponsePayload {
-  access_token?: ResponseIss.SELF_ISSUED_V2 | string;
+export interface AuthorizationResponsePayload {
+  access_token?: string;
   token_type?: string;
   refresh_token?: string;
   expires_in: number;
   state: string;
   id_token: string;
   vp_token?: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
 
-export interface VerifiablePresentationsPayload {
+export interface PresentationDefinitionPayload {
   presentation_definition: PresentationDefinitionV1 | PresentationDefinitionV2;
 }
 
 export interface IdTokenClaimPayload {
-  verifiable_presentations?: VerifiablePresentationsPayload[];
-
-  [x: string]: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
 }
 
 export interface VpTokenClaimPayload {
-  response_type?: string;
   presentation_definition?: PresentationDefinitionV1 | PresentationDefinitionV2;
   presentation_definition_uri?: string;
-  nonce?: string;
-  [x: string]: unknown;
 }
 
-export interface VpTokenClaimOpts {
-  presentationDefinition?: PresentationDefinitionV1 | PresentationDefinitionV2;
-  presentationDefinitionUri?: string;
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ClaimPayloadCommon {
+  // [x: string]: any;
 }
 
-export interface ClaimOpts {
-  idToken?: IdTokenPayload;
-  vpToken?: VpTokenClaimOpts;
-}
-
-export interface ClaimPayload {
-  id_token?: IdTokenPayload;
+export interface ClaimPayloadVID1 extends ClaimPayloadCommon {
+  id_token?: IdTokenClaimPayload;
   vp_token?: VpTokenClaimPayload;
-}
-
-export interface DIDDocument extends DIFDIDDocument {
-  owner?: string;
-  created?: string;
-  updated?: string;
-  proof?: LinkedDataProof;
-}
-
-export interface PresentationDefinitionWithLocation {
-  location: PresentationLocation;
-  definition: PresentationDefinitionV1 | PresentationDefinitionV2;
-}
-
-export interface VerifiablePresentationResponseOpts extends VerifiablePresentationPayload {
-  location: PresentationLocation;
-}
-
-export enum PresentationLocation {
-  VP_TOKEN = 'vp_token',
-  ID_TOKEN = 'id_token',
 }
 
 /**
@@ -228,20 +154,29 @@ export enum PresentationLocation {
  */
 export interface VerifiablePresentationPayload {
   format: VerifiablePresentationTypeFormat;
-  presentation: PEVerifiablePresentation;
+  presentation: IVerifiablePresentation;
+}
+
+export interface RequestStateInfo {
+  client_id: string; // RP ID
+
+  // sub: string
+  nonce: string;
+  state: string;
+  iat: number;
 }
 
 /**
  *
  */
-export interface AuthenticationResponseWithJWT {
-  jwt: string;
+export interface AuthorizationResponseResult {
+  idToken: string;
   nonce: string;
   state: string;
-  idToken: IdTokenPayload;
-  payload: AuthenticationResponsePayload;
-  verifyOpts?: VerifyAuthenticationRequestOpts;
-  responseOpts: AuthenticationResponseOpts;
+  idTokenPayload: IDTokenPayload;
+  responsePayload: AuthorizationResponsePayload;
+  verifyOpts?: VerifyAuthorizationRequestOpts;
+  responseOpts: AuthorizationResponseOpts;
 }
 
 interface DiscoveryMetadataCommonOpts {
@@ -266,7 +201,7 @@ interface DiscoveryMetadataCommonOpts {
   responseModesSupported?: ResponseMode[] | ResponseMode; // from openid connect discovery 1_0
   grantTypesSupported?: GrantType[] | GrantType; // from openid connect discovery 1_0
   acrValuesSupported?: AuthenticationContextReferences[] | AuthenticationContextReferences; // from openid connect discovery 1_0
-  idTokenEncryptionAlgValuesSupported?: KeyAlgo[] | KeyAlgo; // from openid connect discovery 1_0
+  idTokenEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
   idTokenEncryptionEncValuesSupported?: string[] | string; // from openid connect discovery 1_0
   userinfoSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
   userinfoEncryptionAlgValuesSupported?: SigningAlgo[] | SigningAlgo; // from openid connect discovery 1_0
@@ -316,7 +251,7 @@ interface DiscoveryMetadataOptsVD11 extends DiscoveryMetadataCommonOpts {
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8.2
 // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
-interface GeneralDiscovertMetadataPayload {
+interface DiscoveryMetadataCommonPayload {
   authorization_endpoint: Schema | string;
   issuer: ResponseIss;
   response_types_supported: ResponseType[] | ResponseType;
@@ -333,7 +268,7 @@ interface GeneralDiscovertMetadataPayload {
   response_modes_supported?: ResponseMode[] | ResponseMode;
   grant_types_supported?: GrantType[] | GrantType;
   acr_values_supported?: AuthenticationContextReferences[] | AuthenticationContextReferences;
-  id_token_encryption_alg_values_supported?: KeyAlgo[] | KeyAlgo;
+  id_token_encryption_alg_values_supported?: SigningAlgo[] | SigningAlgo;
   /**
    * OPTIONAL. JSON array containing a list of the JWE encryption algorithms (enc values) supported by the OP for the ID Token to encode the Claims in a JWT [JWT].
    */
@@ -373,10 +308,12 @@ interface GeneralDiscovertMetadataPayload {
   require_request_uri_registration?: boolean;
   op_policy_uri?: string;
   op_tos_uri?: string;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
-interface DiscoveryMetadataPayloadVID1 extends GeneralDiscovertMetadataPayload {
+
+interface DiscoveryMetadataPayloadVID1 extends DiscoveryMetadataCommonPayload {
   client_id: string;
   redirectUris: string[];
   client_name?: string;
@@ -386,11 +323,13 @@ interface DiscoveryMetadataPayloadVID1 extends GeneralDiscovertMetadataPayload {
   grant_types: string;
   vp_formats: Format;
 }
+
 interface JWT_VCDiscoveryMetadataPayload extends DiscoveryMetadataPayloadVID1 {
   logo_uri?: string;
   client_purpose?: string;
 }
-interface DiscoveryMetadataPayloadVD11 extends GeneralDiscovertMetadataPayload {
+
+interface DiscoveryMetadataPayloadVD11 extends DiscoveryMetadataCommonPayload {
   id_token_types_supported?: IdTokenType[] | IdTokenType;
   vp_formats_supported?: Format; // from oidc4vp
 }
@@ -399,9 +338,9 @@ export type DiscoveryMetadataPayload = DiscoveryMetadataPayloadVID1 | JWT_VCDisc
 
 export type DiscoveryMetadataOpts = JWT_VCDiscoveryMetadataOpts | DiscoveryMetadataOptsVID1 | DiscoveryMetadataOptsVD11;
 
-export type RequestRegistrationOpts = RPRegistrationMetadataOpts & { registrationBy: RegistrationType };
+export type ClientMetadataOpts = RPRegistrationMetadataOpts & ClientMetadataProperties;
 
-export type ResponseRegistrationOpts = DiscoveryMetadataOpts & { registrationBy: RegistrationType };
+export type ResponseRegistrationOpts = DiscoveryMetadataOpts & { registrationBy: ClientMetadataProperties };
 
 export type RPRegistrationMetadataOpts = Pick<
   DiscoveryMetadataOpts,
@@ -444,10 +383,10 @@ export interface CommonSupportedMetadata {
   vp_formats: Format;
 }
 
-export type ObjectBy = {
-  type: PassBy.REFERENCE | PassBy.VALUE;
-  referenceUri?: string; // for REFERENCE
-};
+export interface ObjectBy {
+  passBy: PassBy;
+  referenceUri?: string; // for pass by reference
+}
 
 export enum AuthenticationContextReferences {
   PHR = 'phr',
@@ -465,7 +404,7 @@ export enum IdTokenType {
   ATTESTER_SIGNED = 'attester_signed',
 }
 
-export interface RegistrationType extends ObjectBy {
+export interface ClientMetadataProperties extends ObjectBy {
   id_token_encrypted_response_alg?: EncKeyAlgorithm;
   id_token_encrypted_response_enc?: EncSymmetricAlgorithmCode;
 }
@@ -489,6 +428,7 @@ export enum EncKeyAlgorithm {
 }
 
 export enum PassBy {
+  NONE = 'NONE',
   REFERENCE = 'REFERENCE',
   VALUE = 'VALUE',
 }
@@ -503,14 +443,21 @@ export enum CheckLinkedDomain {
   IF_PRESENT = 'if_present', // If present, did-auth-siop will check the linked domain, if exist and not valid, throws an exception
   ALWAYS = 'always', // We'll always check the linked domains, if not exist or not valid, throws an exception
 }
+
 export interface InternalSignature {
   hexPrivateKey: string; // hex private key Only secp256k1 format
   did: string;
+
+  alg: SigningAlgo;
   kid?: string; // Optional: key identifier
+
+  customJwtSigner?: Signer;
 }
 
 export interface SuppliedSignature {
   signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>;
+
+  alg: SigningAlgo;
   did: string;
   kid: string;
 }
@@ -526,6 +473,8 @@ export interface ExternalSignature {
   did: string;
   authZToken?: string; // Optional: bearer token to use to the call
   hexPublicKey?: string; // Optional: hex encoded public key to compute JWK key, if not possible from DIDres Document
+
+  alg: SigningAlgo;
   kid?: string; // Optional: key identifier. default did#keys-1
 }
 
@@ -536,12 +485,11 @@ export enum VerificationMode {
 
 export interface Verification {
   checkLinkedDomain?: CheckLinkedDomain;
-  verifyCallback?: VerifyCallback;
+  wellknownDIDVerifyCallback?: WellknownDIDVerifyCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
-  supportedVersions?: SupportedVersion[];
 }
 
 export type InternalVerification = Verification;
@@ -549,25 +497,6 @@ export type InternalVerification = Verification;
 export interface ExternalVerification extends Verification {
   verifyUri: string; // url to call to verify the id_token signature
   authZToken?: string; // Optional: bearer token to use to the call
-}
-
-export interface VerifyAuthenticationRequestOpts {
-  verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
-  // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
-  nonce?: string; // If provided the nonce in the request needs to match
-  // redirectUri?: string;
-  verifyCallback?: VerifyCallback;
-}
-
-export interface VerifyAuthenticationResponseOpts {
-  verification: InternalVerification | ExternalVerification;
-  // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
-  nonce?: string; // mandatory? // To verify the response against the supplied nonce
-  state?: string; // mandatory? // To verify the response against the supplied state
-  audience: string; // The audience/redirect_uri
-  claims?: ClaimOpts; // The claims, typically the same values used during request creation
-  verifyCallback?: VerifyCallback;
-  presentationVerificationCallback?: PresentationVerificationCallback;
 }
 
 export interface ResponseClaims {
@@ -581,9 +510,9 @@ export interface DidAuthValidationResponse {
   payload: JWTPayload;
 }
 
-export interface VerifiedAuthenticationResponseWithJWT extends VerifiedJWT {
-  payload: IdTokenPayload;
-  verifyOpts: VerifyAuthenticationResponseOpts;
+export interface VerifiedAuthenticationResponse extends VerifiedJWT {
+  payload: IDTokenPayload;
+  verifyOpts: VerifyAuthorizationResponseOpts;
 }
 
 export enum GrantType {
@@ -598,6 +527,11 @@ export enum ResponseMode {
   QUERY = 'query',
 }
 
+export enum ProtocolFlow {
+  SAME_DEVICE = 'same_device',
+  CROSS_DEVICE = 'cross_device',
+}
+
 export interface SignatureResponse {
   jws: string;
 }
@@ -607,7 +541,7 @@ export enum UrlEncodingFormat {
 }
 
 export type SIOPURI = {
-  encodedUri: string; // The encode JWT as URI
+  encodedUri: string; // The encoded URI
   encodingFormat: UrlEncodingFormat; // The encoding format used
 };
 
@@ -616,15 +550,17 @@ export interface UriResponse extends SIOPURI {
   bodyEncoded?: string; // The URI encoded body (JWS)
 }
 
-export interface AuthenticationRequestURI extends SIOPURI {
-  jwt?: string; // The JWT when requestBy was set to mode Reference, undefined if the mode is Value
-  requestOpts: AuthenticationRequestOpts; // The supplied request opts as passed in to the method
-  requestPayload: AuthenticationRequestPayload; // The json payload that ends up signed in the JWT
+export interface AuthorizationRequestURI extends SIOPURI {
+  scheme: string;
+  requestObjectBy: ObjectBy; // The supplied request opts as passed in to the method
+  authorizationRequestPayload: AuthorizationRequestPayload; // The authorization request payload
+  requestObjectJwt?: RequestObjectJwt; // The JWT request object
 }
 
-export interface ParsedAuthenticationRequestURI extends SIOPURI {
-  jwt: string;
-  requestPayload: AuthenticationRequestPayload; // The json payload that ends up signed in the JWT
+export interface ParsedAuthorizationRequestURI extends SIOPURI {
+  scheme: string;
+  requestObjectJwt?: RequestObjectJwt;
+  authorizationRequestPayload: AuthorizationRequestPayload; // The json payload that ends up signed in the JWT
   registration: RPRegistrationMetadataPayload;
 }
 
@@ -649,17 +585,7 @@ export enum SigningAlgo {
   RS256 = 'RS256',
   ES256 = 'ES256',
   ES256K = 'ES256K',
-  NONE = 'none',
 }
-
-export enum KeyAlgo {
-  // ES256KR = "ES256K-R",
-  EDDSA = 'EdDSA',
-  RS256 = 'RS256',
-  ES256 = 'ES256',
-  ES256K = 'ES256K',
-}
-
 export enum Scope {
   OPENID = 'openid',
   OPENID_DIDAUTHN = 'openid did_authn',
@@ -717,27 +643,24 @@ export const isSuppliedSignature = (object: InternalSignature | ExternalSignatur
 export const isNoSignature = (object: InternalSignature | ExternalSignature | NoSignature): object is NoSignature =>
   'hexPublicKey' in object && 'did' in object;
 
-export const isRequestOpts = (object: AuthenticationRequestOpts | AuthenticationResponseOpts): object is AuthenticationRequestOpts =>
+export const isRequestOpts = (object: CreateAuthorizationRequestOpts | AuthorizationResponseOpts): object is CreateAuthorizationRequestOpts =>
   'requestBy' in object;
 
-export const isResponseOpts = (object: AuthenticationRequestOpts | AuthenticationResponseOpts): object is AuthenticationResponseOpts =>
-  'did' in object;
+export const isResponseOpts = (object: RequestObjectOpts | AuthorizationResponseOpts): object is RequestObjectOpts => 'did' in object;
 
 export const isRequestPayload = (
-  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdTokenPayload
-): object is AuthenticationRequestPayload => 'response_mode' in object && 'response_type' in object;
+  object: AuthorizationRequestPayload | RequestObjectPayload | AuthorizationResponsePayload | IDTokenPayload
+): object is AuthorizationRequestPayload => 'response_mode' in object && 'response_type' in object;
 
-export const isResponsePayload = (
-  object: AuthenticationRequestPayload | AuthenticationResponsePayload | IdTokenPayload
-): object is AuthenticationResponsePayload => 'iss' in object && 'aud' in object;
+export const isResponsePayload = (object: RequestObjectPayload | IDTokenPayload): object is IDTokenPayload => 'iss' in object && 'aud' in object;
 
 export const isInternalVerification = (object: InternalVerification | ExternalVerification): object is InternalVerification =>
   object.mode === VerificationMode.INTERNAL; /* && !isExternalVerification(object)*/
 export const isExternalVerification = (object: InternalVerification | ExternalVerification): object is ExternalVerification =>
   object.mode === VerificationMode.EXTERNAL; /*&& 'verifyUri' in object || 'authZToken' in object*/
 
-export const isVP = (object: PEVerifiablePresentation | PEPresentation): object is PEVerifiablePresentation => 'presentation' in object;
-export const isPresentation = (object: PEVerifiablePresentation | PEPresentation): object is PEPresentation => 'presentation_submission' in object;
+export const isVP = (object: IVerifiablePresentation | IPresentation): object is IVerifiablePresentation => 'presentation' in object;
+export const isPresentation = (object: IVerifiablePresentation | IPresentation): object is IPresentation => 'presentation_submission' in object;
 
 export enum RevocationStatus {
   VALID = 'valid',
@@ -766,7 +689,25 @@ export interface RevocationOpts {
 }
 
 export enum SupportedVersion {
-  SIOPv2_ID1 = 'SIOPv2_ID1',
-  SIOPv2_D11 = 'SIOPv2_D11',
-  JWT_VC_PRESENTATION_PROFILE_v1 = 'JWT_VC_PRESENTATION_PROFILE_v1',
+  SIOPv2_ID1 = 70,
+  SIOPv2_D11 = 110,
+  JWT_VC_PRESENTATION_PROFILE_v1 = 71,
+}
+
+export interface SIOPResonse<T> {
+  origResponse: Response;
+  successBody?: T;
+  errorBody?: ErrorResponse;
+}
+
+export interface ErrorResponse extends Response {
+  error: string;
+  error_description?: string;
+  error_uri?: string;
+  state?: string;
+}
+
+export enum ContentType {
+  FORM_URL_ENCODED = 'application/x-www-form-urlencoded',
+  UTF_8 = 'UTF-8',
 }

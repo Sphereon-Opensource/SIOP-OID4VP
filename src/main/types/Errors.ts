@@ -6,6 +6,11 @@ enum SIOPErrors {
   BAD_PARAMS = 'Wrong parameters provided.',
   BAD_SIGNATURE_PARAMS = 'Signature parameters should be internal signature with hexPrivateKey, did, and an optional kid, or external signature parameters with signatureUri, did, and optionals parameters authZToken, hexPublicKey, and kid',
   CANT_UNMARSHAL_JWT_VP = "can't unmarshal the presentation object",
+
+  NO_REQUEST_VERSION = 'No request spec version provided.',
+
+  NO_REQUEST = 'No request (payload) provided.',
+  NO_RESPONSE = 'No response (payload) provided.',
   NO_PRESENTATION_SUBMISSION = 'The VP did not contain a presentation submission. Did you forget to call PresentationExchange.checkSubmissionFrom?',
   CREDENTIAL_FORMATS_NOT_SUPPORTED = 'CREDENTIAL_FORMATS_NOT_SUPPORTED',
   CREDENTIALS_FORMATS_NOT_PROVIDED = 'Credentials format not provided by RP/OP',
@@ -30,6 +35,7 @@ enum SIOPErrors {
   NO_DID_PAYLOAD = 'payload must contain did field in payload for self-issued tokens',
   NO_IDENTIFIERS_URI = 'identifiersUri must be defined to get the publick key',
   NO_ISS_DID = 'Token does not have a iss DID',
+  NO_URI = 'no URI was supplied',
   NO_JWT = 'no JWT was supplied',
   NO_KEY_CURVE_SUPPORTED = 'Key Curve not supported.',
   NO_NONCE = 'No nonce found in JWT payload',

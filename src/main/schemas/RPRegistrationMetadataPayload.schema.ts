@@ -133,8 +133,7 @@ export const RPRegistrationMetadataPayloadSchema = {
         "EdDSA",
         "RS256",
         "ES256",
-        "ES256K",
-        "none"
+        "ES256K"
       ]
     },
     "ResponseType": {

@@ -147,11 +147,11 @@ export const DiscoveryMetadataPayloadSchema = {
                 {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/KeyAlgo"
+                    "$ref": "#/definitions/SigningAlgo"
                   }
                 },
                 {
-                  "$ref": "#/definitions/KeyAlgo"
+                  "$ref": "#/definitions/SigningAlgo"
                 }
               ]
             },
@@ -535,11 +535,11 @@ export const DiscoveryMetadataPayloadSchema = {
                 {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/KeyAlgo"
+                    "$ref": "#/definitions/SigningAlgo"
                   }
                 },
                 {
-                  "$ref": "#/definitions/KeyAlgo"
+                  "$ref": "#/definitions/SigningAlgo"
                 }
               ]
             },
@@ -929,11 +929,11 @@ export const DiscoveryMetadataPayloadSchema = {
                 {
                   "type": "array",
                   "items": {
-                    "$ref": "#/definitions/KeyAlgo"
+                    "$ref": "#/definitions/SigningAlgo"
                   }
                 },
                 {
-                  "$ref": "#/definitions/KeyAlgo"
+                  "$ref": "#/definitions/SigningAlgo"
                 }
               ]
             },
@@ -1203,8 +1203,7 @@ export const DiscoveryMetadataPayloadSchema = {
         "EdDSA",
         "RS256",
         "ES256",
-        "ES256K",
-        "none"
+        "ES256K"
       ]
     },
     "ResponseMode": {
@@ -1228,15 +1227,6 @@ export const DiscoveryMetadataPayloadSchema = {
       "enum": [
         "phr",
         "phrh"
-      ]
-    },
-    "KeyAlgo": {
-      "type": "string",
-      "enum": [
-        "EdDSA",
-        "RS256",
-        "ES256",
-        "ES256K"
       ]
     },
     "TokenEndpointAuthMethod": {

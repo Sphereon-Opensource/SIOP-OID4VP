@@ -1,38 +1,38 @@
 <h1 style="text-align: center; vertical-align: middle">
-  <center><a href="https://www.gimly.io/"><img src="https://avatars.githubusercontent.com/u/64525639?s=200&v=4" alt="Gimly" width="120" style="vertical-align: middle"></a> &nbsp;and &nbsp; <a href="https://www.sphereon.com"><img src="https://sphereon.com/content/themes/sphereon/assets/img/logo.svg" alt="Sphereon" width="320" style="vertical-align: middle" ></a></center>
-
-Self Issued OpenID Provider v2 (SIOP)
+<center><a href="https://www.sphereon.com"><img src="https://sphereon.com/content/themes/sphereon/assets/img/logo.svg" alt="Sphereon" width="320" style="vertical-align: middle" ></a></center>
+<br/>
+<center>Self Issued OpenID Provider (SIOPv2)<br/>
+with OpenID4VP support</center>
 </h1>
 <br>
 
-[![CI](https://github.com/Sphereon-Opensource/did-auth-siop/actions/workflows/main.yml/badge.svg)](https://github.com/Sphereon-Opensource/did-auth-siop/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/Sphereon-Opensource/did-auth-siop/branch/develop/graph/badge.svg?token=9P1JGUYA35)](https://codecov.io/gh/Sphereon-Opensource/did-auth-siop) [![NPM Version](https://img.shields.io/npm/v/@sphereon/did-auth-siop.svg)](https://npm.im/@sphereon/did-auth-siop)
+[![CI](https://github.com/Sphereon-Opensource/SIOP-OpenID4VP/actions/workflows/main.yml/badge.svg)](https://github.com/Sphereon-Opensource/SIOP-OpenID4VP/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/Sphereon-Opensource/SIOP-OpenID4VP/branch/develop/graph/badge.svg?token=9P1JGUYA35)](https://codecov.io/gh/Sphereon-Opensource/SIOP-OpenID4VP) [![NPM Version](https://img.shields.io/npm/v/@sphereon/did-auth-siop.svg)](https://npm.im/@sphereon/did-auth-siop)
 
-An authentication library for having clients/people conforming to
+An OpenID authentication library conforming to
 the [Self Issued OpenID Provider v2 (SIOPv2)](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html)
-and  [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html)
+and  [OpenID for Verifiable Presentations (OpenID4VP)](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html)
 as specified in the OpenID Connect working group.
 
 ## Introduction
 
+[SIOP v2](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) is an OpenID specification to allow End-users to act as OpenID Providers (OPs) themselves. Using
+Self-Issued OPs, End-users can authenticate themselves and present claims directly to a Relying Party (RP),
+typically a webapp, without involving a third-party Identity Provider. This makes the interactions fully self sovereign, as
+it doesn't depend on any third parties and strictly happens peer 2 peer, yet still using well known constructs from the OpenID protocol.
 
-SIOP v2 is an extension of OpenID Connect to allow End-users to act as OpenID Providers (OPs) themselves. Using
-Self-Issued OPs, End-users can authenticate themselves and present claims directly to the Relying Parties (RPs),
-typically a webapp, without relying on a third-party Identity Provider. This makes the solution fully self sovereign, as
-it does not rely on any third parties and strictly happens peer 2 peer, but still uses the OpenID Connect protocol.
-
-Next to the user acting as an OpenID Provider, this library also includes support for Verifiable Presentations using
-the [Presentation Exchange](https://identity.foundation/presentation-exchange/) support provided by
-our [PEX](https://github.com/Sphereon-Opensource/pex) library. This means that the Relying Party can pose submission
-requirements on the Verifiable Credentials it would like to receive from the client/OP. The OP then checks whether it
-has the credentials to support the submission requirements. Only if that is the case it will send the relevant (parts of
-the) credentials as a Verifiable Presentation in the Authentication Response destined for the Webapp/Relying Party. The
+Next to the user acting as an OpenID Provider, this library also has support for Verifiable Presentations using
+the [Presentation Exchange](https://identity.foundation/presentation-exchange/) provided by
+our [PEX](https://github.com/Sphereon-Opensource/pex) library. This means that the Relying Party can express submission
+requirements in the form of Presentation Definitions, defining the Verifiable Credentials(s) types it would like to receive from the User/OP. 
+The OP then checks whether it has the credentials to support the Presentation Definition. Only if that is the case it will send the relevant (parts of
+the) credentials as a Verifiable Presentation in the Authorization Response destined for the Webapp/Relying Party. The
 relying party in turn checks validity of the Verifiable Presentation(s) as well as the match with the submission
 requirements. Only if everything is verified successfully the RP serves the protected page(s). This means that the
 authentication can be extended with claims about the authenticating entity, but it can also be used to easily consume
-credentials from supporting applications, without having to setup DIDComm connections for instance.
+credentials from supporting applications, without having to setup DIDComm connections for instance. These credentials can either be self-asserted or from trusted 3rd party issuer.
 
 The term Self-Issued comes from the fact that the End-users (OP) issue self-signed ID Tokens to prove validity of the
-identifiers and claims. This is a trust model different from that of the rest of OpenID Connect where OP is run by the
+identifiers and claims. This is a trust model different from regular OpenID Connect where the OP is run by the
 third party who issues ID Tokens on behalf of the End-user to the Relying Party upon the End-user's consent. This means
 the End-User is in control about his/her data instead of the 3rd party OP.
 
@@ -40,20 +40,25 @@ Demo: https://vimeo.com/630104529 and a more stripped down demo: https://youtu.b
 
 ## Active Development
 
-_IMPORTANT: This software still is in **VERY** early development stage. As such you should expect breaking changes in APIs, we
-expect to keep that to a minimum though._
+_IMPORTANT:_
+* _This software still is in an early development stage. As such you should expect breaking changes in APIs, we
+expect to keep that to a minimum though. Version 0.3.X has changed the external API, especially for Requests, Responses and slightly for the RP/OP classes._
+* _The name of the package also changed from [@sphereon/did-auth-siop](https://www.npmjs.com/package/@sphereon/did-auth-siop) to [@sphereon/SIOP-OpenID4VP](https://www.npmjs.com/package/@sphereon/SIOP-OpenID4VP), to better reflect specification name changes_
+
 
 ## Functionality
 
-The DID Auth SIOP v2 library consists of a group of services and classes to:
+This library supports:
 
 - [Decentralized Identifiers (DID)](https://www.w3.org/TR/did-core/) method neutral: Resolve DIDs using
   DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and
   Sphereon's [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client)
-- Verify and Create Json Web Tokens (JWTs) as used in OpenID Connect using Decentralized Identifiers (DIDs)
-- OP class to create Authentication Requests and verify Authentication Responses
-- RP class to verify Authentication Requests and create Authentication Responses
-- Verifiable Presentation and Presentation Exchange support on the RP and OP sides
+- Verify and Create/sign Json Web Tokens (JWTs) as used in OpenID Connect using Decentralized Identifiers (DIDs) or JSON Web Keys (JWK)
+- OP class to create Authorization Requests and verify Authorization Responses
+- RP class to verify Authorization Requests and create Authorization Responses
+- Verifiable Presentation and Presentation Exchange support on the RP and OP sides, according to the OpenID4VP and Presentation Exchange specifications
+- [Well-known DID Configuration](https://identity.foundation/.well-known/resources/did-configuration/) support to bind domain names to DIDs.
+- SIOPv2 specification version discovery with support for the latest [development version (draft 11)](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html), [Implementers Draft 1](https://openid.net/specs/openid-connect-self-issued-v2-1_0-ID1.html) and the [JWT VC Presentation Interop Profile](https://identity.foundation/jwt-vc-presentation-profile/)
 
 ## Steps involved
 
@@ -63,7 +68,7 @@ Flow diagram:
 
 1. Client (OP) initiates an Auth request by POST-ing to an endpoint, like for instance `/did-siop/v1/authentications` or
    clicking a Login button and scanning a QR code
-2. Web (RP) receives the request and access the RP object which creates the authentication request as JWT, signs it and
+2. Web (RP) receives the request and access the RP object which creates the Auth Request as JWT, signs it and
    returns the response as an OpenID Connect URI
     1. JWT example:
         ```json
@@ -90,19 +95,19 @@ Flow diagram:
           "registration": {
              "did_methods_supported": [
               "did:ethr:",
-              "did:eosio:"
+              "did:web:"
              ],
              "subject_identifiers_supported": "did"
           }
        }
         ```
 
-        2. The Signed JWT, called the JWS follows the following scheme (JWS Compact
+        2. The Signed JWT, including the JWS follows the following scheme (JWS Compact
            Serialization, https://datatracker.ietf.org/doc/html/rfc7515#section-7.1):
 
        `BASE64URL(UTF8(JWT Protected Header)) || '.' || BASE64URL(JWT Payload) || '.' || BASE64URL(JWS Signature)`
 
-        3. Create the URI containing the JWS:
+        3. Create the URI containing the JWT:
        ```
        openid://?response_type=id_token 
           &scope=openid
@@ -114,7 +119,7 @@ Flow diagram:
           &state=af0ifjsldkj
           &nonce=qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg&state=b32f0087fc9816eb813fd11f
           &registration=%5Bobject%20Object%5D
-          &request=<JWS here>
+          &request=<JWT here>
        ```
         4. `claims` param can be either a `vp_token` or an `id_token`:
        ````json
@@ -174,12 +179,12 @@ Flow diagram:
 
 3. Web receives the Auth Request URI Object from RP
 4. Web sends the Auth Request URI in the response body to the client
-5. Client accesses OP object to create an Authentication response
-6. OP verifies the authentication request, including checks on whether the RP did and keytypes are supported, next to
+5. Client uses the OP instance to create an Auth response
+6. OP verifies the auth request, including checks on whether the RP DID method and key types are supported, next to
    whether the OP can satisfy the RPs requested Verifiable Credentials
-7. Presentation Exchange process in case the RP requested presentation definitions in the claims (see Presentation
+7. Presentation Exchange process in case the RP had presentation definition(s) in the claims (see Presentation
    Exchange chapter)
-8. OP creates the authentication response object as follows:
+8. OP creates the auth response object as follows:
     1. Create an ID token as shown below:
 
     ````json
@@ -232,9 +237,9 @@ Flow diagram:
    `BASE64URL(UTF8(JWS Protected Header)) || '.' || BASE64URL(JWS Payload) || '.' || BASE64URL(JWS Signature)`
 
 9. OP returns the Auth response and jwt object to the client
-10. Client does an HTTP POST to redirect_uri from the request (and the aud in the
+10. Client does a HTTP POST to redirect_uri from the request (and the aud in the
     response): https://acme.com/siop/v1/sessions using "application/x-www-form-urlencoded"
-11. Web receives the ID token (auth response) and uses the RP's object verify method
+11. Web receives the ID token (auth response) and uses the RP's verify method
 12. RP performs the validation of the token, including signature validation, expiration and Verifiable Presentations if
     any. It returns the Verified Auth Response to WEB
 13. WEB returns a 200 response to Client with a redirect to another page (logged in or confirmation of VP receipt etc).
@@ -242,8 +247,8 @@ Flow diagram:
 
 ## OP and RP setup and interactions
 
-This chapter is a walk-through for using the SIOP authentication library using the highlevel OP and RP classes. To keep
-it simple, the examples work without the HTTP endpoints involved in the above schema.
+This chapter is a walk-through for using the library using the high-level OP and RP classes. To keep
+it simple, the examples work without hosting partial request/response related objects using HTTP endpoints. They are passed by value, inlined in the respective payloads versus passed by reference.
 
 ---
 **NOTE**
@@ -256,8 +261,8 @@ You could also use the actual example keys and DIDs, as they are valid Ethr Rops
 
 ### Relying Party and SIOP should have keys and DIDs
 
-Since the SIOP Auth library uses DIDs for both the Relying Party and the Self-Issued OpenID Provider, we expect these
-DIDs to be present on both sides, as well as the respective parties having access to their private key(s). How DIDs are
+Since the library uses DIDs for both the RP and the OP, we expect these
+DIDs to be present on both sides, and the respective parties should have access to their private key(s). How DIDs are
 created is out of scope of this library, but we provide a [ethereum DID example](ethr-dids-testnet.md)
 and [manual eosio DID walk-through](eosio-dids-testnet.md) if you want to test it yourself without having DIDs.
 
@@ -266,10 +271,10 @@ and [manual eosio DID walk-through](eosio-dids-testnet.md) if you want to test i
 The Relying Party, typically a web app, but can also be something else, like a mobile app.
 
 We will use an example private key and DID on the Ethereum Ropsten testnet network. Both the actual JWT request and the
-registration metadata will be sent as part of the AuthRequest since we pass them by value instead of by reference where
+registration metadata will be sent as part of the Auth Request since we pass them by value instead of by reference where
 we would have to host the data at the reference URL. The redirect URL means that the OP will need to deliver the
-authentication response at the URL specified by the RP. Lastly we have enabled the 'ethr' DID method on the RP side for
-doing Authentication Response checks with Ethereum DIDs in them. Please note that you can add multiple DID methods, and
+auth response at the URL specified by the RP. Lastly we have enabled the 'ethr' DID method on the RP side for
+doing Auth Response checks with Ethereum DIDs in them. Please note that you can add multiple DID methods, and
 they have no influence on the DIDs being used to sign, the internal signature. We also populated the RP with
 a `PresentationDefinition` claim, meaning we expect the OP to send in a Verifiable Presentation that matches our
 definition. You can pass where you expect this presentation_definition to end up via the required `location` property.
@@ -278,99 +283,105 @@ This is either a top-level vp_token or it becomes part of the id_token.
 ````typescript
 
 // The relying party (web) private key and DID and DID key (public key)
+import { SigningAlgo } from './SIOP.types';
+
 const rpKeys = {
-    hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-    did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-    didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller'
+  hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
+  did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
+  didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller',
+  alg: SigningAlgo.ES256K
 }
 const rp = RP.builder()
-    .redirect(EXAMPLE_REDIRECT_URL)
-    .requestBy(PassBy.VALUE)
-    .withPresentationVerification(presentationVerificationCallback)
-    .addVerifyCallback(verifyCallback)
-    .withRevocationVerification(RevocationVerification.NEVER)
-    .internalSignature(rpKeys.hexPrivateKey, rpKeys.did, rpKeys.didKey)
-    .addDidMethod("ethr")
-    .registrationBy({
-      idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      responseTypesSupported: [ResponseType.ID_TOKEN],
-      vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
-      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-      subjectTypesSupported: [SubjectType.PAIRWISE],
-      subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-      registrationBy: { type: PassBy.VALUE },
-    })
-    .addPresentationDefinitionClaim({
-        definition: {
-            "input_descriptors": [
-                {
-                    "schema": [
-                        {
-                            "uri": "https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan"
-                        }
-                    ]
-                }
-            ]
-        },
-        location: PresentationLocation.VP_TOKEN, // Toplevel vp_token response expected. This also can be ID_TOKEN
-    })
-    .build();
+  .redirect(EXAMPLE_REDIRECT_URL)
+  .requestBy(PassBy.VALUE)
+  .withPresentationVerification(presentationVerificationCallback)
+  .addVerifyCallback(verifyCallback)
+  .withRevocationVerification(RevocationVerification.NEVER)
+  .internalSignature(rpKeys.hexPrivateKey, rpKeys.did, rpKeys.didKey, rpKeys.alg)
+  .addDidMethod("ethr")
+  .withClientMetadata({
+    idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+    requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+    responseTypesSupported: [ResponseType.ID_TOKEN],
+    vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
+    scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+    subjectTypesSupported: [SubjectType.PAIRWISE],
+    subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+    passBY: PassBy.VALUE
+  })
+  .addPresentationDefinitionClaim({
+    definition: {
+      "input_descriptors": [
+        {
+          "schema": [
+            {
+              "uri": "https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan"
+            }
+          ]
+        }
+      ]
+    },
+    location: PresentationLocation.VP_TOKEN, // Toplevel vp_token response expected. This also can be ID_TOKEN
+  })
+  .build();
 ````
 
-### OpenID Provider (SIOP)
+### OpenID Provider (OP)
 
-The SIOP, typically a browser together with a mobile phone is accessing a protected resource at the RP, or needs to sent
+The OP, typically a useragent together with a mobile phone in a cross device flow is accessing a protected resource at the RP, or needs to sent
 in Verifiable Presentations. In the example below we are expressing that the OP supports the 'ethr' didMethod, we are
 passing the signing information, which will never leave the OP's computer and we are configuring to send the JWT as part
 of the payload (by value).
 
 ````typescript
 // The OpenID Provider (client) private key and DID and DID key (public key)
+import { SigningAlgo } from './SIOP.types';
+
 const opKeys = {
-    hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
-    did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
-    didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller'
+  hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
+  did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
+  didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
+  alg: SigningAlgo.alg
 }
 
 const op = OP.builder()
-    .withExpiresIn(6000)
-    .addDidMethod("ethr")
-    .addVerifyCallback(verifyCallback)
-    .addIssuer(ResponseIss.SELF_ISSUED_V2)
-    .internalSignature(opKeys.hexPrivateKey, opKeys.did, opKeys.didKey)
-    .registrationBy({
-      authorizationEndpoint: 'www.myauthorizationendpoint.com',
-      idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
-      issuer: ResponseIss.SELF_ISSUED_V2,
-      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-      responseTypesSupported: [ResponseType.ID_TOKEN],
-      vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
-      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-      subjectTypesSupported: [SubjectType.PAIRWISE],
-      subjectSyntaxTypesSupported: ['did:ethr'],
-      registrationBy: { type: PassBy.VALUE },
-    })
-    .build();
+  .withExpiresIn(6000)
+  .addDidMethod("ethr")
+  .addVerifyCallback(verifyCallback)
+  .addIssuer(ResponseIss.SELF_ISSUED_V2)
+  .internalSignature(opKeys.hexPrivateKey, opKeys.did, opKeys.didKey, opKeys.alg)
+  .withClientMetadata({
+    authorizationEndpoint: 'www.myauthorizationendpoint.com',
+    idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+    issuer: ResponseIss.SELF_ISSUED_V2,
+    requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+    responseTypesSupported: [ResponseType.ID_TOKEN],
+    vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
+    scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+    subjectTypesSupported: [SubjectType.PAIRWISE],
+    subjectSyntaxTypesSupported: ['did:ethr'],
+    passBy: PassBy.VALUE,
+  })
+  .build();
 ````
 
-### RP creates the Authentication Request
+### RP creates the Auth Request
 
-The Relying Party creates the request. This could have been triggered by the OP accessing a URL, or clicking a button
-for instance. The Created SIOP V2 Authentication Request could be transported by QR code if one wishes. Here we are
+The Relying Party creates the Auth Request. This could have been triggered by the OP accessing a URL, or clicking a button
+for instance. The Created SIOP V2 Auth Request could also be displayed as a QR code for cross-device flows. In the below text we are
 leaving the transport out of scope.
 
 Given we already have configured the RP itself, all we need to provide is a nonce and state for this request. These will
 be communicated throughout the process. The RP definitely needs to keep track of these values for later usage. If no
-nonce and state are provided then the createAuthenticationRequest method will automatically provide values for these and
+nonce and state are provided then the createAuthorizationRequest method will automatically provide values for these and
 return them in the object that is returned from the method.
 
 Next to the nonce we could also pass in claim options, for instance to specify a Presentation Definition. We have
 already configured the RP itself to have a Presentation Definition, so we can omit it in the request creation, as the RP
-class will take care of that on every Authentication Request creation.
+class will take care of that on every Auth Request creation.
 
 ````typescript
-const reqURI = await rp.createAuthenticationRequest({
+const reqURI = await rp.createAuthorizationRequest({
     nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
     state: "b32f0087fc9816eb813fd11f"
 });
@@ -382,29 +393,29 @@ console.log(reqURI.encodedUri)
 // openid://?response_type=id_token&scope=openid&client_id=did.......&jwt=ey..........
 ````
 
-#### Optional: OP Authentication Request Payload parsing access
+#### Optional: OP Auth Request Payload parsing access
 
-The OP class has a method that both parses the Authentication Request URI as it was created by the RP, but it als
-resolves both the JWT and the Registration values from the Authentication Request Payload. Both values can be either
-passed by value in the Authentication Request, meaning they are present in the request, or passed by reference, meaning
-they are hosted by the OP. In the latter case the values have to be retrieved. The parseAuthenticationRequestURI takes
-care of both values and returns the Authentication Request Payload for easy access, the resolved signed JWT as well as
-the resolved registration metadata of the RP. Please note that the Authentication Request Payload that is also returned
+The OP class has a method that both parses the Auth Request URI as it was created by the RP, but it als
+resolves both the JWT and the Registration values from the Auth Request Payload. Both values can be either
+passed by value in the Auth Request, meaning they are present in the request, or passed by reference, meaning
+they are hosted by the OP. In the latter case the values have to be retrieved from an https endpoint. The parseAuthorizationRequestURI takes
+care of both values and returns the Auth Request Payload for easy access, the resolved signed JWT as well as
+the resolved registration metadata of the RP. Please note that the Auth Request Payload that is also returned
 is the original payload from the URI, so it will not contain the resolved JWT nor Registration if the OP passed one of
-them by reference instead of value. Only the direct access to jwt and registration in the Parsed Authentication Request
+them by reference instead of value. Only the direct access to jwt and registration in the Parsed Auth Request
 URI are guaranteed to be resolved.
 
 ---
 **NOTE**
 
-Please note that the parsing also automatically happens when calling the verifyAuthenticationRequest method with a URI
+Please note that the parsing also automatically happens when calling the verifyAuthorizationRequest method with a URI
 as input argument. This method allows for manual parsing if needed.
 
 ---
 
 ````typescript
 
-const parsedReqURI = op.parseAuthenticationRequestURI(reqURI.encodedUri);
+const parsedReqURI = op.parseAuthorizationRequestURI(reqURI.encodedUri);
 
 console.log(parsedReqURI.requestPayload.request);
 // ey....... , but could be empty if the OP would have passed the request by reference usiing request_uri!
@@ -414,16 +425,16 @@ console.log(parsedReqURI.jwt);
 
 ````
 
-#### OP Authentication Request verification
+#### OP Auth Request verification
 
-The Authentication Request from the RP in the form of a URI or JWT string needs to be verified. The
-verifyAuthenticationRequest method of the OP class takes care of this. As input it expects either the URI or the JWT
+The Auth Request from the RP in the form of a URI or JWT string needs to be verified by the OP. The
+verifyAuthorizationRequest method of the OP class takes care of this. As input it expects either the URI or the JWT
 string together with optional verify options. IF a JWT is supplied it will use the JWT directly, if a URI is provided it
 will internally parse the URI and extract/resolve the jwt. The options can contain an optional nonce, which means the
 request will be checked against the supplied nonce, otherwise the supplied nonce is only checked for presence. Normally
 the OP doesn't know. the nonce beforehand so this option can be left out.
 
-The verified authentication request object returned again contains the Authentication Request payload, the DID
+The verified Auth Request object returned again contains the Auth Request payload, the DID
 resolution result, including DID document of the RP, the issuer (DID of RP) and the signer (the DID verification method
 that signed). The verification method will throw an error if something is of with the JWT, or if the JWT has not been
 signed by the DID of the RP.
@@ -434,14 +445,14 @@ signed by the DID of the RP.
 
 In the below example we directly access requestURI.encodedUri, in a real world scenario the RP and OP don't have access
 to shared objects. Normally you would have received the openid:// URI as a string, which you can also directly pass into
-the verifyAuthenticationRequest or parse methods of the OP class. The method accepts both a JWT or an openid:// URI as
+the verifyAuthorizationRequest or parse methods of the OP class. The method accepts both a JWT or an openid:// URI as
 input
 
 ---
 
 ````typescript
-const verifiedReq = op.verifyAuthenticationRequest(reqURI.encodedUri);  // When an HTTP endpoint is used this would be the uri found in the body
-// const verifiedReq = op.verifyAuthenticationRequest(parsedReqURI.jwt); // If we have parsed the URI using the above optional parsing
+const verifiedReq = op.verifyAuthorizationRequest(reqURI.encodedUri);  // When an HTTP endpoint is used this would be the uri found in the body
+// const verifiedReq = op.verifyAuthorizationRequest(parsedReqURI.jwt); // If we have parsed the URI using the above optional parsing
 
 console.log(`RP DID: ${verifiedReq.issuer}`);
 // RP DID: did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98
@@ -455,7 +466,7 @@ OP wants to receive a Verifiable Presentation according to
 the [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html)
 specification. If this is the case we need to select credentials and create a Verifiable Presentation. If the OP doesn't
 need to receive a Verifiable Presentation, meaning the presentationDefinitions property is undefined or empty, you can
-continue to the next chapter and create the Authentication Response immediately.
+continue to the next chapter and create the Auth Response immediately.
 
 See the below sub flow for Presentation Exchange to explain the process:
 
@@ -463,7 +474,7 @@ See the below sub flow for Presentation Exchange to explain the process:
 
 #### Create PresentationExchange object
 
-If the `presentationDefinitions` array property is present it means the op.verifyAuthenticationRequest already has
+If the `presentationDefinitions` array property is present it means the op.verifyAuthorizationRequest already has
 established that the Presentation Definition(s) itself were valid and present. It has populated the
 presentationDefinitions array for you. If the definition was not valid, the verify method would have thrown an error,
 which means you should never continue the authentication flow!
@@ -475,7 +486,7 @@ from your wallet) and the holder DID.
 **NOTE**
 
 The verifiable credentials you pass in to the PresentationExchange methods do not get sent to the RP. Only the
-submissionFrom method creates a VP, which you should manually add as an option to the createAuthenticationResponse
+submissionFrom method creates a VP, which you should manually add as an option to the createAuthorizationResponse
 method.
 
 ---
@@ -547,14 +558,14 @@ const userSelectedCredentials: VerifiableCredential[] // Your selected credentia
 Now that we have the final selection of VCs, the Presentation Exchange class will create the Verifiable Presentation for
 you. You can optionally sign the Verifiable Presentation, which is out of the scope of this library. As long as the VP
 contains VCs which as subject has the same DID as the OP, the RP can know that the VPs are valid, simply by the fact
-that signature of the resulting authentication response is signed by the private key belonging to the OP and the VP.
+that signature of the resulting Auth Response is signed by the private key belonging to the OP and the VP.
 
 ---
 **NOTE**
 
 We do not support signed selective disclosure yet. The VP will only contain attributes that are requested if the
 Presentation Definition wanted to limit disclosure. You need BBS+ signatures for instance to sign a VP with selective
-disclosure. Unsigned selective disclosure is possible, where the RP relies on the Authentication Response being signed
+disclosure. Unsigned selective disclosure is possible, where the RP relies on the Auth Response being signed
 as long as the VP subject DIDs match the OP DID.
 
 ---
@@ -570,13 +581,13 @@ const verifiablePresentation = await pex.submissionFrom(presentationDefs[0], use
 
 Once the VP is returned it means we have gone through the Presentation Exchange process as defined
 in [OpenID Connect for Verifiable Presentations (OIDC4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html)
-. We can now continue to the regular flow of creating the Authentication Response below, all we have to do is pass the
+. We can now continue to the regular flow of creating the Auth Response below, all we have to do is pass the
 VP in as an option.
 
-### OP creates the Authentication Response using the Verified Request
+### OP creates the Auth Response using the Verified Request
 
-Using the Verified Request object we got back from the op.verifyAuthenticationRequest method, we can now start to create
-the Authentication Response. If we were in the Presentation Exchange flow because the request contained a Presentation
+Using the Verified Request object we got back from the op.verifyAuthorizationRequest method, we can now start to create
+the Auth Response. If we were in the Presentation Exchange flow because the request contained a Presentation
 Definition we now need to pass in the Verifiable Presentations using the vp option. If there was no Presentation
 Definition, do not supply a Verifiable Presentation! The method will check for these constraints.
 
@@ -590,28 +601,28 @@ const vpOpt = {
     location: PresentationLocation.VP_TOKEN
 }
 
-const authRespWithJWT = await op.createAuthenticationResponse(verifiedReq, {vp: [vpOpt]});
+const authRespWithJWT = await op.createAuthorizationResponse(verifiedReq, {vp: [vpOpt]});
 
 // Without Verifiable Presentation
-// const authRespWithJWT = await op.createAuthenticationResponse(verifiedReq);
+// const authRespWithJWT = await op.createAuthorizationResponse(verifiedReq);
 ````
 
-### OP submits the Authentication Response to the RP
+### OP submits the Auth Response to the RP
 
-We are now ready to submit the Authentication Response to the RP. The OP class has the submitAuthenticationResponse
+We are now ready to submit the Auth Response to the RP. The OP class has the submitAuthorizationResponse
 method which accepts the response object. It will automatically submit to the correct location as specified by the RP in
 its request. It expects a response in the 200 range. You get access to the HTTP response from the fetch API as a return
 value.
 
 ````typescript
 // Example with Verifiable Presentation
-const response = await op.submitAuthenticationResponse(authRespWithJWT);
+const response = await op.submitAuthorizationResponse(authRespWithJWT);
 ````
 
-### RP verifies the Authentication Response
+### RP verifies the Auth Response
 
 ````typescript
-const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponseJwt(authRespWithJWT.jwt, {
+const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponseJwt(authRespWithJWT.jwt, {
     audience: EXAMPLE_REDIRECT_URL,
 })
 
@@ -620,24 +631,24 @@ expect(verifiedAuthResponseWithJWT.payload.state).toMatch("b32f0087fc9816eb813fd
 expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch("qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg");
 ````
 
-## AuthenticationRequest class
+## AuthorizationRequest class
 
-In the previous chapter we have seen the highlevel OP and RP classes. These classes use the Authentication Request and
+In the previous chapter we have seen the highlevel OP and RP classes. These classes use the Auth Request and
 Response objects explained in this chapter and the next chapter. If you want you can do most interactions using these
 classes at a lower level. This however means you will not get automatic resolution of values passed by reference like
 for instance request and registration data.
 
 ### createURI
 
-Create a signed URL encoded URI with a signed SIOP Authentication request
+Create a signed URL encoded URI with a signed SIOP Auth Request
 
 #### Data Interface
 
 ```typescript
-interface AuthenticationRequestURI extends SIOPURI {
+interface AuthorizationRequestURI extends SIOPURI {
     jwt?: string;                                    // The JWT when requestBy was set to mode Reference, undefined if the mode is Value
-    requestOpts: AuthenticationRequestOpts;          // The supplied request opts as passed in to the method
-    requestPayload: AuthenticationRequestPayload;    // The json payload that ends up signed in the JWT
+    requestOpts: AuthorizationRequestOpts;          // The supplied request opts as passed in to the method
+    requestPayload: AuthorizationRequestPayload;    // The json payload that ends up signed in the JWT
 }
 
 export type SIOPURI = {
@@ -646,7 +657,7 @@ export type SIOPURI = {
 };
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
-export interface AuthenticationRequestOpts {
+export interface AuthorizationRequestOpts {
     authorizationEndpoint?: string;
     redirectUri: string;                // The redirect URI
     requestBy: ObjectBy;                // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
@@ -667,7 +678,7 @@ export interface AuthenticationRequestOpts {
     // [x: string]: any;
 }
 
-static async createURI(opts: SIOP.AuthenticationRequestOpts): Promise<SIOP.AuthenticationRequestURI>
+static async createURI(opts: SIOP.AuthorizationRequestOpts): Promise<SIOP.AuthorizationRequestURI>
 ```
 
 #### Usage
@@ -679,7 +690,7 @@ const HEX_KEY = "f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420
 const DID = "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0";
 const KID = "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1";
 
-const opts: AuthenticationRequestOpts = {
+const opts: AuthorizationRequestOpts = {
   checkLinkedDomain: CheckLinkedDomain.NEVER,
   requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
   redirectUri: EXAMPLE_REDIRECT_URL,
@@ -709,7 +720,7 @@ const opts: AuthenticationRequestOpts = {
   },
 };
 
-AuthenticationRequest.createURI(opts)
+AuthorizationRequest.createURI(opts)
     .then(uri => console.log(uri.encodedUri));
 
 // Output: 
@@ -741,16 +752,16 @@ AuthenticationRequest.createURI(opts)
 
 ### verifyJWT
 
-Verifies a SIOP Authentication Request JWT. Throws an error if the verifation fails. Returns the verified JWT and
+Verifies a SIOP Auth Request JWT. Throws an error if the verifation fails. Returns the verified JWT and
 metadata if the verification succeeds
 
 #### Data Interface
 
 ```typescript
-export interface VerifiedAuthenticationRequestWithJWT extends VerifiedJWT {
-    payload: AuthenticationRequestPayload;       // The unsigned Authentication Request payload
+export interface VerifiedAuthorizationRequestWithJWT extends VerifiedJWT {
+    payload: AuthorizationRequestPayload;       // The unsigned Auth Request payload
     presentationDefinitions?: PresentationDefinitionWithLocation[]; // The optional presentation definition objects that the RP requests 
-    verifyOpts: VerifyAuthenticationRequestOpts; // The verification options for the authentication request
+    verifyOpts: VerifyAuthorizationRequestOpts; // The verification options for the Auth Request
 }
 
 export interface VerifiedJWT {
@@ -761,7 +772,7 @@ export interface VerifiedJWT {
     jwt: string;                             // The JWT
 }
 
-export interface VerifyAuthenticationRequestOpts {
+export interface VerifyAuthorizationRequestOpts {
     verification: InternalVerification | ExternalVerification;  // To use internal verification or external hosted verification
     nonce?: string; // If provided the nonce in the request needs to match
     verifyCallback?: VerifyCallback;
@@ -787,13 +798,13 @@ export interface DIDDocument {              // Standard DID Document, see DID sp
     service?: ServiceEndpoint[]
 }
 
-static async verifyJWT(jwt:string, opts: SIOP.VerifyAuthenticationRequestOpts): Promise<SIOP.VerifiedAuthenticationRequestWithJWT>
+static async verifyJWT(jwt:string, opts: SIOP.VerifyAuthorizationRequestOpts): Promise<SIOP.VerifiedAuthorizationRequestWithJWT>
 ```
 
 #### Usage
 
 ````typescript
-const verifyOpts: VerifyAuthenticationRequestOpts = {
+const verifyOpts: VerifyAuthorizationRequestOpts = {
     verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
@@ -802,7 +813,7 @@ const verifyOpts: VerifyAuthenticationRequestOpts = {
     }
 }
 const jwt = 'ey..........' // JWT created by RP
-AuthenticationRequest.verifyJWT(jwt).then(req => {
+AuthorizationRequest.verifyJWT(jwt).then(req => {
     console.log(`issuer: ${req.issuer}`);
     console.log(JSON.stringify(req.signer));
 });
@@ -815,18 +826,18 @@ AuthenticationRequest.verifyJWT(jwt).then(req => {
 // }
 ````
 
-## AuthenticationResponse class
+## AuthorizationResponse class
 
 ### createJwtFromRequestJWT
 
-Creates an AuthenticationResponse object from the OP side, using the AuthenticationRequest of the RP and its
-verification as input together with settings from the OP. The Authentication Response contains the ID token as well as
+Creates an AuthorizationResponse object from the OP side, using the AuthorizationRequest of the RP and its
+verification as input together with settings from the OP. The Auth Response contains the ID token as well as
 optional Verifiable Presentations conforming to the Submission Requirements sent by the RP.
 
 #### Data interface
 
 ````typescript
-export interface AuthenticationResponseOpts {
+export interface AuthorizationResponseOpts {
     redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
     registration: ResponseRegistrationOpts;      // Registration options
     checkLinkedDomain?: CheckLinkedDomain; // When the link domain should be checked
@@ -849,13 +860,13 @@ export enum PresentationLocation {
     ID_TOKEN = 'id_token', // VP will be part of the id_token in the verifiable_presentations location
 }
 
-export interface VerifyAuthenticationRequestOpts {
+export interface VerifyAuthorizationRequestOpts {
     verification: InternalVerification | ExternalVerification;   // To use internal verification or external hosted verification
     nonce?: string;                                              // If provided the nonce in the request needs to match
     verifyCallback?: VerifyCallback                              // Callback function to verify the domain linkage credential 
 }
 
-export interface AuthenticationResponsePayload extends JWTPayload {
+export interface AuthorizationResponsePayload extends JWTPayload {
     iss: ResponseIss.SELF_ISSUED_V2 | string;                      // The SIOP V2 spec mentions this is required
     sub: string;                                                   // did (or thumbprint of sub_jwk key when type is jkt)
     sub_jwk?: JWK;                                                  // JWK containing DID key if subtype is did, or thumbprint if it is JKT
@@ -871,22 +882,22 @@ export interface AuthenticationResponsePayload extends JWTPayload {
     vp_token?: VerifiablePresentationPayload;
 }
 
-export interface AuthenticationResponseWithJWT {
+export interface AuthorizationResponseWithJWT {
     jwt: string;                                 // The signed Response JWT 
     nonce: string;                               // The nonce which should match the nonce from the request
     state: string;                               // The state which should match the state from the request
-    payload: AuthenticationResponsePayload;      // The unsigned payload object 
-    verifyOpts?: VerifyAuthenticationRequestOpts;// The Authentication Request verification parameters that were used
-    responseOpts: AuthenticationResponseOpts;    // The Authentication Response options used during generation of the Response
+    payload: AuthorizationResponsePayload;      // The unsigned payload object 
+    verifyOpts?: VerifyAuthorizationRequestOpts;// The Auth Request verification parameters that were used
+    responseOpts: AuthorizationResponseOpts;    // The Auth Response options used during generation of the Response
 }
 
-static async createJWTFromRequestJWT(requestJwt: string, responseOpts: SIOP.AuthenticationResponseOpts, verifyOpts: SIOP.VerifyAuthenticationRequestOpts): Promise<SIOP.AuthenticationResponseWithJWT>
+static async createJWTFromRequestJWT(requestJwt: string, responseOpts: SIOP.AuthorizationResponseOpts, verifyOpts: SIOP.VerifyAuthorizationRequestOpts): Promise<SIOP.AuthorizationResponseWithJWT>
 ````
 
 #### Usage
 
 ````typescript
- const responseOpts: AuthenticationResponseOpts = {
+ const responseOpts: AuthorizationResponseOpts = {
   checkLinkedDomain: CheckLinkedDomain.NEVER,
   redirectUri: "https://acme.com/hello",
   registration: {
@@ -913,7 +924,7 @@ static async createJWTFromRequestJWT(requestJwt: string, responseOpts: SIOP.Auth
   did: "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
   responseMode: ResponseMode.POST,
 }
-const verifyOpts: VerifyAuthenticationRequestOpts = {
+const verifyOpts: VerifyAuthorizationRequestOpts = {
     verification: {
         resolveOpts: {
           subjectSyntaxTypesSupported: ['did:ethr:'],
@@ -931,18 +942,18 @@ createJWTFromRequestJWT('ey....', responseOpts, verifyOpts).then(resp => {
 
 ### verifyJWT
 
-Verifies the OPs Authentication Response JWT on the RP side as received from the OP/client. Throws an error if the token
+Verifies the OPs Auth Response JWT on the RP side as received from the OP/client. Throws an error if the token
 is invalid, otherwise returns the Verified JWT
 
 #### Data Interface
 
 ````typescript
-export interface VerifiedAuthenticationResponseWithJWT extends VerifiedJWT {
-    payload: AuthenticationResponsePayload;      // The unsigned authentication response payload
-    verifyOpts: VerifyAuthenticationResponseOpts;// The authentication request payload
+export interface VerifiedAuthorizationResponseWithJWT extends VerifiedJWT {
+    payload: AuthorizationResponsePayload;      // The unsigned Auth Response payload
+    verifyOpts: VerifyAuthorizationResponseOpts;// The Auth Request payload
 }
 
-export interface AuthenticationResponsePayload extends JWTPayload {
+export interface AuthorizationResponsePayload extends JWTPayload {
     iss: ResponseIss.SELF_ISSUED_V2 | string;   // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
     sub: string;                                // did (or thumbprint of sub_jwk key when type is jkt)
     sub_jwk?: JWK;                               // Sub Json webkey
@@ -979,7 +990,7 @@ export interface JWTPayload { // A default JWT Payload
     [x: string]: any
 }
 
-export interface VerifyAuthenticationResponseOpts {
+export interface VerifyAuthorizationResponseOpts {
     verification: InternalVerification | ExternalVerification;  // To use internal verification or external hosted verification
     nonce?: string;                                             // To verify the response against the supplied nonce
     state?: string;                                             // To verify the response against the supplied state
@@ -989,7 +1000,7 @@ export interface VerifyAuthenticationResponseOpts {
     presentationVerificationCallback?: PresentationVerificationCallback; // Callback function to verify the verifiable presentations
 }
 
-static async verifyJWT(jwt:string, verifyOpts: VerifyAuthenticationResponseOpts): Promise<VerifiedAuthenticationResponseWithJWT>
+static async verifyJWT(jwt:string, verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthorizationResponseWithJWT>
 ````
 
 #### Usage
@@ -997,7 +1008,7 @@ static async verifyJWT(jwt:string, verifyOpts: VerifyAuthenticationResponseOpts)
 ````typescript
 const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const NONCE = "5c1d29c1-cf7d-4e14-9305-9db46d8c1916";
-const verifyOpts: VerifyAuthenticationResponseOpts = {
+const verifyOpts: VerifyAuthorizationResponseOpts = {
     audience: "https://rp.acme.com/siop/jwts",
     nonce: NONCE,
     verification: {
@@ -1043,7 +1054,7 @@ resolver.resolve('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda').then(doc
 The DidResolution file exposes 2 functions that help with the resolution as well:
 
 ```typescript
-import {getResolver, resolveDidDocument} from './functions/DIDResolution';
+import {getResolver, resolveDidDocument} from './helpers/DIDResolution';
 
 // combines 2 uni resolvers for ethr and eosio together with the myCustomResolver and return that as a single resolver
 const myCustomResolver = new MyCustomResolver();
@@ -1057,7 +1068,7 @@ await resolveDidDocument('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda', 
 ## JWT and DID creation and verification
 
 Please note that this chapter is about low level JWT functions, which normally aren't used by end users of this library.
-Typically, you use the AuthenticationRequest and Response classes (low-level) or the OP and RP classes (high-level).
+Typically, you use the AuthorizationRequest and Response classes (low-level) or the OP and RP classes (high-level).
 
 ### Create JWT
 
@@ -1331,3 +1342,11 @@ Services and objects:
 DID JWTs:
 
 [![](https://mermaid.ink/img/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5jbGFzcyBEaWRSZXNvbHV0aW9uT3B0aW9ucyB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIGFjY2VwdD86IHN0cmluZ1xufVxuY2xhc3MgUmVzb2x2YWJsZSB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIHJlc29sdmUoZGlkVXJsOiBzdHJpbmcsIG9wdGlvbnM6IERpZFJlc29sdXRpb25PcHRpb25zKSBQcm9taXNlKERpZFJlc29sdXRpb25SZXN1bHQpXG59XG5EaWRSZXNvbHV0aW9uT3B0aW9ucyA8LS0gUmVzb2x2YWJsZVxuRElEUmVzb2x1dGlvblJlc3VsdCA8LS0gUmVzb2x2YWJsZVxuXG5jbGFzcyAgRElEUmVzb2x1dGlvblJlc3VsdCB7XG4gIGRpZFJlc29sdXRpb25NZXRhZGF0YTogRElEUmVzb2x1dGlvbk1ldGFkYXRhXG4gIGRpZERvY3VtZW50OiBESUREb2N1bWVudCB8IG51bGxcbiAgZGlkRG9jdW1lbnRNZXRhZGF0YTogRElERG9jdW1lbnRNZXRhZGF0YVxufVxuRElERG9jdW1lbnRNZXRhZGF0YSA8LS0gRElEUmVzb2x1dGlvblJlc3VsdFxuRElERG9jdW1lbnQgPC0tIERJRFJlc29sdXRpb25SZXN1bHRcblxuY2xhc3MgRElERG9jdW1lbnRNZXRhZGF0YSB7XG4gIGNyZWF0ZWQ_OiBzdHJpbmdcbiAgdXBkYXRlZD86IHN0cmluZ1xuICBkZWFjdGl2YXRlZD86IGJvb2xlYW5cbiAgdmVyc2lvbklkPzogc3RyaW5nXG4gIG5leHRVcGRhdGU_OiBzdHJpbmdcbiAgbmV4dFZlcnNpb25JZD86IHN0cmluZ1xuICBlcXVpdmFsZW50SWQ_OiBzdHJpbmdcbiAgY2Fub25pY2FsSWQ_OiBzdHJpbmdcbn1cblxuY2xhc3MgRElERG9jdW1lbnQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICAnQGNvbnRleHQnPzogJ2h0dHBzOi8vd3d3LnczLm9yZy9ucy9kaWQvdjEnIHwgc3RyaW5nIHwgc3RyaW5nW11cbiAgICBpZDogc3RyaW5nXG4gICAgYWxzb0tub3duQXM_OiBzdHJpbmdbXVxuICAgIGNvbnRyb2xsZXI_OiBzdHJpbmcgfCBzdHJpbmdbXVxuICAgIHZlcmlmaWNhdGlvbk1ldGhvZD86IFZlcmlmaWNhdGlvbk1ldGhvZFtdXG4gICAgYXV0aGVudGljYXRpb24_OiAoc3RyaW5nIHwgVmVyaWZpY2F0aW9uTWV0aG9kKVtdXG4gICAgYXNzZXJ0aW9uTWV0aG9kPzogKHN0cmluZyB8IFZlcmlmaWNhdGlvbk1ldGhvZClbXVxuICAgIGtleUFncmVlbWVudD86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5SW52b2NhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5RGVsZWdhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBzZXJ2aWNlPzogU2VydmljZUVuZHBvaW50W11cbn1cblZlcmlmaWNhdGlvbk1ldGhvZCA8LS0gRElERG9jdW1lbnRcblxuY2xhc3MgVmVyaWZpY2F0aW9uTWV0aG9kIHtcbiAgICA8PGludGVyZmFjZT4-XG4gICAgaWQ6IHN0cmluZ1xuICAgIHR5cGU6IHN0cmluZ1xuICAgIGNvbnRyb2xsZXI6IHN0cmluZ1xuICAgIHB1YmxpY0tleUJhc2U1OD86IHN0cmluZ1xuICAgIHB1YmxpY0tleUp3az86IEpzb25XZWJLZXlcbiAgICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgICBibG9ja2NoYWluQWNjb3VudElkPzogc3RyaW5nXG4gICAgZXRoZXJldW1BZGRyZXNzPzogc3RyaW5nXG59XG5cbmNsYXNzIEpXVFBheWxvYWQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICBpc3M6IHN0cmluZ1xuICAgIHN1Yj86IHN0cmluZ1xuICAgIGF1ZD86IHN0cmluZyB8IHN0cmluZ1tdXG4gICAgaWF0PzogbnVtYmVyXG4gICAgbmJmPzogbnVtYmVyXG4gICAgZXhwPzogbnVtYmVyXG4gICAgcmV4cD86IG51bWJlclxufVxuY2xhc3MgSldUSGVhZGVyIHsgLy8gVGhpcyBpcyBhIHN0YW5kYXJkIEpXVCBoZWFkZXJcbiAgICB0eXA6ICdKV1QnXG4gICAgYWxnOiBzdHJpbmcgICAvLyBUaGUgSldUIHNpZ25pbmcgYWxnb3JpdGhtIHRvIHVzZS4gU3VwcG9ydHM6IFtFUzI1NkssIEVTMjU2Sy1SLCBFZDI1NTE5LCBFZERTQV0sIERlZmF1bHRzIHRvOiBFUzI1NktcbiAgICBbeDogc3RyaW5nXTogYW55XG59XG5cbmNsYXNzIFZlcmlmaWNhdGlvbk1ldGhvZCB7XG4gIGlkOiBzdHJpbmdcbiAgdHlwZTogc3RyaW5nXG4gIGNvbnRyb2xsZXI6IHN0cmluZ1xuICBwdWJsaWNLZXlCYXNlNTg_OiBzdHJpbmdcbiAgcHVibGljS2V5SndrPzogSnNvbldlYktleVxuICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgYmxvY2tjaGFpbkFjY291bnRJZD86IHN0cmluZ1xuICBldGhlcmV1bUFkZHJlc3M_OiBzdHJpbmdcbn1cblxuSnNvbldlYktleSA8fC0tIFZlcmlmaWNhdGlvbk1ldGhvZFxuY2xhc3MgSnNvbldlYktleSB7XG4gIGFsZz86IHN0cmluZ1xuICBjcnY_OiBzdHJpbmdcbiAgZT86IHN0cmluZ1xuICBleHQ_OiBib29sZWFuXG4gIGtleV9vcHM_OiBzdHJpbmdbXVxuICBraWQ_OiBzdHJpbmdcbiAga3R5OiBzdHJpbmdcbiAgbj86IHN0cmluZ1xuICB1c2U_OiBzdHJpbmdcbiAgeD86IHN0cmluZ1xuICB5Pzogc3RyaW5nXG59XG5cblxuY2xhc3MgRGlkSldUIHtcbiAgICA8PHNlcnZpY2U-PlxuICAgIGNyZWF0ZURpZEpXVChwYXlsb2FkOiBKV1RQYXlsb2FkLCBvcHRpb25zOiBKV1RPcHRpb25zLCBoZWFkZXI6IEpXVEpIZWFkZXIpIFByb21pc2Uoc3RyaW5nKVxuICAgIHZlcmlmeURpZEpXVChqd3Q6IHN0cmluZywgcmVzb2x2ZXI6IFJlc29sdmFibGUpIFByb21pc2UoYm9vbGVhbilcbn1cbkpXVFBheWxvYWQgPC0tIERpZEpXVFxuSldUT3B0aW9ucyA8LS0gRGlkSldUXG5KV1RIZWFkZXIgPC0tIERpZEpXVFxuUmVzb2x2YWJsZSA8LS0gRGlkSldUXG4iLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9LCJ1cGRhdGVFZGl0b3IiOmZhbHNlLCJhdXRvU3luYyI6ZmFsc2UsInVwZGF0ZURpYWdyYW0iOmZhbHNlfQ)](https://mermaid-js.github.io/mermaid-live-editor/edit##eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5jbGFzcyBEaWRSZXNvbHV0aW9uT3B0aW9ucyB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIGFjY2VwdD86IHN0cmluZ1xufVxuY2xhc3MgUmVzb2x2YWJsZSB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIHJlc29sdmUoZGlkVXJsOiBzdHJpbmcsIG9wdGlvbnM6IERpZFJlc29sdXRpb25PcHRpb25zKSBQcm9taXNlKERpZFJlc29sdXRpb25SZXN1bHQpXG59XG5EaWRSZXNvbHV0aW9uT3B0aW9ucyA8LS0gUmVzb2x2YWJsZVxuRElEUmVzb2x1dGlvblJlc3VsdCA8LS0gUmVzb2x2YWJsZVxuXG5jbGFzcyAgRElEUmVzb2x1dGlvblJlc3VsdCB7XG4gIGRpZFJlc29sdXRpb25NZXRhZGF0YTogRElEUmVzb2x1dGlvbk1ldGFkYXRhXG4gIGRpZERvY3VtZW50OiBESUREb2N1bWVudCB8IG51bGxcbiAgZGlkRG9jdW1lbnRNZXRhZGF0YTogRElERG9jdW1lbnRNZXRhZGF0YVxufVxuRElERG9jdW1lbnRNZXRhZGF0YSA8LS0gRElEUmVzb2x1dGlvblJlc3VsdFxuRElERG9jdW1lbnQgPC0tIERJRFJlc29sdXRpb25SZXN1bHRcblxuY2xhc3MgRElERG9jdW1lbnRNZXRhZGF0YSB7XG4gIGNyZWF0ZWQ_OiBzdHJpbmdcbiAgdXBkYXRlZD86IHN0cmluZ1xuICBkZWFjdGl2YXRlZD86IGJvb2xlYW5cbiAgdmVyc2lvbklkPzogc3RyaW5nXG4gIG5leHRVcGRhdGU_OiBzdHJpbmdcbiAgbmV4dFZlcnNpb25JZD86IHN0cmluZ1xuICBlcXVpdmFsZW50SWQ_OiBzdHJpbmdcbiAgY2Fub25pY2FsSWQ_OiBzdHJpbmdcbn1cblxuY2xhc3MgRElERG9jdW1lbnQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICAnQGNvbnRleHQnPzogJ2h0dHBzOi8vd3d3LnczLm9yZy9ucy9kaWQvdjEnIHwgc3RyaW5nIHwgc3RyaW5nW11cbiAgICBpZDogc3RyaW5nXG4gICAgYWxzb0tub3duQXM_OiBzdHJpbmdbXVxuICAgIGNvbnRyb2xsZXI_OiBzdHJpbmcgfCBzdHJpbmdbXVxuICAgIHZlcmlmaWNhdGlvbk1ldGhvZD86IFZlcmlmaWNhdGlvbk1ldGhvZFtdXG4gICAgYXV0aGVudGljYXRpb24_OiAoc3RyaW5nIHwgVmVyaWZpY2F0aW9uTWV0aG9kKVtdXG4gICAgYXNzZXJ0aW9uTWV0aG9kPzogKHN0cmluZyB8IFZlcmlmaWNhdGlvbk1ldGhvZClbXVxuICAgIGtleUFncmVlbWVudD86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5SW52b2NhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5RGVsZWdhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBzZXJ2aWNlPzogU2VydmljZUVuZHBvaW50W11cbn1cblZlcmlmaWNhdGlvbk1ldGhvZCA8LS0gRElERG9jdW1lbnRcblxuY2xhc3MgVmVyaWZpY2F0aW9uTWV0aG9kIHtcbiAgICA8PGludGVyZmFjZT4-XG4gICAgaWQ6IHN0cmluZ1xuICAgIHR5cGU6IHN0cmluZ1xuICAgIGNvbnRyb2xsZXI6IHN0cmluZ1xuICAgIHB1YmxpY0tleUJhc2U1OD86IHN0cmluZ1xuICAgIHB1YmxpY0tleUp3az86IEpzb25XZWJLZXlcbiAgICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgICBibG9ja2NoYWluQWNjb3VudElkPzogc3RyaW5nXG4gICAgZXRoZXJldW1BZGRyZXNzPzogc3RyaW5nXG59XG5cbmNsYXNzIEpXVFBheWxvYWQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICBpc3M6IHN0cmluZ1xuICAgIHN1Yj86IHN0cmluZ1xuICAgIGF1ZD86IHN0cmluZyB8IHN0cmluZ1tdXG4gICAgaWF0PzogbnVtYmVyXG4gICAgbmJmPzogbnVtYmVyXG4gICAgZXhwPzogbnVtYmVyXG4gICAgcmV4cD86IG51bWJlclxufVxuY2xhc3MgSldUSGVhZGVyIHsgLy8gVGhpcyBpcyBhIHN0YW5kYXJkIEpXVCBoZWFkZXJcbiAgICB0eXA6ICdKV1QnXG4gICAgYWxnOiBzdHJpbmcgICAvLyBUaGUgSldUIHNpZ25pbmcgYWxnb3JpdGhtIHRvIHVzZS4gU3VwcG9ydHM6IFtFUzI1NkssIEVTMjU2Sy1SLCBFZDI1NTE5LCBFZERTQV0sIERlZmF1bHRzIHRvOiBFUzI1NktcbiAgICBbeDogc3RyaW5nXTogYW55XG59XG5cbmNsYXNzIFZlcmlmaWNhdGlvbk1ldGhvZCB7XG4gIGlkOiBzdHJpbmdcbiAgdHlwZTogc3RyaW5nXG4gIGNvbnRyb2xsZXI6IHN0cmluZ1xuICBwdWJsaWNLZXlCYXNlNTg_OiBzdHJpbmdcbiAgcHVibGljS2V5SndrPzogSnNvbldlYktleVxuICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgYmxvY2tjaGFpbkFjY291bnRJZD86IHN0cmluZ1xuICBldGhlcmV1bUFkZHJlc3M_OiBzdHJpbmdcbn1cblxuSnNvbldlYktleSA8fC0tIFZlcmlmaWNhdGlvbk1ldGhvZFxuY2xhc3MgSnNvbldlYktleSB7XG4gIGFsZz86IHN0cmluZ1xuICBjcnY_OiBzdHJpbmdcbiAgZT86IHN0cmluZ1xuICBleHQ_OiBib29sZWFuXG4gIGtleV9vcHM_OiBzdHJpbmdbXVxuICBraWQ_OiBzdHJpbmdcbiAga3R5OiBzdHJpbmdcbiAgbj86IHN0cmluZ1xuICB1c2U_OiBzdHJpbmdcbiAgeD86IHN0cmluZ1xuICB5Pzogc3RyaW5nXG59XG5cblxuY2xhc3MgRGlkSldUIHtcbiAgICA8PHNlcnZpY2U-PlxuICAgIGNyZWF0ZURpZEpXVChwYXlsb2FkOiBKV1RQYXlsb2FkLCBvcHRpb25zOiBKV1RPcHRpb25zLCBoZWFkZXI6IEpXVEpIZWFkZXIpIFByb21pc2Uoc3RyaW5nKVxuICAgIHZlcmlmeURpZEpXVChqd3Q6IHN0cmluZywgcmVzb2x2ZXI6IFJlc29sdmFibGUpIFByb21pc2UoYm9vbGVhbilcbn1cbkpXVFBheWxvYWQgPC0tIERpZEpXVFxuSldUT3B0aW9ucyA8LS0gRGlkSldUXG5KV1RIZWFkZXIgPC0tIERpZEpXVFxuUmVzb2x2YWJsZSA8LS0gRGlkSldUXG4iLCJtZXJtYWlkIjoie1xuICBcInRoZW1lXCI6IFwiZGVmYXVsdFwiXG59IiwidXBkYXRlRWRpdG9yIjpmYWxzZSwiYXV0b1N5bmMiOmZhbHNlLCJ1cGRhdGVEaWFncmFtIjp0cnVlfQ)
+
+
+
+## Acknowledgements
+
+This library has been partially sponsored by [Gimly](https://www.gimly.io/) as part of the [NGI Ontochain](https://ontochain.ngi.eu/) project. NGI Ontochain has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 957338
+
+<center><a href="https://www.gimly.io/"><img src="https://avatars.githubusercontent.com/u/64525639?s=200&v=4" alt="Gimly" height="80"></a> &nbsp; <a href="https://ontochain.ngi.eu" target="_blank"><img src="https://ontochain.ngi.eu/sites/default/files/logo-ngi-ontochain-positive.png" height="100px" alt="ONTOCHAIN Logo"/></a> &nbsp; <img src="https://ontochain.ngi.eu/sites/default/files/images/EU_flag.png" height="80px" alt="European Union Flag"/></center>

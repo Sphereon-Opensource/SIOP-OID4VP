@@ -3,15 +3,15 @@ import { ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
-  AuthenticationRequest,
-  AuthenticationRequestOpts,
-  AuthenticationResponse,
-  AuthenticationResponseOpts,
+  AuthorizationResponse,
+  AuthorizationResponseOpts,
   CheckLinkedDomain,
+  CreateAuthorizationRequestOpts,
   PassBy,
   PresentationExchange,
   PresentationLocation,
   PresentationSignCallback,
+  RequestObject,
   ResponseIss,
   ResponseMode,
   ResponseType,
@@ -22,7 +22,7 @@ import {
   SupportedVersion,
   VerifiablePresentationTypeFormat,
   VerificationMode,
-  VerifyAuthenticationRequestOpts,
+  VerifyAuthorizationRequestOpts,
 } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
@@ -49,9 +49,10 @@ const validButExpiredJWT =
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 
 describe('create JWT from Request JWT should', () => {
-  const responseOpts: AuthenticationResponseOpts = {
+  const responseOpts: AuthorizationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
+    responseMode: ResponseMode.POST,
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
       responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -63,7 +64,7 @@ describe('create JWT from Request JWT should', () => {
       },
       issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
-        type: PassBy.REFERENCE,
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
       },
       logoUri: VERIFIER_LOGO_FOR_CLIENT,
@@ -76,35 +77,33 @@ describe('create JWT from Request JWT should', () => {
       did: DID,
       hexPrivateKey: HEX_KEY,
       kid: KID,
+      alg: SigningAlgo.ES256K,
     },
     did: DID,
-    responseMode: ResponseMode.POST,
   };
-  const verifyOpts: VerifyAuthenticationRequestOpts = {
+  const verifyOpts: VerifyAuthorizationRequestOpts = {
     verification: {
       resolveOpts: {
         subjectSyntaxTypesSupported: ['did:ethr'],
       },
-      supportedVersions: [SupportedVersion.SIOPv2_ID1],
       mode: VerificationMode.INTERNAL,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+    supportedVersions: [SupportedVersion.SIOPv2_ID1],
   };
 
   it('throw NO_JWT when no jwt is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(undefined as never, responseOpts, verifyOpts)).rejects.toThrow(SIOPErrors.NO_JWT);
+    await expect(AuthorizationResponse.fromRequestObject(undefined as never, responseOpts, verifyOpts)).rejects.toThrow(SIOPErrors.NO_JWT);
   });
   it('throw BAD_PARAMS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, undefined as never, verifyOpts)).rejects.toThrow(
-      SIOPErrors.BAD_PARAMS
-    );
+    await expect(AuthorizationResponse.fromRequestObject(validButExpiredJWT, undefined as never, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_PARAMS);
   });
   it('throw VERIFY_BAD_PARAMS when no verifyOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(validButExpiredJWT, responseOpts, undefined as never)).rejects.toThrow(
+    await expect(AuthorizationResponse.fromRequestObject(validButExpiredJWT, responseOpts, undefined as never)).rejects.toThrow(
       SIOPErrors.VERIFY_BAD_PARAMS
     );
   });
@@ -113,21 +112,27 @@ describe('create JWT from Request JWT should', () => {
     expect.assertions(1);
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-    const requestOpts: AuthenticationRequestOpts = {
-      nonce: '12345',
-      state: '12345',
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
-      signatureType: {
-        hexPrivateKey: mockReqEntity.hexPrivateKey,
-        did: mockReqEntity.did,
-        kid: `${mockReqEntity.did}#controller`,
+    const requestOpts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
+      payload: {
+        nonce: '12345',
+        state: '12345',
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
       },
-      registration: {
+      requestObject: {
+        passBy: PassBy.REFERENCE,
+        referenceUri: 'https://my-request.com/here',
+        signatureType: {
+          hexPrivateKey: mockReqEntity.hexPrivateKey,
+          did: mockReqEntity.did,
+          kid: `${mockReqEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
+        },
+      },
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -140,7 +145,7 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100311',
@@ -148,7 +153,7 @@ describe('create JWT from Request JWT should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
-    const responseOpts: AuthenticationResponseOpts = {
+    const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
@@ -163,7 +168,7 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         registrationBy: {
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
         },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
@@ -176,6 +181,7 @@ describe('create JWT from Request JWT should', () => {
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
+        alg: SigningAlgo.ES256K,
       },
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
@@ -184,10 +190,10 @@ describe('create JWT from Request JWT should', () => {
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
     jest.useFakeTimers().setSystemTime(new Date('2020-01-01'));
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-
+    const requestObject = await RequestObject.fromOpts(requestOpts);
+    const jwt = await requestObject.toJwt();
     jest.useRealTimers();
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).rejects.toThrow(
+    await expect(AuthorizationResponse.fromRequestObject(jwt, responseOpts, verifyOpts)).rejects.toThrow(
       /invalid_jwt: JWT has expired: exp: 1577837400/
     );
   });
@@ -199,19 +205,25 @@ describe('create JWT from Request JWT should', () => {
 
       const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
       const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
-      const requestOpts: AuthenticationRequestOpts = {
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        responseType: 'id_token',
-        checkLinkedDomain: CheckLinkedDomain.NEVER,
-        redirectUri: EXAMPLE_REDIRECT_URL,
-        requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
-        signatureType: {
-          hexPrivateKey: mockReqEntity.hexPrivateKey,
-          did: mockReqEntity.did,
-          kid: `${mockReqEntity.did}#controller`,
+      const requestOpts: CreateAuthorizationRequestOpts = {
+        version: SupportedVersion.SIOPv2_ID1,
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          redirect_uri: EXAMPLE_REDIRECT_URL,
         },
-        registration: {
+        requestObject: {
+          passBy: PassBy.REFERENCE,
+          referenceUri: 'https://my-request.com/here',
+          signatureType: {
+            hexPrivateKey: mockReqEntity.hexPrivateKey,
+            did: mockReqEntity.did,
+            kid: `${mockReqEntity.did}#controller`,
+            alg: SigningAlgo.ES256K,
+          },
+        },
+        clientMetadata: {
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -224,7 +236,7 @@ describe('create JWT from Request JWT should', () => {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
             },
           },
-          registrationBy: { type: PassBy.VALUE },
+          passBy: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100313',
@@ -232,7 +244,7 @@ describe('create JWT from Request JWT should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
       };
-      const responseOpts: AuthenticationResponseOpts = {
+      const responseOpts: AuthorizationResponseOpts = {
         checkLinkedDomain: CheckLinkedDomain.NEVER,
         redirectUri: EXAMPLE_REDIRECT_URL,
         registration: {
@@ -247,7 +259,7 @@ describe('create JWT from Request JWT should', () => {
             },
           },
           registrationBy: {
-            type: PassBy.REFERENCE,
+            passBy: PassBy.REFERENCE,
             referenceUri: EXAMPLE_REFERENCE_URL,
           },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
@@ -260,14 +272,15 @@ describe('create JWT from Request JWT should', () => {
           did: mockResEntity.did,
           hexPrivateKey: mockResEntity.hexPrivateKey,
           kid: `${mockResEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
         },
         did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
         responseMode: ResponseMode.POST,
       };
 
-      const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-      console.log(JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)));
-      await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
+      const requestObject = await RequestObject.fromOpts(requestOpts);
+      console.log(JSON.stringify(await AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)));
+      await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
     },
     UNIT_TEST_TIMEOUT
   );
@@ -315,19 +328,30 @@ describe('create JWT from Request JWT should', () => {
         },
       ],
     };
-    const requestOpts: AuthenticationRequestOpts = {
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'id_token',
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
-      signatureType: {
-        hexPrivateKey: mockReqEntity.hexPrivateKey,
-        did: mockReqEntity.did,
-        kid: `${mockReqEntity.did}#controller`,
+    const requestOpts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
+      payload: {
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+        claims: {
+          vp_token: {
+            presentation_definition: definition,
+          },
+        },
       },
-      registration: {
+      requestObject: {
+        passBy: PassBy.REFERENCE,
+        referenceUri: 'https://my-request.com/here',
+        signatureType: {
+          hexPrivateKey: mockReqEntity.hexPrivateKey,
+          did: mockReqEntity.did,
+          kid: `${mockReqEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
+        },
+      },
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -340,17 +364,12 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100315',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-      },
-      claims: {
-        vpToken: {
-          presentationDefinition: definition,
-        },
       },
     };
     const vc: ICredential = {
@@ -400,7 +419,7 @@ describe('create JWT from Request JWT should', () => {
       {},
       presentationSignCallback
     )) as IVerifiablePresentation;
-    const responseOpts: AuthenticationResponseOpts = {
+    const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
@@ -408,7 +427,7 @@ describe('create JWT from Request JWT should', () => {
         issuer: ResponseIss.SELF_ISSUED_V2,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         registrationBy: {
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
         },
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -427,23 +446,26 @@ describe('create JWT from Request JWT should', () => {
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
+        alg: SigningAlgo.ES256K,
       },
-      vp: [
-        {
-          location: PresentationLocation.VP_TOKEN,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          presentation: result,
-        },
-      ],
+      presentationExchange: {
+        vps: [
+          {
+            location: PresentationLocation.VP_TOKEN,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            presentation: result,
+          },
+        ],
+      },
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
     };
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+    const requestObject = await RequestObject.fromOpts(requestOpts);
     /* console.log(
       JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
     );*/
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
+    await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 
   it('succeed when valid JWT with PD is passed in for id_token', async () => {
@@ -477,19 +499,30 @@ describe('create JWT from Request JWT should', () => {
         },
       ],
     };
-    const requestOpts: AuthenticationRequestOpts = {
-      clientId: WELL_KNOWN_OPENID_FEDERATION,
-      scope: 'test',
-      responseType: 'token_id',
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
-      signatureType: {
-        hexPrivateKey: mockReqEntity.hexPrivateKey,
-        did: mockReqEntity.did,
-        kid: `${mockReqEntity.did}#controller`,
+    const requestOpts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
+      payload: {
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'token_id',
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+        claims: {
+          vp_token: {
+            presentation_definition: definition,
+          },
+        },
       },
-      registration: {
+      requestObject: {
+        passBy: PassBy.REFERENCE,
+        referenceUri: 'https://my-request.com/here',
+        signatureType: {
+          hexPrivateKey: mockReqEntity.hexPrivateKey,
+          did: mockReqEntity.did,
+          kid: `${mockReqEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
+        },
+      },
+      clientMetadata: {
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -502,17 +535,12 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-      },
-      claims: {
-        vpToken: {
-          presentationDefinition: definition,
-        },
       },
     };
     const vc: ICredential = {
@@ -561,7 +589,7 @@ describe('create JWT from Request JWT should', () => {
       {},
       presentationSignCallback
     )) as IVerifiablePresentation;
-    const responseOpts: AuthenticationResponseOpts = {
+    const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
       registration: {
@@ -569,7 +597,7 @@ describe('create JWT from Request JWT should', () => {
         issuer: ResponseIss.SELF_ISSUED_V2,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         registrationBy: {
-          type: PassBy.REFERENCE,
+          passBy: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
         },
         subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
@@ -588,20 +616,24 @@ describe('create JWT from Request JWT should', () => {
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
+        alg: SigningAlgo.ES256K,
       },
-      vp: [
-        {
-          location: PresentationLocation.ID_TOKEN,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          presentation: result,
-        },
-      ],
-      presentationSignCallback: presentationSignCallback,
+      presentationExchange: {
+        vps: [
+          {
+            location: PresentationLocation.ID_TOKEN,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            presentation: result,
+          },
+        ],
+        presentationSignCallback: presentationSignCallback,
+      },
+
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
     };
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-    await expect(AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts)).resolves.toBeDefined();
+    const requestObject = await RequestObject.fromOpts(requestOpts);
+    await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
   });
 });

@@ -1,13 +1,13 @@
 import { IProofType } from '@sphereon/ssi-types';
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
+import nock from 'nock';
 
 import {
-  AuthenticationRequestOpts,
-  AuthenticationResponseOpts,
+  AuthorizationResponseOpts,
+  Builder,
   CheckLinkedDomain,
-  KeyAlgo,
+  CreateAuthorizationRequestOpts,
   OP,
-  OPBuilder,
   PassBy,
   ResponseIss,
   ResponseMode,
@@ -19,7 +19,7 @@ import {
   SubjectType,
   SupportedVersion,
   VerificationMode,
-  VerifyAuthenticationRequestOpts,
+  VerifyAuthorizationRequestOpts,
 } from '../src/main';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -42,7 +42,7 @@ const KID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#controller';
 describe('OP Builder should', () => {
   it('throw Error when no arguments are passed', async () => {
     expect.assertions(1);
-    await expect(() => new OPBuilder().build()).toThrowError(Error);
+    await expect(() => new Builder().build()).toThrowError(Error);
   });
   it('build an OP when all arguments are set', async () => {
     expect.assertions(1);
@@ -54,29 +54,30 @@ describe('OP Builder should', () => {
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .response(ResponseMode.POST)
         .registrationBy({
-          registrationBy: { type: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
+          registrationBy: { passBy: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100332',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key')
+        .internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key', SigningAlgo.ES256K)
         .withExpiresIn(1000)
-        .withSupportedVersions([SupportedVersion['SIOPv2_ID1']])
+        .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
         .build()
     ).toBeInstanceOf(OP);
   });
 });
 
 describe('OP should', () => {
-  const responseOpts: AuthenticationResponseOpts = {
+  const responseOpts: AuthorizationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
     redirectUri: EXAMPLE_REDIRECT_URL,
     signatureType: {
       hexPrivateKey: HEX_KEY,
       did: DID,
       kid: KID,
+      alg: SigningAlgo.ES256K,
     },
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -95,7 +96,7 @@ describe('OP should', () => {
       //TODO: fill it up with actual value
       issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
-        type: PassBy.VALUE,
+        passBy: PassBy.VALUE,
       },
     },
     responseMode: ResponseMode.POST,
@@ -103,17 +104,17 @@ describe('OP should', () => {
     expiresIn: 2000,
   };
 
-  const verifyOpts: VerifyAuthenticationRequestOpts = {
+  const verifyOpts: VerifyAuthorizationRequestOpts = {
     verification: {
       mode: VerificationMode.INTERNAL,
       resolveOpts: {
         subjectSyntaxTypesSupported: ['did:ethr'],
       },
-      supportedVersions: [SupportedVersion.SIOPv2_ID1],
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
+    supportedVersions: [SupportedVersion.SIOPv2_ID1],
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    verifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
   };
 
   it('throw Error when build from request opts without enough params', async () => {
@@ -131,19 +132,27 @@ describe('OP should', () => {
     'succeed from request opts when all params are set',
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
-      const requestOpts: AuthenticationRequestOpts = {
-        checkLinkedDomain: CheckLinkedDomain.NEVER,
-        redirectUri: EXAMPLE_REDIRECT_URL,
-        requestBy: {
-          type: PassBy.REFERENCE,
+      const requestOpts: CreateAuthorizationRequestOpts = {
+        version: SupportedVersion.SIOPv2_ID1,
+        payload: {
+          redirect_uri: EXAMPLE_REDIRECT_URL,
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+        },
+
+        requestObject: {
+          passBy: PassBy.REFERENCE,
           referenceUri: EXAMPLE_REFERENCE_URL,
+
+          signatureType: {
+            hexPrivateKey: mockEntity.hexPrivateKey,
+            did: mockEntity.did,
+            kid: `${mockEntity.did}#controller`,
+            alg: SigningAlgo.ES256K,
+          },
         },
-        signatureType: {
-          hexPrivateKey: mockEntity.hexPrivateKey,
-          did: mockEntity.did,
-          kid: `${mockEntity.did}#controller`,
-        },
-        registration: {
+        clientMetadata: {
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
@@ -156,26 +165,23 @@ describe('OP should', () => {
             jwt_vp: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
             jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
           },
-          registrationBy: {
-            type: PassBy.VALUE,
-          },
+          passBy: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100334',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        responseType: 'id_token',
       };
 
-      const requestURI = await RP.fromRequestOpts(requestOpts).createAuthenticationRequest({
+      const requestURI = await RP.fromRequestOpts(requestOpts).createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthenticationRequest(requestURI.jwt);
+      nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObjectJwt);
+
+      const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthorizationRequest(requestURI.encodedUri);
       console.log(JSON.stringify(verifiedRequest));
       expect(verifiedRequest.issuer).toMatch(mockEntity.did);
       expect(verifiedRequest.signer).toMatchObject({
@@ -192,36 +198,35 @@ describe('OP should', () => {
     const rpMockEntity = await mockedGetEnterpriseAuthToken('ACME RP');
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
-    const requestURI = await RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
+    const requestURI = await RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .redirect(EXAMPLE_REFERENCE_URL)
-      .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
+      .withRedirectUri(EXAMPLE_REFERENCE_URL)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`, SigningAlgo.ES256K)
       .addDidMethod('ethr')
-      .registrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100335',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build()
 
-      .createAuthenticationRequest({
+      .createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
@@ -231,7 +236,7 @@ describe('OP should', () => {
       .withExpiresIn(1000)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
       .registrationBy({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -240,7 +245,7 @@ describe('OP should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-        registrationBy: { type: PassBy.VALUE },
+        registrationBy: { passBy: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100336',
@@ -250,7 +255,7 @@ describe('OP should', () => {
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .build()
 
-      .verifyAuthenticationRequest(requestURI.jwt);
+      .verifyAuthorizationRequest(requestURI.encodedUri);
     console.log(JSON.stringify(verifiedRequest));
     expect(verifiedRequest.issuer).toMatch(rpMockEntity.did);
     expect(verifiedRequest.signer).toMatchObject({

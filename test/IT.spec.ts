@@ -5,7 +5,6 @@ import nock from 'nock';
 
 import {
   CheckLinkedDomain,
-  KeyAlgo,
   OP,
   PassBy,
   PresentationDefinitionWithLocation,
@@ -26,6 +25,7 @@ import {
   VerificationMode,
   verifyRevocation,
 } from '../src/main';
+import { checkSIOPSpecVersionSupported } from '../src/main/helpers/SIOPSpecVersion';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
@@ -146,28 +146,28 @@ describe('RP and OP interaction should', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-      const rp = RP.builder()
-        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-        .addScope('test')
-        .addResponseType('id_token')
-        .redirect(EXAMPLE_REDIRECT_URL)
+      const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+        .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .withScope('test')
+        .withResponseType(ResponseType.ID_TOKEN)
+        .withRedirectUri(EXAMPLE_REDIRECT_URL)
         .withPresentationVerification(presentationVerificationCallback)
-        .addVerifyCallback(verifyCallback)
+        .withVerifyCallback(verifyCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
-        .requestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
-        .addIssuer(ResponseIss.SELF_ISSUED_V2)
-        .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`)
+        .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+        .withIssuer(ResponseIss.SELF_ISSUED_V2)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`, SigningAlgo.ES256K)
         .addDidMethod('ethr')
-        .registrationBy({
+        .withClientMetadata({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-          registrationBy: { type: PassBy.VALUE },
+          passBy: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100317',
@@ -181,7 +181,7 @@ describe('RP and OP interaction should', () => {
         .withExpiresIn(1000)
         .addVerifyCallback(verifyCallback)
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
-        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`)
+        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .registrationBy({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -189,11 +189,11 @@ describe('RP and OP interaction should', () => {
           issuer: ResponseIss.SELF_ISSUED_V2,
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did:ethr'],
-          registrationBy: { type: PassBy.VALUE },
+          registrationBy: { passBy: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100318',
@@ -203,24 +203,23 @@ describe('RP and OP interaction should', () => {
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
-      const requestURI = await rp.createAuthenticationRequest({
+      const requestURI = await rp.createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      nock('https://rp.acme.com/siop/jwts').get(/.*/).reply(200, requestURI.jwt);
+      nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
 
-      //The schema validation needs to be done here otherwise it fails because of JWT properties
-      await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
+      await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyRequestOptions.supportedVersions);
       // The create method also calls the verifyRequest method, so no need to do it manually
-      const verifiedRequest = await op.verifyAuthenticationRequest(requestURI.encodedUri);
-      const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedRequest);
+      const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
+      const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedRequest);
 
       nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, { result: 'ok' });
-      const response = await op.submitAuthenticationResponse(authenticationResponseWithJWT);
+      const response = await op.submitAuthorizationResponse(authenticationResponseWithJWT);
       await expect(response.json()).resolves.toMatchObject({ result: 'ok' });
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
         audience: EXAMPLE_REDIRECT_URL,
       });
 
@@ -249,27 +248,27 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .addVerifyCallback(verifyCallback)
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType(ResponseType.ID_TOKEN)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .addDidMethod('ethr')
-      .registrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100319',
@@ -282,18 +281,18 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
-        registrationBy: { type: PassBy.VALUE },
+        registrationBy: { passBy: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100320',
@@ -303,27 +302,26 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT);
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT);
     expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
     });
 
@@ -349,52 +347,52 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .addVerifyCallback(verifyCallback)
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType(ResponseType.ID_TOKEN)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .addDidMethod('ethr')
-      .registrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100321',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
-        registrationBy: { type: PassBy.VALUE },
+        registrationBy: { passBy: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100321',
@@ -404,23 +402,23 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
     //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
+    await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyRequestOptions.supportedVersions);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
-    await expect(op.createAuthenticationResponse(verifiedAuthReqWithJWT)).rejects.toThrow(
+    await expect(op.createAuthorizationResponse(verifiedAuthReqWithJWT)).rejects.toThrow(
       Error('authentication request expects a verifiable presentation in the response')
     );
 
@@ -446,29 +444,29 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType(ResponseType.ID_TOKEN)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withPresentationDefinition(getPresentationDefinition())
       .withPresentationVerification(presentationVerificationCallback)
-      .addVerifyCallback(verifyCallback)
+      .withVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ethr')
-      .registrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100322',
@@ -482,18 +480,18 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+        vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
-        registrationBy: { type: PassBy.VALUE },
+        registrationBy: { passBy: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100323',
@@ -503,39 +501,48 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      parsedAuthReqURI.authorizationRequestPayload
+    );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-      vp: [
-        {
-          presentation: vp,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          location: PresentationLocation.VP_TOKEN,
-        },
-      ],
+    const vp = (await pex.submissionFrom(
+      pd[0].definition,
+      getVCs(),
+      {},
+      op.createResponseOptions.presentationExchange.presentationSignCallback
+    )) as IVerifiablePresentation;
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
+      presentationExchange: {
+        vps: [
+          {
+            presentation: vp,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            location: PresentationLocation.VP_TOKEN,
+          },
+        ],
+      },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
+      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
     });
 
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -561,52 +568,52 @@ describe('RP and OP interaction should', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-      const rp = RP.builder()
-        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-        .addScope('test')
-        .addResponseType('id_token')
+      const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+        .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .withScope('test')
+        .withResponseType(ResponseType.ID_TOKEN)
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
         .withPresentationVerification(presentationVerificationCallback)
-        .addVerifyCallback(verifyCallback)
-        .redirect(EXAMPLE_REDIRECT_URL)
-        .requestBy(PassBy.VALUE)
-        .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+        .withVerifyCallback(verifyCallback)
+        .withRedirectUri(EXAMPLE_REDIRECT_URL)
+        .withRequestBy(PassBy.VALUE)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-        .registrationBy({
+        .withClientMetadata({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-          registrationBy: { type: PassBy.VALUE },
+          passBy: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100324',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addPresentationDefinitionClaim(getPresentationDefinition())
+        .withPresentationDefinition(getPresentationDefinition())
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
         .withExpiresIn(1000)
         .addVerifyCallback(verifyCallback)
-        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
         .registrationBy({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           issuer: ResponseIss.SELF_ISSUED_V2,
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did'],
-          registrationBy: { type: PassBy.VALUE },
+          registrationBy: { passBy: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100325',
@@ -616,39 +623,47 @@ describe('RP and OP interaction should', () => {
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
-      const requestURI = await rp.createAuthenticationRequest({
+      const requestURI = await rp.createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      //The schema validation needs to be done here otherwise it fails because of JWT properties
-      await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // Let's test the parsing
-      const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-      expect(parsedAuthReqURI.requestPayload).toBeDefined();
-      expect(parsedAuthReqURI.jwt).toBeDefined();
+      const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+      expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+      expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
       expect(parsedAuthReqURI.registration).toBeDefined();
 
-      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+      const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-      const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+      const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+        parsedAuthReqURI.authorizationRequestPayload
+      );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
-      const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-        vp: [
-          {
-            presentation: vp,
-            format: VerifiablePresentationTypeFormat.LDP_VP,
-            location: PresentationLocation.VP_TOKEN,
-          },
-        ],
+      const vp = (await pex.submissionFrom(
+        pd[0].definition,
+        getVCs(),
+        {},
+        op.createResponseOptions.presentationExchange.presentationSignCallback
+      )) as IVerifiablePresentation;
+      const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
+        presentationExchange: {
+          vps: [
+            {
+              presentation: vp,
+              format: VerifiablePresentationTypeFormat.LDP_VP,
+              location: PresentationLocation.VP_TOKEN,
+            },
+          ],
+        },
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
       await expect(
-        rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+        rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
           audience: EXAMPLE_REDIRECT_URL,
+          presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
           verification: {
             mode: VerificationMode.INTERNAL,
             verifyUri: '',
@@ -656,6 +671,7 @@ describe('RP and OP interaction should', () => {
               subjectSyntaxTypesSupported: ['did', 'did:eth'],
             },
             checkLinkedDomain: CheckLinkedDomain.ALWAYS,
+            wellknownDIDVerifyCallback: verifyCallback,
             revocationOpts: {
               revocationVerification: RevocationVerification.ALWAYS,
               // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -687,25 +703,25 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
-      .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-      .addScope('test')
-      .addResponseType('id_token')
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withScope('test')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
-      .addVerifyCallback(verifyCallback)
+      .withVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .registrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormatsSupported: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -713,21 +729,21 @@ describe('RP and OP interaction should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ion'],
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100326',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
       .addVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -735,7 +751,7 @@ describe('RP and OP interaction should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormats: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -748,39 +764,46 @@ describe('RP and OP interaction should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did:ethr'],
-        registrationBy: { type: PassBy.VALUE },
+        registrationBy: { passBy: PassBy.VALUE },
       })
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      parsedAuthReqURI.authorizationRequestPayload
+    );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-      vp: [
-        {
-          presentation: vp,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          location: PresentationLocation.VP_TOKEN,
-        },
-      ],
+    const vp = (await pex.submissionFrom(
+      pd[0].definition,
+      getVCs(),
+      {},
+      op.createResponseOptions.presentationExchange.presentationSignCallback
+    )) as IVerifiablePresentation;
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
+      presentationExchange: {
+        vps: [
+          {
+            presentation: vp,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            location: PresentationLocation.VP_TOKEN,
+          },
+        ],
+      },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
 
@@ -791,9 +814,10 @@ describe('RP and OP interaction should', () => {
         'eyJhbGciOiJSUzI1NiIsImtpZCI6ImRpZDprZXk6ejZNa29USHNnTk5yYnk4SnpDTlExaVJMeVc1UVE2UjhYdXU2QUE4aWdHck1WUFVNI3o2TWtvVEhzZ05OcmJ5OEp6Q05RMWlSTHlXNVFRNlI4WHV1NkFBOGlnR3JNVlBVTSJ9.eyJleHAiOjE3NjQ4NzkxMzksImlzcyI6ImRpZDprZXk6b3RoZXIiLCJuYmYiOjE2MDcxMTI3MzksInN1YiI6ImRpZDprZXk6b3RoZXIiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vaWRlbnRpdHkuZm91bmRhdGlvbi8ud2VsbC1rbm93bi9kaWQtY29uZmlndXJhdGlvbi92MSJdLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDprZXk6b3RoZXIiLCJvcmlnaW4iOiJodHRwczovL2lkZW50aXR5LmZvdW5kYXRpb24ifSwiZXhwaXJhdGlvbkRhdGUiOiIyMDI1LTEyLTA0VDE0OjEyOjE5LTA2OjAwIiwiaXNzdWFuY2VEYXRlIjoiMjAyMC0xMi0wNFQxNDoxMjoxOS0wNjowMCIsImlzc3VlciI6ImRpZDprZXk6b3RoZXIiLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiRG9tYWluTGlua2FnZUNyZWRlbnRpYWwiXX19.rRuc-ojuEgyq8p_tBYK7BayuiNTBeXNyAnC14Rnjs-jsnhae4_E1Q12W99K2NGCGBi5KjNsBcZmdNJPxejiKPrjjcB99poFCgTY8tuRzDjVo0lIeBwfx9qqjKHTRTUR8FGM_imlOpVfBF4AHYxjkHvZn6c9lYvatYcDpB2UfH4BNXkdSVrUXy_kYjpMpAdRtyCAnD_isN1YpEHBqBmnfuVUbYcQK5kk6eiokRFDtWruL1OEeJMYPqjuBSd2m-H54tSM84Oic_pg2zXDjjBlXNelat6MPNT2QxmkwJg7oyewQWX2Ot2yyhSp9WyAQWMlQIe2x84R0lADUmZ1TPQchNw',
       ],
     };
-    expect(rp.verifyAuthResponseOpts.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
+    expect(rp.verifyResponseOptions.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -820,36 +844,36 @@ describe('RP and OP interaction should', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-      const rp = RP.builder()
-        .addClientId(WELL_KNOWN_OPENID_FEDERATION)
-        .addScope('test')
-        .addResponseType('id_token')
+      const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+        .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .withScope('test')
+        .withResponseType(ResponseType.ID_TOKEN)
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
         .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
-        .addVerifyCallback(verifyCallback)
-        .redirect(EXAMPLE_REDIRECT_URL)
-        .requestBy(PassBy.VALUE)
-        .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+        .withVerifyCallback(verifyCallback)
+        .withRedirectUri(EXAMPLE_REDIRECT_URL)
+        .withRequestBy(PassBy.VALUE)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
         .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
         .addDidMethod('ethr')
-        .registrationBy({
+        .withClientMetadata({
           clientId: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormatsSupported: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: ['did', 'did:ethr'],
-          registrationBy: { type: PassBy.VALUE },
+          passBy: PassBy.VALUE,
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100328',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addPresentationDefinitionClaim(getPresentationDefinition())
+        .withPresentationDefinition(getPresentationDefinition())
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
@@ -858,18 +882,18 @@ describe('RP and OP interaction should', () => {
         .addVerifyCallback(verifyCallback)
         .withExpiresIn(1000)
         .addDidMethod('ethr')
-        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
         .registrationBy({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           issuer: ResponseIss.SELF_ISSUED_V2,
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          vpFormats: { jwt_vc: { alg: [KeyAlgo.EDDSA] } },
+          vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           subjectSyntaxTypesSupported: [],
-          registrationBy: { type: PassBy.VALUE },
+          registrationBy: { passBy: PassBy.VALUE },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100329',
@@ -879,38 +903,47 @@ describe('RP and OP interaction should', () => {
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
 
-      const requestURI = await rp.createAuthenticationRequest({
+      const requestURI = await rp.createAuthorizationRequestURI({
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
 
-      //The schema validation needs to be done here otherwise it fails because of JWT properties
-      await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
       // Let's test the parsing
-      const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-      expect(parsedAuthReqURI.requestPayload).toBeDefined();
-      expect(parsedAuthReqURI.jwt).toBeDefined();
+      const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+      expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+      expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
       expect(parsedAuthReqURI.registration).toBeDefined();
 
-      const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+      const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-      const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+      const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+        parsedAuthReqURI.authorizationRequestPayload
+      );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
-      const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-        vp: [
-          {
-            presentation: vp,
-            format: VerifiablePresentationTypeFormat.LDP_VP,
-            location: PresentationLocation.VP_TOKEN,
-          },
-        ],
+      const vp = (await pex.submissionFrom(
+        pd[0].definition,
+        getVCs(),
+        {},
+        op.createResponseOptions.presentationExchange.presentationSignCallback
+      )) as IVerifiablePresentation;
+      const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
+        presentationExchange: {
+          vps: [
+            {
+              presentation: vp,
+              format: VerifiablePresentationTypeFormat.LDP_VP,
+              location: PresentationLocation.VP_TOKEN,
+            },
+          ],
+        },
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
+      expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+        presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
         audience: EXAMPLE_REDIRECT_URL,
       });
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -936,30 +969,30 @@ describe('RP and OP interaction should', () => {
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
-    const rp = RP.builder()
-      .addClientId('test_client_id')
-      .addScope('test')
-      .addResponseType('id_token')
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+      .withClientId('test_client_id')
+      .withScope('test')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
-      .addVerifyCallback(verifyCallback)
+      .withVerifyCallback(verifyCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withRevocationVerificationCallback(async () => {
         return { status: RevocationStatus.VALID };
       })
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .addDidMethod('ion')
-      .registrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormatsSupported: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
-          jwt_vp: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
+          jwt_vp: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -967,14 +1000,14 @@ describe('RP and OP interaction should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ion'],
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100330',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
@@ -982,7 +1015,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationSignCallback(presentationSignCallback)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withPresentationSignCallback(presentationSignCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .addVerifyCallback(verifyCallback)
@@ -993,8 +1026,8 @@ describe('RP and OP interaction should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormats: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
-          jwt_vp: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
+          jwt_vp: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -1002,7 +1035,7 @@ describe('RP and OP interaction should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: [],
-        registrationBy: { type: PassBy.VALUE },
+        registrationBy: { passBy: PassBy.VALUE },
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100331',
@@ -1012,38 +1045,47 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    //The schema validation needs to be done here otherwise it fails because of JWT properties
-    await op.checkSIOPSpecVersionSupported(requestURI.requestPayload);
+    await checkSIOPSpecVersionSupported(requestURI.authorizationRequestPayload, op.verifyRequestOptions.supportedVersions);
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt); //, rp.authRequestOpts
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt); //, rp.authRequestOpts
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      parsedAuthReqURI.authorizationRequestPayload
+    );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
+    const vp = (await pex.submissionFrom(
+      pd[0].definition,
+      getVCs(),
+      {},
+      op.createResponseOptions.presentationExchange.presentationSignCallback
+    )) as IVerifiablePresentation;
 
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-      vp: [
-        {
-          presentation: vp,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          location: PresentationLocation.VP_TOKEN,
-        },
-      ],
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
+      presentationExchange: {
+        vps: [
+          {
+            presentation: vp,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            location: PresentationLocation.VP_TOKEN,
+          },
+        ],
+      },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
     const DID_CONFIGURATION = {
       '@context': 'https://identity.foundation/.well-known/did-configuration/v1',
@@ -1053,7 +1095,8 @@ describe('RP and OP interaction should', () => {
       ],
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -1241,25 +1284,25 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
-      .addClientId('test_client_id')
-      .addScope('test')
-      .addResponseType('id_token')
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+      .withClientId('test_client_id')
+      .withScope('test')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withPresentationVerification(presentationVerificationCallback)
-      .addVerifyCallback(verifyCallback)
+      .withVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
-      .redirect(EXAMPLE_REDIRECT_URL)
-      .requestBy(PassBy.VALUE)
-      .internalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .registrationBy({
+      .withClientMetadata({
         clientId: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormatsSupported: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -1267,19 +1310,19 @@ describe('RP and OP interaction should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did', 'did:ion'],
-        registrationBy: { type: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logoUri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
       .addVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .registrationBy({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -1288,7 +1331,7 @@ describe('RP and OP interaction should', () => {
         requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormats: {
-          jwt_vc: { alg: [KeyAlgo.EDDSA] },
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
           ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
           ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
@@ -1299,41 +1342,52 @@ describe('RP and OP interaction should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subjectSyntaxTypesSupported: ['did:ethr'],
-        registrationBy: { type: PassBy.VALUE },
+        registrationBy: { passBy: PassBy.VALUE },
       })
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
-    const requestURI = await rp.createAuthenticationRequest({
+    const requestURI = await rp.createAuthorizationRequestURI({
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
 
     // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthenticationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.requestPayload).toBeDefined();
-    expect(parsedAuthReqURI.jwt).toBeDefined();
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthenticationRequest(parsedAuthReqURI.jwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(parsedAuthReqURI.requestPayload);
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      parsedAuthReqURI.authorizationRequestPayload
+    );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(pd[0].definition, getVCs(), {}, op.authResponseOpts.presentationSignCallback)) as IVerifiablePresentation;
-    const authenticationResponseWithJWT = await op.createAuthenticationResponse(verifiedAuthReqWithJWT, {
-      vp: [
-        {
-          presentation: vp,
-          format: VerifiablePresentationTypeFormat.LDP_VP,
-          location: PresentationLocation.ID_TOKEN,
-        },
-      ],
+    const vp = (await pex.submissionFrom(
+      pd[0].definition,
+      getVCs(),
+      {},
+      op.createResponseOptions.presentationExchange.presentationSignCallback
+    )) as IVerifiablePresentation;
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
+      presentationExchange: {
+        vps: [
+          {
+            presentation: vp,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            location: PresentationLocation.ID_TOKEN,
+          },
+        ],
+      },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthenticationResponse(authenticationResponseWithJWT, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
