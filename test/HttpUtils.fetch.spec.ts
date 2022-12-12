@@ -1,7 +1,6 @@
 import nock from 'nock';
 
-import { postWithBearerToken } from '../src/main/functions/HttpUtils';
-import { SIOPErrors } from '../src/main/types';
+import { post } from '../src/main';
 
 const URL = 'https://example.com';
 nock(URL)
@@ -15,20 +14,26 @@ nock(URL)
   .reply(201, '{"status": "ok"}');
 
 describe('HttpUtils should', () => {
-  it('throw Error when response is not 200 or 201', async () => {
+  it('have an error body when response is not 200 or 201', async () => {
     expect.assertions(1);
-    await expect(postWithBearerToken(`${URL}/404`, { iss: 'mock' }, 'bearerToken')).rejects.toThrowError(SIOPErrors.RESPONSE_STATUS_UNEXPECTED);
+    await expect(
+      post(`${URL}/404`, JSON.stringify({ iss: 'mock' }), { bearerToken: 'bearerToken' }).then((value) => value.errorBody)
+    ).resolves.toMatch('Not found');
   });
 
   it('return response when response HTTP status is 200', async () => {
     expect.assertions(1);
-    await expect(postWithBearerToken(`${URL}/200`, { iss: 'mock' }, 'bearerToken').then((value) => value.json())).resolves.toMatchObject({
+    await expect(
+      post(`${URL}/200`, JSON.stringify({ iss: 'mock' }), { bearerToken: 'bearerToken' }).then((value) => value.successBody)
+    ).resolves.toMatchObject({
       status: 'ok',
     });
   });
   it('return response when response HTTP status is 201', async () => {
     expect.assertions(1);
-    await expect(postWithBearerToken(`${URL}/201`, { iss: 'mock' }, 'bearerToken').then((value) => value.json())).resolves.toMatchObject({
+    await expect(
+      post(`${URL}/201`, JSON.stringify({ iss: 'mock' }), { bearerToken: 'bearerToken' }).then((value) => value.successBody)
+    ).resolves.toMatchObject({
       status: 'ok',
     });
   });

@@ -1,212 +1,245 @@
+import { IProofType } from '@sphereon/ssi-types';
+import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 import * as dotenv from 'dotenv';
-import parseJwk from 'jose/jwk/parse';
-import SignJWT from 'jose/jwt/sign';
 
-import { AuthenticationRequest, SIOP } from '../src/main';
-import { State } from '../src/main/functions';
-import SIOPErrors from '../src/main/types/Errors';
 import {
-  CredentialFormat,
+  AuthorizationRequest,
+  CreateAuthorizationRequestOpts,
   PassBy,
-  ResponseContext,
-  ResponseMode,
-  SubjectIdentifierType,
+  RequestObject,
+  ResponseType,
+  Scope,
+  SigningAlgo,
+  SubjectSyntaxTypesSupportedValues,
+  SubjectType,
+  SupportedVersion,
   VerificationMode,
-  VerifyAuthenticationRequestOpts,
-} from '../src/main/types/SIOP.types';
+  VerifyAuthorizationRequestOpts,
+} from '../src/main';
+import SIOPErrors from '../src/main/types/Errors';
 
-import { metadata, mockedGetEnterpriseAuthToken } from './TestUtils';
+import { metadata, mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
+import {
+  UNIT_TEST_TIMEOUT,
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 
 dotenv.config();
 
-describe('SIOP Request Validation', () => {
-  it('should verify', async () => {
-    // const mockVerifyJwt = verifyJWT as jest.Mock;
-    // const mockDecodeJWT = decodeJWT as jest.Mock;
-    expect.assertions(1);
-    const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-    const header = {
-      alg: SIOP.KeyAlgo.ES256K,
-      typ: 'JWT',
-      kid: `${mockEntity.did}#controller`,
-    };
-    const state = State.getState();
-    const payload: SIOP.AuthenticationRequestPayload = {
-      iss: mockEntity.did,
-      aud: 'test',
-      response_mode: ResponseMode.POST,
-      response_context: ResponseContext.RP,
-      redirect_uri: '',
-      scope: SIOP.Scope.OPENID,
-      response_type: SIOP.ResponseType.ID_TOKEN,
-      client_id: 'http://localhost:8080/test',
-      state,
-      nonce: State.getNonce(state),
-      registration: {
-        did_methods_supported: ['did:ethr:'],
-        subject_identifiers_supported: SubjectIdentifierType.DID,
-        credential_formats_supported: [CredentialFormat.JSON_LD, CredentialFormat.JWT],
-        /*subject_types_supported: SubjectType.PAIRWISE,
-        scopes_supported: Scope.OPENID,
-        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        issuer: ResponseIss.SELF_ISSUED_V2,
-        response_types_supported: ResponseType.ID_TOKEN,
-        id_token_signing_alg_values_supported: [KeyAlgo.EDDSA, KeyAlgo.ES256K],
-        authorization_endpoint: Schema.OPENID*/
-      },
-      /*registration: {
-          jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did}`,
-          // jwks_uri: `https://dev.uniresolver.io/1.0/identifiers/${mockEntity.did};transform-keys=jwks`,
-          id_token_signed_response_alg: SIOP.KeyAlgo.ES256K,
-      },*/
-    };
-    const privateKey = await parseJwk(mockEntity.jwk, SIOP.KeyAlgo.ES256K);
-    const jwt = await new SignJWT(payload).setProtectedHeader(header).sign(privateKey);
-
-    const optsVerify: SIOP.VerifyAuthenticationRequestOpts = {
-      verification: {
-        mode: VerificationMode.INTERNAL,
-        resolveOpts: {
-          didMethods: ['ethr'],
-        },
-      },
-    };
-    await expect(AuthenticationRequest.verifyJWT(jwt, optsVerify)).resolves.toBeDefined();
-  });
-});
-
 describe('verifyJWT should', () => {
   it('throw VERIFY_BAD_PARAMETERS when no JWT is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT(undefined as never, undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthorizationRequest.verify(undefined as never, undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT('a valid JWT', undefined as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthorizationRequest.verify('an invalid JWT bypassing the undefined check', undefined as never)).rejects.toThrow(
+      SIOPErrors.VERIFY_BAD_PARAMS
+    );
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts.verification is passed', async () => {
     expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT('a valid JWT', {} as never)).rejects.toThrow(SIOPErrors.VERIFY_BAD_PARAMS);
+    await expect(AuthorizationRequest.verify('an invalid JWT bypassing the undefined check', {} as never)).rejects.toThrow(
+      SIOPErrors.VERIFY_BAD_PARAMS
+    );
   });
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
-    const requestOpts: SIOP.AuthenticationRequestOpts = {
-      redirectUri: EXAMPLE_REDIRECT_URL,
-      requestBy: {
-        type: SIOP.PassBy.REFERENCE,
+    const requestOpts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
+      payload: {
+        state: 'expected state',
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        scope: 'test',
+        response_type: 'id_token',
+        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        redirect_uri: EXAMPLE_REDIRECT_URL,
+        nonce: 'expected nonce',
+      },
+      requestObject: {
+        passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
-      },
-      nonce: 'expected nonce',
-      signatureType: {
-        hexPrivateKey:
-          'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
-        did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
-        kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
-      },
-      registration: {
-        didMethodsSupported: ['did:key:'],
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JWT],
-        registrationBy: {
-          type: SIOP.PassBy.VALUE,
+
+        signatureType: {
+          hexPrivateKey:
+            'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
+          did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
+          kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
+          alg: SigningAlgo.EDDSA,
         },
+      },
+      clientMetadata: {
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+        subjectSyntaxTypesSupported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
+        passBy: PassBy.VALUE,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100308',
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
 
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
+    const requestObject = await RequestObject.fromOpts(requestOpts);
 
-    const verifyOpts: VerifyAuthenticationRequestOpts = {
+    const verifyOpts: VerifyAuthorizationRequestOpts = {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          didMethods: ['key'],
+          subjectSyntaxTypesSupported: ['did:key'],
         },
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
       },
+      supportedVersions: [SupportedVersion.SIOPv2_ID1],
       nonce: 'This nonce is different and should throw error',
     };
 
     // expect.assertions(1);
-    await expect(AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
+    await expect(AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
   });
-  it('succeed if a valid JWT is passed', async () => {
-    const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
-    /*const header = {
-        alg: SIOP.KeyAlgo.ES256K,
-        typ: "JWT",
-        kid: `${mockEntity.did}#controller`,
-    };
-    const state = State.getState();*/
-    const requestOpts = {
-      redirectUri: 'https://acme.com/hello',
-      requestBy: { type: PassBy.REFERENCE, referenceUri: 'https://my-request.com/here' },
-      signatureType: {
-        hexPrivateKey: mockEntity.hexPrivateKey,
-        did: mockEntity.did,
-        kid: `${mockEntity.did}#controller`,
-      },
-      registration: {
-        didMethodsSupported: 'did:ethr:',
-        subjectIdentifiersSupported: SubjectIdentifierType.DID,
-        credentialFormatsSupported: [CredentialFormat.JWT],
-        registrationBy: { type: PassBy.VALUE },
-      },
-    };
-    const requestWithJWT = await AuthenticationRequest.createJWT(requestOpts);
-
-    const verifyOpts: VerifyAuthenticationRequestOpts = {
-      verification: {
-        mode: VerificationMode.INTERNAL,
-        resolveOpts: {
-          didMethods: ['ethr'],
+  it(
+    'succeed if a valid JWT is passed',
+    async () => {
+      const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
+      const requestOpts: CreateAuthorizationRequestOpts = {
+        version: SupportedVersion.SIOPv2_ID1,
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          state: '12345',
+          nonce: '12345',
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          authorization_endpoint: '',
+          redirect_uri: 'https://acme.com/hello',
         },
-      },
-    };
+        requestObject: {
+          passBy: PassBy.REFERENCE,
+          referenceUri: 'https://my-request.com/here',
+          signatureType: {
+            hexPrivateKey: mockEntity.hexPrivateKey,
+            did: mockEntity.did,
+            kid: `${mockEntity.did}#controller`,
+            alg: SigningAlgo.ES256K,
+          },
+        },
+        clientMetadata: {
+          clientId: WELL_KNOWN_OPENID_FEDERATION,
+          responseTypesSupported: [ResponseType.ID_TOKEN],
+          scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+          subjectTypesSupported: [SubjectType.PAIRWISE],
+          idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+          requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
+          subjectSyntaxTypesSupported: ['did:ethr:'],
+          vpFormatsSupported: {
+            ldp_vc: {
+              proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+            },
+          },
+          passBy: PassBy.VALUE,
+          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100309',
+          clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+        },
+      };
+      const requestObject = await RequestObject.fromOpts(requestOpts);
 
-    const verifyJWT = await AuthenticationRequest.verifyJWT(requestWithJWT.jwt, verifyOpts);
-    expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
-  });
+      const verifyOpts: VerifyAuthorizationRequestOpts = {
+        verification: {
+          mode: VerificationMode.INTERNAL,
+          resolveOpts: {
+            subjectSyntaxTypesSupported: ['did:ethr'],
+          },
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
+        },
+        supportedVersions: [SupportedVersion.SIOPv2_ID1],
+      };
+
+      const verifyJWT = await AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts);
+      expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
+    },
+    UNIT_TEST_TIMEOUT
+  );
 });
 
 describe('OP and RP communication should', () => {
   it('work if both support the same did methods', () => {
-    metadata.verify();
-    expect(metadata.verify()).toEqual({
-      credential_formats_supported: ['jwt', 'w3cvc-jsonld'],
-      did_methods_supported: ['did:web'],
-    });
+    const actualResult = metadata.verify();
+    const expectedResult = {
+      vp_formats: {
+        jwt_vc: { alg: [SigningAlgo.ES256, SigningAlgo.ES256K] },
+        ldp_vc: {
+          proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+        },
+      },
+      subject_syntax_types_supported: ['did:web'],
+    };
+    expect(actualResult).toEqual(expectedResult);
   });
 
   it('work if RP supports any OP did methods', () => {
-    metadata.opMetadata.credential_formats_supported = [CredentialFormat.JSON_LD];
-    metadata.rpMetadata.subject_identifiers_supported = SubjectIdentifierType.DID;
-    metadata.rpMetadata.did_methods_supported = undefined;
+    metadata.opMetadata.vp_formats = {
+      ldp_vc: {
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+      },
+    };
+    metadata.rpMetadata.subject_syntax_types_supported = ['did:web'];
     expect(metadata.verify()).toEqual({
-      credential_formats_supported: ['w3cvc-jsonld'],
-      did_methods_supported: ['did:web'],
+      subject_syntax_types_supported: ['did:web'],
+      vp_formats: {
+        ldp_vc: {
+          proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+        },
+      },
     });
   });
 
   it('work if RP supports any OP credential formats', () => {
-    metadata.opMetadata.credential_formats_supported = [CredentialFormat.JSON_LD];
-    expect(metadata.verify()).toEqual({
-      credential_formats_supported: ['w3cvc-jsonld'],
-      did_methods_supported: ['did:web'],
+    metadata.opMetadata.vp_formats = {
+      ldp_vc: {
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+      },
+    };
+    const result = metadata.verify();
+    expect(result['subject_syntax_types_supported']).toContain('did:web');
+    expect(result['vp_formats']).toStrictEqual({
+      ldp_vc: {
+        proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+      },
     });
   });
 
   it('not work if RP does not support any OP did method', () => {
-    metadata.rpMetadata.did_methods_supported = ['did:notsupported:'];
+    metadata.rpMetadata.subject_syntax_types_supported = ['did:notsupported'];
     expect(() => metadata.verify()).toThrowError(SIOPErrors.DID_METHODS_NOT_SUPORTED);
   });
 
   it('not work if RP does not support any OP credentials', () => {
-    metadata.rpMetadata.credential_formats_supported = undefined;
-    expect(() => metadata.verify()).toThrowError(SIOPErrors.CREDENTIAL_FORMATS_NOT_SUPPORTED);
+    metadata.rpMetadata.vp_formats = undefined;
+    expect(() => metadata.verify()).toThrowError(SIOPErrors.CREDENTIALS_FORMATS_NOT_PROVIDED);
   });
 });

@@ -1,24 +1,39 @@
 import crypto from 'crypto';
 
-// import { DidKeyDriver } from '@digitalcredentials/did-method-key'
+import { IProofType } from '@sphereon/ssi-types';
 import base58 from 'bs58';
 import { DIDDocument } from 'did-resolver';
 import { ethers } from 'ethers';
-import fromKeyLike from 'jose/jwk/from_key_like';
-import parseJwk from 'jose/jwk/parse';
-import SignJWT from 'jose/jwt/sign';
-import { JWK, JWTPayload } from 'jose/types';
+import { exportJWK, importJWK, JWK, JWTPayload, SignJWT } from 'jose';
 import jwt_decode from 'jwt-decode';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
-import { SIOP } from '../src/main';
-import { assertValidMetadata } from '../src/main/functions/DidSiopMetadata';
-import { base64ToHexString } from '../src/main/functions/Encodings';
+import {
+  assertValidMetadata,
+  base64ToHexString,
+  DiscoveryMetadataPayload,
+  KeyCurve,
+  KeyType,
+  ResponseIss,
+  ResponseType,
+  RPRegistrationMetadataPayload,
+  Scope,
+  SigningAlgo,
+  SubjectSyntaxTypesSupportedValues,
+  SubjectType,
+} from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
-import { CredentialFormat, ResponseIss, ResponseType, Scope, SigningAlgo, SubjectIdentifierType, SubjectType } from '../src/main/types/SIOP.types';
 
-import { DID_DOCUMENT_PUBKEY_B58, DID_DOCUMENT_PUBKEY_JWK } from './data/mockedData';
+import {
+  DID_DOCUMENT_PUBKEY_B58,
+  DID_DOCUMENT_PUBKEY_JWK,
+  VERIFIER_LOGO_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT,
+  VERIFIER_NAME_FOR_CLIENT_NL,
+  VERIFIERZ_PURPOSE_TO_VERIFY,
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+} from './data/mockedData';
 
 export interface TESTKEY {
   key: JWK;
@@ -27,11 +42,11 @@ export interface TESTKEY {
 }
 
 export async function generateTestKey(kty: string): Promise<TESTKEY> {
-  if (kty !== SIOP.KeyType.EC) throw new Error(SIOPErrors.NO_ALG_SUPPORTED);
+  if (kty !== KeyType.EC) throw new Error(SIOPErrors.NO_ALG_SUPPORTED);
   const key = crypto.generateKeyPairSync('ec', {
-    namedCurve: SIOP.KeyCurve.SECP256k1,
+    namedCurve: KeyCurve.SECP256k1,
   });
-  const privateJwk = await fromKeyLike(key.privateKey);
+  const privateJwk = await exportJWK(key.privateKey);
 
   const did = getDIDFromKey(privateJwk);
 
@@ -81,9 +96,9 @@ export const mockedKeyAndDid = async (): Promise<{
 }> => {
   // generate a new keypair
   const key = crypto.generateKeyPairSync('ec', {
-    namedCurve: SIOP.KeyCurve.SECP256k1,
+    namedCurve: KeyCurve.SECP256k1,
   });
-  const privateJwk = await fromKeyLike(key.privateKey);
+  const privateJwk = await exportJWK(key.privateKey);
   const hexPrivateKey = base64ToHexString(privateJwk.d);
   const wallet: ethers.Wallet = new ethers.Wallet(prefixWith0x(hexPrivateKey));
   const did = `did:ethr:${wallet.address}`;
@@ -117,7 +132,7 @@ const mockedEntityAuthNToken = async (
     nonce: uuidv4(),
   };
 
-  const privateKey = await parseJwk(jwk, SIOP.KeyAlgo.ES256K);
+  const privateKey = await importJWK(jwk, SigningAlgo.ES256K);
   const jwt = await new SignJWT(payload as unknown as JWTPayload)
     .setProtectedHeader({
       alg: 'ES256K',
@@ -154,7 +169,7 @@ export async function mockedGetEnterpriseAuthToken(enterpriseName?: string): Pro
     },
   };
 
-  const privateKey = await parseJwk(testAuth.jwk, SIOP.KeyAlgo.ES256K);
+  const privateKey = await importJWK(testAuth.jwk, SigningAlgo.ES256K);
   const jwt = await new SignJWT(testApiPayload)
     .setProtectedHeader({
       alg: 'ES256K',
@@ -211,27 +226,56 @@ export const resolveDidKey = async (did: string): Promise<DIDResolutionResult> =
 };
 */
 
-export const metadata = {
+export const WELL_KNOWN_OPENID_FEDERATION = 'https://www.example.com/.well-known/openid-federation';
+export const metadata: {
+  opMetadata: DiscoveryMetadataPayload;
+  rpMetadata: RPRegistrationMetadataPayload;
+  verify(): unknown;
+} = {
   opMetadata: {
-    credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
     issuer: ResponseIss.SELF_ISSUED_V2,
     authorization_endpoint: 'http://test.com',
-    credential_claims_supported: ['test'],
-    credential_endpoint: 'http://test.com',
-    credential_name: 'test',
-    credential_supported: true,
-    did_methods_supported: ['did:web'],
-    dids_supported: true,
+    subject_syntax_types_supported: ['did:web'],
     id_token_signing_alg_values_supported: undefined,
-    request_object_signing_alg_values_supported: SigningAlgo.EDDSA,
+    request_object_signing_alg_values_supported: [SigningAlgo.EDDSA],
     response_types_supported: ResponseType.ID_TOKEN,
-    scopes_supported: Scope.OPENID_DIDAUTHN,
-    subject_types_supported: SubjectType.PAIRWISE,
+    scopes_supported: [Scope.OPENID_DIDAUTHN],
+    subject_types_supported: [SubjectType.PAIRWISE],
+    vp_formats: {
+      ldp_vc: {
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+      },
+      jwt_vc: {
+        alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
+      },
+    },
+    logo_uri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 02',
+    client_name: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 02',
+    'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 02',
+    client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY + ' 2022-09-29 02',
+    'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 02',
   },
   rpMetadata: {
-    subject_identifiers_supported: SubjectIdentifierType.DID,
-    did_methods_supported: ['did:web', 'did:key'],
-    credential_formats_supported: [CredentialFormat.JWT, CredentialFormat.JSON_LD],
+    client_id: WELL_KNOWN_OPENID_FEDERATION,
+    id_token_signing_alg_values_supported: [],
+    request_object_signing_alg_values_supported: [SigningAlgo.EDDSA],
+    response_types_supported: [ResponseType.ID_TOKEN],
+    scopes_supported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
+    subject_syntax_types_supported: [SubjectSyntaxTypesSupportedValues.DID.valueOf(), 'did:web', 'did:key'],
+    subject_types_supported: [SubjectType.PAIRWISE],
+    vp_formats: {
+      ldp_vc: {
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+      },
+      jwt_vc: {
+        alg: [SigningAlgo.ES256, SigningAlgo.ES256K],
+      },
+    },
+    logo_uri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 03',
+    client_name: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 03',
+    'client_name#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + ' 2022-09-29 03',
+    client_purpose: VERIFIERZ_PURPOSE_TO_VERIFY + ' 2022-09-29 03',
+    'client_purpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 03',
   },
   verify() {
     return assertValidMetadata(this.opMetadata, this.rpMetadata);

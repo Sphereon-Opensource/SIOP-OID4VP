@@ -1,5 +1,4 @@
 import type { DIDResolutionResult, VerificationMethod } from 'did-resolver';
-// import type {JWK} from "jose/types";
 
 export interface EcdsaSignature {
   r: string;
@@ -32,15 +31,5 @@ export interface VerifiedJWT {
   signer: VerificationMethod; // The matching verification method from the DID that was used to sign
   jwt: string; // The JWT
 }
-
-/*
-
-export interface JWKECKey extends JWK {
-    kty: "EC";
-    crv: ECCurve;
-    x: string;
-    y: string;
-    d?: string;
-}*/
 
 export declare type ECCurve = 'P-256' | 'secp256k1' | 'P-384' | 'P-521';

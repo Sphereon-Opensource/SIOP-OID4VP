@@ -8,7 +8,7 @@ class RP {
 }
 RP --> AuthenticationRequestURI
 RP --> VerifiedAuthenticationResponseWithJWT
-RP --> AuthenticationRequest
+RP --> AuthorizationRequest
 RP --> AuthenticationResponse
 
 class OP {
@@ -18,7 +18,7 @@ class OP {
 }
 OP --> AuthenticationResponseWithJWT
 OP --> VerifiedAuthenticationRequestWithJWT
-OP --> AuthenticationRequest
+OP --> AuthorizationRequest
 OP --> AuthenticationResponse
 
 
@@ -58,17 +58,17 @@ class VerifyAuthenticationRequestOpts {
   nonce?: string;
 }
 
-class AuthenticationRequest {
+class AuthorizationRequest {
     <<service>>
     createURI(opts: AuthenticationRequestOpts) Promise(AuthenticationRequestURI)
     createJWT(opts: AuthenticationRequestOpts) Promise(AuthenticationRequestWithJWT);
     verifyJWT(jwt: string, opts: VerifyAuthenticationRequestOpts) Promise(VerifiedAuthenticationRequestWithJWT)
 }
-AuthenticationRequest <-- AuthenticationRequestOpts
-AuthenticationRequest <-- VerifyAuthenticationRequestOpts
-AuthenticationRequest --> AuthenticationRequestURI
-AuthenticationRequest --> AuthenticationRequestWithJWT
-AuthenticationRequest --> VerifiedAuthenticationRequestWithJWT
+AuthorizationRequest <-- AuthenticationRequestOpts
+AuthorizationRequest <-- VerifyAuthenticationRequestOpts
+AuthorizationRequest --> AuthenticationRequestURI
+AuthorizationRequest --> AuthenticationRequestWithJWT
+AuthorizationRequest --> VerifiedAuthenticationRequestWithJWT
 
 class AuthenticationResponse {
   <<interface>>

@@ -1,25 +1,14 @@
-import AuthenticationRequest from './AuthenticationRequest';
-import * as RPRegistrationMetadata from './AuthenticationRequestRegistration';
-import AuthenticationResponse from './AuthenticationResponse';
-import { OP } from './OP';
-import OPBuilder from './OPBuilder';
-import { PresentationExchange } from './PresentationExchange';
-import { RP } from './RP';
-import RPBuilder from './RPBuilder';
-import { Encodings as DidAuthHexUtils, Keys as DidAuthKeyUtils } from './functions';
-import { SIOP } from './types';
+import * as RPRegistrationMetadata from './authorization-request/RequestRegistration';
+import { PresentationExchange } from './authorization-response/PresentationExchange';
 
+export * from './did';
+export * from './helpers';
+export * from './types';
+export * from './authorization-request';
+export * from './authorization-response';
+export * from './id-token';
+export * from './request-object';
+export * from './rp';
+export * from './op';
 export { JWTHeader, JWTPayload, JWTOptions, JWTVerifyOptions } from 'did-jwt';
-export {
-  AuthenticationRequest,
-  AuthenticationResponse,
-  DidAuthHexUtils,
-  DidAuthKeyUtils,
-  OP,
-  OPBuilder,
-  PresentationExchange,
-  RP,
-  RPBuilder,
-  RPRegistrationMetadata,
-  SIOP,
-};
+export { PresentationExchange, RPRegistrationMetadata };
