@@ -63,15 +63,6 @@ export const AuthorizationRequestPayloadSchemaVID1 = {
         "id_token_hint": {
           "type": "string"
         },
-        "claims": {
-          "$ref": "#/definitions/ClaimPayload"
-        },
-        "request": {
-          "type": "string"
-        },
-        "request_uri": {
-          "type": "string"
-        },
         "nonce": {
           "type": "string"
         },
@@ -80,16 +71,17 @@ export const AuthorizationRequestPayloadSchemaVID1 = {
         },
         "response_mode": {
           "$ref": "#/definitions/ResponseMode"
+        },
+        "request": {
+          "type": "string"
+        },
+        "request_uri": {
+          "type": "string"
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimPayloadVID1"
         }
-      },
-      "required": [
-        "client_id",
-        "nonce",
-        "redirect_uri",
-        "response_type",
-        "scope",
-        "state"
-      ]
+      }
     },
     "RPRegistrationMetadataPayload": {
       "type": "object",
@@ -304,11 +296,20 @@ export const AuthorizationRequestPayloadSchemaVID1 = {
       ],
       "additionalProperties": false
     },
-    "ClaimPayload": {
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
+    },
+    "ClaimPayloadVID1": {
       "type": "object",
       "properties": {
         "id_token": {
-          "$ref": "#/definitions/IDTokenPayload"
+          "$ref": "#/definitions/IdTokenClaimPayload"
         },
         "vp_token": {
           "$ref": "#/definitions/VpTokenClaimPayload"
@@ -316,116 +317,12 @@ export const AuthorizationRequestPayloadSchemaVID1 = {
       },
       "additionalProperties": false
     },
-    "IDTokenPayload": {
-      "type": "object",
-      "properties": {
-        "iss": {
-          "type": "string"
-        },
-        "sub": {
-          "type": "string"
-        },
-        "aud": {
-          "type": "string"
-        },
-        "iat": {
-          "type": "number"
-        },
-        "nbf": {
-          "type": "number"
-        },
-        "type": {
-          "type": "string"
-        },
-        "exp": {
-          "type": "number"
-        },
-        "rexp": {
-          "type": "number"
-        },
-        "jti": {
-          "type": "string"
-        },
-        "auth_time": {
-          "type": "number"
-        },
-        "nonce": {
-          "type": "string"
-        },
-        "_vp_token": {
-          "type": "object",
-          "properties": {
-            "presentation_submission": {
-              "$ref": "#/definitions/PresentationSubmission"
-            }
-          },
-          "required": [
-            "presentation_submission"
-          ],
-          "additionalProperties": false
-        }
-      }
-    },
-    "PresentationSubmission": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "A UUID or some other unique ID to identify this Presentation Submission"
-        },
-        "definition_id": {
-          "type": "string",
-          "description": "A UUID or some other unique ID to identify this Presentation Definition"
-        },
-        "descriptor_map": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Descriptor"
-          },
-          "description": "List of descriptors of how the claims are being mapped to presentation definition"
-        }
-      },
-      "required": [
-        "id",
-        "definition_id",
-        "descriptor_map"
-      ],
-      "additionalProperties": false,
-      "description": "It expresses how the inputs are presented as proofs to a Verifier."
-    },
-    "Descriptor": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "ID to identify the descriptor from Presentation Definition Input Descriptor it coresponds to."
-        },
-        "path": {
-          "type": "string",
-          "description": "The path where the verifiable credential is located in the presentation submission json"
-        },
-        "path_nested": {
-          "$ref": "#/definitions/Descriptor"
-        },
-        "format": {
-          "type": "string",
-          "description": "The Proof or JWT algorith that the proof is in"
-        }
-      },
-      "required": [
-        "id",
-        "path",
-        "format"
-      ],
-      "additionalProperties": false,
-      "description": "descriptor map laying out the structure of the presentation submission."
+    "IdTokenClaimPayload": {
+      "type": "object"
     },
     "VpTokenClaimPayload": {
       "type": "object",
       "properties": {
-        "response_type": {
-          "type": "string"
-        },
         "presentation_definition": {
           "anyOf": [
             {
@@ -438,12 +335,9 @@ export const AuthorizationRequestPayloadSchemaVID1 = {
         },
         "presentation_definition_uri": {
           "type": "string"
-        },
-        "nonce": {
-          "type": "string"
         }
       },
-      "additionalProperties": {}
+      "additionalProperties": false
     },
     "PresentationDefinitionV1": {
       "type": "object",
@@ -960,15 +854,6 @@ export const AuthorizationRequestPayloadSchemaVID1 = {
         "type"
       ],
       "additionalProperties": false
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
     }
   }
 };

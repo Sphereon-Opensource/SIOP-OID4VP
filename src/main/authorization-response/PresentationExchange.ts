@@ -3,7 +3,7 @@ import { PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmiss
 import { IPresentation, IProofPurpose, IProofType, W3CVerifiableCredential, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 
 import { extractDataFromPath, getWithUrl } from '../helpers';
-import { JWTPayload, SIOPErrors, VerifiablePresentationPayload } from '../types';
+import { AuthorizationRequestPayload, SIOPErrors, VerifiablePresentationPayload } from '../types';
 
 import { PresentationDefinitionWithLocation, PresentationLocation, PresentationSignCallback, PresentationVerificationCallback } from './types';
 
@@ -115,14 +115,19 @@ export class PresentationExchange {
    * throws exception if the PresentationDefinition is not valid
    * returns null if no property named "presentation_definition" is found
    * returns a PresentationDefinition if a valid instance found
-   * @param obj: object that can have a presentation_definition inside
+   * @param authorizationRequestPayload: object that can have a presentation_definition inside
    */
-  public static async findValidPresentationDefinitions(obj: JWTPayload): Promise<PresentationDefinitionWithLocation[]> {
+  public static async findValidPresentationDefinitions(
+    authorizationRequestPayload: AuthorizationRequestPayload
+  ): Promise<PresentationDefinitionWithLocation[]> {
     const allDefinitions: PresentationDefinitionWithLocation[] = [];
 
     async function extractPDFromVPToken() {
-      const vpTokens: PresentationDefinitionV1[] | PresentationDefinitionV2[] = extractDataFromPath(obj, '$..vp_token.presentation_definition');
-      const vpTokenRefs = extractDataFromPath(obj, '$..vp_token.presentation_definition_uri');
+      const vpTokens: PresentationDefinitionV1[] | PresentationDefinitionV2[] = extractDataFromPath(
+        authorizationRequestPayload,
+        '$..vp_token.presentation_definition'
+      );
+      const vpTokenRefs = extractDataFromPath(authorizationRequestPayload, '$..vp_token.presentation_definition_uri');
       if (vpTokens && vpTokens.length && vpTokenRefs && vpTokenRefs.length) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
@@ -148,10 +153,10 @@ export class PresentationExchange {
     }
 
     async function extractPDFromOtherTokens() {
-      const definitions = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition');
-      const definitionsFromList = extractDataFromPath(obj, '$..verifiable_presentations[*].presentation_definition');
-      const definitionRefs = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
-      const definitionRefsFromList = extractDataFromPath(obj, '$..verifiable_presentations.presentation_definition_uri');
+      const definitions = extractDataFromPath(authorizationRequestPayload, '$..verifiable_presentations.presentation_definition');
+      const definitionsFromList = extractDataFromPath(authorizationRequestPayload, '$..verifiable_presentations[*].presentation_definition');
+      const definitionRefs = extractDataFromPath(authorizationRequestPayload, '$..verifiable_presentations.presentation_definition_uri');
+      const definitionRefsFromList = extractDataFromPath(authorizationRequestPayload, '$..verifiable_presentations.presentation_definition_uri');
       const hasPD = (definitions && definitions.length > 0) || (definitionsFromList && definitionsFromList > 0);
       const hasPdRef = (definitionRefs && definitionRefs.length > 0) || (definitionRefsFromList && definitionsFromList > 0);
       if (hasPD && hasPdRef) {
@@ -182,7 +187,7 @@ export class PresentationExchange {
       }
     }
 
-    if (obj) {
+    if (authorizationRequestPayload) {
       await extractPDFromVPToken();
       await extractPDFromOtherTokens();
     }

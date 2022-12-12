@@ -56,6 +56,7 @@ describe('verifyJWT should', () => {
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
     const requestOpts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         state: 'expected state',
         client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -122,6 +123,7 @@ describe('verifyJWT should', () => {
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
       const requestOpts: CreateAuthorizationRequestOpts = {
+        version: SupportedVersion.SIOPv2_ID1,
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',

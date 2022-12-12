@@ -1,18 +1,19 @@
-import Ajv from 'ajv';
-
-import { getWithUrl, LanguageTagUtils } from '../helpers';
-import { RPRegistrationMetadataPayloadSchema } from '../schemas';
+import { LanguageTagUtils } from '../helpers';
 import {
   ClientMetadataOpts,
   PassBy,
+  RequestClientMetadataPayloadProperties,
   RequestRegistrationPayloadProperties,
   RPRegistrationMetadataOpts,
   RPRegistrationMetadataPayload,
   SIOPErrors,
+  SupportedVersion,
 } from '../types';
 
-const ajv = new Ajv({ allowUnionTypes: true, strict: false });
-const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
+import { CreateAuthorizationRequestOpts } from './types';
+
+/*const ajv = new Ajv({ allowUnionTypes: true, strict: false });
+const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);*/
 
 export const assertValidRequestRegistrationOpts = (opts: ClientMetadataOpts) => {
   if (!opts) {
@@ -24,38 +25,48 @@ export const assertValidRequestRegistrationOpts = (opts: ClientMetadataOpts) => 
   }
 };
 
-export const createRequestRegistrationPayload = async (
-  opts: ClientMetadataOpts /*, keyName: string*/
-): Promise<RequestRegistrationPayloadProperties> => {
+const createRequestRegistrationPayload = async (
+  opts: ClientMetadataOpts,
+  metatadaPayload: RPRegistrationMetadataPayload,
+  version: SupportedVersion
+): Promise<RequestRegistrationPayloadProperties | RequestClientMetadataPayloadProperties> => {
   assertValidRequestRegistrationOpts(opts);
 
   if (opts.passBy == PassBy.VALUE) {
-    return { registration: createRPRegistrationMetadataPayload(opts) };
+    if (version >= SupportedVersion.SIOPv2_D11.valueOf()) {
+      return { client_metadata: metatadaPayload };
+    } else {
+      return { registration: metatadaPayload };
+    }
+  } else {
+    if (version >= SupportedVersion.SIOPv2_D11.valueOf()) {
+      return {
+        client_metadata_uri: opts.referenceUri,
+      };
+    } else {
+      return {
+        registration_uri: opts.referenceUri,
+      };
+    }
   }
-
-  // pass by ref
-  const regObjToValidate = (await getWithUrl(opts.referenceUri)) as unknown as RPRegistrationMetadataPayload;
-  if (!regObjToValidate || !validateRPRegistrationMetadata(regObjToValidate)) {
-    throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
-  }
-  return {
-    registration: regObjToValidate,
-    registration_uri: opts.referenceUri,
-  };
 };
 
 export const createRequestRegistration = async (
-  opts: ClientMetadataOpts
+  clientMetadataOpts: ClientMetadataOpts,
+  createRequestOpts: CreateAuthorizationRequestOpts
 ): Promise<{
-  requestRegistration: RequestRegistrationPayloadProperties;
-  rpRegistrationMetadata: RPRegistrationMetadataPayload;
-  opts: ClientMetadataOpts;
+  payload: RequestRegistrationPayloadProperties | RequestClientMetadataPayloadProperties;
+  metadata: RPRegistrationMetadataPayload;
+  createRequestOpts: CreateAuthorizationRequestOpts;
+  clientMetadataOpts: ClientMetadataOpts;
 }> => {
-  const requestRegistrationPayload = await createRequestRegistrationPayload(opts);
+  const metadata = createRPRegistrationMetadataPayload(clientMetadataOpts);
+  const payload = await createRequestRegistrationPayload(clientMetadataOpts, metadata, createRequestOpts.version);
   return {
-    requestRegistration: requestRegistrationPayload,
-    rpRegistrationMetadata: createRPRegistrationMetadataPayload(opts),
-    opts,
+    payload,
+    metadata,
+    createRequestOpts,
+    clientMetadataOpts,
   };
 };
 

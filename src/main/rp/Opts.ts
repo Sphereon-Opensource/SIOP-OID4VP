@@ -5,15 +5,21 @@ import { CreateAuthorizationRequestOpts } from '../authorization-request';
 import { VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getResolverUnion, mergeAllDidMethods } from '../did';
 import { AuthorizationRequestOptsSchema } from '../schemas';
-import { ClientMetadataOpts, InternalVerification, VerificationMode } from '../types';
+import { ClientMetadataOpts, InternalVerification, SIOPErrors, VerificationMode } from '../types';
 
 import Builder from './Builder';
 
 const ajv = new Ajv({ allowUnionTypes: true, strict: false });
 const requestOptsValidate = ajv.compile(AuthorizationRequestOptsSchema);
 export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Builder; createRequestOpts?: CreateAuthorizationRequestOpts }) => {
+  const version = opts.builder ? opts.builder.getSupportedRequestVersion() : opts.createRequestOpts.version;
+  if (!version) {
+    throw Error(SIOPErrors.NO_REQUEST_VERSION);
+  }
+
   const createRequestOpts: CreateAuthorizationRequestOpts = opts.builder
     ? {
+        version,
         payload: {
           authorization_endpoint: opts.builder.authorizationEndpoint,
           subject_types_supported: opts.builder.requestRegistration.subjectTypesSupported,

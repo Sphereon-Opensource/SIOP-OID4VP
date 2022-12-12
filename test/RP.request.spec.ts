@@ -45,7 +45,7 @@ describe('RP Builder should', () => {
       RP.builder()
         .withClientId('test_client_id')
         .withScope('test')
-        .withResponseType('id_token')
+        .withResponseType(ResponseType.ID_TOKEN)
         .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addDidMethod('factom')
         .addResolver('ethr', new Resolver(getUniResolver('ethr')))
@@ -78,6 +78,7 @@ describe('RP should', () => {
     expect.assertions(1);
 
     const opts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: 'test',
         scope: 'test',
@@ -123,6 +124,7 @@ describe('RP should', () => {
   it('succeed from request opts when all params are set', async () => {
     // expect.assertions(1);
     const opts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -244,10 +246,10 @@ describe('RP should', () => {
     const expectedJwtRegex =
       /^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjoweDAxMDZhMmU5ODViMUUxRGU5QjVkZGI0YUY2ZEM5ZTkyOEY0ZTk5RDAja2V5cy0xIiwidHlwIjoiSldUIn0\.eyJpYXQiO.*$/;
 
-    const request = await RP.builder()
+    const request = await RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
-      .withResponseType('id_token')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)

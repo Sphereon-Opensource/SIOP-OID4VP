@@ -37,7 +37,7 @@ export class RequestObject {
   public static async fromOpts(authorizationRequestOpts: CreateAuthorizationRequestOpts) {
     assertValidAuthorizationRequestOpts(authorizationRequestOpts);
     const requestObjectOpts = RequestObject.mergeOAuth2AndOpenIdProperties(authorizationRequestOpts);
-    const mergedOpts = { ...authorizationRequestOpts, requestObject: requestObjectOpts };
+    const mergedOpts = { ...authorizationRequestOpts, requestObject: { ...authorizationRequestOpts.requestObject, ...requestObjectOpts } };
     return new RequestObject(mergedOpts, await createRequestObjectPayload(mergedOpts));
   }
 

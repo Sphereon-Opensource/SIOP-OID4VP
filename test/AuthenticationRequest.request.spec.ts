@@ -12,8 +12,9 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
+  SupportedVersion,
+  URI,
 } from '../src/main';
-import { URI } from '../src/main/authorization-request/URI';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -89,6 +90,7 @@ describe('create Request Uri should', () => {
   it('return a reference url', async () => {
     expect.assertions(14);
     const opts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -153,6 +155,7 @@ describe('create Request Uri should', () => {
   it('return a reference url when using did:key', async () => {
     expect.assertions(4);
     const opts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -206,6 +209,7 @@ describe('create Request Uri should', () => {
   it('return an url with an embedded token value', async () => {
     expect.assertions(2);
     const opts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -260,6 +264,7 @@ describe('create Request JWT should', () => {
   it('throw REQUEST_OBJECT_TYPE_NOT_SET when requestBy type is different from REFERENCE and VALUE', async () => {
     expect.assertions(1);
     const opts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
@@ -375,6 +380,7 @@ describe('create Request JWT should', () => {
   it('throw NO_REFERENCE_URI when registrationBy type is REFERENCE and no referenceUri is passed', async () => {
     expect.assertions(1);
     const opts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
@@ -405,6 +411,7 @@ describe('create Request JWT should', () => {
   it('succeed when all params are set', async () => {
     // expect.assertions(1);
     const opts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: 'test_client_id',
         scope: 'test',
@@ -503,6 +510,7 @@ describe('create Request JWT should', () => {
 
   it('succeed when requesting with a valid PD', async () => {
     const opts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
@@ -510,8 +518,8 @@ describe('create Request JWT should', () => {
         redirect_uri: EXAMPLE_REDIRECT_URL,
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         claims: {
-          vpToken: {
-            presentationDefinition: {
+          vp_token: {
+            presentation_definition: {
               id: 'Insurance Plans',
               input_descriptors: [
                 {
@@ -570,6 +578,7 @@ describe('create Request JWT should', () => {
 
   it('should throw error if presentation definition object is not valid', async () => {
     const opts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: 'test_client_id',
         scope: 'test',
@@ -577,8 +586,8 @@ describe('create Request JWT should', () => {
         redirect_uri: EXAMPLE_REDIRECT_URL,
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         claims: {
-          vpToken: {
-            presentationDefinition: {
+          vp_token: {
+            presentation_definition: {
               input_descriptors: [
                 {
                   id: 'Ontario Health Insurance Plan',

@@ -24,7 +24,10 @@ export const verifyRevocation = async (
 
   switch (vpToken.format) {
     case VerifiablePresentationTypeFormat.LDP_VP: {
-      for (const vc of vpToken.presentation.verifiableCredential) {
+      const vcs = Array.isArray(vpToken.presentation.verifiableCredential)
+        ? vpToken.presentation.verifiableCredential
+        : [vpToken.presentation.verifiableCredential];
+      for (const vc of vcs) {
         if (
           revocationVerification === RevocationVerification.ALWAYS ||
           (revocationVerification === RevocationVerification.IF_PRESENT && (<IVerifiableCredential>vc).credentialStatus)

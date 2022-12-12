@@ -8,7 +8,9 @@ export const AuthorizationRequestPayloadSchemaVD11 = {
         "id_token_type": {
           "type": "string"
         },
-        "client_metadata": {},
+        "client_metadata": {
+          "$ref": "#/definitions/RPRegistrationMetadataPayload"
+        },
         "client_metadata_uri": {
           "type": "string"
         },
@@ -64,15 +66,6 @@ export const AuthorizationRequestPayloadSchemaVD11 = {
         "id_token_hint": {
           "type": "string"
         },
-        "claims": {
-          "$ref": "#/definitions/ClaimPayload"
-        },
-        "request": {
-          "type": "string"
-        },
-        "request_uri": {
-          "type": "string"
-        },
         "nonce": {
           "type": "string"
         },
@@ -81,15 +74,175 @@ export const AuthorizationRequestPayloadSchemaVD11 = {
         },
         "response_mode": {
           "$ref": "#/definitions/ResponseMode"
+        },
+        "request": {
+          "type": "string"
+        },
+        "request_uri": {
+          "type": "string"
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimPayloadCommon"
+        },
+        "presentation_definition": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/PresentationDefinitionV1"
+            },
+            {
+              "$ref": "#/definitions/PresentationDefinitionV2"
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PresentationDefinitionV1"
+              }
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PresentationDefinitionV2"
+              }
+            }
+          ]
+        },
+        "presentation_definition_uri": {
+          "type": "string"
+        }
+      }
+    },
+    "RPRegistrationMetadataPayload": {
+      "type": "object",
+      "properties": {
+        "client_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
+        "id_token_signing_alg_values_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "request_object_signing_alg_values_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        },
+        "response_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
+        },
+        "scopes_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subject_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
+        },
+        "subject_syntax_types_supported": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "vp_formats": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Format"
+            },
+            {}
+          ]
+        },
+        "client_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {}
+          ]
+        },
+        "logo_uri": {
+          "anyOf": [
+            {},
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "client_purpose": {
+          "anyOf": [
+            {},
+            {
+              "type": "string"
+            }
+          ]
         }
       },
       "required": [
         "client_id",
-        "nonce",
-        "redirect_uri",
-        "response_type",
-        "scope",
-        "state"
+        "id_token_signing_alg_values_supported",
+        "response_types_supported",
+        "scopes_supported",
+        "subject_syntax_types_supported",
+        "subject_types_supported",
+        "vp_formats"
+      ]
+    },
+    "SigningAlgo": {
+      "type": "string",
+      "enum": [
+        "EdDSA",
+        "RS256",
+        "ES256",
+        "ES256K"
       ]
     },
     "ResponseType": {
@@ -99,180 +252,23 @@ export const AuthorizationRequestPayloadSchemaVD11 = {
         "vp_token"
       ]
     },
-    "ClaimPayload": {
-      "type": "object",
-      "properties": {
-        "id_token": {
-          "$ref": "#/definitions/IDTokenPayload"
-        },
-        "vp_token": {
-          "$ref": "#/definitions/VpTokenClaimPayload"
-        }
-      },
-      "additionalProperties": false
+    "Scope": {
+      "type": "string",
+      "enum": [
+        "openid",
+        "openid did_authn",
+        "profile",
+        "email",
+        "address",
+        "phone"
+      ]
     },
-    "IDTokenPayload": {
-      "type": "object",
-      "properties": {
-        "iss": {
-          "type": "string"
-        },
-        "sub": {
-          "type": "string"
-        },
-        "aud": {
-          "type": "string"
-        },
-        "iat": {
-          "type": "number"
-        },
-        "nbf": {
-          "type": "number"
-        },
-        "type": {
-          "type": "string"
-        },
-        "exp": {
-          "type": "number"
-        },
-        "rexp": {
-          "type": "number"
-        },
-        "jti": {
-          "type": "string"
-        },
-        "auth_time": {
-          "type": "number"
-        },
-        "nonce": {
-          "type": "string"
-        },
-        "_vp_token": {
-          "type": "object",
-          "properties": {
-            "presentation_submission": {
-              "$ref": "#/definitions/PresentationSubmission"
-            }
-          },
-          "required": [
-            "presentation_submission"
-          ],
-          "additionalProperties": false
-        }
-      }
-    },
-    "PresentationSubmission": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "A UUID or some other unique ID to identify this Presentation Submission"
-        },
-        "definition_id": {
-          "type": "string",
-          "description": "A UUID or some other unique ID to identify this Presentation Definition"
-        },
-        "descriptor_map": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Descriptor"
-          },
-          "description": "List of descriptors of how the claims are being mapped to presentation definition"
-        }
-      },
-      "required": [
-        "id",
-        "definition_id",
-        "descriptor_map"
-      ],
-      "additionalProperties": false,
-      "description": "It expresses how the inputs are presented as proofs to a Verifier."
-    },
-    "Descriptor": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "ID to identify the descriptor from Presentation Definition Input Descriptor it coresponds to."
-        },
-        "path": {
-          "type": "string",
-          "description": "The path where the verifiable credential is located in the presentation submission json"
-        },
-        "path_nested": {
-          "$ref": "#/definitions/Descriptor"
-        },
-        "format": {
-          "type": "string",
-          "description": "The Proof or JWT algorith that the proof is in"
-        }
-      },
-      "required": [
-        "id",
-        "path",
-        "format"
-      ],
-      "additionalProperties": false,
-      "description": "descriptor map laying out the structure of the presentation submission."
-    },
-    "VpTokenClaimPayload": {
-      "type": "object",
-      "properties": {
-        "response_type": {
-          "type": "string"
-        },
-        "presentation_definition": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/PresentationDefinitionV1"
-            },
-            {
-              "$ref": "#/definitions/PresentationDefinitionV2"
-            }
-          ]
-        },
-        "presentation_definition_uri": {
-          "type": "string"
-        },
-        "nonce": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": {}
-    },
-    "PresentationDefinitionV1": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "purpose": {
-          "type": "string"
-        },
-        "format": {
-          "$ref": "#/definitions/Format"
-        },
-        "submission_requirements": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/SubmissionRequirement"
-          }
-        },
-        "input_descriptors": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/InputDescriptorV1"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "input_descriptors"
-      ],
-      "additionalProperties": false
+    "SubjectType": {
+      "type": "string",
+      "enum": [
+        "public",
+        "pairwise"
+      ]
     },
     "Format": {
       "type": "object",
@@ -325,6 +321,53 @@ export const AuthorizationRequestPayloadSchemaVD11 = {
       },
       "required": [
         "proof_type"
+      ],
+      "additionalProperties": false
+    },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
+    },
+    "ClaimPayloadCommon": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "PresentationDefinitionV1": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "format": {
+          "$ref": "#/definitions/Format"
+        },
+        "submission_requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubmissionRequirement"
+          }
+        },
+        "input_descriptors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InputDescriptorV1"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "input_descriptors"
       ],
       "additionalProperties": false
     },
@@ -809,15 +852,6 @@ export const AuthorizationRequestPayloadSchemaVD11 = {
         "type"
       ],
       "additionalProperties": false
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
     }
   }
 };

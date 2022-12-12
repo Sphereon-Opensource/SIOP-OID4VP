@@ -6,6 +6,9 @@ enum SIOPErrors {
   BAD_PARAMS = 'Wrong parameters provided.',
   BAD_SIGNATURE_PARAMS = 'Signature parameters should be internal signature with hexPrivateKey, did, and an optional kid, or external signature parameters with signatureUri, did, and optionals parameters authZToken, hexPublicKey, and kid',
   CANT_UNMARSHAL_JWT_VP = "can't unmarshal the presentation object",
+
+  NO_REQUEST_VERSION = 'No request spec version provided.',
+
   NO_REQUEST = 'No request (payload) provided.',
   NO_RESPONSE = 'No response (payload) provided.',
   NO_PRESENTATION_SUBMISSION = 'The VP did not contain a presentation submission. Did you forget to call PresentationExchange.checkSubmissionFrom?',

@@ -21,33 +21,47 @@ export const DEFAULT_EXPIRATION_TIME = 10 * 60;
 
 // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
 // request and request_uri parameters MUST NOT be included in Request Objects.
-export type RequestObjectPayload = Omit<AuthorizationRequestPayload, 'request' | 'request_uri'>;
-export type RequestObjectJwt = string;
-
-// https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
-
-export interface AuthorizationRequestCommonPayload extends JWTPayload {
+export interface RequestObjectPayload extends RequestCommonPayload, JWTPayload {
   scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
   response_type: ResponseType; // REQUIRED. Constant string value id_token.
   client_id: string; // REQUIRED. RP's identifier at the Self-Issued OP.
   redirect_uri: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
-
-  id_token_hint?: string; // OPTIONAL. As specified in Section 3.1.2 of [OpenID.Core]. If the ID Token is encrypted for the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
-  claims?: ClaimPayload; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
-  request?: string; // OPTIONAL. Request Object value, as specified in Section 6.1 of [OpenID.Core]. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
-  request_uri?: string; // OPTIONAL. URL where Request Object value can be retrieved from, as specified in Section 6.2 of [OpenID.Core].
-
   nonce: string;
   state: string;
+}
+export type RequestObjectJwt = string;
+
+// https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
+
+export interface AuthorizationRequestCommonPayload extends RequestCommonPayload, JWTPayload {
+  request?: string; // OPTIONAL. Request Object value, as specified in Section 6.1 of [OpenID.Core]. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
+  request_uri?: string; // OPTIONAL. URL where Request Object value can be retrieved from, as specified in Section 6.2 of [OpenID.Core].
+}
+export interface RequestCommonPayload extends JWTPayload {
+  scope?: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
+  response_type?: ResponseType; // REQUIRED. Constant string value id_token.
+  client_id?: string; // REQUIRED. RP's identifier at the Self-Issued OP.
+  redirect_uri?: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
+
+  id_token_hint?: string; // OPTIONAL. As specified in Section 3.1.2 of [OpenID.Core]. If the ID Token is encrypted for the Self-Issued OP, the sub (subject) of the signed ID Token MUST be sent as the kid (Key ID) of the JWE.
+  // claims?: ClaimPayloadCommon; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
+  nonce?: string;
+  state?: string;
   response_mode?: ResponseMode; // This specification introduces a new response mode post in accordance with [OAuth.Responses]. This response mode is used to request the Self-Issued OP to deliver the result of the authentication process to a certain endpoint using the HTTP POST method. The additional parameter response_mode is used to carry this value.
 }
 
-export interface AuthorizationRequestPayloadVID1 extends AuthorizationRequestCommonPayload, RequestRegistrationPayloadProperties {}
+export interface AuthorizationRequestPayloadVID1 extends AuthorizationRequestCommonPayload, RequestRegistrationPayloadProperties {
+  claims?: ClaimPayloadVID1;
+}
 
 export interface AuthorizationRequestPayloadVD11
   extends AuthorizationRequestCommonPayload,
     RequestClientMetadataPayloadProperties,
-    RequestIdTokenPayloadProperties {}
+    RequestIdTokenPayloadProperties {
+  claims?: ClaimPayloadCommon; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
+  presentation_definition?: PresentationDefinitionV1 | PresentationDefinitionV2 | PresentationDefinitionV1[] | PresentationDefinitionV2[];
+  presentation_definition_uri?: string;
+}
 
 // https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
 export type AuthorizationRequestPayload = AuthorizationRequestPayloadVID1 | AuthorizationRequestPayloadVD11;
@@ -59,7 +73,7 @@ export interface RequestIdTokenPayloadProperties {
 }
 
 export interface RequestClientMetadataPayloadProperties {
-  client_metadata?: unknown; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
+  client_metadata?: RPRegistrationMetadataPayload; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
   client_metadata_uri?: string; // OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
 }
 
@@ -110,27 +124,27 @@ export interface AuthorizationResponsePayload {
   [x: string]: any;
 }
 
-export interface VerifiablePresentationsPayload {
+export interface PresentationDefinitionPayload {
   presentation_definition: PresentationDefinitionV1 | PresentationDefinitionV2;
 }
 
 export interface IdTokenClaimPayload {
-  verifiable_presentations?: VerifiablePresentationsPayload[];
-
-  [x: string]: unknown;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
 }
 
 export interface VpTokenClaimPayload {
-  response_type?: string;
   presentation_definition?: PresentationDefinitionV1 | PresentationDefinitionV2;
   presentation_definition_uri?: string;
-  nonce?: string;
-
-  [x: string]: unknown;
 }
 
-export interface ClaimPayload {
-  id_token?: IDTokenPayload;
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface ClaimPayloadCommon {
+  // [x: string]: any;
+}
+
+export interface ClaimPayloadVID1 extends ClaimPayloadCommon {
+  id_token?: IdTokenClaimPayload;
   vp_token?: VpTokenClaimPayload;
 }
 
@@ -635,7 +649,7 @@ export const isRequestOpts = (object: CreateAuthorizationRequestOpts | Authoriza
 export const isResponseOpts = (object: RequestObjectOpts | AuthorizationResponseOpts): object is RequestObjectOpts => 'did' in object;
 
 export const isRequestPayload = (
-  object: RequestObjectPayload | AuthorizationResponsePayload | IDTokenPayload
+  object: AuthorizationRequestPayload | RequestObjectPayload | AuthorizationResponsePayload | IDTokenPayload
 ): object is AuthorizationRequestPayload => 'response_mode' in object && 'response_type' in object;
 
 export const isResponsePayload = (object: RequestObjectPayload | IDTokenPayload): object is IDTokenPayload => 'iss' in object && 'aud' in object;
@@ -675,9 +689,9 @@ export interface RevocationOpts {
 }
 
 export enum SupportedVersion {
-  SIOPv2_ID1 = 'SIOPv2_ID1',
-  SIOPv2_D11 = 'SIOPv2_D11',
-  JWT_VC_PRESENTATION_PROFILE_v1 = 'JWT_VC_PRESENTATION_PROFILE_v1',
+  SIOPv2_ID1 = 70,
+  SIOPv2_D11 = 110,
+  JWT_VC_PRESENTATION_PROFILE_v1 = 71,
 }
 
 export interface SIOPResonse<T> {
@@ -697,5 +711,3 @@ export enum ContentType {
   FORM_URL_ENCODED = 'application/x-www-form-urlencoded',
   UTF_8 = 'UTF-8',
 }
-
-ResponseMode;

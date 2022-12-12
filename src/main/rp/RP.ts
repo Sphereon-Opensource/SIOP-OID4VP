@@ -1,12 +1,13 @@
-import { AuthorizationRequest, CreateAuthorizationRequestOpts, URI } from '../authorization-request';
-import { AuthorizationResponse, ClaimOpts, VerifyAuthorizationResponseOpts } from '../authorization-response';
-import { verifyPresentations } from '../authorization-response/OpenID4VP';
+import { AuthorizationRequest, ClaimPayloadCommonOpts, CreateAuthorizationRequestOpts, URI } from '../authorization-request';
+import { AuthorizationResponse, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getNonce, getState } from '../helpers';
 import {
   AuthorizationResponsePayload,
   CheckLinkedDomain,
   ExternalVerification,
   InternalVerification,
+  SIOPErrors,
+  SupportedVersion,
   VerifiedAuthenticationResponse,
 } from '../types';
 
@@ -24,16 +25,16 @@ export class RP {
   }) {
     const claims = opts.builder?.claims || opts.createRequestOpts?.payload.claims;
     const authReqOpts = createRequestOptsFromBuilderOrExistingOpts(opts);
-    this._createRequestOptions = { ...authReqOpts, payload: { ...authReqOpts.payload, claims } };
-    this._verifyResponseOptions = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts), claims };
+    this._createRequestOptions = { ...authReqOpts, payload: { ...authReqOpts.payload, claims }, claims };
+    this._verifyResponseOptions = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
   }
 
   public static fromRequestOpts(opts: CreateAuthorizationRequestOpts): RP {
     return new RP({ createRequestOpts: opts });
   }
 
-  public static builder(): Builder {
-    return new Builder();
+  public static builder(opts?: { requestVersion?: SupportedVersion }): Builder {
+    return Builder.newInstance(opts?.requestVersion);
   }
 
   get createRequestOptions(): CreateAuthorizationRequestOpts {
@@ -44,10 +45,21 @@ export class RP {
     return this._verifyResponseOptions;
   }
 
-  public async createAuthorizationRequest(opts?: { nonce?: string; state?: string }): Promise<AuthorizationRequest> {
+  public async createAuthorizationRequest(opts?: {
+    version?: SupportedVersion;
+    nonce?: string;
+    state?: string;
+    claims?: ClaimPayloadCommonOpts;
+  }): Promise<AuthorizationRequest> {
     return await AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts(opts));
   }
-  public async createAuthorizationRequestURI(opts?: { nonce?: string; state?: string }): Promise<URI> {
+
+  public async createAuthorizationRequestURI(opts?: {
+    version?: SupportedVersion;
+    nonce?: string;
+    state?: string;
+    claims?: ClaimPayloadCommonOpts;
+  }): Promise<URI> {
     return await URI.fromOpts(this.newAuthorizationRequestOpts(opts));
   }
 
@@ -58,23 +70,35 @@ export class RP {
       state?: string;
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
-      claims?: ClaimOpts;
+      presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
     }
   ): Promise<VerifiedAuthenticationResponse> {
     const verifyAuthenticationResponseOpts = this.newVerifyAuthorizationResponseOpts({
       ...opts,
     });
-    await verifyPresentations(authorizationResponsePayload, verifyAuthenticationResponseOpts);
     const authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload);
+
     return await authorizationResponse.verify(verifyAuthenticationResponseOpts);
   }
 
-  private newAuthorizationRequestOpts(opts?: { nonce?: string; state?: string }): CreateAuthorizationRequestOpts {
+  private newAuthorizationRequestOpts(opts?: {
+    version?: SupportedVersion;
+    nonce?: string;
+    state?: string;
+    claims?: ClaimPayloadCommonOpts;
+  }): CreateAuthorizationRequestOpts {
     const state = opts?.state || getState(opts?.state);
     const nonce = opts?.nonce || getNonce(state, opts?.nonce);
+    const version = opts?.version ?? this._createRequestOptions.version;
+    if (!version) {
+      throw Error(SIOPErrors.NO_REQUEST_VERSION);
+    }
+    const claims = opts?.claims || this._createRequestOptions.claims;
     return {
       ...this._createRequestOptions,
+      version,
       payload: { ...this._createRequestOptions.payload, state, nonce },
+      claims,
     };
   }
 
@@ -82,17 +106,17 @@ export class RP {
     state?: string;
     nonce?: string;
     verification?: InternalVerification | ExternalVerification;
-    claims?: ClaimOpts;
     audience?: string;
     checkLinkedDomain?: CheckLinkedDomain;
+    presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
   }): VerifyAuthorizationResponseOpts {
     return {
       ...this._verifyResponseOptions,
       audience: opts?.audience || this._verifyResponseOptions.audience,
       state: opts?.state || this._verifyResponseOptions.state,
       nonce: opts?.nonce || this._verifyResponseOptions.nonce,
-      claims: { ...this._verifyResponseOptions.claims, ...opts.claims },
       verification: opts?.verification || this._verifyResponseOptions.verification,
+      presentationDefinitions: opts?.presentationDefinitions || this._verifyResponseOptions.presentationDefinitions,
     };
   }
 }

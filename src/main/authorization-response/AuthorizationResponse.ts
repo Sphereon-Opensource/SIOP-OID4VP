@@ -1,16 +1,9 @@
-import { AuthorizationRequest } from '../authorization-request';
-import { VerifyAuthorizationRequestOpts } from '../authorization-request';
+import { AuthorizationRequest, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidVerifyAuthorizationRequestOpts } from '../authorization-request/Opts';
 import { IDToken } from '../id-token';
-import {
-  AuthorizationResponsePayload,
-  SIOPErrors,
-  VerifiablePresentationPayload,
-  VerifiedAuthenticationResponse,
-  VerifiedAuthorizationRequest,
-} from '../types';
+import { AuthorizationResponsePayload, SIOPErrors, VerifiedAuthenticationResponse, VerifiedAuthorizationRequest } from '../types';
 
-import { assertValidVerifiablePresentations } from './OpenID4VP';
+import { assertValidVerifiablePresentations, extractPresentationsFromAuthorizationResponse, verifyPresentations } from './OpenID4VP';
 import { assertValidResponseOpts } from './Opts';
 import { createResponsePayload } from './Payload';
 import { PresentationExchange } from './PresentationExchange';
@@ -92,18 +85,21 @@ export class AuthorizationResponse {
     const idToken = await IDToken.fromAuthorizationRequestPayload(authorizationRequest.payload, responseOpts);
     const idTokenPayload = await idToken.payload();
     const authorizationResponsePayload = await createResponsePayload(authorizationRequest, idTokenPayload, responseOpts);
-    await assertValidVerifiablePresentations({
-      presentationDefinitions,
-      presentationPayloads: authorizationResponsePayload.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
-      verificationCallback: responseOpts.presentationExchange?.presentationVerificationCallback,
-    });
-
-    return new AuthorizationResponse({
+    const response = new AuthorizationResponse({
       authorizationResponsePayload,
       idToken,
       responseOpts,
       authorizationRequest,
     });
+
+    const presentations = await extractPresentationsFromAuthorizationResponse(response);
+    await assertValidVerifiablePresentations({
+      presentationDefinitions,
+      presentations,
+      verificationCallback: responseOpts.presentationExchange?.presentationVerificationCallback,
+    });
+
+    return response;
   }
 
   static async fromVerifiedAuthorizationRequest(
@@ -115,7 +111,10 @@ export class AuthorizationResponse {
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
     // TODO: Add response verification next to idToken verification
-    return await this.idToken.verify(verifyOpts);
+    const result = await this.idToken.verify(verifyOpts);
+    await verifyPresentations(this, verifyOpts);
+
+    return result;
   }
 
   get authorizationRequest(): AuthorizationRequest | undefined {

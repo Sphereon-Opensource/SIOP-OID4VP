@@ -129,8 +129,8 @@ export class Builder {
     }
     if (typeof supportedVersion === 'string') {
       this.supportedVersions.push(SupportedVersion[supportedVersion]);
-    } else if (Array.isArray(supportedVersion)) {
-      this.supportedVersions.push(supportedVersion as SupportedVersion);
+    } else {
+      this.supportedVersions.push(supportedVersion);
     }
     return this;
   }

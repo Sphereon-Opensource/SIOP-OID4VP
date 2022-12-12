@@ -1,12 +1,10 @@
-import { PresentationSignCallBackParams } from '@sphereon/pex';
-import { PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
+import { IPresentationDefinition, PresentationSignCallBackParams } from '@sphereon/pex';
 import { PresentationSubmission, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 
 import {
   CheckLinkedDomain,
   ExternalSignature,
   ExternalVerification,
-  IDTokenPayload,
   InternalSignature,
   InternalVerification,
   ResponseMode,
@@ -39,19 +37,14 @@ export interface PresentationExchangeOpts {
   _vp_token?: { presentation_submission: PresentationSubmission };
 }
 
-export interface VpTokenClaimOpts {
-  presentationDefinition?: PresentationDefinitionV1 | PresentationDefinitionV2;
-  presentationDefinitionUri?: string;
-}
-
-export interface ClaimOpts {
-  idToken?: IDTokenPayload;
-  vpToken?: VpTokenClaimOpts;
+export interface PresentationDefinitionPayloadOpts {
+  presentation_definition?: IPresentationDefinition;
+  presentation_definition_uri?: string;
 }
 
 export interface PresentationDefinitionWithLocation {
   location: PresentationLocation;
-  definition: PresentationDefinitionV1 | PresentationDefinitionV2;
+  definition: IPresentationDefinition;
 }
 
 export interface VerifiablePresentationWithLocation extends VerifiablePresentationPayload {
@@ -74,8 +67,10 @@ export interface VerifyAuthorizationResponseOpts {
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // mandatory? // To verify the response against the supplied nonce
   state?: string; // mandatory? // To verify the response against the supplied state
+
+  presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[]; // The presentation definitions to match against VPs in the response
   audience: string; // The audience/redirect_uri
-  claims?: ClaimOpts; // The claims, typically the same values used during request creation
+  // claims?: ClaimPayloadCommonOpts; // The claims, typically the same values used during request creation
   // verifyCallback?: VerifyCallback;
   // presentationVerificationCallback?: PresentationVerificationCallback;
 }

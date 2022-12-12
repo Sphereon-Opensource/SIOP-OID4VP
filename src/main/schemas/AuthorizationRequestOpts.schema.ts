@@ -5,16 +5,19 @@ export const AuthorizationRequestOptsSchema = {
     "CreateAuthorizationRequestOpts": {
       "anyOf": [
         {
-          "$ref": "#/definitions/AuthorizationRequestOptsVD1"
+          "$ref": "#/definitions/AuthorizationRequestOptsVID1"
         },
         {
           "$ref": "#/definitions/AuthorizationRequestOptsVD11"
         }
       ]
     },
-    "AuthorizationRequestOptsVD1": {
+    "AuthorizationRequestOptsVID1": {
       "type": "object",
       "properties": {
+        "version": {
+          "$ref": "#/definitions/SupportedVersion"
+        },
         "clientMetadata": {
           "$ref": "#/definitions/ClientMetadataOpts"
         },
@@ -26,13 +29,25 @@ export const AuthorizationRequestOptsSchema = {
         },
         "uriScheme": {
           "type": "string"
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimPayloadOptsVID1"
         }
       },
+      "additionalProperties": false,
       "required": [
         "payload",
-        "requestObject"
-      ],
-      "additionalProperties": false
+        "requestObject",
+        "version"
+      ]
+    },
+    "SupportedVersion": {
+      "type": "number",
+      "enum": [
+        70,
+        110,
+        71
+      ]
     },
     "ClientMetadataOpts": {
       "type": "object",
@@ -291,7 +306,7 @@ export const AuthorizationRequestOptsSchema = {
           "type": "string"
         },
         "claims": {
-          "$ref": "#/definitions/ClaimOpts"
+          "$ref": "#/definitions/ClaimPayloadCommonOpts"
         },
         "nonce": {
           "type": "string"
@@ -366,140 +381,199 @@ export const AuthorizationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "ClaimOpts": {
+    "ClaimPayloadCommonOpts": {
+      "type": "object"
+    },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
+    },
+    "RequestObjectOpts": {
       "type": "object",
       "properties": {
-        "idToken": {
-          "$ref": "#/definitions/IDTokenPayload"
+        "passBy": {
+          "$ref": "#/definitions/PassBy"
         },
-        "vpToken": {
-          "$ref": "#/definitions/VpTokenClaimOpts"
+        "referenceUri": {
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/definitions/RequestObjectPayloadOpts"
+        },
+        "signatureType": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/InternalSignature"
+            },
+            {
+              "$ref": "#/definitions/ExternalSignature"
+            },
+            {
+              "$ref": "#/definitions/SuppliedSignature"
+            },
+            {
+              "$ref": "#/definitions/NoSignature"
+            }
+          ]
         }
       },
+      "required": [
+        "passBy",
+        "signatureType"
+      ],
       "additionalProperties": false
     },
-    "IDTokenPayload": {
+    "InternalSignature": {
       "type": "object",
       "properties": {
-        "iss": {
+        "hexPrivateKey": {
           "type": "string"
         },
-        "sub": {
+        "did": {
           "type": "string"
         },
-        "aud": {
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
+        "kid": {
           "type": "string"
         },
-        "iat": {
-          "type": "number"
-        },
-        "nbf": {
-          "type": "number"
-        },
-        "type": {
-          "type": "string"
-        },
-        "exp": {
-          "type": "number"
-        },
-        "rexp": {
-          "type": "number"
-        },
-        "jti": {
-          "type": "string"
-        },
-        "auth_time": {
-          "type": "number"
-        },
-        "nonce": {
-          "type": "string"
-        },
-        "_vp_token": {
-          "type": "object",
-          "properties": {
-            "presentation_submission": {
-              "$ref": "#/definitions/PresentationSubmission"
-            }
-          },
-          "required": [
-            "presentation_submission"
-          ],
-          "additionalProperties": false
+        "customJwtSigner": {
+          "$ref": "#/definitions/Signer"
+        }
+      },
+      "required": [
+        "hexPrivateKey",
+        "did",
+        "alg"
+      ],
+      "additionalProperties": false
+    },
+    "Signer": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
         }
       }
     },
-    "PresentationSubmission": {
+    "ExternalSignature": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "A UUID or some other unique ID to identify this Presentation Submission"
+        "signatureUri": {
+          "type": "string"
         },
-        "definition_id": {
-          "type": "string",
-          "description": "A UUID or some other unique ID to identify this Presentation Definition"
+        "did": {
+          "type": "string"
         },
-        "descriptor_map": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Descriptor"
-          },
-          "description": "List of descriptors of how the claims are being mapped to presentation definition"
+        "authZToken": {
+          "type": "string"
+        },
+        "hexPublicKey": {
+          "type": "string"
+        },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
+        "kid": {
+          "type": "string"
         }
       },
       "required": [
-        "id",
-        "definition_id",
-        "descriptor_map"
+        "signatureUri",
+        "did",
+        "alg"
       ],
-      "additionalProperties": false,
-      "description": "It expresses how the inputs are presented as proofs to a Verifier."
+      "additionalProperties": false
     },
-    "Descriptor": {
+    "SuppliedSignature": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "ID to identify the descriptor from Presentation Definition Input Descriptor it coresponds to."
-        },
-        "path": {
-          "type": "string",
-          "description": "The path where the verifiable credential is located in the presentation submission json"
-        },
-        "path_nested": {
-          "$ref": "#/definitions/Descriptor"
-        },
-        "format": {
-          "type": "string",
-          "description": "The Proof or JWT algorith that the proof is in"
-        }
-      },
-      "required": [
-        "id",
-        "path",
-        "format"
-      ],
-      "additionalProperties": false,
-      "description": "descriptor map laying out the structure of the presentation submission."
-    },
-    "VpTokenClaimOpts": {
-      "type": "object",
-      "properties": {
-        "presentationDefinition": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/PresentationDefinitionV1"
-            },
-            {
-              "$ref": "#/definitions/PresentationDefinitionV2"
+        "signature": {
+          "properties": {
+            "isFunction": {
+              "type": "boolean",
+              "const": true
             }
-          ]
+          }
         },
-        "presentationDefinitionUri": {
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "signature",
+        "alg",
+        "did",
+        "kid"
+      ],
+      "additionalProperties": false
+    },
+    "NoSignature": {
+      "type": "object",
+      "properties": {
+        "hexPublicKey": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hexPublicKey",
+        "did"
+      ],
+      "additionalProperties": false
+    },
+    "ClaimPayloadOptsVID1": {
+      "type": "object",
+      "properties": {
+        "id_token": {
+          "$ref": "#/definitions/IdTokenClaimPayload"
+        },
+        "vp_token": {
+          "$ref": "#/definitions/PresentationDefinitionPayloadOpts"
+        }
+      }
+    },
+    "IdTokenClaimPayload": {
+      "type": "object"
+    },
+    "PresentationDefinitionPayloadOpts": {
+      "type": "object",
+      "properties": {
+        "presentation_definition": {
+          "$ref": "#/definitions/IPresentationDefinition"
+        },
+        "presentation_definition_uri": {
           "type": "string"
         }
       },
       "additionalProperties": false
+    },
+    "IPresentationDefinition": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PresentationDefinitionV1"
+        },
+        {
+          "$ref": "#/definitions/PresentationDefinitionV2"
+        }
+      ]
     },
     "PresentationDefinitionV1": {
       "type": "object",
@@ -1017,164 +1091,12 @@ export const AuthorizationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
-    },
-    "RequestObjectOpts": {
-      "type": "object",
-      "properties": {
-        "passBy": {
-          "$ref": "#/definitions/PassBy"
-        },
-        "referenceUri": {
-          "type": "string"
-        },
-        "payload": {
-          "$ref": "#/definitions/RequestObjectPayloadOpts"
-        },
-        "signatureType": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/InternalSignature"
-            },
-            {
-              "$ref": "#/definitions/ExternalSignature"
-            },
-            {
-              "$ref": "#/definitions/SuppliedSignature"
-            },
-            {
-              "$ref": "#/definitions/NoSignature"
-            }
-          ]
-        }
-      },
-      "required": [
-        "passBy",
-        "signatureType"
-      ],
-      "additionalProperties": false
-    },
-    "InternalSignature": {
-      "type": "object",
-      "properties": {
-        "hexPrivateKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "alg": {
-          "$ref": "#/definitions/SigningAlgo"
-        },
-        "kid": {
-          "type": "string"
-        },
-        "customJwtSigner": {
-          "$ref": "#/definitions/Signer"
-        }
-      },
-      "required": [
-        "hexPrivateKey",
-        "did",
-        "alg"
-      ],
-      "additionalProperties": false
-    },
-    "Signer": {
-      "properties": {
-        "isFunction": {
-          "type": "boolean",
-          "const": true
-        }
-      }
-    },
-    "ExternalSignature": {
-      "type": "object",
-      "properties": {
-        "signatureUri": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "authZToken": {
-          "type": "string"
-        },
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "alg": {
-          "$ref": "#/definitions/SigningAlgo"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "signatureUri",
-        "did",
-        "alg"
-      ],
-      "additionalProperties": false
-    },
-    "SuppliedSignature": {
-      "type": "object",
-      "properties": {
-        "signature": {
-          "properties": {
-            "isFunction": {
-              "type": "boolean",
-              "const": true
-            }
-          }
-        },
-        "alg": {
-          "$ref": "#/definitions/SigningAlgo"
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "signature",
-        "alg",
-        "did",
-        "kid"
-      ],
-      "additionalProperties": false
-    },
-    "NoSignature": {
-      "type": "object",
-      "properties": {
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "hexPublicKey",
-        "did"
-      ],
-      "additionalProperties": false
-    },
     "AuthorizationRequestOptsVD11": {
       "type": "object",
       "properties": {
+        "version": {
+          "$ref": "#/definitions/SupportedVersion"
+        },
         "clientMetadata": {
           "$ref": "#/definitions/ClientMetadataOpts"
         },
@@ -1189,12 +1111,16 @@ export const AuthorizationRequestOptsSchema = {
         },
         "idTokenType": {
           "type": "string"
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimPayloadCommonOpts"
         }
       },
       "additionalProperties": false,
       "required": [
         "payload",
-        "requestObject"
+        "requestObject",
+        "version"
       ]
     }
   }

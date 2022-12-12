@@ -147,7 +147,7 @@ export class URI implements AuthorizationRequestURI {
     if (isJwt && (!requestObjectJwt || !requestObjectJwt.startsWith('ey'))) {
       throw Error(SIOPErrors.NO_JWT);
     }
-    const requestObjectPayload: RequestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt) as RequestObjectPayload) : undefined;
+    const requestObjectPayload: RequestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt).payload as RequestObjectPayload) : undefined;
 
     if (requestObjectPayload) {
       // Only used to validate if it contains a presentation definition

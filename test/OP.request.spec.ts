@@ -133,6 +133,7 @@ describe('OP should', () => {
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
       const requestOpts: CreateAuthorizationRequestOpts = {
+        version: SupportedVersion.SIOPv2_ID1,
         payload: {
           redirect_uri: EXAMPLE_REDIRECT_URL,
           client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -197,10 +198,10 @@ describe('OP should', () => {
     const rpMockEntity = await mockedGetEnterpriseAuthToken('ACME RP');
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
 
-    const requestURI = await RP.builder()
+    const requestURI = await RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
-      .withResponseType('id_token')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withRedirectUri(EXAMPLE_REFERENCE_URL)
@@ -223,7 +224,6 @@ describe('OP should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build()
 
       .createAuthorizationRequestURI({

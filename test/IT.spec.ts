@@ -146,10 +146,10 @@ describe('RP and OP interaction should', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-      const rp = RP.builder()
+      const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
         .withClientId(WELL_KNOWN_OPENID_FEDERATION)
         .withScope('test')
-        .withResponseType('id_token')
+        .withResponseType(ResponseType.ID_TOKEN)
         .withRedirectUri(EXAMPLE_REDIRECT_URL)
         .withPresentationVerification(presentationVerificationCallback)
         .withVerifyCallback(verifyCallback)
@@ -248,10 +248,10 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
-      .withResponseType('id_token')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
@@ -347,10 +347,10 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
-      .withResponseType('id_token')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
@@ -374,7 +374,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
@@ -444,12 +444,12 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
-      .withResponseType('id_token')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withPresentationDefinition(getPresentationDefinition())
       .withPresentationVerification(presentationVerificationCallback)
       .withVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
@@ -542,6 +542,7 @@ describe('RP and OP interaction should', () => {
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
+      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
     });
 
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -567,10 +568,10 @@ describe('RP and OP interaction should', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-      const rp = RP.builder()
+      const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
         .withClientId(WELL_KNOWN_OPENID_FEDERATION)
         .withScope('test')
-        .withResponseType('id_token')
+        .withResponseType(ResponseType.ID_TOKEN)
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
         .withPresentationVerification(presentationVerificationCallback)
         .withVerifyCallback(verifyCallback)
@@ -594,7 +595,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addPresentationDefinitionClaim(getPresentationDefinition())
+        .withPresentationDefinition(getPresentationDefinition())
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
@@ -662,6 +663,7 @@ describe('RP and OP interaction should', () => {
       await expect(
         rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
           audience: EXAMPLE_REDIRECT_URL,
+          presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
           verification: {
             mode: VerificationMode.INTERNAL,
             verifyUri: '',
@@ -701,10 +703,10 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
-      .withResponseType('id_token')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .withVerifyCallback(verifyCallback)
@@ -734,7 +736,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
@@ -815,6 +817,7 @@ describe('RP and OP interaction should', () => {
     expect(rp.verifyResponseOptions.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -841,10 +844,10 @@ describe('RP and OP interaction should', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-      const rp = RP.builder()
+      const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
         .withClientId(WELL_KNOWN_OPENID_FEDERATION)
         .withScope('test')
-        .withResponseType('id_token')
+        .withResponseType(ResponseType.ID_TOKEN)
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
         .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
@@ -870,7 +873,7 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .addPresentationDefinitionClaim(getPresentationDefinition())
+        .withPresentationDefinition(getPresentationDefinition())
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
@@ -940,6 +943,7 @@ describe('RP and OP interaction should', () => {
       expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
       const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+        presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
         audience: EXAMPLE_REDIRECT_URL,
       });
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -965,10 +969,10 @@ describe('RP and OP interaction should', () => {
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
-    const rp = RP.builder()
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId('test_client_id')
       .withScope('test')
-      .withResponseType('id_token')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .withVerifyCallback(verifyCallback)
@@ -1003,7 +1007,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
@@ -1092,6 +1096,7 @@ describe('RP and OP interaction should', () => {
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -1279,10 +1284,10 @@ describe('RP and OP interaction should', () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder()
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId('test_client_id')
       .withScope('test')
-      .withResponseType('id_token')
+      .withResponseType(ResponseType.ID_TOKEN)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withPresentationVerification(presentationVerificationCallback)
       .withVerifyCallback(verifyCallback)
@@ -1310,7 +1315,7 @@ describe('RP and OP interaction should', () => {
         clientName: VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
-      .addPresentationDefinitionClaim(getPresentationDefinition())
+      .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
@@ -1382,6 +1387,7 @@ describe('RP and OP interaction should', () => {
     expect(authenticationResponseWithJWT.idToken).toBeDefined();
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();

@@ -1,8 +1,9 @@
-import { ClaimOpts } from '../authorization-response';
+import { PresentationDefinitionPayloadOpts } from '../authorization-response';
 import { RequestObjectOpts } from '../request-object';
 import {
   ClientMetadataOpts,
   ExternalVerification,
+  IdTokenClaimPayload,
   InternalVerification,
   ResponseMode,
   ResponseType,
@@ -12,6 +13,16 @@ import {
   SupportedVersion,
 } from '../types';
 
+export interface ClaimPayloadOptsVID1 extends ClaimPayloadCommonOpts {
+  id_token?: IdTokenClaimPayload;
+  vp_token?: PresentationDefinitionPayloadOpts;
+}
+
+export interface ClaimPayloadCommonOpts {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [x: string]: any;
+}
+
 export type AuthorizationRequestPayloadOpts = RequestObjectPayloadOpts;
 export interface RequestObjectPayloadOpts {
   scope: string; // from openid-connect-self-issued-v2-1_0-ID1
@@ -19,7 +30,7 @@ export interface RequestObjectPayloadOpts {
   client_id: string; // from openid-connect-self-issued-v2-1_0-ID1
   redirect_uri: string; // from openid-connect-self-issued-v2-1_0-ID1
   id_token_hint?: string; // from openid-connect-self-issued-v2-1_0-ID1
-  claims?: ClaimOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#Claims
+  claims?: ClaimPayloadCommonOpts; // from openid-connect-self-issued-v2-1_0-ID1 look at https://openid.net/specs/openid-connect-core-1_0.html#Claims
   nonce?: string; // An optional nonce, will be generated if not provided
   state?: string; // An optional state, will be generated if not provided
   authorization_endpoint?: string;
@@ -31,7 +42,9 @@ export interface RequestObjectPayloadOpts {
 }
 
 interface AuthorizationRequestCommonOpts {
-  // Yes, this includes the payload properties both at the payload level as well as in the requestObject.payload property. That is to support OAuth2 with or without a signed OpenID requestObject  {
+  // Yes, this includes common payload properties both at the payload level as well as in the requestObject.payload property. That is to support OAuth2 with or without a signed OpenID requestObject
+
+  version: SupportedVersion;
 
   clientMetadata?: ClientMetadataOpts; // this maps to 'registration' for older SIOPv2 specs! OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
   payload: AuthorizationRequestPayloadOpts;
@@ -44,15 +57,18 @@ interface AuthorizationRequestCommonOpts {
   // revocationVerificationCallback?: RevocationVerificationCallback;
 }
 
-export type AuthorizationRequestOptsVD1 = AuthorizationRequestCommonOpts;
+export interface AuthorizationRequestOptsVID1 extends AuthorizationRequestCommonOpts {
+  claims?: ClaimPayloadOptsVID1;
+}
 
 export interface AuthorizationRequestOptsVD11 extends AuthorizationRequestCommonOpts {
   // clientMetadata?: ClientMetadataOpts; // from openid-connect-self-issued-v2-1_0-11 look at https://openid.net/specs/openid-connect-registration-1_0.html
   // clientMetadataUri?: string; // from openid-connect-self-issued-v2-1_0-11
   idTokenType?: string; // OPTIONAL. Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed.
+  claims?: ClaimPayloadCommonOpts;
 }
 
-export type CreateAuthorizationRequestOpts = AuthorizationRequestOptsVD1 | AuthorizationRequestOptsVD11;
+export type CreateAuthorizationRequestOpts = AuthorizationRequestOptsVID1 | AuthorizationRequestOptsVD11;
 
 export interface VerifyAuthorizationRequestOpts {
   verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification

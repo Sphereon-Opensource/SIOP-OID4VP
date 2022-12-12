@@ -1,47 +1,72 @@
-import { PresentationSubmission } from '@sphereon/ssi-types';
+import { IVerifiablePresentation, PresentationSubmission } from '@sphereon/ssi-types';
 
 import { verifyRevocation } from '../helpers';
-import { AuthorizationResponsePayload, RevocationVerification, SIOPErrors, VerifiablePresentationPayload } from '../types';
+import { RevocationVerification, SIOPErrors, VerifiablePresentationPayload } from '../types';
 
+import { AuthorizationResponse } from './AuthorizationResponse';
 import { PresentationExchange } from './PresentationExchange';
 import {
   AuthorizationResponseOpts,
   PresentationDefinitionWithLocation,
   PresentationLocation,
   PresentationVerificationCallback,
+  VerifiablePresentationWithLocation,
   VerifyAuthorizationResponseOpts,
 } from './types';
 
 export const verifyPresentations = async (
-  authorizationResponse: AuthorizationResponsePayload,
+  authorizationResponse: AuthorizationResponse,
   verifyOpts: VerifyAuthorizationResponseOpts
 ): Promise<void> => {
+  const presentations = await extractPresentationsFromAuthorizationResponse(authorizationResponse);
+  const presentationDefinitions = verifyOpts.presentationDefinitions
+    ? Array.isArray(verifyOpts.presentationDefinitions)
+      ? verifyOpts.presentationDefinitions
+      : [verifyOpts.presentationDefinitions]
+    : [];
+
   await assertValidVerifiablePresentations({
-    presentationDefinitions: [
-      {
-        definition: verifyOpts.claims?.vpToken?.presentationDefinition,
-        location: PresentationLocation.VP_TOKEN,
-      },
-    ],
-    presentationPayloads: authorizationResponse.vp_token as VerifiablePresentationPayload[] | VerifiablePresentationPayload,
+    presentationDefinitions,
+    presentations,
     verificationCallback: verifyOpts.verification.presentationVerificationCallback,
   });
+
   const revocationVerification = verifyOpts.verification?.revocationOpts
     ? verifyOpts.verification.revocationOpts.revocationVerification
     : RevocationVerification.IF_PRESENT;
   if (revocationVerification !== RevocationVerification.NEVER) {
-    if (Array.isArray(authorizationResponse.vp_token)) {
-      for (const vp of authorizationResponse.vp_token) {
-        await verifyRevocation(vp, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
-      }
-    } else {
-      await verifyRevocation(
-        authorizationResponse.vp_token,
-        verifyOpts.verification.revocationOpts.revocationVerificationCallback,
-        revocationVerification
-      );
+    for (const vp of presentations) {
+      await verifyRevocation(vp, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
     }
   }
+};
+
+export const extractPresentationsFromAuthorizationResponse = async (
+  response: AuthorizationResponse
+): Promise<VerifiablePresentationWithLocation[]> => {
+  const idToken = await response.idToken.payload();
+  const presentationsWithLocation: VerifiablePresentationWithLocation[] = [];
+  if (response.payload.vp_token) {
+    const presentations = Array.isArray(response.payload.vp_token) ? response.payload.vp_token : [response.payload.vp_token];
+    for (const presentation of presentations) {
+      presentationsWithLocation.push({
+        presentation: presentation as unknown as IVerifiablePresentation,
+        location: PresentationLocation.VP_TOKEN,
+        format: presentation.format,
+      });
+    }
+  }
+  if (idToken && idToken._vp_token) {
+    const presentations = Array.isArray(idToken._vp_token) ? idToken._vp_token : [idToken._vp_token];
+    for (const presentation of presentations) {
+      presentationsWithLocation.push({
+        presentation: presentation as unknown as IVerifiablePresentation,
+        location: PresentationLocation.ID_TOKEN,
+        format: presentation.format,
+      });
+    }
+  }
+  return presentationsWithLocation;
 };
 
 export const extractPresentations = (resOpts: AuthorizationResponseOpts) => {
@@ -74,29 +99,25 @@ export const extractPresentations = (resOpts: AuthorizationResponseOpts) => {
 
 export const assertValidVerifiablePresentations = async (args: {
   presentationDefinitions: PresentationDefinitionWithLocation[];
-  presentationPayloads: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
+  presentations: VerifiablePresentationWithLocation[];
   verificationCallback?: PresentationVerificationCallback;
 }) => {
   if (
     (!args.presentationDefinitions || args.presentationDefinitions.filter((a) => a.definition).length === 0) &&
-    (!args.presentationPayloads ||
-      (Array.isArray(args.presentationPayloads) && args.presentationPayloads.filter((vp) => vp.presentation).length === 0))
+    (!args.presentations || (Array.isArray(args.presentations) && args.presentations.filter((vp) => vp.presentation).length === 0))
   ) {
     return;
   }
   PresentationExchange.assertValidPresentationDefinitionWithLocations(args.presentationDefinitions);
   const presentationPayloads: VerifiablePresentationPayload[] = [];
   let presentationSubmission: PresentationSubmission;
-  if (args.presentationPayloads && Array.isArray(args.presentationPayloads) && args.presentationPayloads.length > 0) {
-    presentationPayloads.push(...args.presentationPayloads);
-    // TODO check how to handle multiple VPs
-    if (args.presentationPayloads[0].presentation?.presentation_submission) {
-      presentationSubmission = args.presentationPayloads[0].presentation.presentation_submission;
+  if (args.presentations && Array.isArray(args.presentations) && args.presentations.length > 0) {
+    for (const presentationWithLocation of args.presentations) {
+      presentationPayloads.push(presentationWithLocation.presentation as unknown as VerifiablePresentationPayload);
     }
-  } else if (args.presentationPayloads && !Array.isArray(args.presentationPayloads)) {
-    presentationPayloads.push(args.presentationPayloads);
-    if (args.presentationPayloads.presentation?.presentation_submission) {
-      presentationSubmission = args.presentationPayloads.presentation.presentation_submission;
+    // TODO check how to handle multiple VPs
+    if (args.presentations[0].presentation?.presentation_submission) {
+      presentationSubmission = args.presentations[0].presentation.presentation_submission;
     }
   }
 
@@ -104,7 +125,8 @@ export const assertValidVerifiablePresentations = async (args: {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
   } else if (
     (!args.presentationDefinitions || args.presentationDefinitions.length === 0) &&
-    (presentationPayloads || presentationPayloads.length > 0)
+    presentationPayloads &&
+    presentationPayloads.length > 0
   ) {
     throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
   } else if (args.presentationDefinitions && presentationPayloads && args.presentationDefinitions.length != presentationPayloads.length) {

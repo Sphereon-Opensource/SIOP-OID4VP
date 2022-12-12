@@ -1,6 +1,7 @@
 <h1 style="text-align: center; vertical-align: middle">
 <center><a href="https://www.sphereon.com"><img src="https://sphereon.com/content/themes/sphereon/assets/img/logo.svg" alt="Sphereon" width="320" style="vertical-align: middle" ></a></center>
-<center>Self Issued OpenID Provider v2 (SIOPv2)<br/>
+
+<center>Self Issued OpenID Provider (SIOPv2)<br/>
 with OpenID4VP support</center>
 </h1>
 <br>
@@ -9,12 +10,12 @@ with OpenID4VP support</center>
 
 An OpenID authentication library conforming to
 the [Self Issued OpenID Provider v2 (SIOPv2)](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html)
-and  [OpenID for Verifiable Presentations (OpenID4VP)](https://openid.net/specs/openid-connect-4-verifiable-presentations-1_0.html)
+and  [OpenID for Verifiable Presentations (OpenID4VP)](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html)
 as specified in the OpenID Connect working group.
 
 ## Introduction
 
-[SIOP v2](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html) is an extension of OpenID to allow End-users to act as OpenID Providers (OPs) themselves. Using
+[SIOP v2](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) is an OpenID specification to allow End-users to act as OpenID Providers (OPs) themselves. Using
 Self-Issued OPs, End-users can authenticate themselves and present claims directly to a Relying Party (RP),
 typically a webapp, without involving a third-party Identity Provider. This makes the interactions fully self sovereign, as
 it doesn't depend on any third parties and strictly happens peer 2 peer, yet still using well known constructs from the OpenID protocol.
@@ -40,7 +41,7 @@ Demo: https://vimeo.com/630104529 and a more stripped down demo: https://youtu.b
 ## Active Development
 
 _IMPORTANT:_
-* _This software still is in early development stage. As such you should expect breaking changes in APIs, we
+* _This software still is in an early development stage. As such you should expect breaking changes in APIs, we
 expect to keep that to a minimum though. Version 0.3.X has changed the external API, especially for Requests, Responses and slightly for the RP/OP classes._
 * _The name of the package also changed from [@sphereon/did-auth-siop](https://www.npmjs.com/package/@sphereon/did-auth-siop) to [@sphereon/SIOP-OpenID4VP](https://www.npmjs.com/package/@sphereon/SIOP-OpenID4VP), to better reflect specification name changes_
 

@@ -4,7 +4,8 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
 import { Resolvable, Resolver } from 'did-resolver';
 
-import { ClaimOpts, PresentationVerificationCallback } from '../authorization-response';
+import { ClaimPayloadCommonOpts, ClaimPayloadOptsVID1 } from '../authorization-request';
+import { PresentationVerificationCallback } from '../authorization-response';
 import { getMethodFromDid } from '../did';
 import {
   CheckLinkedDomain,
@@ -19,6 +20,7 @@ import {
   ResponseContext,
   ResponseIss,
   ResponseMode,
+  ResponseType,
   RevocationVerification,
   RevocationVerificationCallback,
   SigningAlgo,
@@ -40,7 +42,7 @@ export default class Builder {
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
   responseMode?: ResponseMode;
   responseContext?: ResponseContext.RP;
-  claims?: ClaimOpts;
+  claims?: ClaimPayloadCommonOpts | ClaimPayloadOptsVID1;
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
@@ -48,10 +50,18 @@ export default class Builder {
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
 
-  requestPayload: RequestObjectPayload = {};
-  responseType: string;
+  requestPayload: Partial<RequestObjectPayload> = {};
+  responseType: ResponseType;
   scope: string;
   clientId: string;
+
+  presentationDefinition: IPresentationDefinition;
+
+  private constructor(supportedRequestVersion?: SupportedVersion) {
+    if (supportedRequestVersion) {
+      this.addSupportedVersion(supportedRequestVersion);
+    }
+  }
 
   withScope(scope: string): Builder {
     this.scope = scope;
@@ -59,7 +69,7 @@ export default class Builder {
     return this;
   }
 
-  withResponseType(responseType: string): Builder {
+  withResponseType(responseType: ResponseType): Builder {
     this.responseType = responseType;
     this.requestPayload.response_type = responseType;
     return this;
@@ -168,13 +178,17 @@ export default class Builder {
     return this;
   }
 
-  addPresentationDefinitionClaim(definitionOpt: IPresentationDefinition): Builder {
-    if (!this.claims || !this.claims.vpToken) {
-      this.claims = {
-        vpToken: {
-          presentationDefinition: definitionOpt,
-        },
-      };
+  withPresentationDefinition(definitionOpt: IPresentationDefinition): Builder {
+    if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
+      if (!this.claims || !this.claims.vp_token) {
+        this.claims = {
+          vp_token: {
+            presentation_definition: definitionOpt,
+          },
+        };
+      }
+    } else {
+      this.presentationDefinition = definitionOpt;
     }
     return this;
   }
@@ -190,14 +204,31 @@ export default class Builder {
     }
   }
 
-  withSupportedVersions(supportedVersion: SupportedVersion[] | SupportedVersion): Builder {
+  addSupportedVersion(supportedVersion: SupportedVersion): Builder {
     this.initSupportedVersions();
-    if (Array.isArray(supportedVersion)) {
-      this.supportedVersions.push(...supportedVersion);
-    } else {
+    if (!this.supportedVersions.includes(supportedVersion)) {
       this.supportedVersions.push(supportedVersion);
     }
     return this;
+  }
+
+  withSupportedVersions(supportedVersion: SupportedVersion[] | SupportedVersion): Builder {
+    const versions = Array.isArray(supportedVersion) ? supportedVersion : [supportedVersion];
+    for (const version of versions) {
+      this.addSupportedVersion(version);
+    }
+    return this;
+  }
+
+  public getSupportedRequestVersion(): SupportedVersion | undefined {
+    if (!this.supportedVersions || this.supportedVersions.length === 0) {
+      return undefined;
+    }
+    return this.supportedVersions[0];
+  }
+
+  public static newInstance(supportedVersion?: SupportedVersion) {
+    return new Builder(supportedVersion);
   }
 
   build(): RP {

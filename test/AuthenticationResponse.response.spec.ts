@@ -4,9 +4,14 @@ import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknow
 
 import {
   AuthorizationResponse,
+  AuthorizationResponseOpts,
   CheckLinkedDomain,
+  CreateAuthorizationRequestOpts,
   PassBy,
   PresentationExchange,
+  PresentationLocation,
+  PresentationSignCallback,
+  RequestObject,
   ResponseIss,
   ResponseMode,
   ResponseType,
@@ -17,10 +22,8 @@ import {
   SupportedVersion,
   VerifiablePresentationTypeFormat,
   VerificationMode,
+  VerifyAuthorizationRequestOpts,
 } from '../src/main';
-import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../src/main';
-import { AuthorizationResponseOpts, PresentationLocation, PresentationSignCallback } from '../src/main';
-import { RequestObject } from '../src/main';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -110,6 +113,7 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         nonce: '12345',
         state: '12345',
@@ -202,6 +206,7 @@ describe('create JWT from Request JWT should', () => {
       const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
       const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
       const requestOpts: CreateAuthorizationRequestOpts = {
+        version: SupportedVersion.SIOPv2_ID1,
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
@@ -324,14 +329,15 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
         response_type: 'id_token',
         redirect_uri: EXAMPLE_REDIRECT_URL,
         claims: {
-          vpToken: {
-            presentationDefinition: definition,
+          vp_token: {
+            presentation_definition: definition,
           },
         },
       },
@@ -494,14 +500,15 @@ describe('create JWT from Request JWT should', () => {
       ],
     };
     const requestOpts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
         response_type: 'token_id',
         redirect_uri: EXAMPLE_REDIRECT_URL,
         claims: {
-          vpToken: {
-            presentationDefinition: definition,
+          vp_token: {
+            presentation_definition: definition,
           },
         },
       },
