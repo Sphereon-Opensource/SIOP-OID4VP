@@ -59,12 +59,12 @@ export class RequestObject {
     return requestObjectJwt ? await RequestObject.fromJwt(requestObjectJwt) : undefined;
   }
 
-  public async toJwt(): Promise<RequestObjectJwt> {
+  public async toJwt(): Promise<RequestObjectJwt | undefined> {
     if (!this.jwt) {
       if (!this.opts) {
         throw Error(SIOPErrors.BAD_PARAMS);
       } else if (!this.payload) {
-        throw Error(`Cannot create JWT if there is no payload`);
+        return undefined;
       }
       this.removeRequestProperties();
       if (this.payload.registration_uri) {
@@ -77,10 +77,10 @@ export class RequestObject {
     return this.jwt;
   }
 
-  public async getPayload(): Promise<RequestObjectPayload> {
+  public async getPayload(): Promise<RequestObjectPayload | undefined> {
     if (!this.payload) {
       if (!this.jwt) {
-        throw Error(SIOPErrors.NO_JWT);
+        return undefined;
       }
       this.payload = decodeJWT(this.jwt).payload as RequestObjectPayload;
       this.removeRequestProperties();
@@ -117,9 +117,9 @@ export class RequestObject {
     }
     const isAuthReq = opts['requestObject'] !== undefined;
     const mergedOpts = JSON.parse(JSON.stringify(opts));
-    mergedOpts.requestObject.payload = isAuthReq
+    /*    mergedOpts.requestObject.payload = isAuthReq
       ? { ...mergedOpts.payload, ...mergedOpts['requestObject']?.payload }
-      : { ...mergedOpts.payload, ...mergedOpts.request };
+      : { ...mergedOpts.payload, ...mergedOpts.request };*/
     delete mergedOpts?.request?.requestObject;
     return isAuthReq ? mergedOpts.requestObject : mergedOpts;
   }

@@ -5,7 +5,11 @@ import { RequestObjectPayload, ResponseMode, ResponseType, Scope, SIOPErrors, Su
 
 import { assertValidRequestObjectOpts } from './Opts';
 
-export const createRequestObjectPayload = async (opts: CreateAuthorizationRequestOpts): Promise<RequestObjectPayload> => {
+export const createRequestObjectPayload = async (opts: CreateAuthorizationRequestOpts): Promise<RequestObjectPayload | undefined> => {
+  assertValidRequestObjectOpts(opts.requestObject, false);
+  if (!opts.requestObject?.payload) {
+    return undefined; // No request object apparently
+  }
   assertValidRequestObjectOpts(opts.requestObject, true);
 
   const requestObjectOpts = opts.requestObject.payload;

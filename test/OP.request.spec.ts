@@ -134,12 +134,6 @@ describe('OP should', () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('ACME Corp');
       const requestOpts: CreateAuthorizationRequestOpts = {
         version: SupportedVersion.SIOPv2_ID1,
-        payload: {
-          redirect_uri: EXAMPLE_REDIRECT_URL,
-          client_id: WELL_KNOWN_OPENID_FEDERATION,
-          scope: 'test',
-          response_type: 'id_token',
-        },
 
         requestObject: {
           passBy: PassBy.REFERENCE,
@@ -150,6 +144,12 @@ describe('OP should', () => {
             did: mockEntity.did,
             kid: `${mockEntity.did}#controller`,
             alg: SigningAlgo.ES256K,
+          },
+          payload: {
+            redirect_uri: EXAMPLE_REDIRECT_URL,
+            client_id: WELL_KNOWN_OPENID_FEDERATION,
+            scope: 'test',
+            response_type: 'id_token',
           },
         },
         clientMetadata: {
@@ -233,6 +233,7 @@ describe('OP should', () => {
 
     const verifiedRequest = await OP.builder()
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
+      .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .withExpiresIn(1000)
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')
@@ -252,7 +253,6 @@ describe('OP should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .build()
 
       .verifyAuthorizationRequest(requestURI.encodedUri);

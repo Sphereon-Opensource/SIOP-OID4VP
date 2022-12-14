@@ -98,7 +98,6 @@ describe('create Request Uri should', () => {
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
-
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -107,6 +106,13 @@ describe('create Request Uri should', () => {
           alg: SigningAlgo.ES256,
           did: DID,
           kid: KID,
+        },
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          redirect_uri: EXAMPLE_REDIRECT_URL,
         },
       },
       clientMetadata: {
@@ -156,13 +162,6 @@ describe('create Request Uri should', () => {
     expect.assertions(4);
     const opts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
-      payload: {
-        client_id: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        response_type: 'id_token',
-        request_object_signing_alg_values_supported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
-        redirect_uri: EXAMPLE_REDIRECT_URL,
-      },
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -172,6 +171,13 @@ describe('create Request Uri should', () => {
           did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
           kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
           alg: SigningAlgo.EDDSA,
+        },
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          request_object_signing_alg_values_supported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
+          redirect_uri: EXAMPLE_REDIRECT_URL,
         },
       },
       clientMetadata: {
@@ -199,24 +205,17 @@ describe('create Request Uri should', () => {
     const uriRequest = await URI.fromOpts(opts);
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
 
-    const data = parse(uriDecoded);
-    expect(data.request_uri).toStrictEqual(opts.requestObject.referenceUri);
+    const data = URI.parse(uriDecoded);
     expect(uriRequest).toHaveProperty('requestObjectJwt');
     expect(uriRequest.authorizationRequestPayload).toBeDefined();
+    expect(data.authorizationRequestPayload.request_uri).toEqual(opts.requestObject.referenceUri);
     expect(uriRequest.authorizationRequestPayload.request_uri).toEqual(EXAMPLE_REFERENCE_URL);
   });
 
   it('return an url with an embedded token value', async () => {
-    expect.assertions(2);
+    expect.assertions(3);
     const opts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
-      payload: {
-        client_id: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        response_type: 'id_token',
-        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        redirect_uri: EXAMPLE_REDIRECT_URL,
-      },
 
       requestObject: {
         passBy: PassBy.VALUE,
@@ -226,6 +225,13 @@ describe('create Request Uri should', () => {
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
+        },
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          redirect_uri: EXAMPLE_REDIRECT_URL,
         },
       },
       clientMetadata: {
@@ -253,10 +259,11 @@ describe('create Request Uri should', () => {
     const uriRequest = await URI.fromOpts(opts);
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
-    expect(uriDecoded).toContain(`&request=`);
+    expect(uriDecoded).toContain(`openid://?request=eyJhbGciOi`);
 
-    const data = parse(uriDecoded);
-    expect(data.request).toBeDefined();
+    const data = URI.parse(uriDecoded);
+    expect(data.scheme).toEqual('openid://');
+    expect(data.authorizationRequestPayload.request).toContain(`eyJhbGciOi`);
   });
 });
 
@@ -325,13 +332,12 @@ describe('create Request JWT should', () => {
   it('throw BAD_SIGNATURE_PARAMS when signature Type is neither internal nor external', async () => {
     expect.assertions(1);
     const opts = {
-      payload: {
-        redirect_uri: EXAMPLE_REDIRECT_URL,
-      },
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
-
+        payload: {
+          redirect_uri: EXAMPLE_REDIRECT_URL,
+        },
         signatureType: {},
       },
       clientMetadata: {
@@ -351,9 +357,6 @@ describe('create Request JWT should', () => {
   it('throw REGISTRATION_OBJECT_TYPE_NOT_SET when registrationBy type is neither REFERENCE nor VALUE', async () => {
     expect.assertions(1);
     const opts = {
-      payload: {
-        redirect_uri: EXAMPLE_REDIRECT_URL,
-      },
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -361,6 +364,9 @@ describe('create Request JWT should', () => {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
+        },
+        payload: {
+          redirect_uri: EXAMPLE_REDIRECT_URL,
         },
       },
       registration: {
@@ -381,9 +387,7 @@ describe('create Request JWT should', () => {
     expect.assertions(1);
     const opts = {
       version: SupportedVersion.SIOPv2_ID1,
-      payload: {
-        redirect_uri: EXAMPLE_REDIRECT_URL,
-      },
+
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -392,6 +396,9 @@ describe('create Request JWT should', () => {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
+        },
+        payload: {
+          redirect_uri: EXAMPLE_REDIRECT_URL,
         },
       },
       registration: {
@@ -428,6 +435,13 @@ describe('create Request JWT should', () => {
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
+        },
+        payload: {
+          client_id: 'test_client_id',
+          scope: 'test',
+          response_type: 'id_token',
+          request_object_signing_alg_values_supported: [SigningAlgo.ES256, SigningAlgo.EDDSA],
+          redirect_uri: EXAMPLE_REDIRECT_URL,
         },
       },
       clientMetadata: {
@@ -511,7 +525,7 @@ describe('create Request JWT should', () => {
   it('succeed when requesting with a valid PD', async () => {
     const opts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
-      payload: {
+      /*payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
         response_type: 'id_token',
@@ -534,7 +548,7 @@ describe('create Request JWT should', () => {
             },
           },
         },
-      },
+      },*/
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -544,6 +558,30 @@ describe('create Request JWT should', () => {
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
+        },
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          redirect_uri: EXAMPLE_REDIRECT_URL,
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          claims: {
+            vp_token: {
+              presentation_definition: {
+                id: 'Insurance Plans',
+                input_descriptors: [
+                  {
+                    id: 'Ontario Health Insurance Plan',
+                    schema: [
+                      {
+                        uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
         },
       },
       clientMetadata: {
@@ -573,7 +611,8 @@ describe('create Request JWT should', () => {
     const uriRequest = await URI.fromOpts(opts);
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
-    expect(uriDecoded).toContain(`&claims=`);
+    expect(uriDecoded).toEqual(`openid://?request_uri=https://rp.acme.com/siop/jwts`);
+    expect((await (await uriRequest.toAuthorizationRequest()).requestObject.getPayload()).claims.vp_token).toBeDefined();
   });
 
   it('should throw error if presentation definition object is not valid', async () => {
@@ -612,6 +651,29 @@ describe('create Request JWT should', () => {
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
+        },
+        payload: {
+          client_id: 'test_client_id',
+          scope: 'test',
+          response_type: 'id_token',
+          redirect_uri: EXAMPLE_REDIRECT_URL,
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          claims: {
+            vp_token: {
+              presentation_definition: {
+                input_descriptors: [
+                  {
+                    id: 'Ontario Health Insurance Plan',
+                    schema: [
+                      {
+                        uri: 'https://did.itsourweb.org:3000/smartcredential/Ontario-Health-Insurance-Plan',
+                      },
+                    ],
+                  },
+                ],
+              } as IPresentationDefinition,
+            },
+          },
         },
       },
       clientMetadata: {

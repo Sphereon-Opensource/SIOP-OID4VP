@@ -11,7 +11,7 @@ export const assertValidVerifyAuthorizationRequestOpts = (opts: VerifyAuthorizat
 };
 
 export const assertValidAuthorizationRequestOpts = (opts: CreateAuthorizationRequestOpts) => {
-  if (!opts || !opts.payload || !opts.payload.redirect_uri || !opts.requestObject) {
+  if (!opts || !opts.requestObject || (!opts.payload && !opts.requestObject.payload) || (opts.payload?.request_uri && !opts.requestObject.payload)) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
   assertValidRequestObjectOpts(opts.requestObject, false);

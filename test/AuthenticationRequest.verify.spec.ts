@@ -57,15 +57,7 @@ describe('verifyJWT should', () => {
     expect.assertions(1);
     const requestOpts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
-      payload: {
-        state: 'expected state',
-        client_id: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        response_type: 'id_token',
-        request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        redirect_uri: EXAMPLE_REDIRECT_URL,
-        nonce: 'expected nonce',
-      },
+
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: EXAMPLE_REFERENCE_URL,
@@ -76,6 +68,15 @@ describe('verifyJWT should', () => {
           did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
           kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
           alg: SigningAlgo.EDDSA,
+        },
+        payload: {
+          state: 'expected state',
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          redirect_uri: EXAMPLE_REDIRECT_URL,
+          nonce: 'expected nonce',
         },
       },
       clientMetadata: {
@@ -124,16 +125,7 @@ describe('verifyJWT should', () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
       const requestOpts: CreateAuthorizationRequestOpts = {
         version: SupportedVersion.SIOPv2_ID1,
-        payload: {
-          client_id: WELL_KNOWN_OPENID_FEDERATION,
-          scope: 'test',
-          response_type: 'id_token',
-          state: '12345',
-          nonce: '12345',
-          request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-          authorization_endpoint: '',
-          redirect_uri: 'https://acme.com/hello',
-        },
+
         requestObject: {
           passBy: PassBy.REFERENCE,
           referenceUri: 'https://my-request.com/here',
@@ -142,6 +134,16 @@ describe('verifyJWT should', () => {
             did: mockEntity.did,
             kid: `${mockEntity.did}#controller`,
             alg: SigningAlgo.ES256K,
+          },
+          payload: {
+            client_id: WELL_KNOWN_OPENID_FEDERATION,
+            scope: 'test',
+            response_type: 'id_token',
+            state: '12345',
+            nonce: '12345',
+            request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+            authorization_endpoint: '',
+            redirect_uri: 'https://acme.com/hello',
           },
         },
         clientMetadata: {

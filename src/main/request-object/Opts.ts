@@ -10,8 +10,13 @@ export const assertValidRequestObjectOpts = (opts: RequestObjectOpts<ClaimPayloa
     throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   } else if (opts.passBy === PassBy.REFERENCE && !opts.referenceUri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
-  } else if (checkRequestObject && !opts.payload) {
-    throw Error(SIOPErrors.BAD_PARAMS);
+  } else if (!opts.payload) {
+    if (opts.referenceUri) {
+      // reference URI, but no actual payload to host there!
+      throw Error(SIOPErrors.REFERENCE_URI_NO_PAYLOAD);
+    } else if (checkRequestObject) {
+      throw Error(SIOPErrors.BAD_PARAMS);
+    }
   }
   // assertValidRequestRegistrationOpts(opts['registration'] ? opts['registration'] : opts['clientMetadata']);
 };

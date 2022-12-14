@@ -3,10 +3,14 @@ import { parse } from 'querystring';
 import { SIOPErrors } from '../types';
 
 export function decodeUriAsJson(uri: string) {
-  if (!uri || !uri.includes('openid')) {
+  if (!uri) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
-  const parts = parse(uri);
+  const queryString = uri.replace(/^([a-zA-Z-_]+:\/\/[?]?)/g, '');
+  if (!queryString) {
+    throw new Error(SIOPErrors.BAD_PARAMS);
+  }
+  const parts = parse(queryString);
 
   const json = {};
   for (const key in parts) {

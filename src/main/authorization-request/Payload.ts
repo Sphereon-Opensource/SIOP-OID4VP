@@ -54,7 +54,7 @@ export const createAuthorizationRequestPayload = async (
   requestObject?: RequestObject
 ): Promise<AuthorizationRequestPayload> => {
   const payload = opts.payload;
-  const state = getState(payload.state);
+  const state = getState(payload?.state);
   // TODO: if opts['registration] throw Error to get rid of test code using that key
   const clientMetadata = opts['registration'] ? opts['registration'] : (opts.clientMetadata as ClientMetadataOpts);
   const registration = await createRequestRegistration(clientMetadata, opts);

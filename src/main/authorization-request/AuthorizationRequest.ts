@@ -55,9 +55,10 @@ export class AuthorizationRequest {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
     assertValidAuthorizationRequestOpts(opts);
+
     const requestObjectArg =
       opts.requestObject.passBy !== PassBy.NONE ? (requestObject ? requestObject : await RequestObject.fromOpts(opts)) : undefined;
-    const requestPayload = await createAuthorizationRequestPayload(opts, requestObjectArg);
+    const requestPayload = opts?.payload ? await createAuthorizationRequestPayload(opts, requestObjectArg) : undefined;
     return new AuthorizationRequest(requestPayload, requestObjectArg, opts);
   }
 

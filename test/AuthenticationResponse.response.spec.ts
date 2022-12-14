@@ -114,14 +114,14 @@ describe('create JWT from Request JWT should', () => {
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const requestOpts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
-      payload: {
+      /*payload: {
         nonce: '12345',
         state: '12345',
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         scope: 'test',
         response_type: 'id_token',
         redirect_uri: EXAMPLE_REDIRECT_URL,
-      },
+      },*/
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: 'https://my-request.com/here',
@@ -130,6 +130,14 @@ describe('create JWT from Request JWT should', () => {
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
           alg: SigningAlgo.ES256K,
+        },
+        payload: {
+          nonce: '12345',
+          state: '12345',
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          redirect_uri: EXAMPLE_REDIRECT_URL,
         },
       },
       clientMetadata: {
@@ -207,12 +215,7 @@ describe('create JWT from Request JWT should', () => {
       const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
       const requestOpts: CreateAuthorizationRequestOpts = {
         version: SupportedVersion.SIOPv2_ID1,
-        payload: {
-          client_id: WELL_KNOWN_OPENID_FEDERATION,
-          scope: 'test',
-          response_type: 'id_token',
-          redirect_uri: EXAMPLE_REDIRECT_URL,
-        },
+
         requestObject: {
           passBy: PassBy.REFERENCE,
           referenceUri: 'https://my-request.com/here',
@@ -221,6 +224,12 @@ describe('create JWT from Request JWT should', () => {
             did: mockReqEntity.did,
             kid: `${mockReqEntity.did}#controller`,
             alg: SigningAlgo.ES256K,
+          },
+          payload: {
+            client_id: WELL_KNOWN_OPENID_FEDERATION,
+            scope: 'test',
+            response_type: 'id_token',
+            redirect_uri: EXAMPLE_REDIRECT_URL,
           },
         },
         clientMetadata: {
@@ -330,17 +339,6 @@ describe('create JWT from Request JWT should', () => {
     };
     const requestOpts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
-      payload: {
-        client_id: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
-        response_type: 'id_token',
-        redirect_uri: EXAMPLE_REDIRECT_URL,
-        claims: {
-          vp_token: {
-            presentation_definition: definition,
-          },
-        },
-      },
       requestObject: {
         passBy: PassBy.REFERENCE,
         referenceUri: 'https://my-request.com/here',
@@ -349,6 +347,17 @@ describe('create JWT from Request JWT should', () => {
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
           alg: SigningAlgo.ES256K,
+        },
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'id_token',
+          redirect_uri: EXAMPLE_REDIRECT_URL,
+          claims: {
+            vp_token: {
+              presentation_definition: definition,
+            },
+          },
         },
       },
       clientMetadata: {
@@ -503,14 +512,14 @@ describe('create JWT from Request JWT should', () => {
       version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
+        /*scope: 'test',
         response_type: 'token_id',
         redirect_uri: EXAMPLE_REDIRECT_URL,
         claims: {
           vp_token: {
             presentation_definition: definition,
           },
-        },
+        },*/
       },
       requestObject: {
         passBy: PassBy.REFERENCE,
@@ -520,6 +529,17 @@ describe('create JWT from Request JWT should', () => {
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
           alg: SigningAlgo.ES256K,
+        },
+        payload: {
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          scope: 'test',
+          response_type: 'token_id',
+          redirect_uri: EXAMPLE_REDIRECT_URL,
+          claims: {
+            vp_token: {
+              presentation_definition: definition,
+            },
+          },
         },
       },
       clientMetadata: {

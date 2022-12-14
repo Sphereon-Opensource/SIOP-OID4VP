@@ -33,7 +33,6 @@ export const AuthorizationRequestOptsSchema = {
       },
       "required": [
         "version",
-        "payload",
         "requestObject"
       ],
       "additionalProperties": false
@@ -365,6 +364,9 @@ export const AuthorizationRequestOptsSchema = {
               "$ref": "#/definitions/SigningAlgo"
             }
           ]
+        },
+        "request_uri": {
+          "type": "string"
         }
       }
     },
@@ -1192,7 +1194,6 @@ export const AuthorizationRequestOptsSchema = {
       },
       "additionalProperties": false,
       "required": [
-        "payload",
         "requestObject",
         "version"
       ]
@@ -1281,6 +1282,9 @@ export const AuthorizationRequestOptsSchema = {
               "$ref": "#/definitions/SigningAlgo"
             }
           ]
+        },
+        "request_uri": {
+          "type": "string"
         }
       }
     },

@@ -23,7 +23,10 @@ export interface ClaimPayloadCommonOpts {
   [x: string]: any;
 }
 
-export type AuthorizationRequestPayloadOpts<CT extends ClaimPayloadCommonOpts> = Partial<RequestObjectPayloadOpts<CT>>;
+export interface AuthorizationRequestPayloadOpts<CT extends ClaimPayloadCommonOpts> extends Partial<RequestObjectPayloadOpts<CT>> {
+  request_uri?: string; // The Request object payload if provided by reference
+  // Note we do not list the request property here, as the lib constructs the value, and we do not want people to pass that value in directly as it will lead to people not understanding why things fail
+}
 export interface RequestObjectPayloadOpts<CT extends ClaimPayloadCommonOpts> {
   scope: string; // from openid-connect-self-issued-v2-1_0-ID1
   response_type: string; // from openid-connect-self-issued-v2-1_0-ID1
@@ -50,7 +53,7 @@ interface AuthorizationRequestCommonOpts<CT extends ClaimPayloadCommonOpts> {
   version: SupportedVersion;
 
   clientMetadata?: ClientMetadataOpts; // this maps to 'registration' for older SIOPv2 specs! OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
-  payload: AuthorizationRequestPayloadOpts<CT>;
+  payload?: AuthorizationRequestPayloadOpts<CT>;
   requestObject: RequestObjectOpts<CT>;
 
   uriScheme?: string; // Use a custom scheme for the URI. By default openid:// will be used

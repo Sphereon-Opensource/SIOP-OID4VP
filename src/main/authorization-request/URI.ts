@@ -12,6 +12,7 @@ import {
   RequestObjectPayload,
   RPRegistrationMetadataPayload,
   SIOPErrors,
+  SupportedVersion,
   UrlEncodingFormat,
 } from '../types';
 
@@ -130,20 +131,33 @@ export class URI implements AuthorizationRequestURI {
   /**
    * Creates an URI Request
    * @param opts Options to define the Uri Request
-   * @param request
+   * @param authorizationRequestPayload
    *
    */
   private static async fromAuthorizationRequestPayload(
-    opts: { uriScheme?: string; passBy: PassBy; referenceUri?: string },
-    request: AuthorizationRequestPayload | string,
+    opts: { uriScheme?: string; passBy: PassBy; referenceUri?: string; version?: SupportedVersion },
+    authorizationRequestPayload: AuthorizationRequestPayload | string,
     requestObject?: RequestObject
   ): Promise<URI> {
-    if (!request) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+    if (!authorizationRequestPayload) {
+      if (!requestObject || !(await requestObject.getPayload())) {
+        throw Error(SIOPErrors.BAD_PARAMS);
+      }
+      authorizationRequestPayload = {}; // No auth request payload, so the eventual URI will contain a `request_uri` or `request` value only
     }
-    const scheme = opts.uriScheme ? (opts.uriScheme.endsWith('://') ? opts.uriScheme : `${opts.uriScheme}://`) : 'openid://';
-    const isJwt = typeof request === 'string';
-    const requestObjectJwt = requestObject ? await requestObject.toJwt() : isJwt ? request : request.request;
+    const scheme = opts.uriScheme
+      ? opts.uriScheme.endsWith('://')
+        ? opts.uriScheme
+        : `${opts.uriScheme}://`
+      : opts?.version && opts.version === SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1
+      ? 'openid-vc://'
+      : 'openid://';
+    const isJwt = typeof authorizationRequestPayload === 'string';
+    const requestObjectJwt = requestObject
+      ? await requestObject.toJwt()
+      : typeof authorizationRequestPayload === 'string'
+      ? authorizationRequestPayload
+      : authorizationRequestPayload.request;
     if (isJwt && (!requestObjectJwt || !requestObjectJwt.startsWith('ey'))) {
       throw Error(SIOPErrors.NO_JWT);
     }
@@ -158,7 +172,8 @@ export class URI implements AuthorizationRequestURI {
         assertValidRPRegistrationMedataPayload(requestObjectPayload.registration);
       }
     }
-    const authorizationRequest: AuthorizationRequestPayload = isJwt ? (requestObjectPayload as AuthorizationRequestPayload) : request;
+    const authorizationRequest: AuthorizationRequestPayload =
+      typeof authorizationRequestPayload === 'string' ? (requestObjectPayload as AuthorizationRequestPayload) : authorizationRequestPayload;
     if (!authorizationRequest) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
@@ -197,8 +212,8 @@ export class URI implements AuthorizationRequestURI {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
     // We strip the uri scheme before passing it to the decode function
-    const scheme: string = uri.match(/^.*:\/\/\??/)[0];
-    const authorizationRequestPayload = decodeUriAsJson(uri.replace(/^.*:\/\/\??/, '')) as AuthorizationRequestPayload;
+    const scheme: string = uri.match(/^([a-zA-Z-_]+:\/\/)/g)[0];
+    const authorizationRequestPayload = decodeUriAsJson(uri) as AuthorizationRequestPayload;
     return { scheme, authorizationRequestPayload };
   }
 
@@ -208,6 +223,7 @@ export class URI implements AuthorizationRequestURI {
     }
     const { authorizationRequestPayload, scheme } = this.parse(uri);
     const requestObjectJwt = await fetchByReferenceOrUseByValue(authorizationRequestPayload.request_uri, authorizationRequestPayload.request, true);
+    //fixme: can also be client_metadata
     const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
       authorizationRequestPayload['registration_uri'],
       authorizationRequestPayload['registration']

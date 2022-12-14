@@ -40,6 +40,7 @@ enum SIOPErrors {
   NO_KEY_CURVE_SUPPORTED = 'Key Curve not supported.',
   NO_NONCE = 'No nonce found in JWT payload',
   NO_REFERENCE_URI = 'referenceUri must be defined when REFERENCE option is used',
+  REFERENCE_URI_NO_PAYLOAD = 'referenceUri specified, but object to host there is not present',
   NO_DID_METHOD_FOUND = 'No did method found.',
   NO_SELFISSUED_ISS = 'The Response Token Issuer Claim (iss) MUST be https://self-isued.me',
   NO_SUB_TYPE = 'No or empty sub_type found in JWT payload',
