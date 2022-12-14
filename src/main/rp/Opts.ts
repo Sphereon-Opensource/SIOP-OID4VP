@@ -1,11 +1,11 @@
 import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
-import { CreateAuthorizationRequestOpts } from '../authorization-request';
+import { CreateAuthorizationRequestOpts, PropertyTarget, PropertyTargets, RequestPropertyWithTargets } from '../authorization-request';
 import { VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getResolverUnion, mergeAllDidMethods } from '../did';
 import { AuthorizationRequestOptsSchema } from '../schemas';
-import { ClientMetadataOpts, InternalVerification, SIOPErrors, VerificationMode } from '../types';
+import { ClientMetadataOpts, InternalVerification, RequestObjectPayload, SIOPErrors, VerificationMode } from '../types';
 
 import Builder from './Builder';
 
@@ -21,24 +21,25 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
     ? {
         version,
         payload: {
-          authorization_endpoint: opts.builder.authorizationEndpoint,
-          subject_types_supported: opts.builder.requestRegistration.subjectTypesSupported,
-          request_object_signing_alg_values_supported: opts.builder.requestRegistration.requestObjectSigningAlgValuesSupported,
-          response_mode: opts.builder.responseMode,
+          ...opts.builder.authorizationRequestPayload,
+          // response_mode: opts.builder.response_mode,
           // responseContext: opts.builder.responseContext,
-          claims: opts.builder.claims,
-          scope: opts.builder.scope,
-          response_type: opts.builder.responseType,
-          client_id: opts.builder.clientId,
-          redirect_uri: opts.builder.redirectUri,
-          response_types_supported: opts.builder.requestRegistration.responseTypesSupported,
-          scopes_supported: opts.builder.requestRegistration.scopesSupported,
+          // claims: opts.builder.claims,
+          // scope: opts.builder.scope,
+          // response_type: opts.builder.response_type,
+          // client_id: opts.builder.client_id,
+          // redirect_uri: opts.builder.redirect_uri,
+          response_types_supported: opts.builder.clientMetadata.responseTypesSupported,
+          subject_types_supported: opts.builder.clientMetadata.subjectTypesSupported,
+          request_object_signing_alg_values_supported: opts.builder.clientMetadata.requestObjectSigningAlgValuesSupported,
+          scopes_supported: opts.builder.clientMetadata.scopesSupported,
         },
         requestObject: {
           ...opts.builder.requestObjectBy,
+          payload: { ...(opts.builder.requestObjectPayload as RequestObjectPayload) },
           signatureType: opts.builder.signatureType,
         },
-        clientMetadata: opts.builder.requestRegistration as ClientMetadataOpts,
+        clientMetadata: opts.builder.clientMetadata as ClientMetadataOpts,
       }
     : opts.createRequestOpts;
 
@@ -50,15 +51,15 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
 };
 
 export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builder?: Builder; verifyOpts?: VerifyAuthorizationResponseOpts }) => {
-  if (opts?.builder?.resolvers.size && opts.builder?.requestRegistration) {
-    opts.builder.requestRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
-      opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+  if (opts?.builder?.resolvers.size && opts.builder?.clientMetadata) {
+    opts.builder.clientMetadata.subjectSyntaxTypesSupported = mergeAllDidMethods(
+      opts.builder.clientMetadata.subjectSyntaxTypesSupported,
       opts.builder.resolvers
     );
   }
   let resolver: Resolvable;
   if (opts.builder) {
-    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.requestRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers);
+    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.clientMetadata.subjectSyntaxTypesSupported, opts.builder.resolvers);
   }
   return opts.builder
     ? {
@@ -68,7 +69,7 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
           wellknownDIDVerifyCallback: opts.builder.verifyCallback,
           presentationVerificationCallback: opts.builder.presentationVerificationCallback,
           resolveOpts: {
-            subjectSyntaxTypesSupported: opts.builder.requestRegistration.subjectSyntaxTypesSupported,
+            subjectSyntaxTypesSupported: opts.builder.clientMetadata.subjectSyntaxTypesSupported,
             resolver: resolver,
           },
           supportedVersions: opts.builder.supportedVersions,
@@ -79,4 +80,29 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
         } as InternalVerification,
       }
     : opts.verifyOpts;
+};
+
+export const isTargetOrNoTargets = (searchTarget: PropertyTarget, targets?: PropertyTargets): boolean => {
+  if (!targets) {
+    return true;
+  }
+  return isTarget(searchTarget, targets);
+};
+
+export const isTarget = (searchTarget: PropertyTarget, targets: PropertyTargets): boolean => {
+  return Array.isArray(targets) ? targets.includes(searchTarget) : targets === searchTarget;
+};
+
+export const assignIfAuth = <T>(opt: RequestPropertyWithTargets<T>): T => {
+  if (isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opt.targets)) {
+    return opt.propertyValue;
+  }
+  return undefined;
+};
+
+export const assignIfRequestObject = <T>(opt: RequestPropertyWithTargets<T>): T => {
+  if (isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, opt.targets)) {
+    return opt.propertyValue;
+  }
+  return undefined;
 };

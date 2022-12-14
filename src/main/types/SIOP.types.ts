@@ -646,7 +646,9 @@ export const isNoSignature = (object: InternalSignature | ExternalSignature | No
 export const isRequestOpts = (object: CreateAuthorizationRequestOpts | AuthorizationResponseOpts): object is CreateAuthorizationRequestOpts =>
   'requestBy' in object;
 
-export const isResponseOpts = (object: RequestObjectOpts | AuthorizationResponseOpts): object is RequestObjectOpts => 'did' in object;
+export const isResponseOpts = (
+  object: RequestObjectOpts<RequestCommonPayload> | AuthorizationResponseOpts
+): object is RequestObjectOpts<RequestCommonPayload> => 'did' in object;
 
 export const isRequestPayload = (
   object: AuthorizationRequestPayload | RequestObjectPayload | AuthorizationResponsePayload | IDTokenPayload

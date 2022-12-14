@@ -7,6 +7,7 @@ import {
   ExternalVerification,
   InternalSignature,
   InternalVerification,
+  NoSignature,
   ResponseMode,
   ResponseRegistrationOpts,
   SuppliedSignature,
@@ -18,7 +19,7 @@ export interface AuthorizationResponseOpts {
   registration: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
 
-  signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
+  signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
   nonce?: string;
   state?: string;
   responseMode?: ResponseMode;

@@ -15,6 +15,7 @@ import {
 import { JWTDecoded } from 'did-jwt/lib/JWT';
 import { Resolvable } from 'did-resolver';
 
+import { ClaimPayloadCommonOpts } from '../authorization-request';
 import { AuthorizationResponseOpts } from '../authorization-response';
 import { post } from '../helpers';
 import { RequestObjectOpts } from '../request-object';
@@ -85,7 +86,10 @@ export async function createDidJWT(
   return createJWT(payload, { issuer, signer, expiresIn, canonicalize }, header);
 }
 
-export async function signDidJwtPayload(payload: IDTokenPayload | RequestObjectPayload, opts: RequestObjectOpts | AuthorizationResponseOpts) {
+export async function signDidJwtPayload(
+  payload: IDTokenPayload | RequestObjectPayload,
+  opts: RequestObjectOpts<ClaimPayloadCommonOpts> | AuthorizationResponseOpts
+) {
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
   if (isResponse) {
     if (!payload.iss || (payload.iss !== ResponseIss.SELF_ISSUED_V2 && payload.iss !== payload.sub)) {

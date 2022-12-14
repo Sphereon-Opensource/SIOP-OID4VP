@@ -204,8 +204,8 @@ describe('RP and OP interaction should', () => {
         .build();
 
       const requestURI = await rp.createAuthorizationRequestURI({
-        nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
-        state: 'b32f0087fc9816eb813fd11f',
+        nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
+        state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
       });
 
       nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
@@ -303,8 +303,8 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const requestURI = await rp.createAuthorizationRequestURI({
-      nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
-      state: 'b32f0087fc9816eb813fd11f',
+      nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
+      state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
     });
 
     // Let's test the parsing
@@ -403,8 +403,8 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const requestURI = await rp.createAuthorizationRequestURI({
-      nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
-      state: 'b32f0087fc9816eb813fd11f',
+      nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
+      state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
     });
 
     //The schema validation needs to be done here otherwise it fails because of JWT properties

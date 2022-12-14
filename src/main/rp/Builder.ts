@@ -4,10 +4,11 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
 import { Resolvable, Resolver } from 'did-resolver';
 
-import { ClaimPayloadCommonOpts, ClaimPayloadOptsVID1 } from '../authorization-request';
+import { PropertyTarget, PropertyTargets } from '../authorization-request';
 import { PresentationVerificationCallback } from '../authorization-response';
 import { getMethodFromDid } from '../did';
 import {
+  AuthorizationRequestPayload,
   CheckLinkedDomain,
   ClientMetadataOpts,
   EcdsaSignature,
@@ -17,7 +18,6 @@ import {
   ObjectBy,
   PassBy,
   RequestObjectPayload,
-  ResponseContext,
   ResponseIss,
   ResponseMode,
   ResponseType,
@@ -29,61 +29,61 @@ import {
   SupportedVersion,
 } from '../types';
 
+import { assignIfAuth, assignIfRequestObject, isTargetOrNoTargets } from './Opts';
 import { RP } from './RP';
 
 export default class Builder {
-  authorizationEndpoint: string;
-  issuer: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   customResolver?: Resolvable;
-  requestRegistration: Partial<ClientMetadataOpts> = {};
-  redirectUri: string;
   requestObjectBy: ObjectBy;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
-  responseMode?: ResponseMode;
-  responseContext?: ResponseContext.RP;
-  claims?: ClaimPayloadCommonOpts | ClaimPayloadOptsVID1;
   checkLinkedDomain?: CheckLinkedDomain;
   verifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
+  authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
+  requestObjectPayload: Partial<RequestObjectPayload> = {};
 
-  requestPayload: Partial<RequestObjectPayload> = {};
-  responseType: ResponseType;
-  scope: string;
-  clientId: string;
-
+  clientMetadata?: Partial<ClientMetadataOpts> = {};
+  /*  response_mode?: ResponseMode;
+    claims?: ClaimPayloadCommonOpts | ClaimPayloadOptsVID1;
+    redirect_uri: string;
+    response_type: ResponseType;
+    scope: string;
+    client_id: string;
+    authorization_endpoint: string;
+    iss: ResponseIss;
   presentationDefinition: IPresentationDefinition;
-
+*/
   private constructor(supportedRequestVersion?: SupportedVersion) {
     if (supportedRequestVersion) {
       this.addSupportedVersion(supportedRequestVersion);
     }
   }
 
-  withScope(scope: string): Builder {
-    this.scope = scope;
-    this.requestPayload.scope = scope;
+  withScope(scope: string, targets?: PropertyTargets): Builder {
+    this.authorizationRequestPayload.scope = assignIfAuth({ propertyValue: scope, targets });
+    this.requestObjectPayload.scope = assignIfRequestObject({ propertyValue: scope, targets });
     return this;
   }
 
-  withResponseType(responseType: ResponseType): Builder {
-    this.responseType = responseType;
-    this.requestPayload.response_type = responseType;
+  withResponseType(responseType: ResponseType, targets?: PropertyTargets): Builder {
+    this.authorizationRequestPayload.response_type = assignIfAuth({ propertyValue: responseType, targets });
+    this.requestObjectPayload.response_type = assignIfRequestObject({ propertyValue: responseType, targets });
     return this;
   }
 
-  withClientId(clientId: string): Builder {
-    this.clientId = clientId;
-    this.requestPayload.client_id = clientId;
+  withClientId(clientId: string, targets?: PropertyTargets): Builder {
+    this.authorizationRequestPayload.client_id = assignIfAuth({ propertyValue: clientId, targets });
+    this.requestObjectPayload.client_id = assignIfRequestObject({ propertyValue: clientId, targets });
     return this;
   }
 
-  withIssuer(issuer: ResponseIss): Builder {
-    this.issuer = issuer;
-    this.requestPayload.iss = issuer.valueOf();
+  withIssuer(issuer: ResponseIss, targets?: PropertyTargets): Builder {
+    this.authorizationRequestPayload.iss = assignIfAuth({ propertyValue: issuer, targets });
+    this.requestObjectPayload.iss = assignIfRequestObject({ propertyValue: issuer, targets });
     return this;
   }
 
@@ -113,8 +113,15 @@ export default class Builder {
     return this;
   }
 
-  withAuthorizationEndpoint(authorizationEndpoint: string): Builder {
-    this.authorizationEndpoint = authorizationEndpoint;
+  withAuthorizationEndpoint(authorizationEndpoint: string, targets?: PropertyTargets): Builder {
+    this.authorizationRequestPayload.authorization_endpoint = assignIfAuth({
+      propertyValue: authorizationEndpoint,
+      targets,
+    });
+    this.requestObjectPayload.authorization_endpoint = assignIfRequestObject({
+      propertyValue: authorizationEndpoint,
+      targets,
+    });
     return this;
   }
 
@@ -132,8 +139,9 @@ export default class Builder {
     return this;
   }
 
-  withRedirectUri(redirectUri: string): Builder {
-    this.redirectUri = redirectUri;
+  withRedirectUri(redirectUri: string, targets?: PropertyTargets): Builder {
+    this.authorizationRequestPayload.redirect_uri = assignIfAuth({ propertyValue: redirectUri, targets });
+    this.requestObjectPayload.redirect_uri = assignIfRequestObject({ propertyValue: redirectUri, targets });
     return this;
   }
 
@@ -145,15 +153,34 @@ export default class Builder {
     return this;
   }
 
-  withResponseMode(responseMode: ResponseMode): Builder {
-    this.responseMode = responseMode;
+  withResponseMode(responseMode: ResponseMode, targets?: PropertyTargets): Builder {
+    this.authorizationRequestPayload.response_mode = assignIfAuth({ propertyValue: responseMode, targets });
+    this.requestObjectPayload.response_mode = assignIfRequestObject({ propertyValue: responseMode, targets });
     return this;
   }
 
-  withClientMetadata(clientMetadata: ClientMetadataOpts): Builder {
-    this.requestRegistration = {
-      ...clientMetadata,
-    };
+  withClientMetadata(clientMetadata: ClientMetadataOpts, targets?: PropertyTargets): Builder {
+    if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
+      this.authorizationRequestPayload.request_registration = assignIfAuth({
+        propertyValue: clientMetadata,
+        targets,
+      });
+      this.requestObjectPayload.request_registration = assignIfRequestObject({
+        propertyValue: clientMetadata,
+        targets,
+      });
+    } else {
+      this.authorizationRequestPayload.client_metadata = assignIfAuth({
+        propertyValue: clientMetadata,
+        targets,
+      });
+      this.requestObjectPayload.client_metadata = assignIfRequestObject({
+        propertyValue: clientMetadata,
+        targets,
+      });
+    }
+    //fixme: Add URL
+    this.clientMetadata = clientMetadata;
     return this;
   }
 
@@ -178,17 +205,36 @@ export default class Builder {
     return this;
   }
 
-  withPresentationDefinition(definitionOpt: IPresentationDefinition): Builder {
+  withPresentationDefinition(definition: IPresentationDefinition, definitionUri?: string, targets?: PropertyTargets): Builder {
+    const definitionProperties = {
+      presentation_definition: definition,
+      presentation_definition_uri: definitionUri,
+    };
     if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
-      if (!this.claims || !this.claims.vp_token) {
-        this.claims = {
-          vp_token: {
-            presentation_definition: definitionOpt,
-          },
+      const vp_token = { ...definitionProperties };
+      if (isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, targets)) {
+        this.authorizationRequestPayload.claims = {
+          ...(this.authorizationRequestPayload.claims ? this.authorizationRequestPayload.claims : {}),
+          vp_token,
+        };
+      }
+      if (isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, targets)) {
+        this.requestObjectPayload.claims = {
+          ...(this.requestObjectPayload.claims ? this.requestObjectPayload.claims : {}),
+          vp_token,
         };
       }
     } else {
-      this.presentationDefinition = definitionOpt;
+      this.authorizationRequestPayload.presentation_definition = assignIfAuth({ propertyValue: definition, targets });
+      this.authorizationRequestPayload.presentation_definition_uri = assignIfAuth({
+        propertyValue: definitionUri,
+        targets,
+      });
+      this.requestObjectPayload.presentation_definition = assignIfRequestObject({ propertyValue: definition, targets });
+      this.requestObjectPayload.presentation_definition_uri = assignIfRequestObject({
+        propertyValue: definitionUri,
+        targets,
+      });
     }
     return this;
   }
@@ -220,8 +266,11 @@ export default class Builder {
     return this;
   }
 
-  public getSupportedRequestVersion(): SupportedVersion | undefined {
+  public getSupportedRequestVersion(requireVersion?: boolean): SupportedVersion | undefined {
     if (!this.supportedVersions || this.supportedVersions.length === 0) {
+      if (requireVersion !== false) {
+        throw Error('No supported version supplied/available');
+      }
       return undefined;
     }
     return this.supportedVersions[0];

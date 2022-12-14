@@ -42,7 +42,7 @@ describe('RP Builder should', () => {
     expect.assertions(1);
 
     expect(
-      RP.builder()
+      RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
         .withClientId('test_client_id')
         .withScope('test')
         .withResponseType(ResponseType.ID_TOKEN)

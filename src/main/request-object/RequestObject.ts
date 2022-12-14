@@ -1,6 +1,6 @@
 import { decodeJWT } from 'did-jwt';
 
-import { CreateAuthorizationRequestOpts } from '../authorization-request';
+import { ClaimPayloadCommonOpts, ClaimPayloadOptsVID1, CreateAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidAuthorizationRequestOpts } from '../authorization-request/Opts';
 import { signDidJwtPayload } from '../did';
 import { fetchByReferenceOrUseByValue } from '../helpers';
@@ -13,9 +13,13 @@ import { RequestObjectOpts } from './types';
 export class RequestObject {
   private payload: RequestObjectPayload;
   private jwt: RequestObjectJwt;
-  private readonly opts: RequestObjectOpts;
+  private readonly opts: RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1>;
 
-  private constructor(opts?: CreateAuthorizationRequestOpts | RequestObjectOpts, payload?: RequestObjectPayload, jwt?: string) {
+  private constructor(
+    opts?: CreateAuthorizationRequestOpts | RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1>,
+    payload?: RequestObjectPayload,
+    jwt?: string
+  ) {
     this.opts = opts ? RequestObject.mergeOAuth2AndOpenIdProperties(opts) : undefined;
     this.payload = payload;
     this.jwt = jwt;
@@ -92,7 +96,7 @@ export class RequestObject {
     assertValidRequestObjectPayload(await this.getPayload());
   }
 
-  public get options(): RequestObjectOpts | undefined {
+  public get options(): RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1> | undefined {
     return this.opts;
   }
 
@@ -105,7 +109,9 @@ export class RequestObject {
     }
   }
 
-  private static mergeOAuth2AndOpenIdProperties(opts: CreateAuthorizationRequestOpts | RequestObjectOpts): RequestObjectOpts {
+  private static mergeOAuth2AndOpenIdProperties(
+    opts: CreateAuthorizationRequestOpts | RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1>
+  ): RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1> {
     if (!opts) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }

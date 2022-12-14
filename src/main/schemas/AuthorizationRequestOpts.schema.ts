@@ -22,24 +22,21 @@ export const AuthorizationRequestOptsSchema = {
           "$ref": "#/definitions/ClientMetadataOpts"
         },
         "payload": {
-          "$ref": "#/definitions/AuthorizationRequestPayloadOpts"
+          "$ref": "#/definitions/AuthorizationRequestPayloadOpts%3CClaimPayloadOptsVID1%3E"
         },
         "requestObject": {
-          "$ref": "#/definitions/RequestObjectOpts"
+          "$ref": "#/definitions/RequestObjectOpts%3CClaimPayloadOptsVID1%3E"
         },
         "uriScheme": {
           "type": "string"
-        },
-        "claims": {
-          "$ref": "#/definitions/ClaimPayloadOptsVID1"
         }
       },
-      "additionalProperties": false,
       "required": [
+        "version",
         "payload",
-        "requestObject",
-        "version"
-      ]
+        "requestObject"
+      ],
+      "additionalProperties": false
     },
     "SupportedVersion": {
       "type": "number",
@@ -284,10 +281,7 @@ export const AuthorizationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
-    "AuthorizationRequestPayloadOpts": {
-      "$ref": "#/definitions/RequestObjectPayloadOpts"
-    },
-    "RequestObjectPayloadOpts": {
+    "AuthorizationRequestPayloadOpts<ClaimPayloadOptsVID1>": {
       "type": "object",
       "properties": {
         "scope": {
@@ -306,7 +300,7 @@ export const AuthorizationRequestOptsSchema = {
           "type": "string"
         },
         "claims": {
-          "$ref": "#/definitions/ClaimPayloadCommonOpts"
+          "$ref": "#/definitions/ClaimPayloadOptsVID1"
         },
         "nonce": {
           "type": "string"
@@ -372,172 +366,7 @@ export const AuthorizationRequestOptsSchema = {
             }
           ]
         }
-      },
-      "required": [
-        "scope",
-        "response_type",
-        "client_id",
-        "redirect_uri"
-      ],
-      "additionalProperties": false
-    },
-    "ClaimPayloadCommonOpts": {
-      "type": "object"
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
-    },
-    "RequestObjectOpts": {
-      "type": "object",
-      "properties": {
-        "passBy": {
-          "$ref": "#/definitions/PassBy"
-        },
-        "referenceUri": {
-          "type": "string"
-        },
-        "payload": {
-          "$ref": "#/definitions/RequestObjectPayloadOpts"
-        },
-        "signatureType": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/InternalSignature"
-            },
-            {
-              "$ref": "#/definitions/ExternalSignature"
-            },
-            {
-              "$ref": "#/definitions/SuppliedSignature"
-            },
-            {
-              "$ref": "#/definitions/NoSignature"
-            }
-          ]
-        }
-      },
-      "required": [
-        "passBy",
-        "signatureType"
-      ],
-      "additionalProperties": false
-    },
-    "InternalSignature": {
-      "type": "object",
-      "properties": {
-        "hexPrivateKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "alg": {
-          "$ref": "#/definitions/SigningAlgo"
-        },
-        "kid": {
-          "type": "string"
-        },
-        "customJwtSigner": {
-          "$ref": "#/definitions/Signer"
-        }
-      },
-      "required": [
-        "hexPrivateKey",
-        "did",
-        "alg"
-      ],
-      "additionalProperties": false
-    },
-    "Signer": {
-      "properties": {
-        "isFunction": {
-          "type": "boolean",
-          "const": true
-        }
       }
-    },
-    "ExternalSignature": {
-      "type": "object",
-      "properties": {
-        "signatureUri": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "authZToken": {
-          "type": "string"
-        },
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "alg": {
-          "$ref": "#/definitions/SigningAlgo"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "signatureUri",
-        "did",
-        "alg"
-      ],
-      "additionalProperties": false
-    },
-    "SuppliedSignature": {
-      "type": "object",
-      "properties": {
-        "signature": {
-          "properties": {
-            "isFunction": {
-              "type": "boolean",
-              "const": true
-            }
-          }
-        },
-        "alg": {
-          "$ref": "#/definitions/SigningAlgo"
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "signature",
-        "alg",
-        "did",
-        "kid"
-      ],
-      "additionalProperties": false
-    },
-    "NoSignature": {
-      "type": "object",
-      "properties": {
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "hexPublicKey",
-        "did"
-      ],
-      "additionalProperties": false
     },
     "ClaimPayloadOptsVID1": {
       "type": "object",
@@ -1091,6 +920,254 @@ export const AuthorizationRequestOptsSchema = {
       ],
       "additionalProperties": false
     },
+    "ResponseMode": {
+      "type": "string",
+      "enum": [
+        "fragment",
+        "form_post",
+        "post",
+        "query"
+      ]
+    },
+    "RequestObjectOpts<ClaimPayloadOptsVID1>": {
+      "type": "object",
+      "properties": {
+        "passBy": {
+          "$ref": "#/definitions/PassBy"
+        },
+        "referenceUri": {
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/definitions/RequestObjectPayloadOpts%3CClaimPayloadOptsVID1%3E"
+        },
+        "signatureType": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/InternalSignature"
+            },
+            {
+              "$ref": "#/definitions/ExternalSignature"
+            },
+            {
+              "$ref": "#/definitions/SuppliedSignature"
+            },
+            {
+              "$ref": "#/definitions/NoSignature"
+            }
+          ]
+        }
+      },
+      "required": [
+        "passBy",
+        "signatureType"
+      ],
+      "additionalProperties": false
+    },
+    "RequestObjectPayloadOpts<ClaimPayloadOptsVID1>": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "response_type": {
+          "type": "string"
+        },
+        "client_id": {
+          "type": "string"
+        },
+        "redirect_uri": {
+          "type": "string"
+        },
+        "id_token_hint": {
+          "type": "string"
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimPayloadOptsVID1"
+        },
+        "nonce": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "authorization_endpoint": {
+          "type": "string"
+        },
+        "response_mode": {
+          "$ref": "#/definitions/ResponseMode"
+        },
+        "response_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
+        },
+        "scopes_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subject_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
+        },
+        "request_object_signing_alg_values_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        }
+      },
+      "required": [
+        "scope",
+        "response_type",
+        "client_id",
+        "redirect_uri"
+      ]
+    },
+    "InternalSignature": {
+      "type": "object",
+      "properties": {
+        "hexPrivateKey": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
+        "kid": {
+          "type": "string"
+        },
+        "customJwtSigner": {
+          "$ref": "#/definitions/Signer"
+        }
+      },
+      "required": [
+        "hexPrivateKey",
+        "did",
+        "alg"
+      ],
+      "additionalProperties": false
+    },
+    "Signer": {
+      "properties": {
+        "isFunction": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
+    "ExternalSignature": {
+      "type": "object",
+      "properties": {
+        "signatureUri": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "authZToken": {
+          "type": "string"
+        },
+        "hexPublicKey": {
+          "type": "string"
+        },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "signatureUri",
+        "did",
+        "alg"
+      ],
+      "additionalProperties": false
+    },
+    "SuppliedSignature": {
+      "type": "object",
+      "properties": {
+        "signature": {
+          "properties": {
+            "isFunction": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
+        "alg": {
+          "$ref": "#/definitions/SigningAlgo"
+        },
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "signature",
+        "alg",
+        "did",
+        "kid"
+      ],
+      "additionalProperties": false
+    },
+    "NoSignature": {
+      "type": "object",
+      "properties": {
+        "hexPublicKey": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hexPublicKey",
+        "did"
+      ],
+      "additionalProperties": false
+    },
     "AuthorizationRequestOptsVD11": {
       "type": "object",
       "properties": {
@@ -1101,19 +1178,16 @@ export const AuthorizationRequestOptsSchema = {
           "$ref": "#/definitions/ClientMetadataOpts"
         },
         "payload": {
-          "$ref": "#/definitions/AuthorizationRequestPayloadOpts"
+          "$ref": "#/definitions/AuthorizationRequestPayloadOpts%3CClaimPayloadCommonOpts%3E"
         },
         "requestObject": {
-          "$ref": "#/definitions/RequestObjectOpts"
+          "$ref": "#/definitions/RequestObjectOpts%3CClaimPayloadCommonOpts%3E"
         },
         "uriScheme": {
           "type": "string"
         },
         "idTokenType": {
           "type": "string"
-        },
-        "claims": {
-          "$ref": "#/definitions/ClaimPayloadCommonOpts"
         }
       },
       "additionalProperties": false,
@@ -1121,6 +1195,224 @@ export const AuthorizationRequestOptsSchema = {
         "payload",
         "requestObject",
         "version"
+      ]
+    },
+    "AuthorizationRequestPayloadOpts<ClaimPayloadCommonOpts>": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "response_type": {
+          "type": "string"
+        },
+        "client_id": {
+          "type": "string"
+        },
+        "redirect_uri": {
+          "type": "string"
+        },
+        "id_token_hint": {
+          "type": "string"
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimPayloadCommonOpts"
+        },
+        "nonce": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "authorization_endpoint": {
+          "type": "string"
+        },
+        "response_mode": {
+          "$ref": "#/definitions/ResponseMode"
+        },
+        "response_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
+        },
+        "scopes_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subject_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
+        },
+        "request_object_signing_alg_values_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        }
+      }
+    },
+    "ClaimPayloadCommonOpts": {
+      "type": "object"
+    },
+    "RequestObjectOpts<ClaimPayloadCommonOpts>": {
+      "type": "object",
+      "properties": {
+        "passBy": {
+          "$ref": "#/definitions/PassBy"
+        },
+        "referenceUri": {
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/definitions/RequestObjectPayloadOpts%3CClaimPayloadCommonOpts%3E"
+        },
+        "signatureType": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/InternalSignature"
+            },
+            {
+              "$ref": "#/definitions/ExternalSignature"
+            },
+            {
+              "$ref": "#/definitions/SuppliedSignature"
+            },
+            {
+              "$ref": "#/definitions/NoSignature"
+            }
+          ]
+        }
+      },
+      "required": [
+        "passBy",
+        "signatureType"
+      ],
+      "additionalProperties": false
+    },
+    "RequestObjectPayloadOpts<ClaimPayloadCommonOpts>": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string"
+        },
+        "response_type": {
+          "type": "string"
+        },
+        "client_id": {
+          "type": "string"
+        },
+        "redirect_uri": {
+          "type": "string"
+        },
+        "id_token_hint": {
+          "type": "string"
+        },
+        "claims": {
+          "$ref": "#/definitions/ClaimPayloadCommonOpts"
+        },
+        "nonce": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "authorization_endpoint": {
+          "type": "string"
+        },
+        "response_mode": {
+          "$ref": "#/definitions/ResponseMode"
+        },
+        "response_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ResponseType"
+              }
+            },
+            {
+              "$ref": "#/definitions/ResponseType"
+            }
+          ]
+        },
+        "scopes_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Scope"
+              }
+            },
+            {
+              "$ref": "#/definitions/Scope"
+            }
+          ]
+        },
+        "subject_types_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SubjectType"
+              }
+            },
+            {
+              "$ref": "#/definitions/SubjectType"
+            }
+          ]
+        },
+        "request_object_signing_alg_values_supported": {
+          "anyOf": [
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SigningAlgo"
+              }
+            },
+            {
+              "$ref": "#/definitions/SigningAlgo"
+            }
+          ]
+        }
+      },
+      "required": [
+        "scope",
+        "response_type",
+        "client_id",
+        "redirect_uri"
       ]
     }
   }

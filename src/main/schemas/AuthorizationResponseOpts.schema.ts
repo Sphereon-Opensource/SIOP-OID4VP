@@ -24,6 +24,9 @@ export const AuthorizationResponseOptsSchema = {
             },
             {
               "$ref": "#/definitions/SuppliedSignature"
+            },
+            {
+              "$ref": "#/definitions/NoSignature"
             }
           ]
         },
@@ -1507,6 +1510,25 @@ export const AuthorizationResponseOptsSchema = {
         "alg",
         "did",
         "kid"
+      ],
+      "additionalProperties": false
+    },
+    "NoSignature": {
+      "type": "object",
+      "properties": {
+        "hexPublicKey": {
+          "type": "string"
+        },
+        "did": {
+          "type": "string"
+        },
+        "kid": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hexPublicKey",
+        "did"
       ],
       "additionalProperties": false
     },

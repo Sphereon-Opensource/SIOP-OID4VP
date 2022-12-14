@@ -1,8 +1,9 @@
+import { ClaimPayloadCommonOpts } from '../authorization-request';
 import { PassBy, SIOPErrors } from '../types';
 
 import { RequestObjectOpts } from './types';
 
-export const assertValidRequestObjectOpts = (opts: RequestObjectOpts, checkRequestObject: boolean) => {
+export const assertValidRequestObjectOpts = (opts: RequestObjectOpts<ClaimPayloadCommonOpts>, checkRequestObject: boolean) => {
   if (!opts) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   } else if (opts.passBy !== PassBy.REFERENCE && opts.passBy !== PassBy.VALUE) {

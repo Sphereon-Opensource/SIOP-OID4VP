@@ -1,4 +1,12 @@
-import { AuthorizationRequest, ClaimPayloadCommonOpts, CreateAuthorizationRequestOpts, URI } from '../authorization-request';
+import {
+  AuthorizationRequest,
+  ClaimPayloadCommonOpts,
+  CreateAuthorizationRequestOpts,
+  PropertyTarget,
+  RequestObjectPayloadOpts,
+  RequestPropertyWithTargets,
+  URI,
+} from '../authorization-request';
 import { AuthorizationResponse, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getNonce, getState } from '../helpers';
 import {
@@ -12,7 +20,7 @@ import {
 } from '../types';
 
 import Builder from './Builder';
-import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts } from './Opts';
+import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts, isTargetOrNoTargets } from './Opts';
 
 export class RP {
   private readonly _createRequestOptions: CreateAuthorizationRequestOpts;
@@ -23,9 +31,9 @@ export class RP {
     createRequestOpts?: CreateAuthorizationRequestOpts;
     verifyResponseOpts?: VerifyAuthorizationResponseOpts;
   }) {
-    const claims = opts.builder?.claims || opts.createRequestOpts?.payload.claims;
+    // const claims = opts.builder?.claims || opts.createRequestOpts?.payload.claims;
     const authReqOpts = createRequestOptsFromBuilderOrExistingOpts(opts);
-    this._createRequestOptions = { ...authReqOpts, payload: { ...authReqOpts.payload, claims }, claims };
+    this._createRequestOptions = { ...authReqOpts, payload: { ...authReqOpts.payload } };
     this._verifyResponseOptions = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
   }
 
@@ -47,20 +55,34 @@ export class RP {
 
   public async createAuthorizationRequest(opts?: {
     version?: SupportedVersion;
-    nonce?: string;
-    state?: string;
-    claims?: ClaimPayloadCommonOpts;
+    nonce?: string | RequestPropertyWithTargets<string>;
+    state?: string | RequestPropertyWithTargets<string>;
+    claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
   }): Promise<AuthorizationRequest> {
-    return await AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts(opts));
+    const nonce = opts?.nonce && typeof opts.nonce === 'string' ? { propertyValue: opts.nonce } : (opts?.nonce as RequestPropertyWithTargets<string>);
+    const state = opts?.state && typeof opts.state === 'string' ? { propertyValue: opts.state } : (opts?.state as RequestPropertyWithTargets<string>);
+    const claims =
+      opts?.claims && !('propertyValue' in opts.claims)
+        ? { propertyValue: opts.claims }
+        : (opts?.claims as RequestPropertyWithTargets<ClaimPayloadCommonOpts>);
+    return await AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }));
   }
 
   public async createAuthorizationRequestURI(opts?: {
     version?: SupportedVersion;
-    nonce?: string;
-    state?: string;
-    claims?: ClaimPayloadCommonOpts;
+    nonce?: string | RequestPropertyWithTargets<string>;
+    state?: string | RequestPropertyWithTargets<string>;
+    claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
   }): Promise<URI> {
-    return await URI.fromOpts(this.newAuthorizationRequestOpts(opts));
+    const nonce =
+      opts?.nonce && typeof opts?.nonce === 'string' ? { propertyValue: opts.nonce } : (opts?.nonce as RequestPropertyWithTargets<string>);
+    const state =
+      opts?.state && typeof opts?.state === 'string' ? { propertyValue: opts.state } : (opts?.state as RequestPropertyWithTargets<string>);
+    const claims =
+      opts?.claims && !('propertyValue' in opts.claims)
+        ? { propertyValue: opts.claims }
+        : (opts?.claims as RequestPropertyWithTargets<ClaimPayloadCommonOpts>);
+    return await URI.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }));
   }
 
   public async verifyAuthorizationResponse(
@@ -83,23 +105,43 @@ export class RP {
 
   private newAuthorizationRequestOpts(opts?: {
     version?: SupportedVersion;
-    nonce?: string;
-    state?: string;
-    claims?: ClaimPayloadCommonOpts;
+    nonce?: RequestPropertyWithTargets<string>;
+    state?: RequestPropertyWithTargets<string>;
+    claims?: RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
   }): CreateAuthorizationRequestOpts {
-    const state = opts?.state || getState(opts?.state);
-    const nonce = opts?.nonce || getNonce(state, opts?.nonce);
     const version = opts?.version ?? this._createRequestOptions.version;
     if (!version) {
       throw Error(SIOPErrors.NO_REQUEST_VERSION);
     }
-    const claims = opts?.claims || this._createRequestOptions.claims;
-    return {
-      ...this._createRequestOptions,
-      version,
-      payload: { ...this._createRequestOptions.payload, state, nonce },
-      claims,
-    };
+
+    const newOpts = { ...this._createRequestOptions, version };
+    newOpts.requestObject.payload = newOpts.requestObject.payload ?? ({} as RequestObjectPayloadOpts<ClaimPayloadCommonOpts>);
+    newOpts.payload = newOpts.payload ?? {};
+
+    const state = opts.state?.propertyValue ? opts.state.propertyValue : getState(opts?.state?.propertyValue);
+    if (opts.state?.propertyValue && isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opts.state.targets)) {
+      newOpts.payload.state = state;
+    }
+    if (opts.state?.propertyValue && isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, opts.state.targets)) {
+      newOpts.requestObject.payload.state = state;
+    }
+
+    const nonce = opts.nonce?.propertyValue ? opts.nonce.propertyValue : getNonce(state, opts?.nonce?.propertyValue);
+    if (opts.nonce?.propertyValue && isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opts.nonce.targets)) {
+      newOpts.payload.nonce = nonce;
+    }
+    if (opts.nonce?.propertyValue && isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, opts.nonce.targets)) {
+      newOpts.requestObject.payload.nonce = nonce;
+    }
+    if (opts?.claims?.propertyValue) {
+      if (isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opts.nonce.targets)) {
+        newOpts.payload.claims = { ...newOpts.payload.claims, ...opts.claims.propertyValue };
+      }
+      if (isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, opts.nonce.targets)) {
+        newOpts.requestObject.payload.claims = { ...newOpts.requestObject.payload.claims, ...opts.claims.propertyValue };
+      }
+    }
+    return newOpts;
   }
 
   private newVerifyAuthorizationResponseOpts(opts?: {
