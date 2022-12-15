@@ -52,7 +52,7 @@ describe('RP', () => {
         },
         PropertyTarget.REQUEST_OBJECT
       )
-      .withRedirectUri('https://example.com/siop-response')
+      .withRedirectUri('https://example.com/siop-response', PropertyTarget.REQUEST_OBJECT)
       .withRequestBy(PassBy.REFERENCE, TestVectors.request_uri)
       .addDidMethod('ion')
       .withInternalSignature(hexPrivateKey, TestVectors.did, TestVectors.kid, SigningAlgo.EDDSA)

@@ -4,7 +4,7 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
 import { Resolvable, Resolver } from 'did-resolver';
 
-import { PropertyTarget, PropertyTargets } from '../authorization-request';
+import { PropertyTarget, PropertyTargets, RequestPropertyWithTargets } from '../authorization-request';
 import { PresentationVerificationCallback } from '../authorization-response';
 import { getMethodFromDid } from '../did';
 import {
@@ -46,7 +46,7 @@ export default class Builder {
   private _authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
   private _requestObjectPayload: Partial<RequestObjectPayload> = {};
 
-  clientMetadata?: ClientMetadataOpts = undefined;
+  clientMetadata?: RequestPropertyWithTargets<ClientMetadataOpts> = undefined;
 
   private constructor(supportedRequestVersion?: SupportedVersion) {
     if (supportedRequestVersion) {
@@ -170,7 +170,7 @@ export default class Builder {
         targets,
       });
     }
-    this.clientMetadata = clientMetadata;
+    this.clientMetadata = { propertyValue: clientMetadata, targets };
     //fixme: Add URL
     return this;
   }
