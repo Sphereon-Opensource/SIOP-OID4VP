@@ -43,20 +43,11 @@ export default class Builder {
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
-  authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
-  requestObjectPayload: Partial<RequestObjectPayload> = {};
+  private _authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
+  private _requestObjectPayload: Partial<RequestObjectPayload> = {};
 
-  clientMetadata?: Partial<ClientMetadataOpts> = {};
-  /*  response_mode?: ResponseMode;
-    claims?: ClaimPayloadCommonOpts | ClaimPayloadOptsVID1;
-    redirect_uri: string;
-    response_type: ResponseType;
-    scope: string;
-    client_id: string;
-    authorization_endpoint: string;
-    iss: ResponseIss;
-  presentationDefinition: IPresentationDefinition;
-*/
+  clientMetadata?: ClientMetadataOpts = undefined;
+
   private constructor(supportedRequestVersion?: SupportedVersion) {
     if (supportedRequestVersion) {
       this.addSupportedVersion(supportedRequestVersion);
@@ -64,26 +55,26 @@ export default class Builder {
   }
 
   withScope(scope: string, targets?: PropertyTargets): Builder {
-    this.authorizationRequestPayload.scope = assignIfAuth({ propertyValue: scope, targets });
-    this.requestObjectPayload.scope = assignIfRequestObject({ propertyValue: scope, targets });
+    this._authorizationRequestPayload.scope = assignIfAuth({ propertyValue: scope, targets });
+    this._requestObjectPayload.scope = assignIfRequestObject({ propertyValue: scope, targets });
     return this;
   }
 
   withResponseType(responseType: ResponseType, targets?: PropertyTargets): Builder {
-    this.authorizationRequestPayload.response_type = assignIfAuth({ propertyValue: responseType, targets });
-    this.requestObjectPayload.response_type = assignIfRequestObject({ propertyValue: responseType, targets });
+    this._authorizationRequestPayload.response_type = assignIfAuth({ propertyValue: responseType, targets });
+    this._requestObjectPayload.response_type = assignIfRequestObject({ propertyValue: responseType, targets });
     return this;
   }
 
   withClientId(clientId: string, targets?: PropertyTargets): Builder {
-    this.authorizationRequestPayload.client_id = assignIfAuth({ propertyValue: clientId, targets });
-    this.requestObjectPayload.client_id = assignIfRequestObject({ propertyValue: clientId, targets });
+    this._authorizationRequestPayload.client_id = assignIfAuth({ propertyValue: clientId, targets });
+    this._requestObjectPayload.client_id = assignIfRequestObject({ propertyValue: clientId, targets });
     return this;
   }
 
   withIssuer(issuer: ResponseIss, targets?: PropertyTargets): Builder {
-    this.authorizationRequestPayload.iss = assignIfAuth({ propertyValue: issuer, targets });
-    this.requestObjectPayload.iss = assignIfRequestObject({ propertyValue: issuer, targets });
+    this._authorizationRequestPayload.iss = assignIfAuth({ propertyValue: issuer, targets });
+    this._requestObjectPayload.iss = assignIfRequestObject({ propertyValue: issuer, targets });
     return this;
   }
 
@@ -114,11 +105,11 @@ export default class Builder {
   }
 
   withAuthorizationEndpoint(authorizationEndpoint: string, targets?: PropertyTargets): Builder {
-    this.authorizationRequestPayload.authorization_endpoint = assignIfAuth({
+    this._authorizationRequestPayload.authorization_endpoint = assignIfAuth({
       propertyValue: authorizationEndpoint,
       targets,
     });
-    this.requestObjectPayload.authorization_endpoint = assignIfRequestObject({
+    this._requestObjectPayload.authorization_endpoint = assignIfRequestObject({
       propertyValue: authorizationEndpoint,
       targets,
     });
@@ -140,8 +131,8 @@ export default class Builder {
   }
 
   withRedirectUri(redirectUri: string, targets?: PropertyTargets): Builder {
-    this.authorizationRequestPayload.redirect_uri = assignIfAuth({ propertyValue: redirectUri, targets });
-    this.requestObjectPayload.redirect_uri = assignIfRequestObject({ propertyValue: redirectUri, targets });
+    this._authorizationRequestPayload.redirect_uri = assignIfAuth({ propertyValue: redirectUri, targets });
+    this._requestObjectPayload.redirect_uri = assignIfRequestObject({ propertyValue: redirectUri, targets });
     return this;
   }
 
@@ -154,33 +145,33 @@ export default class Builder {
   }
 
   withResponseMode(responseMode: ResponseMode, targets?: PropertyTargets): Builder {
-    this.authorizationRequestPayload.response_mode = assignIfAuth({ propertyValue: responseMode, targets });
-    this.requestObjectPayload.response_mode = assignIfRequestObject({ propertyValue: responseMode, targets });
+    this._authorizationRequestPayload.response_mode = assignIfAuth({ propertyValue: responseMode, targets });
+    this._requestObjectPayload.response_mode = assignIfRequestObject({ propertyValue: responseMode, targets });
     return this;
   }
 
   withClientMetadata(clientMetadata: ClientMetadataOpts, targets?: PropertyTargets): Builder {
     if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
-      this.authorizationRequestPayload.request_registration = assignIfAuth({
+      this._authorizationRequestPayload.request_registration = assignIfAuth({
         propertyValue: clientMetadata,
         targets,
       });
-      this.requestObjectPayload.request_registration = assignIfRequestObject({
+      this._requestObjectPayload.request_registration = assignIfRequestObject({
         propertyValue: clientMetadata,
         targets,
       });
     } else {
-      this.authorizationRequestPayload.client_metadata = assignIfAuth({
+      this._authorizationRequestPayload.client_metadata = assignIfAuth({
         propertyValue: clientMetadata,
         targets,
       });
-      this.requestObjectPayload.client_metadata = assignIfRequestObject({
+      this._requestObjectPayload.client_metadata = assignIfRequestObject({
         propertyValue: clientMetadata,
         targets,
       });
     }
-    //fixme: Add URL
     this.clientMetadata = clientMetadata;
+    //fixme: Add URL
     return this;
   }
 
@@ -213,25 +204,28 @@ export default class Builder {
     if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
       const vp_token = { ...definitionProperties };
       if (isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, targets)) {
-        this.authorizationRequestPayload.claims = {
-          ...(this.authorizationRequestPayload.claims ? this.authorizationRequestPayload.claims : {}),
+        this._authorizationRequestPayload.claims = {
+          ...(this._authorizationRequestPayload.claims ? this._authorizationRequestPayload.claims : {}),
           vp_token,
         };
       }
       if (isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, targets)) {
-        this.requestObjectPayload.claims = {
-          ...(this.requestObjectPayload.claims ? this.requestObjectPayload.claims : {}),
+        this._requestObjectPayload.claims = {
+          ...(this._requestObjectPayload.claims ? this._requestObjectPayload.claims : {}),
           vp_token,
         };
       }
     } else {
-      this.authorizationRequestPayload.presentation_definition = assignIfAuth({ propertyValue: definition, targets });
-      this.authorizationRequestPayload.presentation_definition_uri = assignIfAuth({
+      this._authorizationRequestPayload.presentation_definition = assignIfAuth({ propertyValue: definition, targets });
+      this._authorizationRequestPayload.presentation_definition_uri = assignIfAuth({
         propertyValue: definitionUri,
         targets,
       });
-      this.requestObjectPayload.presentation_definition = assignIfRequestObject({ propertyValue: definition, targets });
-      this.requestObjectPayload.presentation_definition_uri = assignIfRequestObject({
+      this._requestObjectPayload.presentation_definition = assignIfRequestObject({
+        propertyValue: definition,
+        targets,
+      });
+      this._requestObjectPayload.presentation_definition_uri = assignIfRequestObject({
         propertyValue: definitionUri,
         targets,
       });
@@ -285,5 +279,17 @@ export default class Builder {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     return new RP({ builder: this });
+  }
+
+  get authorizationRequestPayload(): Partial<AuthorizationRequestPayload> {
+    return this._authorizationRequestPayload;
+  }
+
+  get requestObjectPayload(): Partial<RequestObjectPayload> {
+    return this._requestObjectPayload;
+  }
+
+  public mergedPayload(): Partial<AuthorizationRequestPayload> {
+    return { ...this.authorizationRequestPayload, ...this.requestObjectPayload };
   }
 }

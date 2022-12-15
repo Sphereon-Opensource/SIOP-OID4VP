@@ -10,13 +10,14 @@ import { AuthorizationResponseOpts } from './types';
 
 export const createResponsePayload = async (
   authorizationRequest: AuthorizationRequest,
-  idTokenPayload: IDTokenPayload,
-  responseOpts: AuthorizationResponseOpts
-): Promise<AuthorizationResponsePayload> => {
+  responseOpts: AuthorizationResponseOpts,
+  idTokenPayload?: IDTokenPayload
+): Promise<AuthorizationResponsePayload | undefined> => {
   assertValidResponseOpts(responseOpts);
-  if (!authorizationRequest || !(await authorizationRequest.requestObjectJwt())) {
-    throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
+  if (!authorizationRequest) {
+    throw new Error(SIOPErrors.NO_REQUEST);
   }
+
   const state = responseOpts.state || getState(authorizationRequest.payload.state);
   const { vp_token, verifiable_presentations } = extractPresentations(responseOpts);
   return {
@@ -26,7 +27,7 @@ export const createResponsePayload = async (
     expires_in: responseOpts.expiresIn,
     // fixme: The or definitely is wrong. The verifiable_presentations should end up in the ID token if present
     vp_token: vp_token || verifiable_presentations,
-    id_token: await signDidJwtPayload(idTokenPayload, responseOpts),
+    ...(idTokenPayload ? { id_token: await signDidJwtPayload(idTokenPayload, responseOpts) } : {}),
     state,
   };
 };

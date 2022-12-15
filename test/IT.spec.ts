@@ -183,7 +183,8 @@ describe('RP and OP interaction should', () => {
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
-        .registrationBy({
+        //FIXME: Move payload options to seperate property
+        .registration({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           issuer: ResponseIss.SELF_ISSUED_V2,
@@ -282,7 +283,7 @@ describe('RP and OP interaction should', () => {
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
-      .registrationBy({
+      .registration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
@@ -382,7 +383,7 @@ describe('RP and OP interaction should', () => {
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
-      .registrationBy({
+      .registration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
@@ -481,7 +482,7 @@ describe('RP and OP interaction should', () => {
       .addVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
-      .registrationBy({
+      .registration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
@@ -603,7 +604,7 @@ describe('RP and OP interaction should', () => {
         .withExpiresIn(1000)
         .addVerifyCallback(verifyCallback)
         .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
-        .registrationBy({
+        .registration({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           issuer: ResponseIss.SELF_ISSUED_V2,
@@ -744,7 +745,7 @@ describe('RP and OP interaction should', () => {
       .addVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
-      .registrationBy({
+      .registration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         issuer: ResponseIss.SELF_ISSUED_V2,
@@ -883,7 +884,7 @@ describe('RP and OP interaction should', () => {
         .withExpiresIn(1000)
         .addDidMethod('ethr')
         .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
-        .registrationBy({
+        .registration({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
           issuer: ResponseIss.SELF_ISSUED_V2,
@@ -1019,7 +1020,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationSignCallback(presentationSignCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .addVerifyCallback(verifyCallback)
-      .registrationBy({
+      .registration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         issuer: ResponseIss.SELF_ISSUED_V2,
@@ -1324,7 +1325,7 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-      .registrationBy({
+      .registration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
         issuer: ResponseIss.SELF_ISSUED_V2,

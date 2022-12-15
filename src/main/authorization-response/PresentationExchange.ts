@@ -3,9 +3,14 @@ import { PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmiss
 import { IPresentation, IProofPurpose, IProofType, W3CVerifiableCredential, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 
 import { extractDataFromPath, getWithUrl } from '../helpers';
-import { AuthorizationRequestPayload, SIOPErrors, VerifiablePresentationPayload } from '../types';
+import { AuthorizationRequestPayload, SIOPErrors, SupportedVersion, VerifiablePresentationPayload } from '../types';
 
-import { PresentationDefinitionWithLocation, PresentationLocation, PresentationSignCallback, PresentationVerificationCallback } from './types';
+import {
+  PresentationDefinitionLocation,
+  PresentationDefinitionWithLocation,
+  PresentationSignCallback,
+  PresentationVerificationCallback,
+} from './types';
 
 export class PresentationExchange {
   readonly pex = new PEX();
@@ -116,13 +121,15 @@ export class PresentationExchange {
    * returns null if no property named "presentation_definition" is found
    * returns a PresentationDefinition if a valid instance found
    * @param authorizationRequestPayload: object that can have a presentation_definition inside
+   * @param version
    */
   public static async findValidPresentationDefinitions(
-    authorizationRequestPayload: AuthorizationRequestPayload
+    authorizationRequestPayload: AuthorizationRequestPayload,
+    version?: SupportedVersion
   ): Promise<PresentationDefinitionWithLocation[]> {
     const allDefinitions: PresentationDefinitionWithLocation[] = [];
 
-    async function extractPDFromVPToken() {
+    async function extractDefinitionFromVPToken() {
       const vpTokens: PresentationDefinitionV1[] | PresentationDefinitionV2[] = extractDataFromPath(
         authorizationRequestPayload,
         '$..vp_token.presentation_definition'
@@ -134,7 +141,7 @@ export class PresentationExchange {
       if (vpTokens && vpTokens.length) {
         vpTokens.forEach((vpToken) => {
           PresentationExchange.assertValidPresentationDefinition(vpToken.value);
-          allDefinitions.push({ definition: vpToken.value, location: PresentationLocation.VP_TOKEN });
+          allDefinitions.push({ definition: vpToken.value, location: PresentationDefinitionLocation.CLAIMS_VP_TOKEN, version });
         });
       } else if (vpTokenRefs && vpTokenRefs.length) {
         for (const vpTokenRef of vpTokenRefs) {
@@ -142,21 +149,21 @@ export class PresentationExchange {
             | PresentationDefinitionV1
             | PresentationDefinitionV2;
           PresentationExchange.assertValidPresentationDefinition(pd);
-          allDefinitions.push({ definition: pd, location: PresentationLocation.VP_TOKEN });
+          allDefinitions.push({ definition: pd, location: PresentationDefinitionLocation.CLAIMS_VP_TOKEN, version });
         }
       }
     }
 
-    function addSingleIdTokenPDToPDs(definition: IPresentationDefinition): void {
+    function addSingleToplevelPDToPDs(definition: IPresentationDefinition, version?: SupportedVersion): void {
       PresentationExchange.assertValidPresentationDefinition(definition);
-      allDefinitions.push({ definition: definition, location: PresentationLocation.ID_TOKEN });
+      allDefinitions.push({ definition: definition, location: PresentationDefinitionLocation.TOPLEVEL_PRESENTATION_DEF, version });
     }
 
-    async function extractPDFromOtherTokens() {
-      const definitions = extractDataFromPath(authorizationRequestPayload, '$..verifiable_presentations.presentation_definition');
-      const definitionsFromList = extractDataFromPath(authorizationRequestPayload, '$..verifiable_presentations[*].presentation_definition');
-      const definitionRefs = extractDataFromPath(authorizationRequestPayload, '$..verifiable_presentations.presentation_definition_uri');
-      const definitionRefsFromList = extractDataFromPath(authorizationRequestPayload, '$..verifiable_presentations.presentation_definition_uri');
+    async function extractDefinitionFromTopLevelDefinitionProperty(version?: SupportedVersion) {
+      const definitions = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition');
+      const definitionsFromList = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition[*]');
+      const definitionRefs = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition_uri');
+      const definitionRefsFromList = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition_uri[*]');
       const hasPD = (definitions && definitions.length > 0) || (definitionsFromList && definitionsFromList > 0);
       const hasPdRef = (definitionRefs && definitionRefs.length > 0) || (definitionRefsFromList && definitionsFromList > 0);
       if (hasPD && hasPdRef) {
@@ -164,32 +171,30 @@ export class PresentationExchange {
       }
       if (definitions && definitions.length > 0) {
         definitions.forEach((definition) => {
-          addSingleIdTokenPDToPDs(definition.value);
+          addSingleToplevelPDToPDs(definition.value, version);
         });
       } else if (definitionsFromList && definitionsFromList.length > 0) {
         definitionsFromList.forEach((definition) => {
-          addSingleIdTokenPDToPDs(definition.value);
+          addSingleToplevelPDToPDs(definition.value, version);
         });
       } else if (definitionRefs && definitionRefs.length > 0) {
         for (const definitionRef of definitionRefs) {
-          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef.value)) as unknown as
-            | PresentationDefinitionV1
-            | PresentationDefinitionV2;
-          addSingleIdTokenPDToPDs(pd);
+          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = await getWithUrl(definitionRef.value);
+          addSingleToplevelPDToPDs(pd, version);
         }
       } else if (definitionsFromList && definitionRefsFromList.length > 0) {
         for (const definitionRef of definitionRefsFromList) {
-          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(definitionRef.value)) as unknown as
-            | PresentationDefinitionV1
-            | PresentationDefinitionV2;
-          addSingleIdTokenPDToPDs(pd);
+          const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = await getWithUrl(definitionRef.value);
+          addSingleToplevelPDToPDs(pd, version);
         }
       }
     }
 
     if (authorizationRequestPayload) {
-      await extractPDFromVPToken();
-      await extractPDFromOtherTokens();
+      if (!version || version < SupportedVersion.SIOPv2_D11) {
+        await extractDefinitionFromVPToken();
+      }
+      await extractDefinitionFromTopLevelDefinitionProperty();
     }
     return allDefinitions;
   }
@@ -227,17 +232,18 @@ export class PresentationExchange {
     await Promise.all(
       definitions.map(
         async (pd) =>
-          await PresentationExchange.validatePayloadAgainstDefinitions(pd.definition, vpPayloads, presentationSubmission, verifyPresentationCallback)
+          await PresentationExchange.validatePayloadsAgainstDefinition(pd.definition, vpPayloads, presentationSubmission, verifyPresentationCallback)
       )
     );
   }
 
-  private static async validatePayloadAgainstDefinitions(
+  private static async validatePayloadsAgainstDefinition(
     definition: IPresentationDefinition,
     vpPayloads: VerifiablePresentationPayload[],
     presentationSubmission: PresentationSubmission,
     verifyPresentationCallback?: PresentationVerificationCallback
   ) {
+    const pex = new PEX();
     function filterValidPresentations() {
       //TODO: add support for multiple VPs here
       return vpPayloads.filter(async (vpw: VerifiablePresentationPayload) => {
@@ -251,10 +257,10 @@ export class PresentationExchange {
             throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID);
           }
         }
-        // fixme: Limited disclosure suites
+        // TODO: Limited disclosure suites
         const evaluationResults = presentationSubmission
-          ? new PEX().evaluatePresentation(definition, { presentationSubmission, ...presentation }, [])
-          : new PEX().evaluatePresentation(definition, { ...presentation }, []);
+          ? pex.evaluatePresentation(definition, { presentationSubmission, ...presentation }, [])
+          : pex.evaluatePresentation(definition, { ...presentation }, []);
         const submission = evaluationResults.value;
         if (!presentation || !submission) {
           throw new Error(SIOPErrors.NO_PRESENTATION_SUBMISSION);
@@ -269,8 +275,8 @@ export class PresentationExchange {
       throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}`);
     }
     const presentation: IPresentation = checkedPresentations[0].presentation;
-    // fixme: Limited disclosure suites
-    const evaluationResults = new PEX().evaluatePresentation(definition, presentation, []);
+    // TODO: Limited disclosure suites
+    const evaluationResults = pex.evaluatePresentation(definition, presentation, []);
     PresentationExchange.assertValidPresentationSubmission(evaluationResults.value);
     await PresentationExchange.validatePresentationAgainstDefinition(definition, presentation);
   }

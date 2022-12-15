@@ -24,6 +24,7 @@ export const createIDTokenPayload = async (
   }
   const payload = await mergeOAuth2AndOpenIdInRequestPayload(authorizationRequestPayload);
 
+  //fixme: client_metadata and fetch
   const supportedDidMethods = payload['registration']?.subject_syntax_types_supported?.filter((sst) =>
     sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
   );
@@ -31,6 +32,7 @@ export const createIDTokenPayload = async (
   const nonce = payload.nonce || responseOpts.nonce || getNonce(state);
   const SEC_IN_MS = 1000;
   const idToken: IDTokenPayload = {
+    // fixme: ID11 does not use this static value anymore
     iss: ResponseIss.SELF_ISSUED_V2,
     aud: payload.redirect_uri,
     iat: Date.now() / SEC_IN_MS - 60 * SEC_IN_MS,

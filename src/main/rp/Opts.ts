@@ -17,26 +17,25 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
     throw Error(SIOPErrors.NO_REQUEST_VERSION);
   }
 
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   const createRequestOpts: CreateAuthorizationRequestOpts = opts.builder
     ? {
         version,
         payload: {
           ...opts.builder.authorizationRequestPayload,
-          // response_mode: opts.builder.response_mode,
-          // responseContext: opts.builder.responseContext,
-          // claims: opts.builder.claims,
-          // scope: opts.builder.scope,
-          // response_type: opts.builder.response_type,
-          // client_id: opts.builder.client_id,
-          // redirect_uri: opts.builder.redirect_uri,
-          response_types_supported: opts.builder.clientMetadata.responseTypesSupported,
-          subject_types_supported: opts.builder.clientMetadata.subjectTypesSupported,
-          request_object_signing_alg_values_supported: opts.builder.clientMetadata.requestObjectSigningAlgValuesSupported,
-          scopes_supported: opts.builder.clientMetadata.scopesSupported,
+          //response_types_supported: opts.builder.clientMetadata?.responseTypesSupported,
+          // subject_types_supported: opts.builder.clientMetadata?.subjectTypesSupported,
+          // request_object_signing_alg_values_supported: opts.builder.clientMetadata?.requestObjectSigningAlgValuesSupported
+          //scopes_supported: opts.builder.clientMetadata?.scopesSupported,
         },
         requestObject: {
           ...opts.builder.requestObjectBy,
-          payload: { ...(opts.builder.requestObjectPayload as RequestObjectPayload) },
+          payload: {
+            ...(opts.builder.requestObjectPayload as RequestObjectPayload),
+            subject_types_supported: opts.builder.clientMetadata?.subjectTypesSupported,
+            request_object_signing_alg_values_supported: opts.builder.clientMetadata?.requestObjectSigningAlgValuesSupported,
+          },
           signatureType: opts.builder.signatureType,
         },
         clientMetadata: opts.builder.clientMetadata as ClientMetadataOpts,

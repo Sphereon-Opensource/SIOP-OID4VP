@@ -12,9 +12,26 @@ const validateJWTVCPresentationProfile = ajv.compile(AuthorizationRequestPayload
 export const authorizationRequestVersionDiscovery = (authorizationRequest: AuthorizationRequestPayload): SupportedVersion[] => {
   const versions = [];
   const authorizationRequestCopy: AuthorizationRequestPayload = JSON.parse(JSON.stringify(authorizationRequest));
-  validateD11(authorizationRequestCopy) && versions.push(SupportedVersion.SIOPv2_D11);
-  validateJWTVCPresentationProfile(authorizationRequestCopy) && versions.push(SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1);
-  validateID1(authorizationRequestCopy) && versions.push(SupportedVersion.SIOPv2_ID1);
+  if (validateD11(authorizationRequestCopy)) {
+    if (!authorizationRequest.registration_uri && !authorizationRequest.registration && !authorizationRequest.claims['vp_token']) {
+      versions.push(SupportedVersion.SIOPv2_D11);
+    }
+  }
+  if (validateJWTVCPresentationProfile(authorizationRequestCopy)) {
+    if (!authorizationRequest.registration_uri && !authorizationRequest.registration && !authorizationRequest.claims['vp_token']) {
+      versions.push(SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1);
+    }
+  }
+  if (validateID1(authorizationRequestCopy)) {
+    if (
+      !authorizationRequest.client_metadata_uri &&
+      !authorizationRequest.client_metadata &&
+      !authorizationRequest.presentation_definition &&
+      !authorizationRequest.presentation_definition_uri
+    ) {
+      versions.push(SupportedVersion.SIOPv2_ID1);
+    }
+  }
   if (versions.length === 0) {
     throw new Error(errors.SIOP_VERSION_NOT_SUPPORTED);
   }

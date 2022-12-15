@@ -53,7 +53,7 @@ describe('OP Builder should', () => {
         .addDidMethod('ethr')
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .response(ResponseMode.POST)
-        .registrationBy({
+        .registration({
           registrationBy: { passBy: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
           logoUri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
@@ -238,7 +238,7 @@ describe('OP should', () => {
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
-      .registrationBy({
+      .registration({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],

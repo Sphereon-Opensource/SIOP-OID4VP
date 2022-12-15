@@ -55,7 +55,14 @@ export const AuthorizationRequestPayloadSchemaVD11 = {
           "type": "string"
         },
         "response_type": {
-          "$ref": "#/definitions/ResponseType"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ResponseType"
+            },
+            {
+              "type": "string"
+            }
+          ]
         },
         "client_id": {
           "type": "string"
@@ -225,16 +232,7 @@ export const AuthorizationRequestPayloadSchemaVD11 = {
             }
           ]
         }
-      },
-      "required": [
-        "client_id",
-        "id_token_signing_alg_values_supported",
-        "response_types_supported",
-        "scopes_supported",
-        "subject_syntax_types_supported",
-        "subject_types_supported",
-        "vp_formats"
-      ]
+      }
     },
     "SigningAlgo": {
       "type": "string",

@@ -3,6 +3,7 @@ import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
 import { Resolvable, Resolver } from 'did-resolver';
 
+import { PropertyTargets } from '../authorization-request';
 import { PresentationSignCallback } from '../authorization-response';
 import { getMethodFromDid } from '../did';
 import {
@@ -79,8 +80,9 @@ export class Builder {
     return this;
   }
 
-  registrationBy(responseRegistration: ResponseRegistrationOpts): Builder {
+  registration(responseRegistration: ResponseRegistrationOpts, targets?: PropertyTargets): Builder {
     this.responseRegistration = {
+      targets,
       ...responseRegistration,
     };
     return this;

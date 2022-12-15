@@ -2,7 +2,7 @@ import { PEX } from '@sphereon/pex';
 import Ajv from 'ajv';
 
 import { validateLinkedDomainWithDid } from '../did';
-import { getNonce, getState } from '../helpers';
+import { getNonce } from '../helpers';
 import { RequestObject } from '../request-object';
 import { RPRegistrationMetadataPayloadSchema } from '../schemas';
 import {
@@ -12,10 +12,7 @@ import {
   ClientMetadataOpts,
   PassBy,
   RequestObjectPayload,
-  ResponseMode,
-  ResponseType,
   RPRegistrationMetadataPayload,
-  Scope,
   SIOPErrors,
   SupportedVersion,
 } from '../types';
@@ -54,17 +51,20 @@ export const createAuthorizationRequestPayload = async (
   requestObject?: RequestObject
 ): Promise<AuthorizationRequestPayload> => {
   const payload = opts.payload;
-  const state = getState(payload?.state);
+  const mergedPayload = { ...opts.payload, ...opts?.requestObject?.payload };
+  const state = payload?.state ?? undefined;
+  const nonce = payload?.nonce ? getNonce(state, payload.nonce) : undefined;
   // TODO: if opts['registration] throw Error to get rid of test code using that key
   const clientMetadata = opts['registration'] ? opts['registration'] : (opts.clientMetadata as ClientMetadataOpts);
   const registration = await createRequestRegistration(clientMetadata, opts);
-  const claims = opts.version >= SupportedVersion.SIOPv2_ID1 ? payload.claims : createPresentationDefinitionClaimsProperties(payload.claims);
-  let clientId = payload.client_id;
-
-  const metadataKey = opts.version >= SupportedVersion.SIOPv2_D11.valueOf() ? 'client_metadata' : 'registration';
-  if (!clientId) {
-    clientId = registration.payload[metadataKey];
-  }
+  const claims =
+    opts.version >= SupportedVersion.SIOPv2_ID1 ? mergedPayload.claims : createPresentationDefinitionClaimsProperties(mergedPayload.claims);
+  // let clientId = mergedPayload.client_id;
+  //
+  // const metadataKey = opts.version >= SupportedVersion.SIOPv2_D11.valueOf() ? 'client_metadata' : 'registration';
+  /*if (!clientId) {
+    clientId = registration.payload[metadataKey].client_id;
+  }*/
   const isRequestByValue = opts.requestObject.passBy === PassBy.VALUE;
 
   if (isRequestByValue && !requestObject) {
@@ -73,16 +73,11 @@ export const createAuthorizationRequestPayload = async (
   const request = isRequestByValue ? await requestObject.toJwt() : undefined;
 
   return {
-    response_type: ResponseType.ID_TOKEN,
-    scope: Scope.OPENID,
+    ...payload,
     //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
-    client_id: clientId ? clientId : opts.requestObject.signatureType.did,
-    redirect_uri: payload.redirect_uri,
-    response_mode: payload.response_mode || ResponseMode.POST,
-    id_token_hint: payload.id_token_hint,
     ...(opts.requestObject.passBy === PassBy.REFERENCE ? { request_uri: opts.requestObject.referenceUri } : {}),
     ...(isRequestByValue ? { request } : {}),
-    nonce: getNonce(state, payload.nonce),
+    nonce,
     state,
     ...registration.payload,
     claims,

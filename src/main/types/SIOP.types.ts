@@ -39,7 +39,7 @@ export interface AuthorizationRequestCommonPayload extends RequestCommonPayload,
 }
 export interface RequestCommonPayload extends JWTPayload {
   scope?: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
-  response_type?: ResponseType; // REQUIRED. Constant string value id_token.
+  response_type?: ResponseType | string; // REQUIRED. Constant string value id_token.
   client_id?: string; // REQUIRED. RP's identifier at the Self-Issued OP.
   redirect_uri?: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
 
@@ -117,8 +117,9 @@ export interface AuthorizationResponsePayload {
   refresh_token?: string;
   expires_in: number;
   state: string;
-  id_token: string;
+  id_token?: string;
   vp_token?: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
+  presentation_submission?: PresentationSubmission;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
@@ -252,14 +253,14 @@ interface DiscoveryMetadataOptsVD11 extends DiscoveryMetadataCommonOpts {
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8.2
 // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
 interface DiscoveryMetadataCommonPayload {
-  authorization_endpoint: Schema | string;
-  issuer: ResponseIss;
-  response_types_supported: ResponseType[] | ResponseType;
-  scopes_supported: Scope[] | Scope;
-  subject_types_supported: SubjectType[] | SubjectType;
-  id_token_signing_alg_values_supported: SigningAlgo[] | SigningAlgo;
+  authorization_endpoint?: Schema | string;
+  issuer?: ResponseIss;
+  response_types_supported?: ResponseType[] | ResponseType;
+  scopes_supported?: Scope[] | Scope;
+  subject_types_supported?: SubjectType[] | SubjectType;
+  id_token_signing_alg_values_supported?: SigningAlgo[] | SigningAlgo;
   request_object_signing_alg_values_supported?: SigningAlgo[] | SigningAlgo;
-  subject_syntax_types_supported: string[];
+  subject_syntax_types_supported?: string[];
   token_endpoint?: string;
   userinfo_endpoint?: string;
   jwks_uri?: string;
@@ -314,14 +315,14 @@ interface DiscoveryMetadataCommonPayload {
 }
 
 interface DiscoveryMetadataPayloadVID1 extends DiscoveryMetadataCommonPayload {
-  client_id: string;
-  redirectUris: string[];
+  client_id?: string;
+  redirectUris?: string[];
   client_name?: string;
-  token_endpoint_auth_method: string;
-  application_type: string;
-  response_types: string;
-  grant_types: string;
-  vp_formats: Format;
+  token_endpoint_auth_method?: string;
+  application_type?: string;
+  response_types?: string;
+  grant_types?: string;
+  vp_formats?: Format;
 }
 
 interface JWT_VCDiscoveryMetadataPayload extends DiscoveryMetadataPayloadVID1 {

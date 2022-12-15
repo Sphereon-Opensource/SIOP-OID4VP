@@ -1,7 +1,7 @@
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
 import { getAudience, getResolver, parseJWT, verifyDidJWT } from '../did';
 import { fetchByReferenceOrUseByValue } from '../helpers';
-import { checkSIOPSpecVersionSupported } from '../helpers/SIOPSpecVersion';
+import { authorizationRequestVersionDiscovery } from '../helpers/SIOPSpecVersion';
 import { RequestObject } from '../request-object';
 import {
   AuthorizationRequestPayload,
@@ -11,6 +11,7 @@ import {
   RequestStateInfo,
   RPRegistrationMetadataPayload,
   SIOPErrors,
+  SupportedVersion,
   VerifiedAuthorizationRequest,
   VerifiedJWT,
 } from '../types';
@@ -35,7 +36,7 @@ export class AuthorizationRequest {
 
   public static async fromUriOrJwt(jwtOrUri: string | URI): Promise<AuthorizationRequest> {
     if (!jwtOrUri) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.NO_REQUEST);
     }
     return typeof jwtOrUri === 'string' && jwtOrUri.startsWith('ey')
       ? await AuthorizationRequest.fromJwt(jwtOrUri)
@@ -44,7 +45,7 @@ export class AuthorizationRequest {
 
   public static async fromPayload(payload: AuthorizationRequestPayload): Promise<AuthorizationRequest> {
     if (!payload) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.NO_REQUEST);
     }
     const requestObject = await RequestObject.fromAuthorizationRequestPayload(payload);
     return new AuthorizationRequest(payload, requestObject);
@@ -76,6 +77,15 @@ export class AuthorizationRequest {
 
   public hasRequestObject(): boolean {
     return this.requestObject !== undefined;
+  }
+
+  public async getSupportedVersion() {
+    return this.options?.version || (await this.getSupportedVersionsFromPayload())[0];
+  }
+
+  public async getSupportedVersionsFromPayload(): Promise<SupportedVersion[]> {
+    const mergedPayload = { ...this.payload, ...(await this.requestObject.getPayload()) };
+    return authorizationRequestVersionDiscovery(mergedPayload);
   }
 
   async uri(): Promise<URI> {
@@ -119,28 +129,28 @@ export class AuthorizationRequest {
     // AuthorizationRequest.assertValidRequestObject(origAuthenticationRequest);
 
     // We use the orig request for default values, but the JWT payload contains signed request object properties
-    const authorizationRequestPayload = { ...this.payload, ...requestObjectPayload };
-    const versions = await checkSIOPSpecVersionSupported(authorizationRequestPayload, opts.supportedVersions);
-    if (opts.nonce && authorizationRequestPayload.nonce !== opts.nonce) {
-      throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${authorizationRequestPayload.nonce}, supplied: ${opts.nonce}`);
+    const mergedPayload = { ...this.payload, ...requestObjectPayload };
+    if (opts.nonce && mergedPayload.nonce !== opts.nonce) {
+      throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${mergedPayload.nonce}, supplied: ${opts.nonce}`);
     }
 
-    // todo: We can use client_metadata here as well probably
-    const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
-      authorizationRequestPayload['registration_uri'],
-      authorizationRequestPayload['registration']
-    );
-    assertValidRPRegistrationMedataPayload(registrationMetadata);
-    await checkWellknownDIDFromRequest(authorizationRequestPayload, opts);
-    const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(authorizationRequestPayload);
+    const discoveryKey = mergedPayload['registration'] || mergedPayload['registration_uri'] ? 'registration' : 'client_metadata';
+    let registrationMetadata: RPRegistrationMetadataPayload;
+    if (mergedPayload[discoveryKey] || mergedPayload[`${discoveryKey}_uri`]) {
+      registrationMetadata = await fetchByReferenceOrUseByValue(mergedPayload[`${discoveryKey}_uri`], mergedPayload[discoveryKey]);
+      assertValidRPRegistrationMedataPayload(registrationMetadata);
+      // TODO: We need to do something with the metadata probably
+    }
+    await checkWellknownDIDFromRequest(mergedPayload, opts);
+    const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(mergedPayload, await this.getSupportedVersion());
     return {
       ...verifiedJwt,
       authorizationRequest: this,
       verifyOpts: opts,
       presentationDefinitions,
       requestObject: this.requestObject,
-      authorizationRequestPayload: authorizationRequestPayload,
-      versions,
+      authorizationRequestPayload: this.payload,
+      versions: await this.getSupportedVersionsFromPayload(),
     };
   }
 
@@ -182,5 +192,19 @@ export class AuthorizationRequest {
       nonce: requestObject.nonce ?? this.payload.nonce,
       state: this.payload.state,
     };
+  }
+
+  public async containsResponseType(singleType: ResponseType | string): Promise<boolean> {
+    const responseType: string = await this.getMergedProperty('response_type');
+    return responseType?.includes(singleType) === true;
+  }
+
+  public async getMergedProperty<T>(key: string): Promise<T> {
+    const merged = await this.mergedPayloads();
+    return merged[key] as T;
+  }
+
+  public async mergedPayloads(): Promise<RequestObjectPayload> {
+    return { ...this.payload, ...(await this.requestObject.getPayload()) };
   }
 }

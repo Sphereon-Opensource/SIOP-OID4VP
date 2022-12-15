@@ -164,7 +164,7 @@ export class URI implements AuthorizationRequestURI {
     const requestObjectPayload: RequestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt).payload as RequestObjectPayload) : undefined;
 
     if (requestObjectPayload) {
-      // Only used to validate if it contains a presentation definition
+      // Only used to validate if the request object contains presentation definition(s)
       await PresentationExchange.findValidPresentationDefinitions(requestObjectPayload);
 
       assertValidRequestObjectPayload(requestObjectPayload);
@@ -223,10 +223,9 @@ export class URI implements AuthorizationRequestURI {
     }
     const { authorizationRequestPayload, scheme } = this.parse(uri);
     const requestObjectJwt = await fetchByReferenceOrUseByValue(authorizationRequestPayload.request_uri, authorizationRequestPayload.request, true);
-    //fixme: can also be client_metadata
     const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
-      authorizationRequestPayload['registration_uri'],
-      authorizationRequestPayload['registration']
+      authorizationRequestPayload['client_metadata_uri'] ?? authorizationRequestPayload['registration_uri'],
+      authorizationRequestPayload['client_metadata'] ?? authorizationRequestPayload['registration']
     );
     assertValidRPRegistrationMedataPayload(registrationMetadata);
     return { scheme, authorizationRequestPayload, requestObjectJwt, registrationMetadata };

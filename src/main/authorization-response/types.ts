@@ -11,6 +11,7 @@ import {
   ResponseMode,
   ResponseRegistrationOpts,
   SuppliedSignature,
+  SupportedVersion,
   VerifiablePresentationPayload,
 } from '../types';
 
@@ -44,12 +45,18 @@ export interface PresentationDefinitionPayloadOpts {
 }
 
 export interface PresentationDefinitionWithLocation {
-  location: PresentationLocation;
+  version?: SupportedVersion;
+  location: PresentationDefinitionLocation;
   definition: IPresentationDefinition;
 }
 
 export interface VerifiablePresentationWithLocation extends VerifiablePresentationPayload {
   location: PresentationLocation;
+}
+
+export enum PresentationDefinitionLocation {
+  CLAIMS_VP_TOKEN = 'claims.vp_token',
+  TOPLEVEL_PRESENTATION_DEF = 'presentation_definition',
 }
 
 export enum PresentationLocation {

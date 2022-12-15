@@ -1,13 +1,14 @@
+import { PresentationSubmission } from '@sphereon/ssi-types';
+
 import { AuthorizationRequest, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidVerifyAuthorizationRequestOpts } from '../authorization-request/Opts';
 import { IDToken } from '../id-token';
-import { AuthorizationResponsePayload, SIOPErrors, VerifiedAuthenticationResponse, VerifiedAuthorizationRequest } from '../types';
+import { AuthorizationResponsePayload, ResponseType, SIOPErrors, VerifiedAuthenticationResponse, VerifiedAuthorizationRequest } from '../types';
 
 import { assertValidVerifiablePresentations, extractPresentationsFromAuthorizationResponse, verifyPresentations } from './OpenID4VP';
 import { assertValidResponseOpts } from './Opts';
 import { createResponsePayload } from './Payload';
-import { PresentationExchange } from './PresentationExchange';
-import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from './types';
+import { AuthorizationResponseOpts, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from './types';
 
 export class AuthorizationResponse {
   private readonly _authorizationRequest?: AuthorizationRequest | undefined;
@@ -72,19 +73,24 @@ export class AuthorizationResponse {
   static async fromAuthorizationRequest(
     authorizationRequest: AuthorizationRequest,
     responseOpts: AuthorizationResponseOpts,
-    verifyOpts?: VerifyAuthorizationRequestOpts
+    verifyOpts: VerifyAuthorizationRequestOpts
   ): Promise<AuthorizationResponse> {
     assertValidResponseOpts(responseOpts);
     if (!authorizationRequest) {
       throw new Error(SIOPErrors.NO_REQUEST);
     }
-    if (verifyOpts) {
-      await authorizationRequest.verify(verifyOpts);
-    }
-    const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(authorizationRequest.payload);
-    const idToken = await IDToken.fromAuthorizationRequestPayload(authorizationRequest.payload, responseOpts);
-    const idTokenPayload = await idToken.payload();
-    const authorizationResponsePayload = await createResponsePayload(authorizationRequest, idTokenPayload, responseOpts);
+
+    const verifiedRequest = await authorizationRequest.verify(verifyOpts);
+
+    // const merged = await authorizationRequest.mergedPayloads();
+    // const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(merged, await authorizationRequest.getSupportedVersion());
+    const presentationDefinitions = JSON.parse(JSON.stringify(verifiedRequest.presentationDefinitions)) as PresentationDefinitionWithLocation[];
+    const hasIdToken = await authorizationRequest.containsResponseType(ResponseType.ID_TOKEN);
+    // const hasVpToken = await authorizationRequest.containsResponseType(ResponseType.VP_TOKEN);
+
+    const idToken = hasIdToken ? await IDToken.fromAuthorizationRequestPayload(authorizationRequest.payload, responseOpts) : undefined;
+    const idTokenPayload = hasIdToken ? await idToken.payload() : undefined;
+    const authorizationResponsePayload = await createResponsePayload(authorizationRequest, responseOpts, idTokenPayload);
     const response = new AuthorizationResponse({
       authorizationResponsePayload,
       idToken,
@@ -93,6 +99,17 @@ export class AuthorizationResponse {
     });
 
     const presentations = await extractPresentationsFromAuthorizationResponse(response);
+    let submission_data: PresentationSubmission;
+    for (const presentation of presentations) {
+      if (!submission_data) {
+        submission_data = presentation.presentation.presentation_submission;
+      } else {
+        Array.isArray(submission_data.descriptor_map)
+          ? submission_data.descriptor_map.push(...presentation.presentation.presentation_submission.descriptor_map)
+          : (submission_data.descriptor_map = [...presentation.presentation.presentation_submission.descriptor_map]);
+      }
+    }
+
     await assertValidVerifiablePresentations({
       presentationDefinitions,
       presentations,
@@ -106,7 +123,11 @@ export class AuthorizationResponse {
     verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
     responseOpts: AuthorizationResponseOpts
   ): Promise<AuthorizationResponse> {
-    return await AuthorizationResponse.fromAuthorizationRequest(verifiedAuthorizationRequest.authorizationRequest, responseOpts);
+    return await AuthorizationResponse.fromAuthorizationRequest(
+      verifiedAuthorizationRequest.authorizationRequest,
+      responseOpts,
+      verifiedAuthorizationRequest.verifyOpts
+    );
   }
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {

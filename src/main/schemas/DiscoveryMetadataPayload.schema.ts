@@ -374,23 +374,7 @@ export const DiscoveryMetadataPayloadSchema = {
             "vp_formats": {
               "$ref": "#/definitions/Format"
             }
-          },
-          "required": [
-            "application_type",
-            "authorization_endpoint",
-            "client_id",
-            "grant_types",
-            "id_token_signing_alg_values_supported",
-            "issuer",
-            "redirectUris",
-            "response_types",
-            "response_types_supported",
-            "scopes_supported",
-            "subject_syntax_types_supported",
-            "subject_types_supported",
-            "token_endpoint_auth_method",
-            "vp_formats"
-          ]
+          }
         },
         {
           "type": "object",
@@ -768,23 +752,7 @@ export const DiscoveryMetadataPayloadSchema = {
             "client_purpose": {
               "type": "string"
             }
-          },
-          "required": [
-            "application_type",
-            "authorization_endpoint",
-            "client_id",
-            "grant_types",
-            "id_token_signing_alg_values_supported",
-            "issuer",
-            "redirectUris",
-            "response_types",
-            "response_types_supported",
-            "scopes_supported",
-            "subject_syntax_types_supported",
-            "subject_types_supported",
-            "token_endpoint_auth_method",
-            "vp_formats"
-          ]
+          }
         },
         {
           "type": "object",
@@ -1145,16 +1113,7 @@ export const DiscoveryMetadataPayloadSchema = {
             "vp_formats_supported": {
               "$ref": "#/definitions/Format"
             }
-          },
-          "required": [
-            "authorization_endpoint",
-            "id_token_signing_alg_values_supported",
-            "issuer",
-            "response_types_supported",
-            "scopes_supported",
-            "subject_syntax_types_supported",
-            "subject_types_supported"
-          ]
+          }
         }
       ]
     },

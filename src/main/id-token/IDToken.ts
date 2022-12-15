@@ -3,6 +3,7 @@ import { JWTHeader } from 'did-jwt';
 import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { assertValidVerifyOpts } from '../authorization-response/Opts';
 import { getResolver, getSubDidFromPayload, parseJWT, signDidJwtPayload, validateLinkedDomainWithDid, verifyDidJWT } from '../did';
+import { fetchByReferenceOrUseByValue } from '../helpers';
 import {
   AuthorizationRequestPayload,
   CheckLinkedDomain,
@@ -30,9 +31,21 @@ export class IDToken {
 
   public static async fromAuthorizationRequestPayload(
     authorizationRequestPayload: AuthorizationRequestPayload,
-    responseOpts: AuthorizationResponseOpts
+    responseOpts: AuthorizationResponseOpts,
+    verifyOpts?: VerifyAuthorizationResponseOpts
   ) {
-    return new IDToken(undefined, await createIDTokenPayload(authorizationRequestPayload, responseOpts), responseOpts);
+    if (!authorizationRequestPayload) {
+      throw new Error(SIOPErrors.NO_REQUEST);
+    }
+    let jwt: string = undefined;
+    if (authorizationRequestPayload.request || authorizationRequestPayload.request_uri) {
+      jwt = await fetchByReferenceOrUseByValue(authorizationRequestPayload.request_uri, authorizationRequestPayload.request, true);
+    }
+    const idToken = new IDToken(jwt, await createIDTokenPayload(authorizationRequestPayload, responseOpts), responseOpts);
+    if (verifyOpts) {
+      await idToken.verify(verifyOpts);
+    }
+    return idToken;
   }
 
   public static async fromIDToken(jwt: IDTokenJwt, verifyOpts?: VerifyAuthorizationResponseOpts) {

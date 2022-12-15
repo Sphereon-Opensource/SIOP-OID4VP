@@ -404,19 +404,6 @@ describe('create JWT from Request JWT should', () => {
       proof: undefined,
     };
 
-    // fixme: This is probably here because the VC interface in the PEX is not correct
-    /*vp['id'] = 'ebc6f1c2';
-    vp['type'] = ['VerifiablePresentation'];
-    vp['holder'] = 'did:example:holder';*/
-    /*  vp.getVerifiableCredentials()[0]['@context'] = [
-      'https://www.w3.org/2018/credentials/v1',
-      'https://www.w3.org/2018/credentials/examples/v1/IDCardCredential',
-    ];
-    vp.getVerifiableCredentials()[0]['issuer'] = {
-      id: 'did:example:issuer',
-    };
-    vp.getVerifiableCredentials()[0]['issuanceDate'] = '2010-01-01T19:23:24Z';
-*/
     const pex = new PresentationExchange({
       did: 'did:example:holder',
       allVerifiableCredentials: vp.verifiableCredential,

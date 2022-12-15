@@ -6,7 +6,7 @@ import { AuthorizationResponseOpts } from '../authorization-response';
 import { getResolverUnion, mergeAllDidMethods } from '../did';
 import { LanguageTagUtils } from '../helpers';
 import { AuthorizationResponseOptsSchema } from '../schemas';
-import { InternalVerification, VerificationMode } from '../types';
+import { InternalVerification, ResponseRegistrationOpts, VerificationMode } from '../types';
 
 import { Builder } from './Builder';
 
@@ -25,11 +25,15 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
 
   let responseOpts: AuthorizationResponseOpts;
 
+  // const builderRegistration: Partial<ResponseRegistrationOpts> = JSON.parse(JSON.stringify(opts.builder.responseRegistration));
+  // delete builderRegistration.registrationBy;
+
   if (opts.builder) {
     responseOpts = {
       registration: {
         issuer: opts.builder.issuer,
-        authorizationEndpoint: opts.builder.responseRegistration.authorizationEndpoint,
+        ...(opts.builder.responseRegistration as ResponseRegistrationOpts),
+        /*authorizationEndpoint: opts.builder.responseRegistration.authorizationEndpoint,
         tokenEndpoint: opts.builder.responseRegistration.tokenEndpoint,
         userinfoEndpoint: opts.builder.responseRegistration.userinfoEndpoint,
         jwksUri: opts.builder.responseRegistration.jwksUri,
@@ -75,7 +79,7 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
         tokenEndpointAuthMethod: opts.builder.responseRegistration.tokenEndpointAuthMethod,
         logoUri: opts.builder.responseRegistration.logoUri,
         clientPurpose: opts.builder.responseRegistration.clientPurpose,
-        idTokenTypesSupported: opts.builder.responseRegistration.idTokenTypesSupported,
+        idTokenTypesSupported: opts.builder.responseRegistration.idTokenTypesSupported,*/
       },
       did: opts.builder.signatureType.did,
       expiresIn: opts.builder.expiresIn,

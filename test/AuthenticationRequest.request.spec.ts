@@ -93,7 +93,7 @@ describe('create Request Uri should', () => {
       version: SupportedVersion.SIOPv2_ID1,
       payload: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
-        scope: 'test',
+        scope: 'openid',
         response_type: 'id_token',
         request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         redirect_uri: EXAMPLE_REDIRECT_URL,
@@ -109,7 +109,7 @@ describe('create Request Uri should', () => {
         },
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
-          scope: 'test',
+          scope: 'openid',
           response_type: 'id_token',
           request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           redirect_uri: EXAMPLE_REDIRECT_URL,
@@ -147,7 +147,7 @@ describe('create Request Uri should', () => {
 
     const uriDecoded = decodeURIComponent(uriRequest.encodedUri);
     expect(uriDecoded).toContain(`openid://`);
-    expect(uriDecoded).toContain(`?response_type=${ResponseType.ID_TOKEN}`);
+    expect(uriDecoded).toContain(`response_type=${ResponseType.ID_TOKEN}`);
     expect(uriDecoded).toContain(`&redirect_uri=${opts.payload.redirect_uri}`);
     expect(uriDecoded).toContain(`&scope=${Scope.OPENID}`);
     expect(uriDecoded).toContain(`&request_uri=`);

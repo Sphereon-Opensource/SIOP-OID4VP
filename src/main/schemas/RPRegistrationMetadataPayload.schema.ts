@@ -116,16 +116,7 @@ export const RPRegistrationMetadataPayloadSchema = {
             }
           ]
         }
-      },
-      "required": [
-        "client_id",
-        "id_token_signing_alg_values_supported",
-        "response_types_supported",
-        "scopes_supported",
-        "subject_syntax_types_supported",
-        "subject_types_supported",
-        "vp_formats"
-      ]
+      }
     },
     "SigningAlgo": {
       "type": "string",
