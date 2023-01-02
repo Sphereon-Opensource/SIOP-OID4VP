@@ -58,7 +58,7 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
   }
   let resolver: Resolvable;
   if (opts.builder) {
-    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.clientMetadata.subjectSyntaxTypesSupported, opts.builder.resolvers);
+    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.clientMetadata?.subjectSyntaxTypesSupported, opts.builder.resolvers);
   }
   return opts.builder
     ? {
@@ -68,7 +68,7 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
           wellknownDIDVerifyCallback: opts.builder.verifyCallback,
           presentationVerificationCallback: opts.builder.presentationVerificationCallback,
           resolveOpts: {
-            subjectSyntaxTypesSupported: opts.builder.clientMetadata.subjectSyntaxTypesSupported,
+            subjectSyntaxTypesSupported: opts.builder.clientMetadata?.subjectSyntaxTypesSupported,
             resolver: resolver,
           },
           supportedVersions: opts.builder.supportedVersions,

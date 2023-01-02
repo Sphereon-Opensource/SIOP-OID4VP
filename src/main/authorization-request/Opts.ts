@@ -15,5 +15,7 @@ export const assertValidAuthorizationRequestOpts = (opts: CreateAuthorizationReq
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
   assertValidRequestObjectOpts(opts.requestObject, false);
-  assertValidRequestRegistrationOpts(opts['registration'] ? opts['registration'] : opts.clientMetadata);
+  if (opts['registration'] || opts.clientMetadata) {
+    assertValidRequestRegistrationOpts(opts['registration'] ? opts['registration'] : opts.clientMetadata);
+  }
 };
