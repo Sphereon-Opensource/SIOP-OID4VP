@@ -16,7 +16,7 @@ jobs:
       - name: install node v14
         uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
       - name: yarn install
         run: yarn install
       - name: tsc
