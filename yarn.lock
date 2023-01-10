@@ -1433,21 +1433,35 @@
   resolved "https://registry.yarnpkg.com/@sphereon/pex-models/-/pex-models-1.1.0.tgz#716898344fd07400bbffaa0c34a1f7ecdda14166"
   integrity sha512-kMslWspdqwuXGBFxOPXTAK8HlIHycBR/locYHMlYmyvdnau6bp40JXk2zviBRVOPfe8N3Dv2p5IPAjMk3pT77A==
 
-"@sphereon/pex@^2.0.0-unstable.3":
-  version "2.0.0-unstable.3"
-  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-2.0.0-unstable.3.tgz#44b85402dcadc967ecc155a6f4c8801a7ca7033a"
-  integrity sha512-K3uApGXX++aZJrPc7fLb0ureEA9j6OR1c8kh1S4WVfU0Fgihmz1/o2bcKvnD0/OKLNGJYzuyjsdwpXKeGa7uAg==
+"@sphereon/pex@^2.0.0-unstable.4":
+  version "2.0.0-unstable.4"
+  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-2.0.0-unstable.4.tgz#0d26dec5589dbc77def0c4eeeeb8efe4097444d8"
+  integrity sha512-O4iyxX9gotv1fGTmiho2HrugC6FvpJjtUIxIGRJN0lLsKeQKJ3rIjBaL9xja7oroGmHgX5Aem/TjzxnX3PpGog==
   dependencies:
     "@sphereon/pex-models" "^1.1.0"
-    "@sphereon/ssi-types" "^0.8.1-next.31"
+    "@sphereon/ssi-types" "0.8.1-next.120"
     ajv "^8.11.0"
     ajv-formats "^2.1.1"
     jsonpath "^1.1.1"
     jwt-decode "^3.1.2"
     nanoid "^3.3.4"
-    string.prototype.matchall "^4.0.7"
+    string.prototype.matchall "^4.0.8"
 
-"@sphereon/ssi-types@0.8.1-unstable.86", "@sphereon/ssi-types@^0.8.1-next.3", "@sphereon/ssi-types@^0.8.1-next.31":
+"@sphereon/ssi-types@0.8.1-next.120":
+  version "0.8.1-next.120"
+  resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.8.1-next.120.tgz#d67bbfd44f13efcfa58f9c31d219270cd35f64b1"
+  integrity sha512-hBkD92N9jFQss52Sdhwx6hBLR9itWeSy87NlJznckQ1SOI/w1XcYQS4q32OpnhhVJaIKhoq9y4ro+X1TH/iMUg==
+  dependencies:
+    jwt-decode "^3.1.2"
+
+"@sphereon/ssi-types@0.8.1-unstable.135":
+  version "0.8.1-unstable.135"
+  resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.8.1-unstable.135.tgz#89ba0299c750d779edf18aabddae9c955f692a67"
+  integrity sha512-pISAFCRqjQPlOfRMAKf0tIir2DVqoZSDm6sJOkgb9q8GW9P7I5vlRFOVim+hiyAulSa6WtnttjBgrY8sZVQNRw==
+  dependencies:
+    jwt-decode "^3.1.2"
+
+"@sphereon/ssi-types@^0.8.1-next.3":
   version "0.8.1-unstable.86"
   resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.8.1-unstable.86.tgz#3e465ca32170aea52ad0a4fa2035a6480974b598"
   integrity sha512-iFmPg5ohqw1FCI3R3Vn8MO32SDk9aKfFRYWsZ4U3FSrR0rR1uDldNTlNa5KtE9KJziOOl5BsMLdNNJ9L/mNzkA==
@@ -5628,7 +5642,7 @@ string-width@^4.1.0, string-width@^4.2.0, string-width@^4.2.3:
     is-fullwidth-code-point "^3.0.0"
     strip-ansi "^6.0.1"
 
-string.prototype.matchall@^4.0.7:
+string.prototype.matchall@^4.0.8:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/string.prototype.matchall/-/string.prototype.matchall-4.0.8.tgz#3bf85722021816dcd1bf38bb714915887ca79fd3"
   integrity sha512-6zOCOcJ+RJAQshcTvXPHoxoQGONa3e/Lqx90wUA+wEzX78sg5Bo+1tQo4N0pohS0erG9qtCqJDjNCQBjeWVxyg==
