@@ -94,7 +94,6 @@ export class IDToken {
   /**
    * Verifies a SIOP ID Response JWT on the RP Side
    *
-   * @param idToken ID token to be validated
    * @param verifyOpts
    */
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
@@ -142,7 +141,7 @@ export class IDToken {
 
   private assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload; verPayload?: IDTokenPayload; audience?: string }) {
     if (!opts.header) {
-      throw new Error(SIOPErrors.BAD_PARAMS);
+      throw new Error(SIOPErrors.BAD_PARAMS + 'opts.header should be usable');
     }
     if (opts.payload) {
       if (opts.payload.iss !== ResponseIss.SELF_ISSUED_V2) {
@@ -160,7 +159,7 @@ export class IDToken {
         // todo: Add iat check
       }
       if ((opts.verPayload.aud && !opts.audience) || (!opts.verPayload.aud && opts.audience)) {
-        throw Error(SIOPErrors.BAD_PARAMS);
+        throw Error(SIOPErrors.BAD_PARAMS + 'opts.verPayload should have an audience.');
       } else if (opts.audience && opts.audience != opts.verPayload.aud) {
         throw Error(SIOPErrors.INVALID_AUDIENCE);
       }

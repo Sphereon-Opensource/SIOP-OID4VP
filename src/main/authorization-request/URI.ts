@@ -40,7 +40,7 @@ export class URI implements AuthorizationRequestURI {
 
   public static async fromUri(uri: string): Promise<URI> {
     if (!uri) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'uri should be usable');
     }
     const { scheme, requestObjectJwt, authorizationRequestPayload, registrationMetadata } = await URI.parseAndResolve(uri);
     const requestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt).payload as RequestObjectPayload) : undefined;
@@ -70,7 +70,7 @@ export class URI implements AuthorizationRequestURI {
    */
   public static async fromOpts(opts: CreateAuthorizationRequestOpts): Promise<URI> {
     if (!opts) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'opts should be usable');
     }
     const authorizationRequest = await AuthorizationRequest.fromOpts(opts);
     return await URI.fromAuthorizationRequest(authorizationRequest);
@@ -112,14 +112,14 @@ export class URI implements AuthorizationRequestURI {
    */
   static async fromRequestObject(requestObject: RequestObject): Promise<URI> {
     if (!requestObject) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'requestObject should be usable');
     }
     return await URI.fromAuthorizationRequestPayload(requestObject.options, await requestObject.toJwt());
   }
 
   static async fromAuthorizationRequest(authorizationRequest: AuthorizationRequest): Promise<URI> {
     if (!authorizationRequest) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'authorizationRequest should be usable');
     }
     return await URI.fromAuthorizationRequestPayload(
       authorizationRequest.options.requestObject,
@@ -132,7 +132,7 @@ export class URI implements AuthorizationRequestURI {
    * Creates an URI Request
    * @param opts Options to define the Uri Request
    * @param authorizationRequestPayload
-   *
+   * @param requestObject
    */
   private static async fromAuthorizationRequestPayload(
     opts: { uriScheme?: string; passBy: PassBy; referenceUri?: string; version?: SupportedVersion },
@@ -141,7 +141,7 @@ export class URI implements AuthorizationRequestURI {
   ): Promise<URI> {
     if (!authorizationRequestPayload) {
       if (!requestObject || !(await requestObject.getPayload())) {
-        throw Error(SIOPErrors.BAD_PARAMS);
+        throw Error(SIOPErrors.BAD_PARAMS + 'requestObject should be usable');
       }
       authorizationRequestPayload = {}; // No auth request payload, so the eventual URI will contain a `request_uri` or `request` value only
     }
@@ -175,7 +175,7 @@ export class URI implements AuthorizationRequestURI {
     const authorizationRequest: AuthorizationRequestPayload =
       typeof authorizationRequestPayload === 'string' ? (requestObjectPayload as AuthorizationRequestPayload) : authorizationRequestPayload;
     if (!authorizationRequest) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'authorizationRequest should be usable.');
     }
     const type = opts.passBy;
     if (!type) {
@@ -203,13 +203,13 @@ export class URI implements AuthorizationRequestURI {
   }
 
   /**
-   * Create a Authentication Request Payload from a URI string
+   * Create an Authentication Request Payload from a URI string
    *
    * @param uri
    */
   public static parse(uri: string): { scheme: string; authorizationRequestPayload: AuthorizationRequestPayload } {
     if (!uri) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'uri should be usable');
     }
     // We strip the uri scheme before passing it to the decode function
     const scheme: string = uri.match(/^([a-zA-Z-_]+:\/\/)/g)[0];
@@ -219,7 +219,7 @@ export class URI implements AuthorizationRequestURI {
 
   public static async parseAndResolve(uri: string) {
     if (!uri) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'for parseAndResolve uri should be usable');
     }
     const { authorizationRequestPayload, scheme } = this.parse(uri);
     const requestObjectJwt = await fetchByReferenceOrUseByValue(authorizationRequestPayload.request_uri, authorizationRequestPayload.request, true);

@@ -9,7 +9,7 @@ export function getResolver(opts: ResolveOpts): Resolvable {
     return opts.resolver;
   }
   if (!opts || !opts.subjectSyntaxTypesSupported) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
+    throw new Error(SIOPErrors.BAD_PARAMS + 'to get Resolver opts should be usable.');
   }
 
   const uniResolvers: {

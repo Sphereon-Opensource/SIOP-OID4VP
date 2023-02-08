@@ -58,6 +58,7 @@ import {
  *  @return   {Promise<Object, Error>}                  a promise which resolves with a response object or rejects with an error
  */
 export async function verifyDidJWT(jwt: string, resolver: Resolvable, options: JWTVerifyOptions): Promise<VerifiedJWT> {
+  console.log('verifyDidJWT')
   return verifyJWT(jwt, { resolver, ...options });
 }
 
@@ -83,6 +84,7 @@ export async function createDidJWT(
   { issuer, signer, expiresIn, canonicalize }: JWTOptions,
   header: Partial<JWTHeader>
 ): Promise<string> {
+  console.log('createDidJWT')
   return createJWT(payload, { issuer, signer, expiresIn, canonicalize }, header);
 }
 
@@ -90,6 +92,7 @@ export async function signDidJwtPayload(
   payload: IDTokenPayload | RequestObjectPayload,
   opts: RequestObjectOpts<ClaimPayloadCommonOpts> | AuthorizationResponseOpts
 ) {
+  console.log('signDidJwtPayload')
   const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
   if (isResponse) {
     if (!payload.iss || (payload.iss !== ResponseIss.SELF_ISSUED_V2 && payload.iss !== payload.sub)) {
@@ -97,6 +100,7 @@ export async function signDidJwtPayload(
     }
   }
   if (isInternalSignature(opts.signatureType)) {
+    console.log('isInternalSignature')
     return signDidJwtInternal(
       payload,
       isResponse ? payload.iss : opts.signatureType.did,
@@ -134,6 +138,7 @@ async function signDidJwtInternal(
   kid: string,
   customJwtSigner?: Signer
 ): Promise<string> {
+  console.log('signDidJwtInternal')
   const signer = determineSigner(alg, hexPrivateKey, customJwtSigner);
   const header = {
     alg,
@@ -155,6 +160,7 @@ async function signDidJwtExternal(
   alg: SigningAlgo,
   kid?: string
 ): Promise<string> {
+  console.log('signDidJwtExternal')
   const body = {
     issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.sub,
     payload,
@@ -175,6 +181,7 @@ async function signDidJwtSupplied(
   alg: SigningAlgo,
   kid: string
 ): Promise<string> {
+  console.log('signDidJwtSupplied')
   const header = {
     alg,
     kid,
@@ -189,6 +196,7 @@ async function signDidJwtSupplied(
 }
 
 const determineSigner = (alg: SigningAlgo, hexPrivateKey?: string, customSigner?: Signer): Signer => {
+  console.log('signDidJwtInternal')
   if (customSigner) {
     return customSigner;
   } else if (!hexPrivateKey) {
@@ -265,13 +273,13 @@ export function parseJWT(jwt: string): JWTDecoded {
 
 export function getMethodFromDid(did: string): string {
   if (!did) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
+    throw new Error(SIOPErrors.BAD_PARAMS + 'did should be usable');
   }
   const split = did.split(':');
   if (split.length == 1 && did.length > 0) {
     return did;
   } else if (!did.startsWith('did:') || split.length < 2) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
+    throw new Error(SIOPErrors.BAD_PARAMS + 'did should start with prefix \'did:\'');
   }
 
   return split[1];
@@ -281,7 +289,7 @@ export function getNetworkFromDid(did: string): string {
   const network = 'mainnet'; // default
   const split = did.split(':');
   if (!did.startsWith('did:') || split.length < 2) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
+    throw new Error(SIOPErrors.BAD_PARAMS + 'did should start with prefix \'did:\'');
   }
 
   if (split.length === 4) {

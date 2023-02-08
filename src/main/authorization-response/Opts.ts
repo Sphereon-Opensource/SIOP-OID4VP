@@ -4,7 +4,7 @@ import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from './ty
 
 export const assertValidResponseOpts = (opts: AuthorizationResponseOpts) => {
   if (!opts /*|| !opts.redirectUri*/ || !opts.signatureType /*|| !opts.nonce*/ || !opts.did) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
+    throw new Error(SIOPErrors.BAD_PARAMS + 'In ResponseOpts the params should be usable.');
   } else if (!(isInternalSignature(opts.signatureType) || isExternalSignature(opts.signatureType) || isSuppliedSignature(opts.signatureType))) {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }

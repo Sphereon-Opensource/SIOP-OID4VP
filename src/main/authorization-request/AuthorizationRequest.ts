@@ -35,6 +35,7 @@ export class AuthorizationRequest {
   }
 
   public static async fromUriOrJwt(jwtOrUri: string | URI): Promise<AuthorizationRequest> {
+    console.log('fromUriOrJwt')
     if (!jwtOrUri) {
       throw Error(SIOPErrors.NO_REQUEST);
     }
@@ -53,7 +54,7 @@ export class AuthorizationRequest {
 
   public static async fromOpts(opts: CreateAuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
     if (!opts || !opts.requestObject) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'opts.requestObject should be a usable object.');
     }
     assertValidAuthorizationRequestOpts(opts);
 
@@ -76,6 +77,7 @@ export class AuthorizationRequest {
   }
 
   public hasRequestObject(): boolean {
+    console.log('hasRequestObject')
     return this.requestObject !== undefined;
   }
 
@@ -98,10 +100,10 @@ export class AuthorizationRequest {
   /**
    * Verifies a SIOP Request JWT on OP side
    *
-   * @param uriOrJwt
    * @param opts
    */
   async verify(opts: VerifyAuthorizationRequestOpts): Promise<VerifiedAuthorizationRequest> {
+    console.log('verify')
     assertValidVerifyAuthorizationRequestOpts(opts);
 
     let requestObjectPayload: RequestObjectPayload;
@@ -161,12 +163,14 @@ export class AuthorizationRequest {
   }
 
   public async requestObjectJwt(): Promise<RequestObjectJwt | undefined> {
+    console.log('requestObjectJwt')
     return await this.requestObject?.toJwt();
   }
 
   private static async fromJwt(jwt: string): Promise<AuthorizationRequest> {
+    console.log('fromJwt')
     if (!jwt) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'jwt should be a usable object');
     }
     const requestObject = await RequestObject.fromJwt(jwt);
     const payload: AuthorizationRequestPayload = { ...(await requestObject.getPayload()) } as AuthorizationRequestPayload;
@@ -176,8 +180,9 @@ export class AuthorizationRequest {
   }
 
   private static async fromURI(uri: URI | string): Promise<AuthorizationRequest> {
+    console.log('fromURI')
     if (!uri) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'uri should be a usable object');
     }
     const uriObject = typeof uri === 'string' ? await URI.fromUri(uri) : uri;
     const requestObject = await RequestObject.fromJwt(uriObject.requestObjectJwt);

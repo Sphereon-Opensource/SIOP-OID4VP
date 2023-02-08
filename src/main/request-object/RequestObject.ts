@@ -46,6 +46,7 @@ export class RequestObject {
   }
 
   public static async fromJwt(requestObjectJwt: RequestObjectJwt) {
+    console.log('fromJwt')
     return new RequestObject(undefined, undefined, requestObjectJwt);
   }
 
@@ -60,9 +61,10 @@ export class RequestObject {
   }
 
   public async toJwt(): Promise<RequestObjectJwt | undefined> {
+    console.log('toJwt')
     if (!this.jwt) {
       if (!this.opts) {
-        throw Error(SIOPErrors.BAD_PARAMS);
+        throw Error(SIOPErrors.BAD_PARAMS + 'toJwt the opts should be usable.');
       } else if (!this.payload) {
         return undefined;
       }
@@ -101,6 +103,7 @@ export class RequestObject {
   }
 
   private removeRequestProperties(): void {
+    console.log('removeRequestProperties')
     if (this.payload) {
       // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
       // request and request_uri parameters MUST NOT be included in Request Objects.
@@ -113,7 +116,7 @@ export class RequestObject {
     opts: CreateAuthorizationRequestOpts | RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1>
   ): RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1> {
     if (!opts) {
-      throw Error(SIOPErrors.BAD_PARAMS);
+      throw Error(SIOPErrors.BAD_PARAMS + 'to mergeOAuth2AndOpenIdProperties opts should be usable.');
     }
     const isAuthReq = opts['requestObject'] !== undefined;
     const mergedOpts = JSON.parse(JSON.stringify(opts));

@@ -59,6 +59,7 @@ export class OP {
     requestJwtOrUri: string | URI,
     requestOpts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthorizationRequest> {
+    console.log('verifyAuthorizationRequest')
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri);
     return await authorizationRequest.verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }));
   }
@@ -85,7 +86,7 @@ export class OP {
       (authorizationResponse.options.responseMode &&
         !(authorizationResponse.options.responseMode == ResponseMode.POST || authorizationResponse.options.responseMode == ResponseMode.FORM_POST))
     ) {
-      throw new Error(SIOPErrors.BAD_PARAMS);
+      throw new Error(SIOPErrors.BAD_PARAMS + 'authorizationResponse.options.responseMode should be usable.');
     }
     const payload = await authorizationResponse.payload;
     const idToken = await authorizationResponse.idToken.payload();

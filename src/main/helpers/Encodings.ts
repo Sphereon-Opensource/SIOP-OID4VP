@@ -4,11 +4,11 @@ import { SIOPErrors } from '../types';
 
 export function decodeUriAsJson(uri: string) {
   if (!uri) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
+    throw new Error(SIOPErrors.BAD_PARAMS + 'for decodeUriAsJson uri should be usable');
   }
   const queryString = uri.replace(/^([a-zA-Z-_]+:\/\/[?]?)/g, '');
   if (!queryString) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
+    throw new Error(SIOPErrors.BAD_PARAMS + 'queryString should be usable.');
   }
   const parts = parse(queryString);
 

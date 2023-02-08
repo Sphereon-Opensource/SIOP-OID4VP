@@ -42,6 +42,7 @@ export const createRequestObjectPayload = async (opts: CreateAuthorizationReques
 };
 
 export const assertValidRequestObjectPayload = (verPayload: RequestObjectPayload): void => {
+  console.log('assertValidRequestObjectPayload')
   if (verPayload['registration_uri'] && verPayload['registration']) {
     throw new Error(`${SIOPErrors.REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY}`);
   }
