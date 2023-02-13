@@ -16,6 +16,7 @@ import {
 import { RequestObject, RequestObjectOpts } from '../request-object';
 
 import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './';
+import { NonceReplayRegistry } from '../rp/NonceReplayRegistry';
 
 export const DEFAULT_EXPIRATION_TIME = 10 * 60;
 
@@ -491,6 +492,7 @@ export interface Verification {
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
+  nonceReplayRegistry?: NonceReplayRegistry
 }
 
 export type InternalVerification = Verification;

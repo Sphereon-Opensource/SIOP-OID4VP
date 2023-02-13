@@ -21,6 +21,8 @@ import {
 
 import Builder from './Builder';
 import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts, isTargetOrNoTargets } from './Opts';
+import { eventEmitter } from './NonceReplayRegistry';
+import { AuthorizationEvents } from '../types/Events';
 
 export class RP {
   private readonly _createRequestOptions: CreateAuthorizationRequestOpts;
@@ -65,7 +67,11 @@ export class RP {
       opts?.claims && !('propertyValue' in opts.claims)
         ? { propertyValue: opts.claims }
         : (opts?.claims as RequestPropertyWithTargets<ClaimPayloadCommonOpts>);
-    return await AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }));
+
+    const authorizationRequest = await AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }));
+    eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST, authorizationRequest);
+
+    return authorizationRequest
   }
 
   public async createAuthorizationRequestURI(opts?: {
@@ -82,7 +88,11 @@ export class RP {
       opts?.claims && !('propertyValue' in opts.claims)
         ? { propertyValue: opts.claims }
         : (opts?.claims as RequestPropertyWithTargets<ClaimPayloadCommonOpts>);
-    return await URI.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }));
+
+    const authorizationRequestOpts = this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims })
+    eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST, await AuthorizationRequest.fromOpts(authorizationRequestOpts));
+
+    return await URI.fromOpts(authorizationRequestOpts);
   }
 
   public async verifyAuthorizationResponse(

@@ -12,6 +12,7 @@ import {
   PresentationLocation,
   PresentationSignCallback,
   PresentationVerificationCallback,
+  PropertyTarget,
   ResponseIss,
   ResponseType,
   RevocationStatus,
@@ -21,6 +22,7 @@ import {
   SigningAlgo,
   SubjectType,
   SupportedVersion,
+  VerifiablePresentationPayload,
   VerifiablePresentationTypeFormat,
   VerificationMode,
   verifyRevocation,
@@ -36,6 +38,7 @@ import {
   VERIFIERZ_PURPOSE_TO_VERIFY,
   VERIFIERZ_PURPOSE_TO_VERIFY_NL,
 } from './data/mockedData';
+import { NonceReplayRegistry } from '../src/main/rp/NonceReplayRegistry';
 
 jest.setTimeout(30000);
 
@@ -134,9 +137,7 @@ function getVCs(): IVerifiableCredential[] {
 }
 
 describe('RP and OP interaction should', () => {
-  it(
-    'succeed when calling each other in the full flow',
-    async () => {
+  it('succeed when calling each other in the full flow',async () => {
       // expect.assertions(1);
       const rpMockEntity = await mockedGetEnterpriseAuthToken('ACME RP');
       const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
@@ -550,9 +551,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
-  it(
-    'should fail when calling with CheckLinkedDomain.ALWAYS',
-    async () => {
+  it('should fail when calling with CheckLinkedDomain.ALWAYS',async () => {
       const rpMockEntity = {
         hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
         did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
@@ -825,9 +824,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
-  it(
-    'should succeed when calling with CheckLinkedDomain.IF_PRESENT',
-    async () => {
+  it('should succeed when calling with CheckLinkedDomain.IF_PRESENT',async () => {
       const rpMockEntity = {
         hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
         did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
@@ -1394,4 +1391,355 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
+
+  it('succeed with nonce verification with ldp_vp', async () => {
+    const rpMockEntity = {
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
+    };
+
+    const opMockEntity = {
+      hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+      did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+      didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
+    };
+
+    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+    .withClientId('test_client_id')
+    .withScope('test')
+    .withResponseType(ResponseType.ID_TOKEN)
+    .withRevocationVerification(RevocationVerification.NEVER)
+    .withPresentationVerification(presentationVerificationCallback)
+    .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
+    .withRedirectUri(EXAMPLE_REDIRECT_URL)
+    .withRequestBy(PassBy.VALUE)
+    .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
+    .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
+    .addDidMethod('ion')
+    .withClientMetadata({
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
+      responseTypesSupported: [ResponseType.ID_TOKEN],
+      vpFormatsSupported: {
+        jwt_vc: { alg: [SigningAlgo.EDDSA] },
+        jwt_vp: { alg: [SigningAlgo.EDDSA] },
+        ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+        ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+        ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+      },
+      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+      subjectTypesSupported: [SubjectType.PAIRWISE],
+      subjectSyntaxTypesSupported: ['did', 'did:ion'],
+      passBy: PassBy.VALUE,
+      logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      clientName: VERIFIER_NAME_FOR_CLIENT,
+      'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100330',
+      clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+    })
+    .withPresentationDefinition(getPresentationDefinition())
+    .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
+    .build();
+
+    const op = OP.builder()
+    .withPresentationSignCallback(presentationSignCallback)
+    .withExpiresIn(1000)
+    .addDidMethod('ethr')
+    .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+    .withPresentationSignCallback(presentationSignCallback)
+    .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
+    .addVerifyCallback(verifyCallback)
+    .registration({
+      authorizationEndpoint: 'www.myauthorizationendpoint.com',
+      idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
+      issuer: ResponseIss.SELF_ISSUED_V2,
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
+      responseTypesSupported: [ResponseType.ID_TOKEN],
+      vpFormats: {
+        jwt_vc: { alg: [SigningAlgo.EDDSA] },
+        jwt_vp: { alg: [SigningAlgo.EDDSA] },
+        ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+        ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+        ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+      },
+      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+      subjectTypesSupported: [SubjectType.PAIRWISE],
+      subjectSyntaxTypesSupported: [],
+      registrationBy: { passBy: PassBy.VALUE },
+      logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      clientName: VERIFIER_NAME_FOR_CLIENT,
+      'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100331',
+      clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+    })
+    .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
+    .build();
+
+    const requestURI = await rp.createAuthorizationRequestURI({
+      nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+      state: 'b32f0087fc9816eb813fd11f',
+    });
+
+    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
+    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      parsedAuthReqURI.authorizationRequestPayload
+    );
+    await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
+    const vp = (await pex.submissionFrom(
+      pd[0].definition,
+      getVCs(),
+      {},
+      op.createResponseOptions.presentationExchange.presentationSignCallback
+    )) as IVerifiablePresentation;
+
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
+      presentationExchange: {
+        vps: [
+          {
+            presentation: vp,
+            format: VerifiablePresentationTypeFormat.LDP_VP,
+            location: PresentationLocation.VP_TOKEN,
+          },
+        ],
+      },
+    });
+
+    const DID_CONFIGURATION = {
+      '@context': 'https://identity.foundation/.well-known/did-configuration/v1',
+      linked_dids: [
+        'eyJhbGciOiJSUzI1NiIsImtpZCI6ImRpZDprZXk6ejZNa29USHNnTk5yYnk4SnpDTlExaVJMeVc1UVE2UjhYdXU2QUE4aWdHck1WUFVNI3o2TWtvVEhzZ05OcmJ5OEp6Q05RMWlSTHlXNVFRNlI4WHV1NkFBOGlnR3JNVlBVTSJ9.eyJleHAiOjE3NjQ4NzkxMzksImlzcyI6ImRpZDprZXk6ejZNa29USHNnTk5yYnk4SnpDTlExaVJMeVc1UVE2UjhYdXU2QUE4aWdHck1WUFVNIiwibmJmIjoxNjA3MTEyNzM5LCJzdWIiOiJkaWQ6a2V5Ono2TWtvVEhzZ05OcmJ5OEp6Q05RMWlSTHlXNVFRNlI4WHV1NkFBOGlnR3JNVlBVTSIsInZjIjp7IkBjb250ZXh0IjpbImh0dHBzOi8vd3d3LnczLm9yZy8yMDE4L2NyZWRlbnRpYWxzL3YxIiwiaHR0cHM6Ly9pZGVudGl0eS5mb3VuZGF0aW9uLy53ZWxsLWtub3duL2RpZC1jb25maWd1cmF0aW9uL3YxIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImlkIjoiZGlkOmtleTp6Nk1rb1RIc2dOTnJieThKekNOUTFpUkx5VzVRUTZSOFh1dTZBQThpZ0dyTVZQVU0iLCJvcmlnaW4iOiJodHRwczovL2lkZW50aXR5LmZvdW5kYXRpb24ifSwiZXhwaXJhdGlvbkRhdGUiOiIyMDI1LTEyLTA0VDE0OjEyOjE5LTA2OjAwIiwiaXNzdWFuY2VEYXRlIjoiMjAyMC0xMi0wNFQxNDoxMjoxOS0wNjowMCIsImlzc3VlciI6ImRpZDprZXk6ejZNa29USHNnTk5yYnk4SnpDTlExaVJMeVc1UVE2UjhYdXU2QUE4aWdHck1WUFVNIiwidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsIkRvbWFpbkxpbmthZ2VDcmVkZW50aWFsIl19fQ.YZnpPMAW3GdaPXC2YKoJ7Igt1OaVZKq09XZBkptyhxTAyHTkX2Ewtew-JKHKQjyDyabY3HAy1LUPoIQX0jrU0J82pIYT3k2o7nNTdLbxlgb49FcDn4czntt5SbY0m1XwrMaKEvV0bHQsYPxNTqjYsyySccgPfmvN9IT8gRS-M9a6MZQxuB3oEMrVOQ5Vco0bvTODXAdCTHibAk1FlvKz0r1vO5QMhtW4OlRrVTI7ibquf9Nim_ch0KeMMThFjsBDKetuDF71nUcL5sf7PCFErvl8ZVw3UK4NkZ6iM-XIRsLL6rXP2SnDUVovcldhxd_pyKEYviMHBOgBdoNP6fOgRQ',
+        'eyJhbGciOiJSUzI1NiIsImtpZCI6ImRpZDprZXk6ejZNa29USHNnTk5yYnk4SnpDTlExaVJMeVc1UVE2UjhYdXU2QUE4aWdHck1WUFVNI3o2TWtvVEhzZ05OcmJ5OEp6Q05RMWlSTHlXNVFRNlI4WHV1NkFBOGlnR3JNVlBVTSJ9.eyJleHAiOjE3NjQ4NzkxMzksImlzcyI6ImRpZDprZXk6b3RoZXIiLCJuYmYiOjE2MDcxMTI3MzksInN1YiI6ImRpZDprZXk6b3RoZXIiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vaWRlbnRpdHkuZm91bmRhdGlvbi8ud2VsbC1rbm93bi9kaWQtY29uZmlndXJhdGlvbi92MSJdLCJjcmVkZW50aWFsU3ViamVjdCI6eyJpZCI6ImRpZDprZXk6b3RoZXIiLCJvcmlnaW4iOiJodHRwczovL2lkZW50aXR5LmZvdW5kYXRpb24ifSwiZXhwaXJhdGlvbkRhdGUiOiIyMDI1LTEyLTA0VDE0OjEyOjE5LTA2OjAwIiwiaXNzdWFuY2VEYXRlIjoiMjAyMC0xMi0wNFQxNDoxMjoxOS0wNjowMCIsImlzc3VlciI6ImRpZDprZXk6b3RoZXIiLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIiwiRG9tYWluTGlua2FnZUNyZWRlbnRpYWwiXX19.rRuc-ojuEgyq8p_tBYK7BayuiNTBeXNyAnC14Rnjs-jsnhae4_E1Q12W99K2NGCGBi5KjNsBcZmdNJPxejiKPrjjcB99poFCgTY8tuRzDjVo0lIeBwfx9qqjKHTRTUR8FGM_imlOpVfBF4AHYxjkHvZn6c9lYvatYcDpB2UfH4BNXkdSVrUXy_kYjpMpAdRtyCAnD_isN1YpEHBqBmnfuVUbYcQK5kk6eiokRFDtWruL1OEeJMYPqjuBSd2m-H54tSM84Oic_pg2zXDjjBlXNelat6MPNT2QxmkwJg7oyewQWX2Ot2yyhSp9WyAQWMlQIe2x84R0lADUmZ1TPQchNw',
+      ],
+    };
+    nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
+      audience: EXAMPLE_REDIRECT_URL,
+    });
+    expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
+    expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+  });
+
+  it('should register authorization request on create', async () => {
+    const rpMockEntity = {
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
+    };
+
+    const nonceReplayRegistry = new NonceReplayRegistry()
+
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+      .withClientId('test_client_id')
+      .withScope('test')
+      .withResponseType(ResponseType.ID_TOKEN)
+      .withRevocationVerification(RevocationVerification.NEVER)
+      .withPresentationVerification(presentationVerificationCallback)
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
+      .withRedirectUri(EXAMPLE_REDIRECT_URL)
+      .withRequestBy(PassBy.VALUE)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
+      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
+      .addDidMethod('ion')
+      .withClientMetadata({
+        clientId: WELL_KNOWN_OPENID_FEDERATION,
+        idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.ES256K],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormatsSupported: {
+          jwt_vc: { alg: [SigningAlgo.EDDSA] },
+          jwt_vp: { alg: [SigningAlgo.EDDSA] },
+          ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp_vp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+          ldp: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] },
+        },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did', 'did:ion'],
+        passBy: PassBy.VALUE,
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100330',
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+      })
+      .withPresentationDefinition(getPresentationDefinition())
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
+      .withNonceReplayRegistry(nonceReplayRegistry)
+      .build();
+
+    await rp.createAuthorizationRequest({
+      nonce: { propertyValue: 'bcceb347-1374-49b8-ace0-b868162c122d', targets: PropertyTarget.REQUEST_OBJECT },
+      state: { propertyValue: '8006b5fb-6e3b-42d1-a2be-55ed2a08073d', targets: PropertyTarget.REQUEST_OBJECT },
+      claims: {
+        propertyValue: {
+          vp_token: {
+            presentation_definition: {
+              input_descriptors: [
+                {
+                  schema: [
+                    {
+                      uri: 'https://VerifiedEmployee',
+                    },
+                  ],
+                  purpose: 'We need to verify that you have a valid VerifiedEmployee Verifiable Credential.',
+                  name: 'VerifiedEmployeeVC',
+                  id: 'VerifiedEmployeeVC',
+                },
+              ],
+              id: '8006b5fb-6e3b-42d1-a2be-55ed2a08073d',
+            },
+          },
+        },
+        targets: PropertyTarget.REQUEST_OBJECT,
+      },
+    });
+
+    const authRequests = await nonceReplayRegistry.getAuthorizationRequests()
+    expect(authRequests.length).toBe(1);
+  })
+
+  it('should register authorization request on create with uri', async () => {
+    const rpMockEntity = {
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
+    };
+    const nonceReplayRegistry = new NonceReplayRegistry()
+    const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+    .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+    .withScope('test')
+    .withResponseType(ResponseType.ID_TOKEN)
+    .withRedirectUri(EXAMPLE_REDIRECT_URL)
+    .withPresentationVerification(presentationVerificationCallback)
+    .withVerifyCallback(verifyCallback)
+    .withRevocationVerification(RevocationVerification.NEVER)
+    .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+    .withIssuer(ResponseIss.SELF_ISSUED_V2)
+    .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`, SigningAlgo.ES256K)
+    .addDidMethod('ethr')
+    .withClientMetadata({
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+      responseTypesSupported: [ResponseType.ID_TOKEN],
+      vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
+      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+      subjectTypesSupported: [SubjectType.PAIRWISE],
+      subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+      passBy: PassBy.VALUE,
+      logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      clientName: VERIFIER_NAME_FOR_CLIENT,
+      'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100317',
+      clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+    })
+    .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
+    .withNonceReplayRegistry(new NonceReplayRegistry())
+    .build();
+
+    await rp.createAuthorizationRequestURI({
+      nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
+      state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
+    });
+
+    const authRequests = await nonceReplayRegistry.getAuthorizationRequests()
+    expect(authRequests.length).toBe(1);
+  })
+
+  it('should register authorization response on successful verification', async () => { //should verify revocation ldp_vp with RevocationVerification.IF_PRESENT //should verify nonce using NonceReplayRegistry
+    const rpMockEntity = {
+      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
+    };
+    const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
+    const nonceReplayRegistry = new NonceReplayRegistry()
+    const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
+    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+    .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+    .withScope('test')
+    .withResponseType(ResponseType.ID_TOKEN)
+    .withRedirectUri(EXAMPLE_REDIRECT_URL)
+    .withPresentationVerification(presentationVerificationCallback)
+    .withVerifyCallback(verifyCallback)
+    .withRevocationVerification(RevocationVerification.NEVER)
+    .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
+    .withIssuer(ResponseIss.SELF_ISSUED_V2)
+    .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`, SigningAlgo.ES256K)
+    .addDidMethod('ethr')
+    .withClientMetadata({
+      clientId: WELL_KNOWN_OPENID_FEDERATION,
+      idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+      requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+      responseTypesSupported: [ResponseType.ID_TOKEN],
+      vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
+      scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+      subjectTypesSupported: [SubjectType.PAIRWISE],
+      subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+      passBy: PassBy.VALUE,
+      logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      clientName: VERIFIER_NAME_FOR_CLIENT,
+      'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100317',
+      clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+      'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+    })
+    .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
+    .withNonceReplayRegistry(new NonceReplayRegistry())
+    .build();
+    const op = OP.builder()
+      .withPresentationSignCallback(presentationSignCallback)
+      .withExpiresIn(1000)
+      .addVerifyCallback(verifyCallback)
+      .addIssuer(ResponseIss.SELF_ISSUED_V2)
+      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
+      //FIXME: Move payload options to seperate property
+      .registration({
+        authorizationEndpoint: 'www.myauthorizationendpoint.com',
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+        issuer: ResponseIss.SELF_ISSUED_V2,
+        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        responseTypesSupported: [ResponseType.ID_TOKEN],
+        vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
+        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+        subjectTypesSupported: [SubjectType.PAIRWISE],
+        subjectSyntaxTypesSupported: ['did:ethr'],
+        registrationBy: { passBy: PassBy.VALUE },
+        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        clientName: VERIFIER_NAME_FOR_CLIENT,
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100318',
+        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+      })
+      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
+      .build();
+    const requestURI = await rp.createAuthorizationRequestURI({
+      nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
+      state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
+    });
+    nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
+    const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
+    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedRequest);
+    nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, { result: 'ok' });
+    await op.submitAuthorizationResponse(authenticationResponseWithJWT);
+    await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      audience: EXAMPLE_REDIRECT_URL,
+    });
+
+    const authRequests = await nonceReplayRegistry.getAuthorizationRequests()
+    const authResponses = await nonceReplayRegistry.getAuthorizationResponses()
+    expect(authRequests.length).toBe(0);
+    expect(authResponses.length).toBe(1);
+  })
 });
