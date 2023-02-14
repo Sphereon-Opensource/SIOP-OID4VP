@@ -28,6 +28,7 @@ import {
   verifyRevocation,
 } from '../src/main';
 import { checkSIOPSpecVersionSupported } from '../src/main/helpers/SIOPSpecVersion';
+import { ReplayRegistry } from '../src/main/rp/ReplayRegistry';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
@@ -38,7 +39,6 @@ import {
   VERIFIERZ_PURPOSE_TO_VERIFY,
   VERIFIERZ_PURPOSE_TO_VERIFY_NL,
 } from './data/mockedData';
-import { ReplayRegistry } from '../src/main/rp/ReplayRegistry';
 
 jest.setTimeout(30000);
 

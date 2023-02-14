@@ -18,10 +18,10 @@ import {
   UrlEncodingFormat,
   VerifiedAuthorizationRequest,
 } from '../types';
+import { AuthorizationEvents } from '../types/Events';
 
 import { Builder } from './Builder';
 import { createResponseOptsFromBuilderOrExistingOpts, createVerifyRequestOptsFromBuilderOrExistingOpts } from './Opts';
-import { AuthorizationEvents } from '../types/Events';
 
 export const opEventEmitter = new (require('events').EventEmitter)();
 

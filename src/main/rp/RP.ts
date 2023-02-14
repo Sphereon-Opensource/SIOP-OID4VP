@@ -18,10 +18,10 @@ import {
   SupportedVersion,
   VerifiedAuthenticationResponse,
 } from '../types';
+import { AuthorizationEvents } from '../types/Events';
 
 import Builder from './Builder';
 import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts, isTargetOrNoTargets } from './Opts';
-import { AuthorizationEvents } from '../types/Events';
 
 export const rpEventEmitter = new (require('events').EventEmitter)();
 

@@ -14,9 +14,9 @@ import {
   VerifyAuthorizationResponseOpts,
 } from '../authorization-response';
 import { RequestObject, RequestObjectOpts } from '../request-object';
+import { ReplayRegistry } from '../rp/ReplayRegistry';
 
 import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './';
-import { ReplayRegistry } from '../rp/ReplayRegistry';
 
 export const DEFAULT_EXPIRATION_TIME = 10 * 60;
 

@@ -1,14 +1,16 @@
 import { AuthorizationRequest } from '../authorization-request';
 import { AuthorizationResponse } from '../authorization-response';
-import { AuthorizationEvents } from '../types/Events';
 import { RequestObjectPayload } from '../types';
-import { rpEventEmitter } from './RP';
+import { AuthorizationEvents } from '../types/Events';
 import {
   AuthorizationRequestState,
   AuthorizationRequestStateStatus,
   AuthorizationResponseState,
   AuthorizationResponseStateStatus,
 } from '../types/ReplayRegistry';
+
+import { rpEventEmitter } from './RP';
+
 
 export class ReplayRegistry {
   private authorizationRequests: Map<string, AuthorizationRequestState> = new Map<string, AuthorizationRequestState>();
