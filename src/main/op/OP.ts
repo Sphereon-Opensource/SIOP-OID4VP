@@ -97,7 +97,7 @@ export class OP {
       authorizationRequest,
       this.newAuthorizationResponseOpts(responseOpts)
     ).catch((error: Error) => {
-      opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationResponse, error);
+      opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationRequest, responseOpts, error);
       throw error;
     });
     opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, authorizationResponse);
