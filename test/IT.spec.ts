@@ -1839,7 +1839,9 @@ describe('RP and OP interaction should', () => {
       .verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
         audience: EXAMPLE_REDIRECT_URL,
       })
-      .catch(() => {});
+      .catch(() => {
+        //swallow this exception;
+      });
     const authResponses = await replayRegistry.getAuthorizationResponses();
     expect(authResponses.size).toBe(1);
     expect(authResponses.values().next().value.status).toBe('error');

@@ -11,7 +11,6 @@ import {
 
 import { rpEventEmitter } from './RP';
 
-
 export class ReplayRegistry {
   private authorizationRequests: Map<string, AuthorizationRequestState> = new Map<string, AuthorizationRequestState>();
   private authorizationResponses: Map<string, AuthorizationResponseState> = new Map<string, AuthorizationResponseState>();

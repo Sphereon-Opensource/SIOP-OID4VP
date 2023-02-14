@@ -1,3 +1,5 @@
+import EventEmitter from 'events';
+
 import { AuthorizationRequest, URI, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import {
   AuthorizationResponse,
@@ -23,7 +25,7 @@ import { AuthorizationEvents } from '../types/Events';
 import { Builder } from './Builder';
 import { createResponseOptsFromBuilderOrExistingOpts, createVerifyRequestOptsFromBuilderOrExistingOpts } from './Opts';
 
-export const opEventEmitter = new (require('events').EventEmitter)();
+export const opEventEmitter = new EventEmitter();
 
 // The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
 export class OP {

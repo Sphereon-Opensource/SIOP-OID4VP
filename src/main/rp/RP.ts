@@ -1,3 +1,5 @@
+import EventEmitter from 'events';
+
 import {
   AuthorizationRequest,
   ClaimPayloadCommonOpts,
@@ -23,7 +25,7 @@ import { AuthorizationEvents } from '../types/Events';
 import Builder from './Builder';
 import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts, isTargetOrNoTargets } from './Opts';
 
-export const rpEventEmitter = new (require('events').EventEmitter)();
+export const rpEventEmitter = new EventEmitter();
 
 export class RP {
   private readonly _createRequestOptions: CreateAuthorizationRequestOpts;
