@@ -44,7 +44,7 @@ export default class Builder {
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
-  replayRegistry?: ReplayRegistry
+  replayRegistry?: ReplayRegistry;
   private _authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
   private _requestObjectPayload: Partial<RequestObjectPayload> = {};
 

@@ -72,11 +72,11 @@ export class RP {
     return AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }))
       .then((authorizationRequest: AuthorizationRequest) => {
         rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, authorizationRequest);
-        return authorizationRequest
+        return authorizationRequest;
       })
       .catch((error: Error) => {
         rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, { version: opts.version, nonce, state, claims }, error);
-        throw error
+        throw error;
       });
   }
 
@@ -95,15 +95,17 @@ export class RP {
         ? { propertyValue: opts.claims }
         : (opts?.claims as RequestPropertyWithTargets<ClaimPayloadCommonOpts>);
 
-    const authorizationRequestOpts = this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims })
+    const authorizationRequestOpts = this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims });
 
-    return URI.fromOpts(authorizationRequestOpts).then(async (uri: URI) => {
-      rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, await AuthorizationRequest.fromOpts(authorizationRequestOpts));
-      return uri
-    }).catch((error: Error) => {
-      rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, authorizationRequestOpts, error);
-      throw error
-    })
+    return URI.fromOpts(authorizationRequestOpts)
+      .then(async (uri: URI) => {
+        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, await AuthorizationRequest.fromOpts(authorizationRequestOpts));
+        return uri;
+      })
+      .catch((error: Error) => {
+        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, authorizationRequestOpts, error);
+        throw error;
+      });
   }
 
   public async verifyAuthorizationResponse(
@@ -119,21 +121,21 @@ export class RP {
     const verifyAuthenticationResponseOpts = this.newVerifyAuthorizationResponseOpts({
       ...opts,
     });
-    const authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload)
-      .catch((error: Error) => {
-        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, authorizationResponsePayload, error);
-        throw error
-      });
+    const authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload).catch((error: Error) => {
+      rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, authorizationResponsePayload, error);
+      throw error;
+    });
     rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, authorizationResponse);
 
-    return authorizationResponse.verify(verifyAuthenticationResponseOpts)
+    return authorizationResponse
+      .verify(verifyAuthenticationResponseOpts)
       .then((verifiedAuthenticationResponse: VerifiedAuthenticationResponse) => {
-        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, authorizationResponse)
-        return verifiedAuthenticationResponse
+        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, authorizationResponse);
+        return verifiedAuthenticationResponse;
       })
       .catch((error: Error) => {
-        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, authorizationResponse, error)
-        throw error
+        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, authorizationResponse, error);
+        throw error;
       });
   }
 

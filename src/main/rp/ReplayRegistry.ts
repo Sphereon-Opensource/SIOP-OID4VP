@@ -7,11 +7,11 @@ import {
   AuthorizationRequestState,
   AuthorizationRequestStateStatus,
   AuthorizationResponseState,
-  AuthorizationResponseStateStatus
+  AuthorizationResponseStateStatus,
 } from '../types/ReplayRegistry';
 
 export class ReplayRegistry {
-  private authorizationRequests: Map<string, AuthorizationRequestState>= new Map<string, AuthorizationRequestState>();
+  private authorizationRequests: Map<string, AuthorizationRequestState> = new Map<string, AuthorizationRequestState>();
   private authorizationResponses: Map<string, AuthorizationResponseState> = new Map<string, AuthorizationResponseState>();
 
   public constructor() {
@@ -27,12 +27,12 @@ export class ReplayRegistry {
         return;
       }
 
-      const timestamp = Date.now()
-      const payload: RequestObjectPayload | undefined = await authorizationRequest.requestObject.getPayload()
+      const timestamp = Date.now();
+      const payload: RequestObjectPayload | undefined = await authorizationRequest.requestObject.getPayload();
       if (!payload) {
-        throw new Error('Request does not contain a payload')
+        throw new Error('Request does not contain a payload');
       }
-      this.authorizationRequests.set(payload.nonce, { payload, status: AuthorizationRequestStateStatus.CREATED, timestamp, lastUpdated: timestamp })
+      this.authorizationRequests.set(payload.nonce, { payload, status: AuthorizationRequestStateStatus.CREATED, timestamp, lastUpdated: timestamp });
     } catch (error: any) {
       // TODO VDX-166 handle error
     }
@@ -44,9 +44,14 @@ export class ReplayRegistry {
         return;
       }
 
-      const timestamp = Date.now()
-      const payload = await authorizationResponse.idToken.payload()
-      this.authorizationResponses.set(payload.nonce, { payload, status: AuthorizationResponseStateStatus.RECEIVED, timestamp: timestamp, lastUpdated: timestamp })
+      const timestamp = Date.now();
+      const payload = await authorizationResponse.idToken.payload();
+      this.authorizationResponses.set(payload.nonce, {
+        payload,
+        status: AuthorizationResponseStateStatus.RECEIVED,
+        timestamp: timestamp,
+        lastUpdated: timestamp,
+      });
     } catch (error: any) {
       // TODO VDX-166 handle error
     }
@@ -58,13 +63,13 @@ export class ReplayRegistry {
         return;
       }
 
-      const timestamp = Date.now()
-      const payload = await authorizationResponse.idToken.payload()
-      const authorizationRequestState: AuthorizationResponseState = this.authorizationResponses.get(payload.nonce)
-      authorizationRequestState.error = error
-      authorizationRequestState.status = AuthorizationResponseStateStatus.ERROR
-      authorizationRequestState.lastUpdated = timestamp
-      this.authorizationResponses.set(payload.nonce, authorizationRequestState)
+      const timestamp = Date.now();
+      const payload = await authorizationResponse.idToken.payload();
+      const authorizationRequestState: AuthorizationResponseState = this.authorizationResponses.get(payload.nonce);
+      authorizationRequestState.error = error;
+      authorizationRequestState.status = AuthorizationResponseStateStatus.ERROR;
+      authorizationRequestState.lastUpdated = timestamp;
+      this.authorizationResponses.set(payload.nonce, authorizationRequestState);
     } catch (error: any) {
       // TODO VDX-166 handle error
     }
@@ -76,26 +81,26 @@ export class ReplayRegistry {
         return;
       }
 
-      const timestamp = Date.now()
-      const payload = await authorizationResponse.idToken.payload()
+      const timestamp = Date.now();
+      const payload = await authorizationResponse.idToken.payload();
 
-      this.authorizationRequests.delete(payload.nonce)
+      this.authorizationRequests.delete(payload.nonce);
 
-      const authorizationRequestState: AuthorizationResponseState = this.authorizationResponses.get(payload.nonce)
-      authorizationRequestState.status = AuthorizationResponseStateStatus.VERIFIED
-      authorizationRequestState.lastUpdated = timestamp
-      this.authorizationResponses.set(payload.nonce, authorizationRequestState)
+      const authorizationRequestState: AuthorizationResponseState = this.authorizationResponses.get(payload.nonce);
+      authorizationRequestState.status = AuthorizationResponseStateStatus.VERIFIED;
+      authorizationRequestState.lastUpdated = timestamp;
+      this.authorizationResponses.set(payload.nonce, authorizationRequestState);
     } catch (error: any) {
       // TODO VDX-166 handle error
     }
   }
 
   public async getAuthorizationRequests(): Promise<Map<string, AuthorizationRequestState>> {
-    return new Map(this.authorizationRequests)
+    return new Map(this.authorizationRequests);
   }
 
   public async getAuthorizationResponses(): Promise<Map<string, AuthorizationResponseState>> {
-    return new Map(this.authorizationResponses)
+    return new Map(this.authorizationResponses);
   }
 
   public async verify(authorizationResponse: AuthorizationResponse): Promise<void> {
@@ -103,7 +108,7 @@ export class ReplayRegistry {
       return Promise.reject(Error('No idToken present in response'));
     }
 
-    const payload = await authorizationResponse.idToken.payload()
+    const payload = await authorizationResponse.idToken.payload();
     if (!payload.nonce) {
       return Promise.reject(Error('No nonce present in idToken'));
     }
@@ -112,7 +117,7 @@ export class ReplayRegistry {
       return Promise.reject(Error(`No authorization request present matching nonce: ${payload.nonce}`));
     }
 
-    const requestPayload = this.authorizationRequests.get(payload.nonce)
+    const requestPayload = this.authorizationRequests.get(payload.nonce);
     if (requestPayload.payload.state !== authorizationResponse.payload.state) {
       return Promise.reject(Error(`Response state: ${authorizationResponse.payload.state} does not match request state`));
     }

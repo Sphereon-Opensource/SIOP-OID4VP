@@ -13,7 +13,7 @@ import {
   InternalVerification,
   ParsedAuthorizationRequestURI,
   ResponseMode,
-  SIOPErrors, 
+  SIOPErrors,
   SIOPResonse,
   UrlEncodingFormat,
   VerifiedAuthorizationRequest,
@@ -65,18 +65,19 @@ export class OP {
   ): Promise<VerifiedAuthorizationRequest> {
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri).catch((error: Error) => {
       opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, requestJwtOrUri, error);
-      throw error
+      throw error;
     });
     opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, authorizationRequest);
 
-    return authorizationRequest.verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }))
+    return authorizationRequest
+      .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }))
       .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
         opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, authorizationRequest);
-        return verifiedAuthorizationRequest
+        return verifiedAuthorizationRequest;
       })
       .catch((error) => {
         opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, authorizationRequest, error);
-        throw error
+        throw error;
       });
   }
 
@@ -92,14 +93,16 @@ export class OP {
       };
     }
   ): Promise<AuthorizationResponse> {
-    const authorizationResponse: AuthorizationResponse = await AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts))
-      .catch((error: Error) => {
-        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationResponse, error);
-        throw error
-      });
+    const authorizationResponse: AuthorizationResponse = await AuthorizationResponse.fromVerifiedAuthorizationRequest(
+      authorizationRequest,
+      this.newAuthorizationResponseOpts(responseOpts)
+    ).catch((error: Error) => {
+      opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationResponse, error);
+      throw error;
+    });
     opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, authorizationResponse);
 
-    return authorizationResponse
+    return authorizationResponse;
   }
 
   // TODO SK Can you please put some documentation on it?
@@ -121,7 +124,7 @@ export class OP {
       })
       .catch((error: Error) => {
         opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, authorizationResponse, error);
-        throw error
+        throw error;
       });
   }
 

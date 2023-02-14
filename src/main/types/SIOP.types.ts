@@ -492,7 +492,7 @@ export interface Verification {
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
-  replayRegistry?: ReplayRegistry
+  replayRegistry?: ReplayRegistry;
 }
 
 export type InternalVerification = Verification;
