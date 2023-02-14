@@ -18,7 +18,7 @@ export class ReplayRegistry {
     rpEventEmitter.on(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, this.onAuthorizationRequestCreatedSuccess.bind(this));
     rpEventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, this.onAuthorizationResponseReceivedSuccess.bind(this));
     rpEventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, this.onAuthorizationResponseVerifiedSuccess.bind(this));
-    rpEventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, this.onAuthorizationResponseReceivedFailed.bind(this));
+    rpEventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, this.onAuthorizationResponseVerifiedFailed.bind(this));
   }
 
   private async onAuthorizationRequestCreatedSuccess(authorizationRequest: AuthorizationRequest): Promise<void> {
@@ -52,7 +52,7 @@ export class ReplayRegistry {
     }
   }
 
-  private async onAuthorizationResponseReceivedFailed(authorizationResponse: AuthorizationResponse, error: Error): Promise<void> {
+  private async onAuthorizationResponseVerifiedFailed(authorizationResponse: AuthorizationResponse, error: Error): Promise<void> {
     try {
       if (!authorizationResponse) {
         return;
