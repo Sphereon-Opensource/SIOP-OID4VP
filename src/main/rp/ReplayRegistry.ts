@@ -1,16 +1,16 @@
 import { AuthorizationRequest } from '../authorization-request';
 import { AuthorizationResponse } from '../authorization-response';
+import { AuthorizationEvents } from '../types/Events';
+import { RequestObjectPayload } from '../types';
+import { rpEventEmitter } from './RP';
 import {
-  AuthorizationEvents,
   AuthorizationRequestState,
   AuthorizationRequestStateStatus,
   AuthorizationResponseState,
   AuthorizationResponseStateStatus
-} from '../types/Events';
-import { RequestObjectPayload } from '../types';
-import { rpEventEmitter } from './RP';
+} from '../types/ReplayRegistry';
 
-export class ReplayRegistry  {
+export class ReplayRegistry {
   private authorizationRequests: Map<string, AuthorizationRequestState>= new Map<string, AuthorizationRequestState>();
   private authorizationResponses: Map<string, AuthorizationResponseState> = new Map<string, AuthorizationResponseState>();
 
@@ -34,7 +34,7 @@ export class ReplayRegistry  {
       }
       this.authorizationRequests.set(payload.nonce, { payload, status: AuthorizationRequestStateStatus.CREATED, timestamp, lastUpdated: timestamp })
     } catch (error: any) {
-      // TODO handle error
+      // TODO VDX-166 handle error
     }
   }
 
@@ -48,7 +48,7 @@ export class ReplayRegistry  {
       const payload = await authorizationResponse.idToken.payload()
       this.authorizationResponses.set(payload.nonce, { payload, status: AuthorizationResponseStateStatus.RECEIVED, timestamp: timestamp, lastUpdated: timestamp })
     } catch (error: any) {
-      // TODO handle error
+      // TODO VDX-166 handle error
     }
   }
 
@@ -66,7 +66,7 @@ export class ReplayRegistry  {
       authorizationRequestState.lastUpdated = timestamp
       this.authorizationResponses.set(payload.nonce, authorizationRequestState)
     } catch (error: any) {
-      // TODO handle error
+      // TODO VDX-166 handle error
     }
   }
 
@@ -86,7 +86,7 @@ export class ReplayRegistry  {
       authorizationRequestState.lastUpdated = timestamp
       this.authorizationResponses.set(payload.nonce, authorizationRequestState)
     } catch (error: any) {
-      // TODO handle error
+      // TODO VDX-166 handle error
     }
   }
 

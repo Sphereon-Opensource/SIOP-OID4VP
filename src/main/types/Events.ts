@@ -1,21 +1,3 @@
-import { IDTokenPayload, RequestObjectPayload } from './SIOP.types';
-
-export interface AuthorizationRequestState {
-  payload?: RequestObjectPayload
-  status: AuthorizationRequestStateStatus
-  timestamp: number
-  lastUpdated: number
-  error?: Error
-}
-
-export interface AuthorizationResponseState {
-  payload?: IDTokenPayload
-  status: AuthorizationResponseStateStatus
-  timestamp: number
-  lastUpdated: number
-  error?: Error
-}
-
 export enum AuthorizationEvents {
   ON_AUTH_REQUEST_CREATED_SUCCESS = 'onAuthRequestCreatedSuccess',
   ON_AUTH_REQUEST_CREATED_FAILED = 'onAuthRequestCreatedFailed',
@@ -37,19 +19,4 @@ export enum AuthorizationEvents {
 
   ON_AUTH_RESPONSE_VERIFIED_SUCCESS = 'onAuthResponseVerifiedSuccess',
   ON_AUTH_RESPONSE_VERIFIED_FAILED = 'onAuthResponseReceivedFailed',
-}
-
-export enum AuthorizationRequestStateStatus {
-  CREATED = 'created',
-  RECEIVED = 'received',
-  VERIFIED = 'verified',
-  ERROR = 'error'
-}
-
-export enum AuthorizationResponseStateStatus {
-  CREATED = 'created',
-  SENT = 'sent',
-  RECEIVED = 'received',
-  VERIFIED = 'verified',
-  ERROR = 'error'
 }

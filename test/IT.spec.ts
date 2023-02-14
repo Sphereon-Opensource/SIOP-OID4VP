@@ -38,7 +38,7 @@ import {
   VERIFIERZ_PURPOSE_TO_VERIFY,
   VERIFIERZ_PURPOSE_TO_VERIFY_NL,
 } from './data/mockedData';
-import { NonceReplayRegistry } from '../src/main/rp/NonceReplayRegistry';
+import { ReplayRegistry } from '../src/main/rp/ReplayRegistry';
 
 jest.setTimeout(30000);
 
@@ -1533,7 +1533,7 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
 
-    const nonceReplayRegistry = new NonceReplayRegistry()
+    const replayRegistry = new ReplayRegistry()
 
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
@@ -1572,7 +1572,7 @@ describe('RP and OP interaction should', () => {
       })
       .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
-      .withNonceReplayRegistry(nonceReplayRegistry)
+      .withReplayRegistry(replayRegistry)
       .build();
 
     await rp.createAuthorizationRequest({
@@ -1602,8 +1602,8 @@ describe('RP and OP interaction should', () => {
       },
     });
 
-    const authRequests = await nonceReplayRegistry.getAuthorizationRequests()
-    expect(authRequests.length).toBe(1);
+    const authRequests = await replayRegistry.getAuthorizationRequests()
+    expect(authRequests.size).toBe(1);
   })
 
   it('should register authorization request on create with uri', async () => {
@@ -1612,7 +1612,7 @@ describe('RP and OP interaction should', () => {
       did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
-    const nonceReplayRegistry = new NonceReplayRegistry()
+    const replayRegistry = new ReplayRegistry()
     const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
@@ -1644,7 +1644,7 @@ describe('RP and OP interaction should', () => {
       'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
     })
     .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
-    .withNonceReplayRegistry(new NonceReplayRegistry())
+    .withReplayRegistry(replayRegistry)
     .build();
 
     await rp.createAuthorizationRequestURI({
@@ -1652,18 +1652,18 @@ describe('RP and OP interaction should', () => {
       state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
     });
 
-    const authRequests = await nonceReplayRegistry.getAuthorizationRequests()
-    expect(authRequests.length).toBe(1);
+    const authRequests = await replayRegistry.getAuthorizationRequests()
+    expect(authRequests.size).toBe(1);
   })
 
-  it('should register authorization response on successful verification', async () => { //should verify revocation ldp_vp with RevocationVerification.IF_PRESENT //should verify nonce using NonceReplayRegistry
+  it('should register authorization response on successful verification', async () => { //should verify revocation ldp_vp with RevocationVerification.IF_PRESENT //should verify nonce using ReplayRegistry
     const rpMockEntity = {
       hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
       did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
-    const nonceReplayRegistry = new NonceReplayRegistry()
+    const replayRegistry = new ReplayRegistry()
     const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
@@ -1695,7 +1695,7 @@ describe('RP and OP interaction should', () => {
       'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
     })
     .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
-    .withNonceReplayRegistry(new NonceReplayRegistry())
+    .withReplayRegistry(replayRegistry)
     .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
@@ -1728,6 +1728,9 @@ describe('RP and OP interaction should', () => {
       nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
       state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
     });
+    let authRequests = await replayRegistry.getAuthorizationRequests()
+    expect(authRequests.size).toBe(1);
+    expect(authRequests.values().next().value.status).toBe('created');
     nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
     const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedRequest);
@@ -1736,10 +1739,10 @@ describe('RP and OP interaction should', () => {
     await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
       audience: EXAMPLE_REDIRECT_URL,
     });
-
-    const authRequests = await nonceReplayRegistry.getAuthorizationRequests()
-    const authResponses = await nonceReplayRegistry.getAuthorizationResponses()
-    expect(authRequests.length).toBe(0);
-    expect(authResponses.length).toBe(1);
+    const authResponses = await replayRegistry.getAuthorizationResponses()
+    expect(authResponses.size).toBe(1);
+    expect(authResponses.values().next().value.status).toBe('verified');
+    authRequests = await replayRegistry.getAuthorizationRequests()
+    expect(authRequests.size).toBe(0);
   })
 });

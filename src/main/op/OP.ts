@@ -13,7 +13,8 @@ import {
   InternalVerification,
   ParsedAuthorizationRequestURI,
   ResponseMode,
-  SIOPErrors,
+  SIOPErrors, 
+  SIOPResonse,
   UrlEncodingFormat,
   VerifiedAuthorizationRequest,
 } from '../types';
@@ -68,13 +69,15 @@ export class OP {
     });
     opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, authorizationRequest);
 
-    const verifiedAuthorizationRequest: VerifiedAuthorizationRequest = await authorizationRequest.verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts })).catch((error) => {
-      opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, authorizationRequest, error);
-      throw error
-    });
-    opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, authorizationRequest);
-
-    return verifiedAuthorizationRequest
+    return authorizationRequest.verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }))
+      .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
+        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, authorizationRequest);
+        return verifiedAuthorizationRequest
+      })
+      .catch((error) => {
+        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, authorizationRequest, error);
+        throw error
+      });
   }
 
   public async createAuthorizationResponse(
@@ -111,18 +114,19 @@ export class OP {
     const payload = await authorizationResponse.payload;
     const idToken = await authorizationResponse.idToken.payload();
     const uri = encodeJsonAsURI(payload);
-    const result = await post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED })
+    return post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED })
+      .then((result: SIOPResonse<unknown>) => {
+        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, authorizationResponse);
+        return result.origResponse;
+      })
       .catch((error: Error) => {
         opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, authorizationResponse, error);
         throw error
       });
-    opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, authorizationResponse);
-
-    return result.origResponse;
   }
 
   /**
-   * Create a Authentication Request Payload from a URI string
+   * Create an Authentication Request Payload from a URI string
    *
    * @param encodedUri
    */
