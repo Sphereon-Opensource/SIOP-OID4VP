@@ -9,8 +9,6 @@ import { assertValidVerifiablePresentations, extractPresentationsFromAuthorizati
 import { assertValidResponseOpts } from './Opts';
 import { createResponsePayload } from './Payload';
 import { AuthorizationResponseOpts, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from './types';
-import { AuthorizationEvents } from '../types/Events';
-import { eventEmitter } from '../rp/NonceReplayRegistry';
 
 export class AuthorizationResponse {
   private readonly _authorizationRequest?: AuthorizationRequest | undefined;
@@ -134,9 +132,8 @@ export class AuthorizationResponse {
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
     // TODO: Add response verification next to idToken verification
-    if (verifyOpts.verification.nonceReplayRegistry) {
-      await verifyOpts.verification.nonceReplayRegistry.verify(this);
-      eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE, this);
+    if (verifyOpts.verification.replayRegistry) {
+      await verifyOpts.verification.replayRegistry.verify(this);
     }
 
     const result = await this.idToken.verify(verifyOpts);

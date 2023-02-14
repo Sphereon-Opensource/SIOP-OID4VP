@@ -20,6 +20,9 @@ import {
 
 import { Builder } from './Builder';
 import { createResponseOptsFromBuilderOrExistingOpts, createVerifyRequestOptsFromBuilderOrExistingOpts } from './Opts';
+import { AuthorizationEvents } from '../types/Events';
+
+export const opEventEmitter = new (require('events').EventEmitter)();
 
 // The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
 export class OP {
@@ -59,8 +62,19 @@ export class OP {
     requestJwtOrUri: string | URI,
     requestOpts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthorizationRequest> {
-    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri);
-    return await authorizationRequest.verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }));
+    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri).catch((error: Error) => {
+      opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, requestJwtOrUri, error);
+      throw error
+    });
+    opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, authorizationRequest);
+
+    const verifiedAuthorizationRequest: VerifiedAuthorizationRequest = await authorizationRequest.verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts })).catch((error) => {
+      opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, authorizationRequest, error);
+      throw error
+    });
+    opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, authorizationRequest);
+
+    return verifiedAuthorizationRequest
   }
 
   public async createAuthorizationResponse(
@@ -75,7 +89,14 @@ export class OP {
       };
     }
   ): Promise<AuthorizationResponse> {
-    return await AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts));
+    const authorizationResponse: AuthorizationResponse = await AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts))
+      .catch((error: Error) => {
+        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationResponse, error);
+        throw error
+      });
+    opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, authorizationResponse);
+
+    return authorizationResponse
   }
 
   // TODO SK Can you please put some documentation on it?
@@ -90,7 +111,13 @@ export class OP {
     const payload = await authorizationResponse.payload;
     const idToken = await authorizationResponse.idToken.payload();
     const uri = encodeJsonAsURI(payload);
-    const result = await post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED });
+    const result = await post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED })
+      .catch((error: Error) => {
+        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, authorizationResponse, error);
+        throw error
+      });
+    opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, authorizationResponse);
+
     return result.origResponse;
   }
 

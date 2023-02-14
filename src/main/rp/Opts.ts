@@ -76,7 +76,7 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
             revocationVerification: opts.builder.revocationVerification,
             revocationVerificationCallback: opts.builder.revocationVerificationCallback,
           },
-          nonceReplayRegistry: opts.builder.nonceReplayRegistry
+          replayRegistry: opts.builder.replayRegistry
         } as InternalVerification,
       }
     : opts.verifyOpts;

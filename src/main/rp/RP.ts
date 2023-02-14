@@ -21,8 +21,9 @@ import {
 
 import Builder from './Builder';
 import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts, isTargetOrNoTargets } from './Opts';
-import { eventEmitter } from './NonceReplayRegistry';
 import { AuthorizationEvents } from '../types/Events';
+
+export const rpEventEmitter = new (require('events').EventEmitter)();
 
 export class RP {
   private readonly _createRequestOptions: CreateAuthorizationRequestOpts;
@@ -68,10 +69,15 @@ export class RP {
         ? { propertyValue: opts.claims }
         : (opts?.claims as RequestPropertyWithTargets<ClaimPayloadCommonOpts>);
 
-    const authorizationRequest = await AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }));
-    eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST, authorizationRequest);
-
-    return authorizationRequest
+    return AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }))
+      .then((authorizationRequest: AuthorizationRequest) => {
+        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, authorizationRequest);
+        return authorizationRequest
+      })
+      .catch((error: Error) => {
+        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, { version: opts.version, nonce, state, claims }, error);
+        throw error
+      });
   }
 
   public async createAuthorizationRequestURI(opts?: {
@@ -90,9 +96,14 @@ export class RP {
         : (opts?.claims as RequestPropertyWithTargets<ClaimPayloadCommonOpts>);
 
     const authorizationRequestOpts = this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims })
-    eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST, await AuthorizationRequest.fromOpts(authorizationRequestOpts));
 
-    return await URI.fromOpts(authorizationRequestOpts);
+    return URI.fromOpts(authorizationRequestOpts).then(async (uri: URI) => {
+      rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, await AuthorizationRequest.fromOpts(authorizationRequestOpts));
+      return uri
+    }).catch((error: Error) => {
+      rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, authorizationRequestOpts, error);
+      throw error
+    })
   }
 
   public async verifyAuthorizationResponse(
@@ -108,9 +119,22 @@ export class RP {
     const verifyAuthenticationResponseOpts = this.newVerifyAuthorizationResponseOpts({
       ...opts,
     });
-    const authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload);
+    const authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload)
+      .catch((error: Error) => {
+        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, authorizationResponsePayload, error);
+        throw error
+      });
+    rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, authorizationResponse);
 
-    return await authorizationResponse.verify(verifyAuthenticationResponseOpts);
+    return authorizationResponse.verify(verifyAuthenticationResponseOpts)
+      .then((verifiedAuthenticationResponse: VerifiedAuthenticationResponse) => {
+        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, authorizationResponse)
+        return verifiedAuthenticationResponse
+      })
+      .catch((error: Error) => {
+        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, authorizationResponse, error)
+        throw error
+      });
   }
 
   private newAuthorizationRequestOpts(opts?: {

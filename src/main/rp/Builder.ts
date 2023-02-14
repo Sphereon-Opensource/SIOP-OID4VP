@@ -31,7 +31,7 @@ import {
 
 import { assignIfAuth, assignIfRequestObject, isTargetOrNoTargets } from './Opts';
 import { RP } from './RP';
-import { NonceReplayRegistry } from './NonceReplayRegistry';
+import { ReplayRegistry } from './ReplayRegistry';
 
 export default class Builder {
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
@@ -44,7 +44,7 @@ export default class Builder {
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
-  nonceReplayRegistry?: NonceReplayRegistry
+  replayRegistry?: ReplayRegistry
   private _authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
   private _requestObjectPayload: Partial<RequestObjectPayload> = {};
 
@@ -262,8 +262,8 @@ export default class Builder {
     return this;
   }
 
-  withNonceReplayRegistry(nonceReplayRegistry: NonceReplayRegistry): Builder {
-    this.nonceReplayRegistry = nonceReplayRegistry;
+  withReplayRegistry(replayRegistry: ReplayRegistry): Builder {
+    this.replayRegistry = replayRegistry;
     return this;
   }
 
