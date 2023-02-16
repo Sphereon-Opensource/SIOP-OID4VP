@@ -67,15 +67,19 @@ export class OP {
     requestJwtOrUri: string | URI,
     requestOpts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthorizationRequest> {
-    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri).catch((error: Error) => {
-      if (this._eventEmitter) {
-        this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, requestJwtOrUri, error);
-      }
-      throw error;
-    });
-    if (this._eventEmitter) {
-      this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, authorizationRequest);
-    }
+    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri)
+      .then((result: AuthorizationRequest) => {
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, authorizationRequest);
+        }
+        return result;
+      })
+      .catch((error: Error) => {
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, requestJwtOrUri, error);
+        }
+        throw error;
+      });
 
     return authorizationRequest
       .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }))
@@ -105,20 +109,19 @@ export class OP {
       };
     }
   ): Promise<AuthorizationResponse> {
-    const authorizationResponse: AuthorizationResponse = await AuthorizationResponse.fromVerifiedAuthorizationRequest(
-      authorizationRequest,
-      this.newAuthorizationResponseOpts(responseOpts)
-    ).catch((error: Error) => {
-      if (this._eventEmitter) {
-        this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationRequest, responseOpts, error);
-      }
-      throw error;
-    });
-    if (this._eventEmitter) {
-      this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, authorizationResponse);
-    }
-
-    return authorizationResponse;
+    return AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts))
+      .then((authorizationResponse: AuthorizationResponse) => {
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, authorizationResponse);
+        }
+        return authorizationResponse;
+      })
+      .catch((error: Error) => {
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationRequest, responseOpts, error);
+        }
+        throw error;
+      });
   }
 
   // TODO SK Can you please put some documentation on it?

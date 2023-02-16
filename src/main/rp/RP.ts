@@ -131,15 +131,19 @@ export class RP {
     const verifyAuthenticationResponseOpts = this.newVerifyAuthorizationResponseOpts({
       ...opts,
     });
-    const authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload).catch((error: Error) => {
-      if (this._eventEmitter) {
-        this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, authorizationResponsePayload, error);
-      }
-      throw error;
-    });
-    if (this._eventEmitter) {
-      this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, authorizationResponse);
-    }
+    const authorizationResponse: AuthorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload)
+      .then((authorizationResponse: AuthorizationResponse) => {
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, authorizationResponse);
+        }
+        return authorizationResponse;
+      })
+      .catch((error: Error) => {
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, authorizationResponsePayload, error);
+        }
+        throw error;
+      });
 
     return authorizationResponse
       .verify(verifyAuthenticationResponseOpts)
