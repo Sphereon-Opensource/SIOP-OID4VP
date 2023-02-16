@@ -25,8 +25,6 @@ import { AuthorizationEvents } from '../types/Events';
 import { Builder } from './Builder';
 import { createResponseOptsFromBuilderOrExistingOpts, createVerifyRequestOptsFromBuilderOrExistingOpts } from './Opts';
 
-// export const opEventEmitter = new EventEmitter();
-
 // The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
 export class OP {
   private readonly _createResponseOptions: AuthorizationResponseOpts;
