@@ -12,6 +12,7 @@ import {
 import { AuthorizationResponse, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getNonce, getState } from '../helpers';
 import {
+  AuthorizationEvents,
   AuthorizationResponsePayload,
   CheckLinkedDomain,
   ExternalVerification,
@@ -20,16 +21,14 @@ import {
   SupportedVersion,
   VerifiedAuthenticationResponse,
 } from '../types';
-import { AuthorizationEvents } from '../types/Events';
 
 import Builder from './Builder';
 import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts, isTargetOrNoTargets } from './Opts';
 
-export const rpEventEmitter = new EventEmitter();
-
 export class RP {
   private readonly _createRequestOptions: CreateAuthorizationRequestOpts;
   private readonly _verifyResponseOptions: Partial<VerifyAuthorizationResponseOpts>;
+  private readonly _eventEmitter?: EventEmitter;
 
   private constructor(opts: {
     builder?: Builder;
@@ -40,6 +39,7 @@ export class RP {
     const authReqOpts = createRequestOptsFromBuilderOrExistingOpts(opts);
     this._createRequestOptions = { ...authReqOpts, payload: { ...authReqOpts.payload } };
     this._verifyResponseOptions = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
+    this._eventEmitter = opts.builder?.eventEmitter;
   }
 
   public static fromRequestOpts(opts: CreateAuthorizationRequestOpts): RP {
@@ -73,11 +73,15 @@ export class RP {
 
     return AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }))
       .then((authorizationRequest: AuthorizationRequest) => {
-        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, authorizationRequest);
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, authorizationRequest);
+        }
         return authorizationRequest;
       })
       .catch((error: Error) => {
-        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, { version: opts.version, nonce, state, claims }, error);
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, { version: opts.version, nonce, state, claims }, error);
+        }
         throw error;
       });
   }
@@ -101,11 +105,15 @@ export class RP {
 
     return URI.fromOpts(authorizationRequestOpts)
       .then(async (uri: URI) => {
-        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, await AuthorizationRequest.fromOpts(authorizationRequestOpts));
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, await AuthorizationRequest.fromOpts(authorizationRequestOpts));
+        }
         return uri;
       })
       .catch((error: Error) => {
-        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, authorizationRequestOpts, error);
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, authorizationRequestOpts, error);
+        }
         throw error;
       });
   }
@@ -124,19 +132,27 @@ export class RP {
       ...opts,
     });
     const authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload).catch((error: Error) => {
-      rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, authorizationResponsePayload, error);
+      if (this._eventEmitter) {
+        this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, authorizationResponsePayload, error);
+      }
       throw error;
     });
-    rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, authorizationResponse);
+    if (this._eventEmitter) {
+      this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, authorizationResponse);
+    }
 
     return authorizationResponse
       .verify(verifyAuthenticationResponseOpts)
       .then((verifiedAuthenticationResponse: VerifiedAuthenticationResponse) => {
-        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, authorizationResponse);
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, authorizationResponse);
+        }
         return verifiedAuthenticationResponse;
       })
       .catch((error: Error) => {
-        rpEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, authorizationResponse, error);
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, authorizationResponse, error);
+        }
         throw error;
       });
   }

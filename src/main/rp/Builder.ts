@@ -1,3 +1,5 @@
+import EventEmitter from 'events';
+
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { IPresentationDefinition } from '@sphereon/pex';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
@@ -44,6 +46,7 @@ export default class Builder {
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
+  eventEmitter?: EventEmitter;
   replayRegistry?: ReplayRegistry;
   private _authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
   private _requestObjectPayload: Partial<RequestObjectPayload> = {};
@@ -259,6 +262,11 @@ export default class Builder {
     for (const version of versions) {
       this.addSupportedVersion(version);
     }
+    return this;
+  }
+
+  withEventEmitter(eventEmitter: EventEmitter): Builder {
+    this.eventEmitter = eventEmitter;
     return this;
   }
 

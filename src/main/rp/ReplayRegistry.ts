@@ -1,31 +1,31 @@
+import EventEmitter from 'events';
+
 import { AuthorizationRequest } from '../authorization-request';
 import { AuthorizationResponse } from '../authorization-response';
-import { RequestObjectPayload } from '../types';
-import { AuthorizationEvents } from '../types/Events';
 import {
+  AuthorizationEvents,
   AuthorizationRequestState,
   AuthorizationRequestStateStatus,
   AuthorizationResponseState,
   AuthorizationResponseStateStatus,
-} from '../types/ReplayRegistry';
-
-import { rpEventEmitter } from './RP';
+  RequestObjectPayload,
+} from '../types';
 
 export class ReplayRegistry {
   private authorizationRequests: Map<string, AuthorizationRequestState> = new Map<string, AuthorizationRequestState>();
   private authorizationResponses: Map<string, AuthorizationResponseState> = new Map<string, AuthorizationResponseState>();
 
-  public constructor() {
-    rpEventEmitter.on(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, this.onAuthorizationRequestCreatedSuccess.bind(this));
-    rpEventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, this.onAuthorizationResponseReceivedSuccess.bind(this));
-    rpEventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, this.onAuthorizationResponseVerifiedSuccess.bind(this));
-    rpEventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, this.onAuthorizationResponseVerifiedFailed.bind(this));
+  public constructor(eventEmitter: EventEmitter) {
+    eventEmitter.on(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, this.onAuthorizationRequestCreatedSuccess.bind(this));
+    eventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, this.onAuthorizationResponseReceivedSuccess.bind(this));
+    eventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, this.onAuthorizationResponseVerifiedSuccess.bind(this));
+    eventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, this.onAuthorizationResponseVerifiedFailed.bind(this));
   }
 
   private async onAuthorizationRequestCreatedSuccess(authorizationRequest: AuthorizationRequest): Promise<void> {
     try {
       if (!authorizationRequest) {
-        return;
+        throw new Error('authorizationRequest not present');
       }
 
       const timestamp = Date.now();
@@ -34,7 +34,7 @@ export class ReplayRegistry {
         throw new Error('Request does not contain a payload');
       }
       this.authorizationRequests.set(payload.nonce, { payload, status: AuthorizationRequestStateStatus.CREATED, timestamp, lastUpdated: timestamp });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // TODO VDX-166 handle error
     }
   }
@@ -42,7 +42,7 @@ export class ReplayRegistry {
   private async onAuthorizationResponseReceivedSuccess(authorizationResponse: AuthorizationResponse): Promise<void> {
     try {
       if (!authorizationResponse) {
-        return;
+        throw new Error('authorizationResponse not present');
       }
 
       const timestamp = Date.now();
@@ -53,7 +53,7 @@ export class ReplayRegistry {
         timestamp: timestamp,
         lastUpdated: timestamp,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       // TODO VDX-166 handle error
     }
   }
@@ -61,7 +61,7 @@ export class ReplayRegistry {
   private async onAuthorizationResponseVerifiedFailed(authorizationResponse: AuthorizationResponse, error: Error): Promise<void> {
     try {
       if (!authorizationResponse) {
-        return;
+        throw new Error('authorizationResponse not present');
       }
 
       const timestamp = Date.now();
@@ -71,7 +71,7 @@ export class ReplayRegistry {
       authorizationRequestState.status = AuthorizationResponseStateStatus.ERROR;
       authorizationRequestState.lastUpdated = timestamp;
       this.authorizationResponses.set(payload.nonce, authorizationRequestState);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // TODO VDX-166 handle error
     }
   }
@@ -79,7 +79,7 @@ export class ReplayRegistry {
   private async onAuthorizationResponseVerifiedSuccess(authorizationResponse: AuthorizationResponse): Promise<void> {
     try {
       if (!authorizationResponse) {
-        return;
+        throw new Error('authorizationResponse not present');
       }
 
       const timestamp = Date.now();
@@ -91,7 +91,7 @@ export class ReplayRegistry {
       authorizationRequestState.status = AuthorizationResponseStateStatus.VERIFIED;
       authorizationRequestState.lastUpdated = timestamp;
       this.authorizationResponses.set(payload.nonce, authorizationRequestState);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // TODO VDX-166 handle error
     }
   }

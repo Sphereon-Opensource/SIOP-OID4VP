@@ -1,3 +1,5 @@
+import EventEmitter from 'events';
+
 import { IPresentationDefinition } from '@sphereon/pex';
 import { IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
 import { IVerifyCallbackArgs, IVerifyCredentialResult, VerifyCallback, WDCErrors } from '@sphereon/wellknown-dids-client';
@@ -1539,7 +1541,8 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
 
-    const replayRegistry = new ReplayRegistry();
+    const eventEmitter = new EventEmitter();
+    const replayRegistry = new ReplayRegistry(eventEmitter);
 
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
@@ -1579,6 +1582,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationDefinition(getPresentationDefinition())
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .withReplayRegistry(replayRegistry)
+      .withEventEmitter(eventEmitter)
       .build();
 
     await rp.createAuthorizationRequest({
@@ -1619,7 +1623,8 @@ describe('RP and OP interaction should', () => {
       did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
-    const replayRegistry = new ReplayRegistry();
+    const eventEmitter = new EventEmitter();
+    const replayRegistry = new ReplayRegistry(eventEmitter);
     const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
@@ -1652,6 +1657,7 @@ describe('RP and OP interaction should', () => {
       })
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .withReplayRegistry(replayRegistry)
+      .withEventEmitter(eventEmitter)
       .build();
 
     await rp.createAuthorizationRequestURI({
@@ -1671,7 +1677,8 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
-    const replayRegistry = new ReplayRegistry();
+    const eventEmitter = new EventEmitter();
+    const replayRegistry = new ReplayRegistry(eventEmitter);
     const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
@@ -1703,6 +1710,7 @@ describe('RP and OP interaction should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
+      .withEventEmitter(eventEmitter)
       .withReplayRegistry(replayRegistry)
       .build();
     const op = OP.builder()
@@ -1761,7 +1769,8 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
-    const replayRegistry = new ReplayRegistry();
+    const eventEmitter = new EventEmitter();
+    const replayRegistry = new ReplayRegistry(eventEmitter);
     const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
@@ -1794,6 +1803,7 @@ describe('RP and OP interaction should', () => {
       })
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .withReplayRegistry(replayRegistry)
+      .withEventEmitter(eventEmitter)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)

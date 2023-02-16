@@ -25,16 +25,18 @@ import { AuthorizationEvents } from '../types/Events';
 import { Builder } from './Builder';
 import { createResponseOptsFromBuilderOrExistingOpts, createVerifyRequestOptsFromBuilderOrExistingOpts } from './Opts';
 
-export const opEventEmitter = new EventEmitter();
+// export const opEventEmitter = new EventEmitter();
 
 // The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
 export class OP {
   private readonly _createResponseOptions: AuthorizationResponseOpts;
   private readonly _verifyRequestOptions: Partial<VerifyAuthorizationRequestOpts>;
+  private readonly _eventEmitter?: EventEmitter;
 
   private constructor(opts: { builder?: Builder; responseOpts?: AuthorizationResponseOpts; verifyOpts?: VerifyAuthorizationRequestOpts }) {
     this._createResponseOptions = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
     this._verifyRequestOptions = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
+    this._eventEmitter = opts.builder?.eventEmitter;
   }
 
   get createResponseOptions(): AuthorizationResponseOpts {
@@ -66,19 +68,27 @@ export class OP {
     requestOpts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthorizationRequest> {
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri).catch((error: Error) => {
-      opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, requestJwtOrUri, error);
+      if (this._eventEmitter) {
+        this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, requestJwtOrUri, error);
+      }
       throw error;
     });
-    opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, authorizationRequest);
+    if (this._eventEmitter) {
+      this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, authorizationRequest);
+    }
 
     return authorizationRequest
       .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }))
       .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
-        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, authorizationRequest);
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, authorizationRequest);
+        }
         return verifiedAuthorizationRequest;
       })
       .catch((error) => {
-        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, authorizationRequest, error);
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, authorizationRequest, error);
+        }
         throw error;
       });
   }
@@ -99,10 +109,14 @@ export class OP {
       authorizationRequest,
       this.newAuthorizationResponseOpts(responseOpts)
     ).catch((error: Error) => {
-      opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationRequest, responseOpts, error);
+      if (this._eventEmitter) {
+        this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationRequest, responseOpts, error);
+      }
       throw error;
     });
-    opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, authorizationResponse);
+    if (this._eventEmitter) {
+      this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, authorizationResponse);
+    }
 
     return authorizationResponse;
   }
@@ -121,11 +135,15 @@ export class OP {
     const uri = encodeJsonAsURI(payload);
     return post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED })
       .then((result: SIOPResonse<unknown>) => {
-        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, authorizationResponse);
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, authorizationResponse);
+        }
         return result.origResponse;
       })
       .catch((error: Error) => {
-        opEventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, authorizationResponse, error);
+        if (this._eventEmitter) {
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, authorizationResponse, error);
+        }
         throw error;
       });
   }
