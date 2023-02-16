@@ -3,6 +3,7 @@ import EventEmitter from 'events';
 import { AuthorizationRequest } from '../authorization-request';
 import { AuthorizationResponse } from '../authorization-response';
 import {
+  AuthorizationEvent,
   AuthorizationEvents,
   AuthorizationRequestState,
   AuthorizationRequestStateStatus,
@@ -22,74 +23,75 @@ export class ReplayRegistry {
     eventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, this.onAuthorizationResponseVerifiedFailed.bind(this));
   }
 
-  private async onAuthorizationRequestCreatedSuccess(authorizationRequest: AuthorizationRequest): Promise<void> {
+  private async onAuthorizationRequestCreatedSuccess(event: AuthorizationEvent<AuthorizationRequest>): Promise<void> {
     try {
-      if (!authorizationRequest) {
-        throw new Error('authorizationRequest not present');
+      if (!event) {
+        throw new Error('event not present');
       }
 
-      const timestamp = Date.now();
-      const payload: RequestObjectPayload | undefined = await authorizationRequest.requestObject.getPayload();
+      const payload: RequestObjectPayload | undefined = await event.getSubject.requestObject.getPayload();
       if (!payload) {
         throw new Error('Request does not contain a payload');
       }
-      this.authorizationRequests.set(payload.nonce, { payload, status: AuthorizationRequestStateStatus.CREATED, timestamp, lastUpdated: timestamp });
-    } catch (error: unknown) {
-      // TODO VDX-166 handle error
-    }
-  }
-
-  private async onAuthorizationResponseReceivedSuccess(authorizationResponse: AuthorizationResponse): Promise<void> {
-    try {
-      if (!authorizationResponse) {
-        throw new Error('authorizationResponse not present');
-      }
-
-      const timestamp = Date.now();
-      const payload = await authorizationResponse.idToken.payload();
-      this.authorizationResponses.set(payload.nonce, {
+      this.authorizationRequests.set(payload.nonce, {
         payload,
-        status: AuthorizationResponseStateStatus.RECEIVED,
-        timestamp: timestamp,
-        lastUpdated: timestamp,
+        status: AuthorizationRequestStateStatus.CREATED,
+        timestamp: event.getTimestamp,
+        lastUpdated: event.getTimestamp,
       });
     } catch (error: unknown) {
       // TODO VDX-166 handle error
     }
   }
 
-  private async onAuthorizationResponseVerifiedFailed(authorizationResponse: AuthorizationResponse, error: Error): Promise<void> {
+  private async onAuthorizationResponseReceivedSuccess(event: AuthorizationEvent<AuthorizationResponse>): Promise<void> {
     try {
-      if (!authorizationResponse) {
-        throw new Error('authorizationResponse not present');
+      if (!event) {
+        throw new Error('event not present');
       }
 
-      const timestamp = Date.now();
-      const payload = await authorizationResponse.idToken.payload();
+      const payload = await event.getSubject.idToken.payload();
+      this.authorizationResponses.set(payload.nonce, {
+        payload,
+        status: AuthorizationResponseStateStatus.RECEIVED,
+        timestamp: event.getTimestamp,
+        lastUpdated: event.getTimestamp,
+      });
+    } catch (error: unknown) {
+      // TODO VDX-166 handle error
+    }
+  }
+
+  private async onAuthorizationResponseVerifiedFailed(event: AuthorizationEvent<AuthorizationResponse>): Promise<void> {
+    try {
+      if (!event) {
+        throw new Error('event not present');
+      }
+
+      const payload = await event.getSubject.idToken.payload();
       const authorizationRequestState: AuthorizationResponseState = this.authorizationResponses.get(payload.nonce);
-      authorizationRequestState.error = error;
+      authorizationRequestState.error = event.getError;
       authorizationRequestState.status = AuthorizationResponseStateStatus.ERROR;
-      authorizationRequestState.lastUpdated = timestamp;
+      authorizationRequestState.lastUpdated = event.getTimestamp;
       this.authorizationResponses.set(payload.nonce, authorizationRequestState);
     } catch (error: unknown) {
       // TODO VDX-166 handle error
     }
   }
 
-  private async onAuthorizationResponseVerifiedSuccess(authorizationResponse: AuthorizationResponse): Promise<void> {
+  private async onAuthorizationResponseVerifiedSuccess(event: AuthorizationEvent<AuthorizationResponse>): Promise<void> {
     try {
-      if (!authorizationResponse) {
-        throw new Error('authorizationResponse not present');
+      if (!event) {
+        throw new Error('event not present');
       }
 
-      const timestamp = Date.now();
-      const payload = await authorizationResponse.idToken.payload();
+      const payload = await event.getSubject.idToken.payload();
 
       this.authorizationRequests.delete(payload.nonce);
 
       const authorizationRequestState: AuthorizationResponseState = this.authorizationResponses.get(payload.nonce);
       authorizationRequestState.status = AuthorizationResponseStateStatus.VERIFIED;
-      authorizationRequestState.lastUpdated = timestamp;
+      authorizationRequestState.lastUpdated = event.getTimestamp;
       this.authorizationResponses.set(payload.nonce, authorizationRequestState);
     } catch (error: unknown) {
       // TODO VDX-166 handle error

@@ -20,3 +20,31 @@ export enum AuthorizationEvents {
   ON_AUTH_RESPONSE_VERIFIED_SUCCESS = 'onAuthResponseVerifiedSuccess',
   ON_AUTH_RESPONSE_VERIFIED_FAILED = 'onAuthResponseReceivedFailed',
 }
+
+export class AuthorizationEvent<T> {
+  private readonly subject: T;
+  private readonly error?: Error;
+  private readonly timestamp: number;
+
+  public constructor(args: { subject: T; error?: Error }) {
+    this.timestamp = Date.now();
+    this.subject = args.subject;
+    this.error = args.error;
+  }
+
+  get getSubject(): T {
+    return this.subject;
+  }
+
+  get getTimestamp(): number {
+    return this.timestamp;
+  }
+
+  get getError(): Error {
+    return this.error;
+  }
+
+  public hasError(): boolean {
+    return !!this.error;
+  }
+}

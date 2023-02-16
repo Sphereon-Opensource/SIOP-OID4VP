@@ -9,6 +9,8 @@ import {
 } from '../authorization-response';
 import { encodeJsonAsURI, formPost, post } from '../helpers';
 import {
+  AuthorizationEvent,
+  AuthorizationEvents,
   AuthorizationResponseResult,
   ContentType,
   ExternalVerification,
@@ -20,7 +22,6 @@ import {
   UrlEncodingFormat,
   VerifiedAuthorizationRequest,
 } from '../types';
-import { AuthorizationEvents } from '../types/Events';
 
 import { Builder } from './Builder';
 import { createResponseOptsFromBuilderOrExistingOpts, createVerifyRequestOptsFromBuilderOrExistingOpts } from './Opts';
@@ -68,13 +69,13 @@ export class OP {
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri)
       .then((result: AuthorizationRequest) => {
         if (this._eventEmitter) {
-          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, authorizationRequest);
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, new AuthorizationEvent({ subject: authorizationRequest }));
         }
         return result;
       })
       .catch((error: Error) => {
         if (this._eventEmitter) {
-          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, requestJwtOrUri, error);
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, new AuthorizationEvent({ subject: requestJwtOrUri, error }));
         }
         throw error;
       });
@@ -83,13 +84,16 @@ export class OP {
       .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }))
       .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
         if (this._eventEmitter) {
-          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, authorizationRequest);
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, new AuthorizationEvent({ subject: authorizationRequest }));
         }
         return verifiedAuthorizationRequest;
       })
       .catch((error) => {
         if (this._eventEmitter) {
-          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, authorizationRequest, error);
+          this._eventEmitter.emit(
+            AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED,
+            new AuthorizationEvent({ subject: authorizationRequest, error })
+          );
         }
         throw error;
       });
@@ -110,13 +114,16 @@ export class OP {
     return AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts))
       .then((authorizationResponse: AuthorizationResponse) => {
         if (this._eventEmitter) {
-          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, authorizationResponse);
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, new AuthorizationEvent({ subject: authorizationResponse }));
         }
         return authorizationResponse;
       })
       .catch((error: Error) => {
         if (this._eventEmitter) {
-          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, authorizationRequest, responseOpts, error);
+          this._eventEmitter.emit(
+            AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED,
+            new AuthorizationEvent({ subject: authorizationRequest, error })
+          );
         }
         throw error;
       });
@@ -137,13 +144,16 @@ export class OP {
     return post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED })
       .then((result: SIOPResonse<unknown>) => {
         if (this._eventEmitter) {
-          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, authorizationResponse);
+          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, new AuthorizationEvent({ subject: authorizationResponse }));
         }
         return result.origResponse;
       })
       .catch((error: Error) => {
         if (this._eventEmitter) {
-          this._eventEmitter.emit(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, authorizationResponse, error);
+          this._eventEmitter.emit(
+            AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED,
+            new AuthorizationEvent({ subject: authorizationResponse, error })
+          );
         }
         throw error;
       });
