@@ -104,6 +104,8 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
 
   const valid = AuthorizationResponseOptsSchema(responseOpts);
   if (!valid) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     throw new Error('OP builder validation error: ' + JSON.stringify(valid.errors));
   }
 

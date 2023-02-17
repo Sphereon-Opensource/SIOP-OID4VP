@@ -41,6 +41,8 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
 
   const valid = CreateAuthorizationRequestOptsSchema(createRequestOpts);
   if (!valid) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     throw new Error('RP builder validation error: ' + JSON.stringify(valid.errors));
   }
   return createRequestOpts;
