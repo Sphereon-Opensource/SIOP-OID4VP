@@ -1,3 +1,5 @@
+import EventEmitter from 'events';
+
 import {
   AuthorizationRequest,
   ClaimPayloadCommonOpts,
@@ -10,6 +12,8 @@ import {
 import { AuthorizationResponse, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getNonce, getState } from '../helpers';
 import {
+  AuthorizationEvent,
+  AuthorizationEvents,
   AuthorizationResponsePayload,
   CheckLinkedDomain,
   ExternalVerification,
@@ -25,6 +29,7 @@ import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFro
 export class RP {
   private readonly _createRequestOptions: CreateAuthorizationRequestOpts;
   private readonly _verifyResponseOptions: Partial<VerifyAuthorizationResponseOpts>;
+  private readonly _eventEmitter?: EventEmitter;
 
   private constructor(opts: {
     builder?: Builder;
@@ -35,6 +40,7 @@ export class RP {
     const authReqOpts = createRequestOptsFromBuilderOrExistingOpts(opts);
     this._createRequestOptions = { ...authReqOpts, payload: { ...authReqOpts.payload } };
     this._verifyResponseOptions = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
+    this._eventEmitter = opts.builder?.eventEmitter;
   }
 
   public static fromRequestOpts(opts: CreateAuthorizationRequestOpts): RP {
@@ -65,7 +71,17 @@ export class RP {
       opts?.claims && !('propertyValue' in opts.claims)
         ? { propertyValue: opts.claims }
         : (opts?.claims as RequestPropertyWithTargets<ClaimPayloadCommonOpts>);
-    return await AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }));
+
+    const authOpts = { version: opts.version, nonce, state, claims };
+    return AuthorizationRequest.fromOpts(this.newAuthorizationRequestOpts(authOpts))
+      .then((authorizationRequest: AuthorizationRequest) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, { subject: authorizationRequest });
+        return authorizationRequest;
+      })
+      .catch((error: Error) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, { subject: authOpts, error });
+        throw error;
+      });
   }
 
   public async createAuthorizationRequestURI(opts?: {
@@ -82,7 +98,20 @@ export class RP {
       opts?.claims && !('propertyValue' in opts.claims)
         ? { propertyValue: opts.claims }
         : (opts?.claims as RequestPropertyWithTargets<ClaimPayloadCommonOpts>);
-    return await URI.fromOpts(this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims }));
+
+    const authorizationRequestOpts = this.newAuthorizationRequestOpts({ version: opts.version, nonce, state, claims });
+
+    return URI.fromOpts(authorizationRequestOpts)
+      .then(async (uri: URI) => {
+        await this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, {
+          subject: await AuthorizationRequest.fromOpts(authorizationRequestOpts),
+        });
+        return uri;
+      })
+      .catch((error: Error) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, { subject: authorizationRequestOpts, error });
+        throw error;
+      });
   }
 
   public async verifyAuthorizationResponse(
@@ -98,9 +127,26 @@ export class RP {
     const verifyAuthenticationResponseOpts = this.newVerifyAuthorizationResponseOpts({
       ...opts,
     });
-    const authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload);
+    const authorizationResponse: AuthorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload)
+      .then((authorizationResponse: AuthorizationResponse) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, { subject: authorizationResponse });
+        return authorizationResponse;
+      })
+      .catch((error: Error) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, { subject: authorizationResponse, error });
+        throw error;
+      });
 
-    return await authorizationResponse.verify(verifyAuthenticationResponseOpts);
+    return authorizationResponse
+      .verify(verifyAuthenticationResponseOpts)
+      .then((verifiedAuthenticationResponse: VerifiedAuthenticationResponse) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, { subject: authorizationResponse });
+        return verifiedAuthenticationResponse;
+      })
+      .catch((error: Error) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, { subject: authorizationResponse, error });
+        throw error;
+      });
   }
 
   private newAuthorizationRequestOpts(opts?: {
@@ -160,5 +206,11 @@ export class RP {
       verification: opts?.verification || this._verifyResponseOptions.verification,
       presentationDefinitions: opts?.presentationDefinitions || this._verifyResponseOptions.presentationDefinitions,
     };
+  }
+
+  private async emitEvent(type: AuthorizationEvents, payload: { subject: unknown; error?: Error }): Promise<void> {
+    if (this._eventEmitter) {
+      this._eventEmitter.emit(type, new AuthorizationEvent(payload));
+    }
   }
 }

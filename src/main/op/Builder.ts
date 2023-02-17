@@ -1,3 +1,5 @@
+import EventEmitter from 'events';
+
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
@@ -34,6 +36,7 @@ export class Builder {
   verifyCallback?: VerifyCallback;
   presentationSignCallback?: PresentationSignCallback;
   supportedVersions: SupportedVersion[];
+  eventEmitter?: EventEmitter;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): Builder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
@@ -139,6 +142,11 @@ export class Builder {
 
   withPresentationSignCallback(presentationSignCallback: PresentationSignCallback) {
     this.presentationSignCallback = presentationSignCallback;
+    return this;
+  }
+
+  withEventEmitter(eventEmitter: EventEmitter): Builder {
+    this.eventEmitter = eventEmitter;
     return this;
   }
 

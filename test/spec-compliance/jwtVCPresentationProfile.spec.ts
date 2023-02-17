@@ -60,7 +60,7 @@ describe('RP', () => {
       .build();
     console.log(rp);
 
-    const authRequuest = await rp.createAuthorizationRequest({
+    const authRequest = await rp.createAuthorizationRequest({
       nonce: { propertyValue: 'bcceb347-1374-49b8-ace0-b868162c122d', targets: PropertyTarget.REQUEST_OBJECT },
       state: { propertyValue: '8006b5fb-6e3b-42d1-a2be-55ed2a08073d', targets: PropertyTarget.REQUEST_OBJECT },
       claims: {
@@ -86,9 +86,9 @@ describe('RP', () => {
         targets: PropertyTarget.REQUEST_OBJECT,
       },
     });
-    console.log(JSON.stringify(authRequuest.payload, null, 2));
+    console.log(JSON.stringify(authRequest.payload, null, 2));
 
-    const uri = await authRequuest.uri();
+    const uri = await authRequest.uri();
 
     console.log(JSON.stringify(uri.encodedUri));
   });

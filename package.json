@@ -46,6 +46,7 @@
     "did-resolver": "^4.0.1",
     "elliptic": "^6.5.4",
     "eth-crypto": "^2.5.0",
+    "events": "^3.3.0",
     "jose": "^4.11.1",
     "js-sha3": "^0.8.0",
     "language-tags": "^1.0.6",

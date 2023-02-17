@@ -132,6 +132,10 @@ export class AuthorizationResponse {
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
     // TODO: Add response verification next to idToken verification
+    if (verifyOpts.verification.replayRegistry) {
+      await verifyOpts.verification.replayRegistry.verify(this);
+    }
+
     const result = await this.idToken.verify(verifyOpts);
     await verifyPresentations(this, verifyOpts);
 
