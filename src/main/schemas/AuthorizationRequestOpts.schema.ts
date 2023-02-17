@@ -1,4 +1,5 @@
-export const AuthorizationRequestOptsSchema = {
+export const CreateAuthorizationRequestOptsSchemaObj = {
+  "$id": "CreateAuthorizationRequestOptsSchema",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$ref": "#/definitions/CreateAuthorizationRequestOpts",
   "definitions": {

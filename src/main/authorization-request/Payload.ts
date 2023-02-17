@@ -1,10 +1,9 @@
 import { PEX } from '@sphereon/pex';
-import Ajv from 'ajv';
 
 import { validateLinkedDomainWithDid } from '../did';
 import { getNonce } from '../helpers';
 import { RequestObject } from '../request-object';
-import { RPRegistrationMetadataPayloadSchema } from '../schemas';
+import { RPRegistrationMetadataPayloadSchema } from '../schemas/validation/schemaValidation.js';
 import {
   AuthorizationRequestPayload,
   CheckLinkedDomain,
@@ -19,9 +18,6 @@ import {
 
 import { createRequestRegistration } from './RequestRegistration';
 import { ClaimPayloadOptsVID1, CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
-
-const ajv = new Ajv({ allowUnionTypes: true, strict: false });
-const validateRPRegistrationMetadata = ajv.compile(RPRegistrationMetadataPayloadSchema);
 
 export const createPresentationDefinitionClaimsProperties = (opts: ClaimPayloadOptsVID1): ClaimPayloadVID1 => {
   if (!opts || !opts.vp_token || (!opts.vp_token.presentation_definition && !opts.vp_token.presentation_definition_uri)) {
@@ -85,9 +81,13 @@ export const createAuthorizationRequestPayload = async (
 };
 
 export const assertValidRPRegistrationMedataPayload = (regObj: RPRegistrationMetadataPayload) => {
-  if (regObj && !validateRPRegistrationMetadata(regObj)) {
-    throw new Error('Registration data validation error: ' + JSON.stringify(validateRPRegistrationMetadata.errors));
-  } else if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
+  if (regObj) {
+    const valid = RPRegistrationMetadataPayloadSchema(regObj);
+    if (!valid) {
+      throw new Error('Registration data validation error: ' + JSON.stringify(valid.errors));
+    }
+  }
+  if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
     throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
   }
 };

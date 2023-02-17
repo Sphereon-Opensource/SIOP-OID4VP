@@ -7,3 +7,4 @@ dist
 node_modules
 coverage
 *.log
+/src/main/schemas/validation/schemaValidation.js

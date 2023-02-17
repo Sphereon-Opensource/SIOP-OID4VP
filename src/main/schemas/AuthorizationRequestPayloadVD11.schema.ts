@@ -1,4 +1,5 @@
-export const AuthorizationRequestPayloadSchemaVD11 = {
+export const AuthorizationRequestPayloadVD11SchemaObj = {
+  "$id": "AuthorizationRequestPayloadVD11Schema",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$ref": "#/definitions/AuthorizationRequestPayloadVD11",
   "definitions": {

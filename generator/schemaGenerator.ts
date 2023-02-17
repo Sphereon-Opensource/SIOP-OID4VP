@@ -1,14 +1,19 @@
+import Ajv from 'ajv';
+import standaloneCode from 'ajv/dist/standalone';
 import fs from 'fs';
+import path from 'path';
 import {
+  BaseType,
   createFormatter,
   createParser,
-  createProgram, MutableTypeFormatter,
-  SchemaGenerator,
-  BaseType,
+  createProgram,
   Definition,
   FunctionType,
+  MutableTypeFormatter,
+  SchemaGenerator,
   SubTypeFormatter
 } from 'ts-json-schema-generator';
+import { Schema } from 'ts-json-schema-generator/src/Schema/Schema';
 
 class CustomTypeFormatter implements SubTypeFormatter {
   public supportsType(type: FunctionType): boolean {
@@ -20,10 +25,10 @@ class CustomTypeFormatter implements SubTypeFormatter {
     return {
       properties: {
         isFunction: {
-          type: "boolean",
-          const: true,
-        },
-      },
+          type: 'boolean',
+          const: true
+        }
+      }
     };
   }
 
@@ -32,7 +37,7 @@ class CustomTypeFormatter implements SubTypeFormatter {
   }
 }
 
-function writeSchema(config) {
+function writeSchema(config): Schema {
   const formatter = createFormatter(config, (fmt: MutableTypeFormatter) => {
     fmt.addTypeFormatter(new CustomTypeFormatter());
   });
@@ -41,73 +46,82 @@ function writeSchema(config) {
   const schema = new SchemaGenerator(program, createParser(program, config), formatter, config).createSchema(config.type);
 
   let schemaString = JSON.stringify(schema, null, 2);
-  schemaString = correctSchema(schemaString)
+  schemaString = correctSchema(schemaString);
 
-  fs.writeFile(config.outputPath, `export const ${config.outputConstName} = ${schemaString};`, (err) => {
+  fs.writeFile(config.outputPath, `export const ${config.schemaId}Obj = ${schemaString};`, (err) => {
     if (err) throw err;
   });
+  return schema;
+}
+
+function generateValidationCode(schemas: Schema[]) {
+  const ajv = new Ajv({ schemas, code: { source: true, lines: true, esm: false  }, allowUnionTypes: true, strict: false });
+  const moduleCode = standaloneCode(ajv);
+  fs.writeFileSync(path.join(__dirname, '../src/main/schemas/validation/schemaValidation.js'), moduleCode);
 }
 
 function correctSchema(schemaString: string) {
-  return schemaString.replace("\"SuppliedSignature\": {\n" +
-    "      \"type\": \"object\",\n" +
-    "      \"properties\": {\n" +
-    "        \"signature\": {\n" +
-    "          \"properties\": {\n" +
-    "            \"isFunction\": {\n" +
-    "              \"type\": \"boolean\",\n" +
-    "              \"const\": true\n" +
-    "            }\n" +
-    "          }\n" +
-    "        },\n" +
-    "        \"did\": {\n" +
-    "          \"type\": \"string\"\n" +
-    "        },\n" +
-    "        \"kid\": {\n" +
-    "          \"type\": \"string\"\n" +
-    "        }\n" +
-    "      },\n" +
-    "      \"required\": [\n" +
-    "        \"signature\",\n" +
-    "        \"did\",\n" +
-    "        \"kid\"\n" +
-    "      ],\n" +
-    "      \"additionalProperties\": false\n" +
-    "    },",
-    "\"SuppliedSignature\": {\n" +
-    "      \"type\": \"object\",\n" +
-    "      \"properties\": {\n" +
-    "        \"did\": {\n" +
-    "          \"type\": \"string\"\n" +
-    "        },\n" +
-    "        \"kid\": {\n" +
-    "          \"type\": \"string\"\n" +
-    "        }\n" +
-    "      },\n" +
-    "      \"required\": [\n" +
-    "        \"did\",\n" +
-    "        \"kid\"\n" +
-    "      ],\n" +
-    "      \"additionalProperties\": true\n" +
-    "    },")
+  return schemaString.replace('"SuppliedSignature": {\n' +
+    '      "type": "object",\n' +
+    '      "properties": {\n' +
+    '        "signature": {\n' +
+    '          "properties": {\n' +
+    '            "isFunction": {\n' +
+    '              "type": "boolean",\n' +
+    '              "const": true\n' +
+    '            }\n' +
+    '          }\n' +
+    '        },\n' +
+    '        "did": {\n' +
+    '          "type": "string"\n' +
+    '        },\n' +
+    '        "kid": {\n' +
+    '          "type": "string"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "required": [\n' +
+    '        "signature",\n' +
+    '        "did",\n' +
+    '        "kid"\n' +
+    '      ],\n' +
+    '      "additionalProperties": false\n' +
+    '    },',
+    '"SuppliedSignature": {\n' +
+    '      "type": "object",\n' +
+    '      "properties": {\n' +
+    '        "did": {\n' +
+    '          "type": "string"\n' +
+    '        },\n' +
+    '        "kid": {\n' +
+    '          "type": "string"\n' +
+    '        }\n' +
+    '      },\n' +
+    '      "required": [\n' +
+    '        "did",\n' +
+    '        "kid"\n' +
+    '      ],\n' +
+    '      "additionalProperties": true\n' +
+    '    },');
 }
 
 const requestOptsConf = {
-  path: "../src/main/authorization-request/types.ts",
-  tsconfig: "tsconfig.json",
-  type: "CreateAuthorizationRequestOpts", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/AuthorizationRequestOpts.schema.ts",
-  outputConstName: "AuthorizationRequestOptsSchema",
+  path: '../src/main/authorization-request/types.ts',
+  tsconfig: 'tsconfig.json',
+  type: 'CreateAuthorizationRequestOpts', // Or <type-name> if you want to generate schema for that one type only
+  schemaId: 'CreateAuthorizationRequestOptsSchema',
+  outputPath: 'src/main/schemas/AuthorizationRequestOpts.schema.ts',
+  // outputConstName: 'AuthorizationRequestOptsSchema',
   skipTypeCheck: true
 };
 
 
 const responseOptsConf = {
-  path: "../src/main/authorization-response/types.ts",
-  tsconfig: "tsconfig.json",
-  type: "AuthorizationResponseOpts", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/AuthorizationResponseOpts.schema.ts",
-  outputConstName: "AuthorizationResponseOptsSchema",
+  path: '../src/main/authorization-response/types.ts',
+  tsconfig: 'tsconfig.json',
+  type: 'AuthorizationResponseOpts', // Or <type-name> if you want to generate schema for that one type only
+  schemaId: 'AuthorizationResponseOptsSchema',
+  outputPath: 'src/main/schemas/AuthorizationResponseOpts.schema.ts',
+  // outputConstName: 'AuthorizationResponseOptsSchema',
   skipTypeCheck: true
 };
 
@@ -115,8 +129,9 @@ const rPRegistrationMetadataPayload = {
   path: '../src/main/types/SIOP.types.ts',
   tsconfig: 'tsconfig.json',
   type: 'RPRegistrationMetadataPayload',
+  schemaId: 'RPRegistrationMetadataPayloadSchema',
   outputPath: 'src/main/schemas/RPRegistrationMetadataPayload.schema.ts',
-  outputConstName: 'RPRegistrationMetadataPayloadSchema',
+  // outputConstName: 'RPRegistrationMetadataPayloadSchema',
   skipTypeCheck: true
 };
 
@@ -124,32 +139,39 @@ const discoveryMetadataPayload = {
   path: '../src/main/types/SIOP.types.ts',
   tsconfig: 'tsconfig.json',
   type: 'DiscoveryMetadataPayload',
+  schemaId: 'DiscoveryMetadataPayloadSchema',
   outputPath: 'src/main/schemas/DiscoveryMetadataPayload.schema.ts',
-  outputConstName: 'DiscoveryMetadataPayloadSchema',
+  // outputConstName: 'DiscoveryMetadataPayloadSchema',
   skipTypeCheck: true
 };
 
 const authorizationRequestPayloadVID1 = {
-  path: "../src/main/types/SIOP.types.ts",
-  tsconfig: "tsconfig.json",
-  type: "AuthorizationRequestPayloadVID1", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/AuthorizationRequestPayloadVID1.schema.ts",
-  outputConstName: "AuthorizationRequestPayloadSchemaVID1",
+  path: '../src/main/types/SIOP.types.ts',
+  tsconfig: 'tsconfig.json',
+  type: 'AuthorizationRequestPayloadVID1', // Or <type-name> if you want to generate schema for that one type only
+  schemaId: 'AuthorizationRequestPayloadVID1Schema',
+  outputPath: 'src/main/schemas/AuthorizationRequestPayloadVID1.schema.ts',
+  // outputConstName: 'AuthorizationRequestPayloadSchemaVID1',
   skipTypeCheck: true
 };
 
 const authorizationRequestPayloadVD11 = {
-  path: "../src/main/types/SIOP.types.ts",
-  tsconfig: "tsconfig.json",
-  type: "AuthorizationRequestPayloadVD11", // Or <type-name> if you want to generate schema for that one type only
-  outputPath: "src/main/schemas/AuthorizationRequestPayloadVD11.schema.ts",
-  outputConstName: "AuthorizationRequestPayloadSchemaVD11",
+  path: '../src/main/types/SIOP.types.ts',
+  tsconfig: 'tsconfig.json',
+  type: 'AuthorizationRequestPayloadVD11', // Or <type-name> if you want to generate schema for that one type only
+  schemaId: 'AuthorizationRequestPayloadVD11Schema',
+  outputPath: 'src/main/schemas/AuthorizationRequestPayloadVD11.schema.ts',
+  // outputConstName: 'AuthorizationRequestPayloadSchemaVD11',
   skipTypeCheck: true
-}
+};
 
-writeSchema(authorizationRequestPayloadVID1)
-writeSchema(authorizationRequestPayloadVD11)
-writeSchema(requestOptsConf);
-writeSchema(responseOptsConf);
-writeSchema(rPRegistrationMetadataPayload);
-writeSchema(discoveryMetadataPayload);
+let schemas: Schema[] = [
+  writeSchema(authorizationRequestPayloadVID1),
+  writeSchema(authorizationRequestPayloadVD11),
+  writeSchema(requestOptsConf),
+  writeSchema(responseOptsConf),
+  writeSchema(rPRegistrationMetadataPayload),
+  writeSchema(discoveryMetadataPayload)
+];
+
+generateValidationCode(schemas);

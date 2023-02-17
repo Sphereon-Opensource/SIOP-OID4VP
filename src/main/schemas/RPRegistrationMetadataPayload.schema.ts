@@ -1,4 +1,5 @@
-export const RPRegistrationMetadataPayloadSchema = {
+export const RPRegistrationMetadataPayloadSchemaObj = {
+  "$id": "RPRegistrationMetadataPayloadSchema",
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$ref": "#/definitions/RPRegistrationMetadataPayload",
   "definitions": {

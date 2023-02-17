@@ -1,4 +1,3 @@
-import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
 import { VerifyAuthorizationRequestOpts } from '../authorization-request';
@@ -10,8 +9,6 @@ import { InternalVerification, ResponseRegistrationOpts, VerificationMode } from
 
 import { Builder } from './Builder';
 
-const ajv = new Ajv({ allowUnionTypes: true, strict: false });
-const responseOptsValidate = ajv.compile(AuthorizationResponseOptsSchema);
 export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
   builder?: Builder;
   responseOpts?: AuthorizationResponseOpts;
@@ -105,9 +102,9 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
     };
   }
 
-  const valid = responseOptsValidate(responseOpts);
+  const valid = AuthorizationResponseOptsSchema(responseOpts);
   if (!valid) {
-    throw new Error('OP builder validation error: ' + JSON.stringify(responseOptsValidate.errors));
+    throw new Error('OP builder validation error: ' + JSON.stringify(valid.errors));
   }
 
   return responseOpts;

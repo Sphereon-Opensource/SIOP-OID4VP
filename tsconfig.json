@@ -38,6 +38,7 @@
   "include": [
     "index.ts",
     "src/**/*.ts",
+    "src/**/*.mjs",
     "test/**/*.ts",
     "generator/**/*.ts"
   ],

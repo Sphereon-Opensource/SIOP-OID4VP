@@ -1,28 +1,26 @@
-import Ajv from 'ajv';
-
-import { AuthorizationRequestPayloadSchemaVD11, AuthorizationRequestPayloadSchemaVID1 } from '../schemas';
+import { AuthorizationRequestPayloadVD11Schema, AuthorizationRequestPayloadVID1Schema } from '../schemas';
 import { AuthorizationRequestPayload, SupportedVersion } from '../types';
 import errors from '../types/Errors';
 
-const ajv = new Ajv({ verbose: true, allowUnionTypes: true, strict: false, allErrors: true });
-const validateD11 = ajv.compile(AuthorizationRequestPayloadSchemaVD11);
-const validateID1 = ajv.compile(AuthorizationRequestPayloadSchemaVID1);
-const validateJWTVCPresentationProfile = ajv.compile(AuthorizationRequestPayloadSchemaVID1);
+const validateJWTVCPresentationProfile = AuthorizationRequestPayloadVID1Schema;
 
 export const authorizationRequestVersionDiscovery = (authorizationRequest: AuthorizationRequestPayload): SupportedVersion[] => {
   const versions = [];
   const authorizationRequestCopy: AuthorizationRequestPayload = JSON.parse(JSON.stringify(authorizationRequest));
-  if (validateD11(authorizationRequestCopy)) {
+  const vd11Validation = AuthorizationRequestPayloadVD11Schema(authorizationRequestCopy);
+  if (vd11Validation) {
     if (!authorizationRequest.registration_uri && !authorizationRequest.registration && !authorizationRequest.claims['vp_token']) {
       versions.push(SupportedVersion.SIOPv2_D11);
     }
   }
-  if (validateJWTVCPresentationProfile(authorizationRequestCopy)) {
+  const jwtVC1Validation = validateJWTVCPresentationProfile(authorizationRequestCopy);
+  if (jwtVC1Validation) {
     if (!authorizationRequest.registration_uri && !authorizationRequest.registration && !authorizationRequest.claims['vp_token']) {
       versions.push(SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1);
     }
   }
-  if (validateID1(authorizationRequestCopy)) {
+  const vid1Validation = AuthorizationRequestPayloadVID1Schema(authorizationRequestCopy);
+  if (vid1Validation) {
     if (
       !authorizationRequest.client_metadata_uri &&
       !authorizationRequest.client_metadata &&

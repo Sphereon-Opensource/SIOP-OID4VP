@@ -1,16 +1,13 @@
-import Ajv from 'ajv';
 import { Resolvable } from 'did-resolver';
 
 import { CreateAuthorizationRequestOpts, PropertyTarget, PropertyTargets, RequestPropertyWithTargets } from '../authorization-request';
 import { VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getResolverUnion, mergeAllDidMethods } from '../did';
-import { AuthorizationRequestOptsSchema } from '../schemas';
+import { CreateAuthorizationRequestOptsSchema } from '../schemas';
 import { ClientMetadataOpts, InternalVerification, RequestObjectPayload, SIOPErrors, VerificationMode } from '../types';
 
 import Builder from './Builder';
 
-const ajv = new Ajv({ allowUnionTypes: true, strict: false });
-const requestOptsValidate = ajv.compile(AuthorizationRequestOptsSchema);
 export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Builder; createRequestOpts?: CreateAuthorizationRequestOpts }) => {
   const version = opts.builder ? opts.builder.getSupportedRequestVersion() : opts.createRequestOpts.version;
   if (!version) {
@@ -42,9 +39,9 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
       }
     : opts.createRequestOpts;
 
-  const valid = requestOptsValidate(createRequestOpts);
+  const valid = CreateAuthorizationRequestOptsSchema(createRequestOpts);
   if (!valid) {
-    throw new Error('RP builder validation error: ' + JSON.stringify(requestOptsValidate.errors));
+    throw new Error('RP builder validation error: ' + JSON.stringify(valid.errors));
   }
   return createRequestOpts;
 };
