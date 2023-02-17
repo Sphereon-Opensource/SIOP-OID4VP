@@ -14,6 +14,7 @@ import {
   VerifyAuthorizationResponseOpts,
 } from '../authorization-response';
 import { RequestObject, RequestObjectOpts } from '../request-object';
+import { ReplayRegistry } from '../rp/ReplayRegistry';
 
 import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './';
 
@@ -491,6 +492,7 @@ export interface Verification {
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
+  replayRegistry?: ReplayRegistry;
 }
 
 export type InternalVerification = Verification;

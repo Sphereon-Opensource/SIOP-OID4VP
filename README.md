@@ -434,7 +434,7 @@ verifyAuthorizationRequest method of the OP class takes care of this. As input i
 string together with optional verify options. IF a JWT is supplied it will use the JWT directly, if a URI is provided it
 will internally parse the URI and extract/resolve the jwt. The options can contain an optional nonce, which means the
 request will be checked against the supplied nonce, otherwise the supplied nonce is only checked for presence. Normally
-the OP doesn't know. the nonce beforehand so this option can be left out.
+the OP doesn't know the nonce beforehand, so this option can be left out.
 
 The verified Auth Request object returned again contains the Auth Request payload, the DID
 resolution result, including DID document of the RP, the issuer (DID of RP) and the signer (the DID verification method

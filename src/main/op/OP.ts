@@ -1,3 +1,5 @@
+import EventEmitter from 'events';
+
 import { AuthorizationRequest, URI, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import {
   AuthorizationResponse,
@@ -7,6 +9,8 @@ import {
 } from '../authorization-response';
 import { encodeJsonAsURI, formPost, post } from '../helpers';
 import {
+  AuthorizationEvent,
+  AuthorizationEvents,
   AuthorizationResponseResult,
   ContentType,
   ExternalVerification,
@@ -14,6 +18,7 @@ import {
   ParsedAuthorizationRequestURI,
   ResponseMode,
   SIOPErrors,
+  SIOPResonse,
   UrlEncodingFormat,
   VerifiedAuthorizationRequest,
 } from '../types';
@@ -25,10 +30,12 @@ import { createResponseOptsFromBuilderOrExistingOpts, createVerifyRequestOptsFro
 export class OP {
   private readonly _createResponseOptions: AuthorizationResponseOpts;
   private readonly _verifyRequestOptions: Partial<VerifyAuthorizationRequestOpts>;
+  private readonly _eventEmitter?: EventEmitter;
 
   private constructor(opts: { builder?: Builder; responseOpts?: AuthorizationResponseOpts; verifyOpts?: VerifyAuthorizationRequestOpts }) {
     this._createResponseOptions = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
     this._verifyRequestOptions = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
+    this._eventEmitter = opts.builder?.eventEmitter;
   }
 
   get createResponseOptions(): AuthorizationResponseOpts {
@@ -59,8 +66,26 @@ export class OP {
     requestJwtOrUri: string | URI,
     requestOpts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthorizationRequest> {
-    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri);
-    return await authorizationRequest.verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }));
+    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri)
+      .then((result: AuthorizationRequest) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, { subject: result });
+        return result;
+      })
+      .catch((error: Error) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, { subject: requestJwtOrUri, error });
+        throw error;
+      });
+
+    return authorizationRequest
+      .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }))
+      .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, { subject: authorizationRequest });
+        return verifiedAuthorizationRequest;
+      })
+      .catch((error) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, { subject: authorizationRequest, error });
+        throw error;
+      });
   }
 
   public async createAuthorizationResponse(
@@ -75,7 +100,15 @@ export class OP {
       };
     }
   ): Promise<AuthorizationResponse> {
-    return await AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts));
+    return AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts))
+      .then((authorizationResponse: AuthorizationResponse) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, { subject: authorizationResponse });
+        return authorizationResponse;
+      })
+      .catch((error: Error) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, { subject: authorizationRequest, error });
+        throw error;
+      });
   }
 
   // TODO SK Can you please put some documentation on it?
@@ -90,12 +123,19 @@ export class OP {
     const payload = await authorizationResponse.payload;
     const idToken = await authorizationResponse.idToken.payload();
     const uri = encodeJsonAsURI(payload);
-    const result = await post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED });
-    return result.origResponse;
+    return post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED })
+      .then((result: SIOPResonse<unknown>) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, { subject: authorizationResponse });
+        return result.origResponse;
+      })
+      .catch((error: Error) => {
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, { subject: authorizationResponse, error });
+        throw error;
+      });
   }
 
   /**
-   * Create a Authentication Request Payload from a URI string
+   * Create an Authentication Request Payload from a URI string
    *
    * @param encodedUri
    */
@@ -138,6 +178,12 @@ export class OP {
       verification: opts?.verification || this._verifyRequestOptions.verification,
       // wellknownDIDverifyCallback: opts?.verifyCallback,
     };
+  }
+
+  private async emitEvent(type: AuthorizationEvents, payload: { subject: unknown; error?: Error }): Promise<void> {
+    if (this._eventEmitter) {
+      this._eventEmitter.emit(type, new AuthorizationEvent(payload));
+    }
   }
 
   public static fromOpts(responseOpts: AuthorizationResponseOpts, verifyOpts: VerifyAuthorizationRequestOpts): OP {

@@ -1,3 +1,5 @@
+import EventEmitter from 'events';
+
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { IPresentationDefinition } from '@sphereon/pex';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
@@ -31,6 +33,7 @@ import {
 
 import { assignIfAuth, assignIfRequestObject, isTargetOrNoTargets } from './Opts';
 import { RP } from './RP';
+import { ReplayRegistry } from './ReplayRegistry';
 
 export default class Builder {
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
@@ -43,6 +46,8 @@ export default class Builder {
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
+  eventEmitter?: EventEmitter;
+  replayRegistry?: ReplayRegistry;
   private _authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
   private _requestObjectPayload: Partial<RequestObjectPayload> = {};
 
@@ -257,6 +262,16 @@ export default class Builder {
     for (const version of versions) {
       this.addSupportedVersion(version);
     }
+    return this;
+  }
+
+  withEventEmitter(eventEmitter: EventEmitter): Builder {
+    this.eventEmitter = eventEmitter;
+    return this;
+  }
+
+  withReplayRegistry(replayRegistry: ReplayRegistry): Builder {
+    this.replayRegistry = replayRegistry;
     return this;
   }
 
