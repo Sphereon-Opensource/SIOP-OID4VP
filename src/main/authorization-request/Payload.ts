@@ -105,7 +105,7 @@ export const checkWellknownDIDFromRequest = async (
         opts.verification.wellknownDIDVerifyCallback,
         opts.verification.checkLinkedDomain
       );
-    } else if (!opts.verification.checkLinkedDomain) {
+    } else if (!opts.verification.checkLinkedDomain && opts.verification.wellknownDIDVerifyCallback) {
       await validateLinkedDomainWithDid(
         authorizationRequestPayload.client_id,
         opts.verification.wellknownDIDVerifyCallback,

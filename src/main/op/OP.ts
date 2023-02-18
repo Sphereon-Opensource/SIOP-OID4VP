@@ -175,7 +175,7 @@ export class OP {
     return {
       ...this._verifyRequestOptions,
       nonce: opts?.nonce || this._verifyRequestOptions.nonce,
-      verification: opts?.verification || this._verifyRequestOptions.verification,
+      verification: { ...this._verifyRequestOptions.verification, ...opts?.verification },
       // wellknownDIDverifyCallback: opts?.verifyCallback,
     };
   }
