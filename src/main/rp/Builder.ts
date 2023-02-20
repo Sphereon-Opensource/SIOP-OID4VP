@@ -65,9 +65,10 @@ export default class Builder {
     return this;
   }
 
-  withResponseType(responseType: ResponseType, targets?: PropertyTargets): Builder {
-    this._authorizationRequestPayload.response_type = assignIfAuth({ propertyValue: responseType, targets });
-    this._requestObjectPayload.response_type = assignIfRequestObject({ propertyValue: responseType, targets });
+  withResponseType(responseType: ResponseType | ResponseType[] | string, targets?: PropertyTargets): Builder {
+    const propertyValue = Array.isArray(responseType) ? responseType.join(' ').trim() : responseType;
+    this._authorizationRequestPayload.response_type = assignIfAuth({ propertyValue, targets });
+    this._requestObjectPayload.response_type = assignIfRequestObject({ propertyValue, targets });
     return this;
   }
 
@@ -211,13 +212,13 @@ export default class Builder {
       if (isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, targets)) {
         this._authorizationRequestPayload.claims = {
           ...(this._authorizationRequestPayload.claims ? this._authorizationRequestPayload.claims : {}),
-          vp_token,
+          vp_token: vp_token,
         };
       }
       if (isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, targets)) {
         this._requestObjectPayload.claims = {
           ...(this._requestObjectPayload.claims ? this._requestObjectPayload.claims : {}),
-          vp_token,
+          vp_token: vp_token,
         };
       }
     } else {

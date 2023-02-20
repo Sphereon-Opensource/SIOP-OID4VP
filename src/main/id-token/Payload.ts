@@ -4,6 +4,7 @@ import { AuthorizationResponseOpts } from '../authorization-response';
 import { mergeOAuth2AndOpenIdInRequestPayload } from '../authorization-response';
 import { assertValidResponseOpts } from '../authorization-response/Opts';
 import { getNonce, getPublicJWKFromHexPrivateKey, getState, getThumbprint } from '../helpers';
+import { authorizationRequestVersionDiscovery } from '../helpers/SIOPSpecVersion';
 import {
   AuthorizationRequestPayload,
   IDTokenPayload,
@@ -31,8 +32,11 @@ export const createIDTokenPayload = async (
   const state = responseOpts.state || getState(payload.state);
   const nonce = payload.nonce || responseOpts.nonce || getNonce(state);
   const SEC_IN_MS = 1000;
+
+  authorizationRequestVersionDiscovery(authorizationRequestPayload);
   const idToken: IDTokenPayload = {
     // fixme: ID11 does not use this static value anymore
+    //fixme: JWT VC interop uses: https://self-issued.me/v2/openid-vc
     iss: ResponseIss.SELF_ISSUED_V2,
     aud: payload.redirect_uri,
     iat: Date.now() / SEC_IN_MS - 60 * SEC_IN_MS,
@@ -40,7 +44,7 @@ export const createIDTokenPayload = async (
     sub: responseOpts.did,
     auth_time: payload.auth_time,
     nonce,
-    ...(responseOpts.presentationExchange?._vp_token ? { _vp_token: responseOpts.presentationExchange._vp_token } : {}),
+    // ...(responseOpts.presentationExchange?._vp_token ? { _vp_token: responseOpts.presentationExchange._vp_token } : {}),
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !responseOpts.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(responseOpts);

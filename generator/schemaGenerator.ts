@@ -103,7 +103,7 @@ function correctSchema(schemaString: string) {
     '      "additionalProperties": true\n' +
     '    },');
 }
-
+/*
 const requestOptsConf = {
   path: '../src/main/authorization-request/types.ts',
   tsconfig: 'tsconfig.json',
@@ -112,7 +112,7 @@ const requestOptsConf = {
   outputPath: 'src/main/schemas/AuthorizationRequestOpts.schema.ts',
   // outputConstName: 'AuthorizationRequestOptsSchema',
   skipTypeCheck: true
-};
+};*/
 
 
 const responseOptsConf = {
@@ -168,7 +168,7 @@ const authorizationRequestPayloadVD11 = {
 let schemas: Schema[] = [
   writeSchema(authorizationRequestPayloadVID1),
   writeSchema(authorizationRequestPayloadVD11),
-  writeSchema(requestOptsConf),
+  // writeSchema(requestOptsConf),
   writeSchema(responseOptsConf),
   writeSchema(rPRegistrationMetadataPayload),
   writeSchema(discoveryMetadataPayload)

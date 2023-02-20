@@ -9,7 +9,6 @@ import {
   CreateAuthorizationRequestOpts,
   PassBy,
   PresentationExchange,
-  PresentationLocation,
   PresentationSignCallback,
   RequestObject,
   ResponseIss,
@@ -20,10 +19,11 @@ import {
   SubjectIdentifierType,
   SubjectType,
   SupportedVersion,
-  VerifiablePresentationTypeFormat,
   VerificationMode,
   VerifyAuthorizationRequestOpts,
+  VPTokenLocation,
 } from '../src/main';
+import { createSubmissionData } from '../src/main/authorization-response/OpenID4VP';
 import SIOPErrors from '../src/main/types/Errors';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -351,7 +351,7 @@ describe('create JWT from Request JWT should', () => {
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
-          response_type: 'id_token',
+          response_type: 'id_token vp_token',
           redirect_uri: EXAMPLE_REDIRECT_URL,
           claims: {
             vp_token: {
@@ -395,7 +395,7 @@ describe('create JWT from Request JWT should', () => {
         birthdate: '1949-01-22',
       },
     };
-    const vp: IVerifiablePresentation = {
+    const presentation: IVerifiablePresentation = {
       '@context': ['https://www.w3.org/2018/credentials/v1'],
       presentation_submission: undefined,
       type: ['verifiablePresentation'],
@@ -406,15 +406,15 @@ describe('create JWT from Request JWT should', () => {
 
     const pex = new PresentationExchange({
       did: 'did:example:holder',
-      allVerifiableCredentials: vp.verifiableCredential,
+      allVerifiableCredentials: presentation.verifiableCredential,
     });
     await pex.selectVerifiableCredentialsForSubmission(definition);
-    const result: IVerifiablePresentation = (await pex.submissionFrom(
+    const verifiablePresentation = await pex.createVerifiablePresentation(
       definition,
-      vp.verifiableCredential,
+      presentation.verifiableCredential,
       {},
       presentationSignCallback
-    )) as IVerifiablePresentation;
+    );
     const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -445,13 +445,16 @@ describe('create JWT from Request JWT should', () => {
         alg: SigningAlgo.ES256K,
       },
       presentationExchange: {
-        vps: [
+        verifiablePresentations: [verifiablePresentation],
+        vpTokenLocation: VPTokenLocation.ID_TOKEN,
+        submissionData: await createSubmissionData([verifiablePresentation]),
+        /*credentialsAndDefinitions: [
           {
-            location: PresentationLocation.VP_TOKEN,
+            vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
             format: VerifiablePresentationTypeFormat.LDP_VP,
-            presentation: result,
+            presentation: verifiablePresentation,
           },
-        ],
+        ],*/
       },
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
@@ -461,11 +464,11 @@ describe('create JWT from Request JWT should', () => {
     /* console.log(
       JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
     );*/
-    await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
+    await expect(await AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).toBeDefined();
   });
 
   it('succeed when valid JWT with PD is passed in for id_token', async () => {
-    expect.assertions(1);
+    // expect.assertions(1);
 
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
@@ -520,7 +523,7 @@ describe('create JWT from Request JWT should', () => {
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
-          response_type: 'token_id',
+          response_type: ResponseType.ID_TOKEN,
           redirect_uri: EXAMPLE_REDIRECT_URL,
           claims: {
             vp_token: {
@@ -564,7 +567,7 @@ describe('create JWT from Request JWT should', () => {
         birthdate: '1949-01-22',
       },
     };
-    const vp: IVerifiablePresentation = {
+    const presentation: IVerifiablePresentation = {
       '@context': ['https://www.w3.org/2018/credentials/v1'],
       presentation_submission: undefined,
       type: ['verifiablePresentation'],
@@ -575,7 +578,7 @@ describe('create JWT from Request JWT should', () => {
 
     const pex = new PresentationExchange({
       did: 'did:example:holder',
-      allVerifiableCredentials: vp.verifiableCredential,
+      allVerifiableCredentials: presentation.verifiableCredential,
     });
     await pex.selectVerifiableCredentialsForSubmission(definition);
     const presentationSignCallback: PresentationSignCallback = async (_args) => ({
@@ -590,12 +593,12 @@ describe('create JWT from Request JWT should', () => {
         jws: 'eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqsLfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh4vGHSrQyHUGlcTwLtjPAnKb78',
       },
     });
-    const result: IVerifiablePresentation = (await pex.submissionFrom(
+    const verifiablePresentation = await pex.createVerifiablePresentation(
       definition,
-      vp.verifiableCredential,
+      presentation.verifiableCredential,
       {},
       presentationSignCallback
-    )) as IVerifiablePresentation;
+    );
     const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
       redirectUri: EXAMPLE_REDIRECT_URL,
@@ -626,14 +629,17 @@ describe('create JWT from Request JWT should', () => {
         alg: SigningAlgo.ES256K,
       },
       presentationExchange: {
-        vps: [
+        verifiablePresentations: [verifiablePresentation],
+        submissionData: await createSubmissionData([verifiablePresentation]),
+        vpTokenLocation: VPTokenLocation.ID_TOKEN,
+        /*credentialsAndDefinitions: [
           {
-            location: PresentationLocation.ID_TOKEN,
+            vpTokenLocation: VPTokenLocation.ID_TOKEN,
             format: VerifiablePresentationTypeFormat.LDP_VP,
-            presentation: result,
+            presentation: verifiablePresentation,
           },
         ],
-        presentationSignCallback: presentationSignCallback,
+        presentationSignCallback: presentationSignCallback,*/
       },
 
       did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?

@@ -82,9 +82,9 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
       expiresIn: opts.builder.expiresIn,
       signatureType: opts.builder.signatureType,
       responseMode: opts.builder.responseMode,
-      presentationExchange: {
+      /*presentationExchange: {
         presentationSignCallback: opts.builder.presentationSignCallback,
-      },
+      },*/
     };
 
     const languageTagEnabledFieldsNames = ['clientName', 'clientPurpose'];

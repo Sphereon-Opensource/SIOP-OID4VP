@@ -470,7 +470,7 @@ describe('create Request JWT should', () => {
 
     const expected = {
       response_type: 'id_token',
-      scope: 'openid',
+      scope: 'test',
       client_id: 'test_client_id',
       redirect_uri: 'https://acme.com/hello',
       registration: {

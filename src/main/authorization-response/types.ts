@@ -12,7 +12,7 @@ import {
   ResponseRegistrationOpts,
   SuppliedSignature,
   SupportedVersion,
-  VerifiablePresentationPayload,
+  VerifiablePresentationWithFormat,
 } from '../types';
 
 export interface AuthorizationResponseOpts {
@@ -29,14 +29,25 @@ export interface AuthorizationResponseOpts {
   accessToken?: string;
   tokenType?: string;
   refreshToken?: string;
-  presentationExchange?: PresentationExchangeOpts;
+  presentationExchange?: PresentationExchangeResponseOpts;
 }
 
-export interface PresentationExchangeOpts {
+export interface PresentationExchangeResponseOpts {
+  /* presentationSignCallback?: PresentationSignCallback;
+  signOptions?: PresentationSignOptions,
+*/
+  /*  credentialsAndDefinitions: {
+    presentationDefinition: IPresentationDefinition,
+    selectedCredentials: W3CVerifiableCredential[]
+  }[],*/
+
+  verifiablePresentations: W3CVerifiablePresentation[];
+  vpTokenLocation?: VPTokenLocation;
+  submissionData?: PresentationSubmission;
+}
+
+export interface PresentationExchangeRequestOpts {
   presentationVerificationCallback?: PresentationVerificationCallback;
-  presentationSignCallback?: PresentationSignCallback;
-  vps?: VerifiablePresentationWithLocation[];
-  _vp_token?: { presentation_submission: PresentationSubmission };
 }
 
 export interface PresentationDefinitionPayloadOpts {
@@ -50,8 +61,10 @@ export interface PresentationDefinitionWithLocation {
   definition: IPresentationDefinition;
 }
 
-export interface VerifiablePresentationWithLocation extends VerifiablePresentationPayload {
-  location: PresentationLocation;
+export interface VerifiablePresentationWithSubmissionData extends VerifiablePresentationWithFormat {
+  vpTokenLocation: VPTokenLocation;
+
+  submissionData: PresentationSubmission;
 }
 
 export enum PresentationDefinitionLocation {
@@ -59,14 +72,15 @@ export enum PresentationDefinitionLocation {
   TOPLEVEL_PRESENTATION_DEF = 'presentation_definition',
 }
 
-export enum PresentationLocation {
-  VP_TOKEN = 'vp_token',
+export enum VPTokenLocation {
+  AUTHORIZATION_RESPONSE = 'authorization_response',
   ID_TOKEN = 'id_token',
+  TOKEN_RESPONSE = 'token_response',
 }
 
 export type PresentationVerificationResult = { verified: boolean };
 
-export type PresentationVerificationCallback = (args: VerifiablePresentationPayload) => Promise<PresentationVerificationResult>;
+export type PresentationVerificationCallback = (args: W3CVerifiablePresentation) => Promise<PresentationVerificationResult>;
 
 export type PresentationSignCallback = (args: PresentationSignCallBackParams) => Promise<W3CVerifiablePresentation>;
 

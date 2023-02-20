@@ -60,6 +60,7 @@ enum SIOPErrors {
   SIOP_VERSION_NOT_SUPPORTED = 'The SIOP spec version could not inferred from the authentication request payload',
   SUB_JWK_NOT_FOUND_OR_NOT_KID = 'Response Token does not contains sub_jwk claim or sub_jwk does not contain kid attribute.',
   VERIFIABLE_PRESENTATION_FORMAT_NOT_SUPPORTED = "This type of verifiable presentation isn't supported in this version",
+  NO_VERIFIABLE_PRESENTATION_NO_CREDENTIALS = 'Either no verifiable presentation or no credentials found in the verifiable presentation',
   VERIFICATION_METHOD_NOT_SUPPORTED = 'Verification method not supported',
   VERIFICATION_METHOD_NO_MATCH = "The verification method from the RP's DID Document does NOT match the kid of the SIOP Request",
   VERIFY_BAD_PARAMS = 'Verify bad parameters',

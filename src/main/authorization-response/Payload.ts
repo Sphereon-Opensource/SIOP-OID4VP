@@ -4,7 +4,7 @@ import { getState } from '../helpers';
 import { RequestObject } from '../request-object';
 import { AuthorizationRequestPayload, AuthorizationResponsePayload, IDTokenPayload, SIOPErrors } from '../types';
 
-import { extractPresentations } from './OpenID4VP';
+import { putPresentationsInResponse } from './OpenID4VP';
 import { assertValidResponseOpts } from './Opts';
 import { AuthorizationResponseOpts } from './types';
 
@@ -19,17 +19,20 @@ export const createResponsePayload = async (
   }
 
   const state = responseOpts.state || getState(authorizationRequest.payload.state);
-  const { vp_token, verifiable_presentations } = extractPresentations(responseOpts);
-  return {
-    access_token: responseOpts.accessToken,
+  const responsePayload: AuthorizationResponsePayload = {
+    ...(responseOpts.accessToken ? { access_token: responseOpts.accessToken } : {}),
     token_type: responseOpts.tokenType,
     refresh_token: responseOpts.refreshToken,
     expires_in: responseOpts.expiresIn,
-    // fixme: The or definitely is wrong. The verifiable_presentations should end up in the ID token if present
-    vp_token: vp_token || verifiable_presentations,
-    ...(idTokenPayload ? { id_token: await signDidJwtPayload(idTokenPayload, responseOpts) } : {}),
     state,
   };
+
+  await putPresentationsInResponse(authorizationRequest, responsePayload, responseOpts, idTokenPayload);
+  if (idTokenPayload) {
+    responsePayload.id_token = await signDidJwtPayload(idTokenPayload, responseOpts);
+  }
+
+  return responsePayload;
 };
 
 /**

@@ -1,5 +1,3 @@
-import { PresentationSubmission } from '@sphereon/ssi-types';
-
 import { AuthorizationRequest, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidVerifyAuthorizationRequestOpts } from '../authorization-request/Opts';
 import { IDToken } from '../id-token';
@@ -98,22 +96,12 @@ export class AuthorizationResponse {
       authorizationRequest,
     });
 
-    const presentations = await extractPresentationsFromAuthorizationResponse(response);
-    let submission_data: PresentationSubmission;
-    for (const presentation of presentations) {
-      if (!submission_data) {
-        submission_data = presentation.presentation.presentation_submission;
-      } else {
-        Array.isArray(submission_data.descriptor_map)
-          ? submission_data.descriptor_map.push(...presentation.presentation.presentation_submission.descriptor_map)
-          : (submission_data.descriptor_map = [...presentation.presentation.presentation_submission.descriptor_map]);
-      }
-    }
+    const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response);
 
     await assertValidVerifiablePresentations({
       presentationDefinitions,
-      presentations,
-      verificationCallback: responseOpts.presentationExchange?.presentationVerificationCallback,
+      presentations: wrappedPresentations,
+      verificationCallback: verifyOpts.verification.presentationVerificationCallback,
     });
 
     return response;

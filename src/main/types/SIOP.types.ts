@@ -1,7 +1,13 @@
 // noinspection JSUnusedGlobalSymbols
 
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
-import { IPresentation, IVerifiablePresentation, PresentationSubmission, W3CVerifiableCredential } from '@sphereon/ssi-types';
+import {
+  IPresentation,
+  IVerifiablePresentation,
+  PresentationSubmission,
+  W3CVerifiableCredential,
+  W3CVerifiablePresentation,
+} from '@sphereon/ssi-types';
 import { VerifyCallback as WellknownDIDVerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
 import { VerificationMethod } from 'did-resolver';
@@ -24,12 +30,13 @@ export const DEFAULT_EXPIRATION_TIME = 10 * 60;
 // request and request_uri parameters MUST NOT be included in Request Objects.
 export interface RequestObjectPayload extends RequestCommonPayload, JWTPayload {
   scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
-  response_type: ResponseType; // REQUIRED. Constant string value id_token.
+  response_type: ResponseType | string; // REQUIRED. Constant string value id_token.
   client_id: string; // REQUIRED. RP's identifier at the Self-Issued OP.
   redirect_uri: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
   nonce: string;
   state: string;
 }
+
 export type RequestObjectJwt = string;
 
 // https://openid.net/specs/openid-connect-self-issued-v2-1_0.html#section-8
@@ -38,6 +45,7 @@ export interface AuthorizationRequestCommonPayload extends RequestCommonPayload,
   request?: string; // OPTIONAL. Request Object value, as specified in Section 6.1 of [OpenID.Core]. The Request Object MAY be encrypted to the Self-Issued OP by the RP. In this case, the sub (subject) of a previously issued ID Token for this RP MUST be sent as the kid (Key ID) of the JWE.
   request_uri?: string; // OPTIONAL. URL where Request Object value can be retrieved from, as specified in Section 6.2 of [OpenID.Core].
 }
+
 export interface RequestCommonPayload extends JWTPayload {
   scope?: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
   response_type?: ResponseType | string; // REQUIRED. Constant string value id_token.
@@ -93,6 +101,7 @@ export interface VerifiedAuthorizationRequest extends VerifiedJWT {
 }
 
 export type IDTokenJwt = string;
+
 export interface IDTokenPayload extends JWTPayload {
   iss?: ResponseIss.SELF_ISSUED_V2 | string;
   sub?: string; // did (or thumbprint of sub_jwk key when type is jkt)
@@ -119,7 +128,8 @@ export interface AuthorizationResponsePayload {
   expires_in: number;
   state: string;
   id_token?: string;
-  vp_token?: VerifiablePresentationPayload[] | VerifiablePresentationPayload;
+  // vp_token?: VerifiablePresentationPayload | VerifiablePresentationPayload[];
+  vp_token?: W3CVerifiablePresentation | W3CVerifiablePresentation[];
   presentation_submission?: PresentationSubmission;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -154,9 +164,9 @@ export interface ClaimPayloadVID1 extends ClaimPayloadCommon {
  * A wrapper for verifiablePresentation
  *
  */
-export interface VerifiablePresentationPayload {
+export interface VerifiablePresentationWithFormat {
   format: VerifiablePresentationTypeFormat;
-  presentation: IVerifiablePresentation;
+  presentation: W3CVerifiablePresentation;
 }
 
 export interface RequestStateInfo {
@@ -589,6 +599,7 @@ export enum SigningAlgo {
   ES256 = 'ES256',
   ES256K = 'ES256K',
 }
+
 export enum Scope {
   OPENID = 'openid',
   OPENID_DIDAUTHN = 'openid did_authn',
@@ -632,6 +643,7 @@ export enum Schema {
 export enum ResponseIss {
   SELF_ISSUED_V1 = 'https://self-issued.me',
   SELF_ISSUED_V2 = 'https://self-issued.me/v2',
+  JWT_VC_PRESENTATION_V1 = 'https://self-issued.me/v2/openid-vc',
 }
 
 export const isInternalSignature = (object: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature): object is InternalSignature =>

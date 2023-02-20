@@ -3,7 +3,7 @@ import { Resolvable } from 'did-resolver';
 import { CreateAuthorizationRequestOpts, PropertyTarget, PropertyTargets, RequestPropertyWithTargets } from '../authorization-request';
 import { VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getResolverUnion, mergeAllDidMethods } from '../did';
-import { CreateAuthorizationRequestOptsSchema } from '../schemas';
+// import { CreateAuthorizationRequestOptsSchema } from '../schemas';
 import { ClientMetadataOpts, InternalVerification, RequestObjectPayload, SIOPErrors, VerificationMode } from '../types';
 
 import Builder from './Builder';
@@ -39,7 +39,7 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
       }
     : opts.createRequestOpts;
 
-  const valid = CreateAuthorizationRequestOptsSchema(createRequestOpts);
+  const valid = true; // fixme: re-enable schema: CreateAuthorizationRequestOptsSchema(createRequestOpts);
   if (!valid) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
 
 import { IPresentationDefinition } from '@sphereon/pex';
-import { IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import { CredentialMapper, IProofType, IVerifiableCredential, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 import { IVerifyCallbackArgs, IVerifyCredentialResult, VerifyCallback, WDCErrors } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
@@ -11,7 +11,6 @@ import {
   PassBy,
   PresentationDefinitionWithLocation,
   PresentationExchange,
-  PresentationLocation,
   PresentationSignCallback,
   PresentationVerificationCallback,
   PropertyTarget,
@@ -24,10 +23,9 @@ import {
   SigningAlgo,
   SubjectType,
   SupportedVersion,
-  VerifiablePresentationPayload,
-  VerifiablePresentationTypeFormat,
   VerificationMode,
   verifyRevocation,
+  VPTokenLocation,
 } from '../src/main';
 import { checkSIOPSpecVersionSupported } from '../src/main/helpers/SIOPSpecVersion';
 import { ReplayRegistry } from '../src/main/rp/ReplayRegistry';
@@ -453,7 +451,7 @@ describe('RP and OP interaction should', () => {
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
-      .withResponseType(ResponseType.ID_TOKEN)
+      .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withPresentationDefinition(getPresentationDefinition())
       .withPresentationVerification(presentationVerificationCallback)
@@ -492,7 +490,7 @@ describe('RP and OP interaction should', () => {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         issuer: ResponseIss.SELF_ISSUED_V2,
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        responseTypesSupported: [ResponseType.ID_TOKEN],
+        responseTypesSupported: [ResponseType.ID_TOKEN, ResponseType.VP_TOKEN],
         vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
@@ -526,21 +524,18 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(
-      pd[0].definition,
-      getVCs(),
-      {},
-      op.createResponseOptions.presentationExchange.presentationSignCallback
-    )) as IVerifiablePresentation;
+    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        vps: [
+        verifiablePresentations: [vp],
+        vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
+        /*credentialsAndDefinitions: [
           {
             presentation: vp,
             format: VerifiablePresentationTypeFormat.LDP_VP,
-            location: PresentationLocation.VP_TOKEN,
+            vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
           },
-        ],
+        ],*/
       },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
@@ -648,21 +643,18 @@ describe('RP and OP interaction should', () => {
         parsedAuthReqURI.authorizationRequestPayload
       );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = (await pex.submissionFrom(
-        pd[0].definition,
-        getVCs(),
-        {},
-        op.createResponseOptions.presentationExchange.presentationSignCallback
-      )) as IVerifiablePresentation;
+      const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
-          vps: [
+          verifiablePresentations: [vp],
+          // vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
+          /*credentialsAndDefinitions: [
             {
               presentation: vp,
               format: VerifiablePresentationTypeFormat.LDP_VP,
-              location: PresentationLocation.VP_TOKEN,
+              vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
             },
-          ],
+          ],*/
         },
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
@@ -712,7 +704,7 @@ describe('RP and OP interaction should', () => {
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
-      .withResponseType(ResponseType.ID_TOKEN)
+      .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .withVerifyCallback(verifyCallback)
@@ -794,21 +786,18 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(
-      pd[0].definition,
-      getVCs(),
-      {},
-      op.createResponseOptions.presentationExchange.presentationSignCallback
-    )) as IVerifiablePresentation;
+    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        vps: [
+        verifiablePresentations: [vp],
+        vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
+        /*credentialsAndDefinitions: [
           {
             presentation: vp,
             format: VerifiablePresentationTypeFormat.LDP_VP,
-            location: PresentationLocation.VP_TOKEN,
+            vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
           },
-        ],
+        ],*/
       },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
@@ -853,7 +842,7 @@ describe('RP and OP interaction should', () => {
       const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
         .withClientId(WELL_KNOWN_OPENID_FEDERATION)
         .withScope('test')
-        .withResponseType(ResponseType.ID_TOKEN)
+        .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
         .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
@@ -928,21 +917,18 @@ describe('RP and OP interaction should', () => {
         parsedAuthReqURI.authorizationRequestPayload
       );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = (await pex.submissionFrom(
-        pd[0].definition,
-        getVCs(),
-        {},
-        op.createResponseOptions.presentationExchange.presentationSignCallback
-      )) as IVerifiablePresentation;
+      const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
-          vps: [
+          verifiablePresentations: [vp],
+          vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
+          /*credentialsAndDefinitions: [
             {
               presentation: vp,
               format: VerifiablePresentationTypeFormat.LDP_VP,
-              location: PresentationLocation.VP_TOKEN,
+              vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
             },
-          ],
+          ],*/
         },
       });
       expect(authenticationResponseWithJWT.payload).toBeDefined();
@@ -978,7 +964,7 @@ describe('RP and OP interaction should', () => {
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId('test_client_id')
       .withScope('test')
-      .withResponseType(ResponseType.ID_TOKEN)
+      .withResponseType([ResponseType.VP_TOKEN, ResponseType.ID_TOKEN])
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
       .withVerifyCallback(verifyCallback)
@@ -1072,22 +1058,19 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(
-      pd[0].definition,
-      getVCs(),
-      {},
-      op.createResponseOptions.presentationExchange.presentationSignCallback
-    )) as IVerifiablePresentation;
+    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
 
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        vps: [
+        verifiablePresentations: [vp],
+        vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
+        /*credentialsAndDefinitions: [
           {
             presentation: vp,
             format: VerifiablePresentationTypeFormat.LDP_VP,
-            location: PresentationLocation.VP_TOKEN,
+            vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
           },
-        ],
+        ],*/
       },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
@@ -1110,75 +1093,72 @@ describe('RP and OP interaction should', () => {
   });
 
   it('should verify revocation ldp_vp with RevocationVerification.ALWAYS', async () => {
-    const vpToken = {
-      presentation: {
-        '@context': ['https://www.w3.org/2018/credentials/v1', 'https://identity.foundation/presentation-exchange/submission/v1'],
-        type: ['VerifiablePresentation', 'PresentationSubmission'],
-        presentation_submission: {
-          id: 'K7Zu3C6yJv3TGXYCB3B3n',
-          definition_id: 'Insurance Plans',
-          descriptor_map: [
-            {
-              id: 'Ontario Health Insurance Plan',
-              format: 'ldp_vc',
-              path: '$.verifiableCredential[0]',
-            },
-          ],
-        },
-        verifiableCredential: [
+    const presentation = {
+      '@context': ['https://www.w3.org/2018/credentials/v1', 'https://identity.foundation/presentation-exchange/submission/v1'],
+      type: ['VerifiablePresentation', 'PresentationSubmission'],
+      presentation_submission: {
+        id: 'K7Zu3C6yJv3TGXYCB3B3n',
+        definition_id: 'Insurance Plans',
+        descriptor_map: [
           {
-            identifier: '83627465',
-            name: 'Permanent Resident Card',
-            type: ['PermanentResidentCard', 'verifiableCredential'],
-            id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
-            credentialSubject: {
-              birthCountry: 'Bahamas',
-              id: 'did:example:b34ca6cd37bbf23',
-              type: ['PermanentResident', 'Person'],
-              gender: 'Female',
-              familyName: 'SMITH',
-              givenName: 'JANE',
-              residentSince: '2015-01-01',
-              lprNumber: '999-999-999',
-              birthDate: '1958-07-17',
-              commuterClassification: 'C1',
-              lprCategory: 'C09',
-              image: 'data:image/png;base64,iVBORw0KGgokJggg==',
-            },
-            expirationDate: '2029-12-03T12:19:52Z',
-            description: 'Government of Example Permanent Resident Card.',
-            issuanceDate: '2019-12-03T12:19:52Z',
-            '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1'],
-            issuer: {
-              id: 'did:example:issuer',
-            },
-            proof: {
-              type: 'BbsBlsSignatureProof2020',
-              created: '2020-04-25',
-              verificationMethod: 'did:example:489398593#test',
-              proofPurpose: 'assertionMethod',
-              proofValue:
-                'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
-              nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
-            },
+            id: 'Ontario Health Insurance Plan',
+            format: 'ldp_vc',
+            path: '$.verifiableCredential[0]',
           },
         ],
-        proof: {
-          type: 'BbsBlsSignatureProof2020',
-          created: '2020-04-25',
-          verificationMethod: 'did:example:489398593#test',
-          proofPurpose: 'assertionMethod',
-          proofValue:
-            'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
-          nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
-        },
       },
-      format: VerifiablePresentationTypeFormat.LDP_VP,
+      verifiableCredential: [
+        {
+          identifier: '83627465',
+          name: 'Permanent Resident Card',
+          type: ['PermanentResidentCard', 'verifiableCredential'],
+          id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
+          credentialSubject: {
+            birthCountry: 'Bahamas',
+            id: 'did:example:b34ca6cd37bbf23',
+            type: ['PermanentResident', 'Person'],
+            gender: 'Female',
+            familyName: 'SMITH',
+            givenName: 'JANE',
+            residentSince: '2015-01-01',
+            lprNumber: '999-999-999',
+            birthDate: '1958-07-17',
+            commuterClassification: 'C1',
+            lprCategory: 'C09',
+            image: 'data:image/png;base64,iVBORw0KGgokJggg==',
+          },
+          expirationDate: '2029-12-03T12:19:52Z',
+          description: 'Government of Example Permanent Resident Card.',
+          issuanceDate: '2019-12-03T12:19:52Z',
+          '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1'],
+          issuer: {
+            id: 'did:example:issuer',
+          },
+          proof: {
+            type: 'BbsBlsSignatureProof2020',
+            created: '2020-04-25',
+            verificationMethod: 'did:example:489398593#test',
+            proofPurpose: 'assertionMethod',
+            proofValue:
+              'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
+            nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
+          },
+        },
+      ],
+      proof: {
+        type: 'BbsBlsSignatureProof2020',
+        created: '2020-04-25',
+        verificationMethod: 'did:example:489398593#test',
+        proofPurpose: 'assertionMethod',
+        proofValue:
+          'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
+        nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
+      },
     };
 
     await expect(
       verifyRevocation(
-        vpToken,
+        CredentialMapper.toWrappedVerifiablePresentation(presentation),
         async () => {
           return { status: RevocationStatus.VALID };
         },
@@ -1188,82 +1168,79 @@ describe('RP and OP interaction should', () => {
   });
 
   it('should verify revocation ldp_vp with RevocationVerification.IF_PRESENT', async () => {
-    const vpToken = {
-      presentation: {
-        '@context': ['https://www.w3.org/2018/credentials/v1', 'https://identity.foundation/presentation-exchange/submission/v1'],
-        type: ['VerifiablePresentation', 'PresentationSubmission'],
-        presentation_submission: {
-          id: 'K7Zu3C6yJv3TGXYCB3B3n',
-          definition_id: 'Insurance Plans',
-          descriptor_map: [
-            {
-              id: 'Ontario Health Insurance Plan',
-              format: 'ldp_vc',
-              path: '$.verifiableCredential[0]',
-            },
-          ],
-        },
-        verifiableCredential: [
+    const presentation = {
+      '@context': ['https://www.w3.org/2018/credentials/v1', 'https://identity.foundation/presentation-exchange/submission/v1'],
+      type: ['VerifiablePresentation', 'PresentationSubmission'],
+      presentation_submission: {
+        id: 'K7Zu3C6yJv3TGXYCB3B3n',
+        definition_id: 'Insurance Plans',
+        descriptor_map: [
           {
-            identifier: '83627465',
-            name: 'Permanent Resident Card',
-            type: ['PermanentResidentCard', 'verifiableCredential'],
-            id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
-            credentialSubject: {
-              birthCountry: 'Bahamas',
-              id: 'did:example:b34ca6cd37bbf23',
-              type: ['PermanentResident', 'Person'],
-              gender: 'Female',
-              familyName: 'SMITH',
-              givenName: 'JANE',
-              residentSince: '2015-01-01',
-              lprNumber: '999-999-999',
-              birthDate: '1958-07-17',
-              commuterClassification: 'C1',
-              lprCategory: 'C09',
-              image: 'data:image/png;base64,iVBORw0KGgokJggg==',
-            },
-            credentialStatus: {
-              id: 'https://example.com/credentials/status/3#94567',
-              type: 'StatusList2021Entry',
-              statusPurpose: 'revocation',
-              statusListIndex: '94567',
-              statusListCredential: 'https://example.com/credentials/status/3',
-            },
-            expirationDate: '2029-12-03T12:19:52Z',
-            description: 'Government of Example Permanent Resident Card.',
-            issuanceDate: '2019-12-03T12:19:52Z',
-            '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1'],
-            issuer: {
-              id: 'did:example:issuer',
-            },
-            proof: {
-              type: 'BbsBlsSignatureProof2020',
-              created: '2020-04-25',
-              verificationMethod: 'did:example:489398593#test',
-              proofPurpose: 'assertionMethod',
-              proofValue:
-                'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
-              nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
-            },
+            id: 'Ontario Health Insurance Plan',
+            format: 'ldp_vc',
+            path: '$.verifiableCredential[0]',
           },
         ],
-        proof: {
-          type: 'BbsBlsSignatureProof2020',
-          created: '2020-04-25',
-          verificationMethod: 'did:example:489398593#test',
-          proofPurpose: 'assertionMethod',
-          proofValue:
-            'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
-          nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
-        },
       },
-      format: VerifiablePresentationTypeFormat.LDP_VP,
+      verifiableCredential: [
+        {
+          identifier: '83627465',
+          name: 'Permanent Resident Card',
+          type: ['PermanentResidentCard', 'verifiableCredential'],
+          id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
+          credentialSubject: {
+            birthCountry: 'Bahamas',
+            id: 'did:example:b34ca6cd37bbf23',
+            type: ['PermanentResident', 'Person'],
+            gender: 'Female',
+            familyName: 'SMITH',
+            givenName: 'JANE',
+            residentSince: '2015-01-01',
+            lprNumber: '999-999-999',
+            birthDate: '1958-07-17',
+            commuterClassification: 'C1',
+            lprCategory: 'C09',
+            image: 'data:image/png;base64,iVBORw0KGgokJggg==',
+          },
+          credentialStatus: {
+            id: 'https://example.com/credentials/status/3#94567',
+            type: 'StatusList2021Entry',
+            statusPurpose: 'revocation',
+            statusListIndex: '94567',
+            statusListCredential: 'https://example.com/credentials/status/3',
+          },
+          expirationDate: '2029-12-03T12:19:52Z',
+          description: 'Government of Example Permanent Resident Card.',
+          issuanceDate: '2019-12-03T12:19:52Z',
+          '@context': ['https://www.w3.org/2018/credentials/v1', 'https://www.w3.org/2018/credentials/examples/v1'],
+          issuer: {
+            id: 'did:example:issuer',
+          },
+          proof: {
+            type: 'BbsBlsSignatureProof2020',
+            created: '2020-04-25',
+            verificationMethod: 'did:example:489398593#test',
+            proofPurpose: 'assertionMethod',
+            proofValue:
+              'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
+            nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
+          },
+        },
+      ],
+      proof: {
+        type: 'BbsBlsSignatureProof2020',
+        created: '2020-04-25',
+        verificationMethod: 'did:example:489398593#test',
+        proofPurpose: 'assertionMethod',
+        proofValue:
+          'kTTbA3pmDa6Qia/JkOnIXDLmoBz3vsi7L5t3DWySI/VLmBqleJ/Tbus5RoyiDERDBEh5rnACXlnOqJ/U8yFQFtcp/mBCc2FtKNPHae9jKIv1dm9K9QK1F3GI1AwyGoUfjLWrkGDObO1ouNAhpEd0+et+qiOf2j8p3MTTtRRx4Hgjcl0jXCq7C7R5/nLpgimHAAAAdAx4ouhMk7v9dXijCIMaG0deicn6fLoq3GcNHuH5X1j22LU/hDu7vvPnk/6JLkZ1xQAAAAIPd1tu598L/K3NSy0zOy6obaojEnaqc1R5Ih/6ZZgfEln2a6tuUp4wePExI1DGHqwj3j2lKg31a/6bSs7SMecHBQdgIYHnBmCYGNQnu/LZ9TFV56tBXY6YOWZgFzgLDrApnrFpixEACM9rwrJ5ORtxAAAAAgE4gUIIC9aHyJNa5TBklMOh6lvQkMVLXa/vEl+3NCLXblxjgpM7UEMqBkE9/QcoD3Tgmy+z0hN+4eky1RnJsEg=',
+        nonce: '6i3dTz5yFfWJ8zgsamuyZa4yAHPm75tUOOXddR6krCvCYk77sbCOuEVcdBCDd/l6tIY=',
+      },
     };
 
     await expect(
       verifyRevocation(
-        vpToken,
+        CredentialMapper.toWrappedVerifiablePresentation(presentation),
         async () => {
           return { status: RevocationStatus.VALID };
         },
@@ -1372,21 +1349,18 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(
-      pd[0].definition,
-      getVCs(),
-      {},
-      op.createResponseOptions.presentationExchange.presentationSignCallback
-    )) as IVerifiablePresentation;
+    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        vps: [
+        verifiablePresentations: [vp],
+        vpTokenLocation: VPTokenLocation.ID_TOKEN,
+        /*credentialsAndDefinitions: [
           {
             presentation: vp,
             format: VerifiablePresentationTypeFormat.LDP_VP,
-            location: PresentationLocation.ID_TOKEN,
-          },
-        ],
+            vpTokenLocation: VPTokenLocation.ID_TOKEN
+          }
+        ]*/
       },
     });
     expect(authenticationResponseWithJWT.payload).toBeDefined();
@@ -1414,7 +1388,9 @@ describe('RP and OP interaction should', () => {
     };
 
     const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
+      verified: true,
+    });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId('test_client_id')
       .withScope('test')
@@ -1499,22 +1475,19 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = (await pex.submissionFrom(
-      pd[0].definition,
-      getVCs(),
-      {},
-      op.createResponseOptions.presentationExchange.presentationSignCallback
-    )) as IVerifiablePresentation;
+    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
 
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        vps: [
+        verifiablePresentations: [vp],
+        vpTokenLocation: VPTokenLocation.ID_TOKEN,
+        /*credentialsAndDefinitions: [
           {
             presentation: vp,
             format: VerifiablePresentationTypeFormat.LDP_VP,
-            location: PresentationLocation.VP_TOKEN,
-          },
-        ],
+            vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE
+          }
+        ]*/
       },
     });
 
@@ -1544,7 +1517,9 @@ describe('RP and OP interaction should', () => {
     const eventEmitter = new EventEmitter();
     const replayRegistry = new ReplayRegistry(eventEmitter);
 
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
+      verified: true,
+    });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId('test_client_id')
       .withScope('test')
@@ -1626,7 +1601,9 @@ describe('RP and OP interaction should', () => {
     const eventEmitter = new EventEmitter();
     const replayRegistry = new ReplayRegistry(eventEmitter);
     const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
+      verified: true,
+    });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
@@ -1680,7 +1657,9 @@ describe('RP and OP interaction should', () => {
     const eventEmitter = new EventEmitter();
     const replayRegistry = new ReplayRegistry(eventEmitter);
     const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
+      verified: true,
+    });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
@@ -1772,7 +1751,9 @@ describe('RP and OP interaction should', () => {
     const eventEmitter = new EventEmitter();
     const replayRegistry = new ReplayRegistry(eventEmitter);
     const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: VerifiablePresentationPayload) => ({ verified: true });
+    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
+      verified: true,
+    });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')

@@ -1,3 +1,4 @@
+import { PresentationDefinitionWithLocation } from '../authorization-response';
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
 import { getAudience, getResolver, parseJWT, verifyDidJWT } from '../did';
 import { fetchByReferenceOrUseByValue } from '../helpers';
@@ -10,6 +11,7 @@ import {
   RequestObjectPayload,
   RequestStateInfo,
   RPRegistrationMetadataPayload,
+  Schema,
   SIOPErrors,
   SupportedVersion,
   VerifiedAuthorizationRequest,
@@ -80,7 +82,13 @@ export class AuthorizationRequest {
   }
 
   public async getSupportedVersion() {
-    return this.options?.version || (await this.getSupportedVersionsFromPayload())[0];
+    if (this.options?.version) {
+      return this.options.version;
+    } else if (this._uri?.encodedUri?.startsWith(Schema.OPENID_VC) || this._uri?.scheme?.startsWith(Schema.OPENID_VC)) {
+      return SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1;
+    }
+
+    return (await this.getSupportedVersionsFromPayload())[0];
   }
 
   public async getSupportedVersionsFromPayload(): Promise<SupportedVersion[]> {
@@ -98,7 +106,6 @@ export class AuthorizationRequest {
   /**
    * Verifies a SIOP Request JWT on OP side
    *
-   * @param uriOrJwt
    * @param opts
    */
   async verify(opts: VerifyAuthorizationRequestOpts): Promise<VerifiedAuthorizationRequest> {
@@ -206,5 +213,9 @@ export class AuthorizationRequest {
 
   public async mergedPayloads(): Promise<RequestObjectPayload> {
     return { ...this.payload, ...(await this.requestObject.getPayload()) };
+  }
+
+  public async getPresentationDefinitions(version?: SupportedVersion): Promise<PresentationDefinitionWithLocation[] | undefined> {
+    return await PresentationExchange.findValidPresentationDefinitions(this, version);
   }
 }

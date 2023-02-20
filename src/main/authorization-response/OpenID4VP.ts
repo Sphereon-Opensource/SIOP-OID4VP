@@ -1,17 +1,17 @@
-import { IVerifiablePresentation, PresentationSubmission } from '@sphereon/ssi-types';
+import { CredentialMapper, PresentationSubmission, W3CVerifiablePresentation, WrappedVerifiablePresentation } from '@sphereon/ssi-types';
 
+import { AuthorizationRequest } from '../authorization-request';
 import { verifyRevocation } from '../helpers';
-import { RevocationVerification, SIOPErrors, VerifiablePresentationPayload } from '../types';
+import { AuthorizationResponsePayload, IDTokenPayload, ResponseType, RevocationVerification, SIOPErrors, SupportedVersion } from '../types';
 
 import { AuthorizationResponse } from './AuthorizationResponse';
 import { PresentationExchange } from './PresentationExchange';
 import {
   AuthorizationResponseOpts,
   PresentationDefinitionWithLocation,
-  PresentationLocation,
   PresentationVerificationCallback,
-  VerifiablePresentationWithLocation,
   VerifyAuthorizationResponseOpts,
+  VPTokenLocation,
 } from './types';
 
 export const verifyPresentations = async (
@@ -24,10 +24,18 @@ export const verifyPresentations = async (
       ? verifyOpts.presentationDefinitions
       : [verifyOpts.presentationDefinitions]
     : [];
-
+  let idPayload: IDTokenPayload | undefined;
+  if (authorizationResponse.idToken) {
+    idPayload = await authorizationResponse.idToken.payload();
+  }
+  // todo: Probably wise to check against request for the location of the submission_data
+  const submissionData = authorizationResponse.payload.presentation_submission
+    ? authorizationResponse.payload.presentation_submission
+    : idPayload?._vp_token?.presentation_submission;
   await assertValidVerifiablePresentations({
     presentationDefinitions,
     presentations,
+    submissionData,
     verificationCallback: verifyOpts.verification.presentationVerificationCallback,
   });
 
@@ -41,65 +49,108 @@ export const verifyPresentations = async (
   }
 };
 
-export const extractPresentationsFromAuthorizationResponse = async (
-  response: AuthorizationResponse
-): Promise<VerifiablePresentationWithLocation[]> => {
-  const idToken = await response.idToken.payload();
-  const presentationsWithLocation: VerifiablePresentationWithLocation[] = [];
+export const extractPresentationsFromAuthorizationResponse = async (response: AuthorizationResponse): Promise<WrappedVerifiablePresentation[]> => {
+  const wrappedVerifiablePresentations: WrappedVerifiablePresentation[] = [];
   if (response.payload.vp_token) {
     const presentations = Array.isArray(response.payload.vp_token) ? response.payload.vp_token : [response.payload.vp_token];
     for (const presentation of presentations) {
-      presentationsWithLocation.push({
-        presentation: presentation as unknown as IVerifiablePresentation,
-        location: PresentationLocation.VP_TOKEN,
-        format: presentation.format,
-      });
+      wrappedVerifiablePresentations.push(CredentialMapper.toWrappedVerifiablePresentation(presentation));
     }
   }
-  if (idToken && idToken._vp_token) {
-    const presentations = Array.isArray(idToken._vp_token) ? idToken._vp_token : [idToken._vp_token];
-    for (const presentation of presentations) {
-      presentationsWithLocation.push({
-        presentation: presentation as unknown as IVerifiablePresentation,
-        location: PresentationLocation.ID_TOKEN,
-        format: presentation.format,
-      });
-    }
-  }
-  return presentationsWithLocation;
+  return wrappedVerifiablePresentations;
 };
 
-export const extractPresentations = (resOpts: AuthorizationResponseOpts) => {
-  const presentationPayloads =
-    resOpts.presentationExchange?.vps && resOpts.presentationExchange.vps.length > 0
-      ? resOpts.presentationExchange.vps
-          .filter((vp) => vp.location === PresentationLocation.ID_TOKEN)
-          .map<VerifiablePresentationPayload>((vp) => vp as VerifiablePresentationPayload)
-      : undefined;
-  const vp_tokens =
-    resOpts.presentationExchange?.vps && resOpts.presentationExchange.vps.length > 0
-      ? resOpts.presentationExchange.vps
-          .filter((vp) => vp.location === PresentationLocation.VP_TOKEN)
-          .map<VerifiablePresentationPayload>((vp) => vp as VerifiablePresentationPayload)
-      : undefined;
-  let vp_token;
-  if (vp_tokens) {
-    if (vp_tokens.length == 1) {
-      vp_token = vp_tokens[0];
-    } else if (vp_tokens.length > 1) {
-      throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+export const createSubmissionData = async (verifiablePresentations: W3CVerifiablePresentation[]): Promise<PresentationSubmission> => {
+  let submission_data: PresentationSubmission;
+  for (const verifiablePresentation of verifiablePresentations) {
+    const wrappedPresentation = CredentialMapper.toWrappedVerifiablePresentation(verifiablePresentation);
+
+    if (!wrappedPresentation.presentation.presentation_submission) {
+      // todo in the future PEX might supply the submission_data separately as well
+      throw Error('Verifiable Presentation has no submission_data');
+    }
+    if (!submission_data) {
+      submission_data = wrappedPresentation.presentation.presentation_submission;
+    } else {
+      // We are pushing multiple descriptors into one submission_data, as it seems this is something which is assumed in OpenID4VP, but not supported in Presentation Exchange (a single VP always has a single submission_data)
+      Array.isArray(submission_data.descriptor_map)
+        ? submission_data.descriptor_map.push(...wrappedPresentation.presentation.presentation_submission.descriptor_map)
+        : (submission_data.descriptor_map = [...wrappedPresentation.presentation.presentation_submission.descriptor_map]);
     }
   }
-  const verifiable_presentations = presentationPayloads && presentationPayloads.length > 0 ? presentationPayloads : undefined;
-  return {
-    verifiable_presentations,
-    vp_token,
-  };
+  return submission_data;
+};
+
+export const putPresentationsInResponse = async (
+  authorizationRequest: AuthorizationRequest,
+  responsePayload: AuthorizationResponsePayload,
+  resOpts: AuthorizationResponseOpts,
+  idTokenPayload?: IDTokenPayload
+): Promise<void> => {
+  const version = await authorizationRequest.getSupportedVersion();
+  const idTokenType = await authorizationRequest.containsResponseType(ResponseType.ID_TOKEN);
+  const authResponseType = await authorizationRequest.containsResponseType(ResponseType.VP_TOKEN);
+  // const requestPayload = await authorizationRequest.mergedPayloads();
+  if (!resOpts.presentationExchange) {
+    return;
+  } else if (resOpts.presentationExchange.verifiablePresentations.length === 0) {
+    throw Error('Presentation Exchange options set, but no verifiable presentations provided');
+  }
+  const submissionData =
+    resOpts.presentationExchange.submissionData ?? (await createSubmissionData(resOpts.presentationExchange.verifiablePresentations));
+
+  const location = resOpts.presentationExchange?.vpTokenLocation ?? (idTokenType ? VPTokenLocation.ID_TOKEN : VPTokenLocation.AUTHORIZATION_RESPONSE);
+
+  switch (location) {
+    case VPTokenLocation.TOKEN_RESPONSE: {
+      throw Error('Token response for VP token is not supported yet');
+    }
+    case VPTokenLocation.ID_TOKEN: {
+      if (!idTokenPayload) {
+        throw Error('Cannot place submission data _vp_token in id token if no id token is present');
+      } else if (version >= SupportedVersion.SIOPv2_D11) {
+        throw Error(`This version of the OpenID4VP spec does not allow to store the vp submission data in the ID token`);
+      } else if (!idTokenType) {
+        throw Error(`Cannot place vp token in ID token as the RP didn't provide an "openid" scope in the request`);
+      }
+      if (idTokenPayload._vp_token?.presentation_submission) {
+        if (submissionData !== idTokenPayload._vp_token.presentation_submission) {
+          throw Error('Different submission data was provided as an option, but exising submission data was already present in the id token');
+        }
+      } else {
+        if (!idTokenPayload._vp_token) {
+          idTokenPayload._vp_token = { presentation_submission: submissionData };
+        } else {
+          idTokenPayload._vp_token.presentation_submission = submissionData;
+        }
+      }
+      break;
+    }
+    case VPTokenLocation.AUTHORIZATION_RESPONSE: {
+      if (!authResponseType) {
+        throw Error('Cannot place vp token in Authorization Response as there is no vp_token scope in the auth request');
+      }
+      if (responsePayload.presentation_submission) {
+        if (submissionData !== responsePayload.presentation_submission) {
+          throw Error(
+            'Different submission data was provided as an option, but exising submission data was already present in the authorization response'
+          );
+        }
+      } else {
+        responsePayload.presentation_submission = submissionData;
+      }
+    }
+  }
+  responsePayload.vp_token =
+    resOpts.presentationExchange.verifiablePresentations.length === 1
+      ? resOpts.presentationExchange.verifiablePresentations[0]
+      : resOpts.presentationExchange.verifiablePresentations;
 };
 
 export const assertValidVerifiablePresentations = async (args: {
   presentationDefinitions: PresentationDefinitionWithLocation[];
-  presentations: VerifiablePresentationWithLocation[];
+  presentations: WrappedVerifiablePresentation[];
+  submissionData?: PresentationSubmission;
   verificationCallback?: PresentationVerificationCallback;
 }) => {
   if (
@@ -109,33 +160,23 @@ export const assertValidVerifiablePresentations = async (args: {
     return;
   }
   PresentationExchange.assertValidPresentationDefinitionWithLocations(args.presentationDefinitions);
-  const presentationPayloads: VerifiablePresentationPayload[] = [];
-  let presentationSubmission: PresentationSubmission;
-  if (args.presentations && Array.isArray(args.presentations) && args.presentations.length > 0) {
-    for (const presentationWithLocation of args.presentations) {
-      presentationPayloads.push(presentationWithLocation.presentation as unknown as VerifiablePresentationPayload);
-    }
-    // TODO check how to handle multiple VPs
-    if (args.presentations[0].presentation?.presentation_submission) {
-      presentationSubmission = args.presentations[0].presentation.presentation_submission;
-    }
-  }
+  const presentationsWithFormat = args.presentations;
 
-  if (args.presentationDefinitions && args.presentationDefinitions.length && (!presentationPayloads || presentationPayloads.length === 0)) {
+  if (args.presentationDefinitions && args.presentationDefinitions.length && (!presentationsWithFormat || presentationsWithFormat.length === 0)) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
   } else if (
     (!args.presentationDefinitions || args.presentationDefinitions.length === 0) &&
-    presentationPayloads &&
-    presentationPayloads.length > 0
+    presentationsWithFormat &&
+    presentationsWithFormat.length > 0
   ) {
     throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
-  } else if (args.presentationDefinitions && presentationPayloads && args.presentationDefinitions.length != presentationPayloads.length) {
+  } else if (args.presentationDefinitions && presentationsWithFormat && args.presentationDefinitions.length != presentationsWithFormat.length) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
-  } else if (args.presentationDefinitions && presentationPayloads) {
-    await PresentationExchange.validatePayloadsAgainstDefinitions(
+  } else if (args.presentationDefinitions && presentationsWithFormat) {
+    await PresentationExchange.validatePresentationsAgainstDefinitions(
       args.presentationDefinitions,
-      presentationPayloads,
-      presentationSubmission,
+      presentationsWithFormat,
+      args.submissionData,
       args.verificationCallback
     );
   }

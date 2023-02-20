@@ -7,6 +7,7 @@ import {
   InternalVerification,
   ResponseMode,
   ResponseType,
+  Schema,
   Scope,
   SigningAlgo,
   SubjectType,
@@ -56,7 +57,7 @@ interface AuthorizationRequestCommonOpts<CT extends ClaimPayloadCommonOpts> {
   payload?: AuthorizationRequestPayloadOpts<CT>;
   requestObject: RequestObjectOpts<CT>;
 
-  uriScheme?: string; // Use a custom scheme for the URI. By default openid:// will be used
+  uriScheme?: Schema | string; // Use a custom scheme for the URI. By default openid:// will be used
 }
 
 export type AuthorizationRequestOptsVID1 = AuthorizationRequestCommonOpts<ClaimPayloadOptsVID1>;

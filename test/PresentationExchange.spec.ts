@@ -1,5 +1,6 @@
 import { PresentationDefinitionV1 } from '@sphereon/pex-models';
-import { IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import { CredentialMapper, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import { W3CVerifiablePresentation } from '@sphereon/ssi-types/src/types/vc';
 import nock from 'nock';
 
 import {
@@ -16,8 +17,6 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
-  VerifiablePresentationPayload,
-  VerifiablePresentationTypeFormat,
 } from '../src/main';
 import { SIOPErrors } from '../src/main/types';
 
@@ -210,11 +209,14 @@ describe('presentation exchange manager tests', () => {
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
     await expect(
-      PresentationExchange.validatePresentationAgainstDefinition(pd[0].definition, {
-        '@context': ['https://www.w3.org/2018/credentials/v1'],
-        type: ['VerifiablePresentation'],
-        verifiableCredential: vcs,
-      })
+      PresentationExchange.validatePresentationAgainstDefinition(
+        pd[0].definition,
+        CredentialMapper.toWrappedVerifiablePresentation({
+          '@context': ['https://www.w3.org/2018/credentials/v1'],
+          type: ['VerifiablePresentation'],
+          verifiableCredential: vcs,
+        } as W3CVerifiablePresentation)
+      )
     ).rejects.toThrow(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
   });
 
@@ -257,11 +259,14 @@ describe('presentation exchange manager tests', () => {
     const vcs = getVCs();
     vcs[0].issuer = { id: 'did:example:totallyDifferentIssuer' };
     await expect(
-      PresentationExchange.validatePresentationAgainstDefinition(pd[0].definition, {
-        '@context': ['https://www.w3.org/2018/credentials/v1'],
-        type: ['VerifiablePresentation'],
-        verifiableCredential: vcs,
-      })
+      PresentationExchange.validatePresentationAgainstDefinition(
+        pd[0].definition,
+        CredentialMapper.toWrappedVerifiablePresentation({
+          '@context': ['https://www.w3.org/2018/credentials/v1'],
+          type: ['VerifiablePresentation'],
+          verifiableCredential: vcs,
+        } as W3CVerifiablePresentation)
+      )
     ).rejects.toThrow(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
   });
 
@@ -278,11 +283,14 @@ describe('presentation exchange manager tests', () => {
     const payload = await getPayloadVID1Val();
     const vcs = getVCs();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
-    const result = await PresentationExchange.validatePresentationAgainstDefinition(pd[0].definition, {
-      '@context': ['https://www.w3.org/2018/credentials/v1'],
-      type: ['VerifiablePresentation'],
-      verifiableCredential: vcs,
-    });
+    const result = await PresentationExchange.validatePresentationAgainstDefinition(
+      pd[0].definition,
+      CredentialMapper.toWrappedVerifiablePresentation({
+        '@context': ['https://www.w3.org/2018/credentials/v1'],
+        type: ['VerifiablePresentation'],
+        verifiableCredential: vcs,
+      } as W3CVerifiablePresentation)
+    );
     expect(result.errors.length).toBe(0);
     expect(result.value.definition_id).toBe('Insurance Plans');
   });
@@ -292,11 +300,14 @@ describe('presentation exchange manager tests', () => {
     const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
     const payload: AuthorizationRequestPayload = await getPayloadVID1Val();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
-    await PresentationExchange.validatePresentationAgainstDefinition(pd[0].definition, {
-      '@context': ['https://www.w3.org/2018/credentials/v1'],
-      type: ['VerifiablePresentation'],
-      verifiableCredential: vcs,
-    });
+    await PresentationExchange.validatePresentationAgainstDefinition(
+      pd[0].definition,
+      CredentialMapper.toWrappedVerifiablePresentation({
+        '@context': ['https://www.w3.org/2018/credentials/v1'],
+        type: ['VerifiablePresentation'],
+        verifiableCredential: vcs,
+      } as W3CVerifiablePresentation)
+    );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const presentationSignCallback: PresentationSignCallback = async (_args) => ({
       ..._args.presentation,
@@ -310,7 +321,7 @@ describe('presentation exchange manager tests', () => {
         jws: 'eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqsLfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh4vGHSrQyHUGlcTwLtjPAnKb78',
       },
     });
-    const result = (await pex.submissionFrom(pd[0].definition, vcs, {}, presentationSignCallback)) as IVerifiablePresentation;
+    const result = (await pex.createVerifiablePresentation(pd[0].definition, vcs, {}, presentationSignCallback)) as IVerifiablePresentation;
     expect(result.presentation_submission.definition_id).toBe('Insurance Plans');
     expect(result.presentation_submission.descriptor_map.length).toBe(1);
     expect(result.presentation_submission.descriptor_map[0]).toStrictEqual({
@@ -378,13 +389,14 @@ describe('presentation exchange manager tests', () => {
         jws: 'eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqsLfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh4vGHSrQyHUGlcTwLtjPAnKb78',
       },
     });
-    const vp: IVerifiablePresentation = (await pex.submissionFrom(pd[0].definition, vcs, {}, presentationSignCallback)) as IVerifiablePresentation;
-    const vpw: VerifiablePresentationPayload = {
-      presentation: vp,
-      format: VerifiablePresentationTypeFormat.LDP_VP,
-    };
+    const vp: IVerifiablePresentation = (await pex.createVerifiablePresentation(
+      pd[0].definition,
+      vcs,
+      {},
+      presentationSignCallback
+    )) as IVerifiablePresentation;
     try {
-      await PresentationExchange.validatePayloadsAgainstDefinitions(pd, [vpw]);
+      await PresentationExchange.validatePresentationsAgainstDefinitions(pd, [CredentialMapper.toWrappedVerifiablePresentation(vp)]);
     } catch (e) {
       console.log(e);
     }

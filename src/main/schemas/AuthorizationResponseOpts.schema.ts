@@ -56,7 +56,7 @@ export const AuthorizationResponseOptsSchemaObj = {
           "type": "string"
         },
         "presentationExchange": {
-          "$ref": "#/definitions/PresentationExchangeOpts"
+          "$ref": "#/definitions/PresentationExchangeResponseOpts"
         }
       },
       "required": [
@@ -1276,7 +1276,8 @@ export const AuthorizationResponseOptsSchemaObj = {
       "type": "string",
       "enum": [
         "https://self-issued.me",
-        "https://self-issued.me/v2"
+        "https://self-issued.me/v2",
+        "https://self-issued.me/v2/openid-vc"
       ]
     },
     "ResponseType": {
@@ -1533,78 +1534,37 @@ export const AuthorizationResponseOptsSchemaObj = {
       ],
       "additionalProperties": false
     },
-    "PresentationExchangeOpts": {
+    "PresentationExchangeResponseOpts": {
       "type": "object",
       "properties": {
-        "presentationVerificationCallback": {
-          "$ref": "#/definitions/PresentationVerificationCallback"
-        },
-        "presentationSignCallback": {
-          "$ref": "#/definitions/PresentationSignCallback"
-        },
-        "vps": {
+        "verifiablePresentations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/VerifiablePresentationWithLocation"
+            "$ref": "#/definitions/W3CVerifiablePresentation"
           }
         },
-        "_vp_token": {
-          "type": "object",
-          "properties": {
-            "presentation_submission": {
-              "$ref": "#/definitions/PresentationSubmission"
-            }
-          },
-          "required": [
-            "presentation_submission"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    "PresentationVerificationCallback": {
-      "properties": {
-        "isFunction": {
-          "type": "boolean",
-          "const": true
-        }
-      }
-    },
-    "PresentationSignCallback": {
-      "properties": {
-        "isFunction": {
-          "type": "boolean",
-          "const": true
-        }
-      }
-    },
-    "VerifiablePresentationWithLocation": {
-      "type": "object",
-      "properties": {
-        "format": {
-          "$ref": "#/definitions/VerifiablePresentationTypeFormat"
+        "vpTokenLocation": {
+          "$ref": "#/definitions/VPTokenLocation"
         },
-        "presentation": {
-          "$ref": "#/definitions/IVerifiablePresentation"
-        },
-        "location": {
-          "$ref": "#/definitions/PresentationLocation"
+        "submissionData": {
+          "$ref": "#/definitions/PresentationSubmission"
         }
       },
       "required": [
-        "format",
-        "location",
-        "presentation"
+        "verifiablePresentations"
       ],
       "additionalProperties": false
     },
-    "VerifiablePresentationTypeFormat": {
-      "type": "string",
-      "enum": [
-        "jwt_vp",
-        "ldp_vp"
-      ]
+    "W3CVerifiablePresentation": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/IVerifiablePresentation"
+        },
+        {
+          "$ref": "#/definitions/CompactJWT"
+        }
+      ],
+      "description": "Represents a signed Verifiable Presentation (includes proof), in either JSON or compact JWT format. See  {@link  https://www.w3.org/TR/vc-data-model/#presentations | VC data model } \nSee  {@link  https://www.w3.org/TR/vc-data-model/#proof-formats | proof formats }"
     },
     "IVerifiablePresentation": {
       "type": "object",
@@ -2000,11 +1960,12 @@ export const AuthorizationResponseOptsSchemaObj = {
       "additionalProperties": false,
       "description": "descriptor map laying out the structure of the presentation submission."
     },
-    "PresentationLocation": {
+    "VPTokenLocation": {
       "type": "string",
       "enum": [
-        "vp_token",
-        "id_token"
+        "authorization_response",
+        "id_token",
+        "token_response"
       ]
     }
   }

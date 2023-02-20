@@ -1,12 +1,7 @@
 import EventEmitter from 'events';
 
 import { AuthorizationRequest, URI, VerifyAuthorizationRequestOpts } from '../authorization-request';
-import {
-  AuthorizationResponse,
-  AuthorizationResponseOpts,
-  PresentationExchangeOpts,
-  VerifiablePresentationWithLocation,
-} from '../authorization-response';
+import { AuthorizationResponse, AuthorizationResponseOpts, PresentationExchangeResponseOpts } from '../authorization-response';
 import { encodeJsonAsURI, formPost, post } from '../helpers';
 import {
   AuthorizationEvent,
@@ -79,7 +74,7 @@ export class OP {
     return authorizationRequest
       .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }))
       .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, { subject: authorizationRequest });
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, { subject: verifiedAuthorizationRequest.authorizationRequest });
         return verifiedAuthorizationRequest;
       })
       .catch((error) => {
@@ -95,9 +90,7 @@ export class OP {
       state?: string;
       audience?: string;
       verification?: InternalVerification | ExternalVerification;
-      presentationExchange?: {
-        vps?: VerifiablePresentationWithLocation[];
-      };
+      presentationExchange?: PresentationExchangeResponseOpts;
     }
   ): Promise<AuthorizationResponse> {
     return AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts))
@@ -156,7 +149,7 @@ export class OP {
     nonce?: string;
     state?: string;
     audience?: string;
-    presentationExchange?: PresentationExchangeOpts;
+    presentationExchange?: PresentationExchangeResponseOpts;
   }): AuthorizationResponseOpts {
     return {
       ...(opts?.audience ? { redirectUri: opts.audience } : {}),
