@@ -153,7 +153,7 @@ export class Builder {
   build(): OP {
     /*if (!this.responseRegistration) {
       throw Error('You need to provide response registrations values')
-    } else */if (!this.signature) {
+    } else */ if (!this.signature) {
       throw Error('You need to supply signature values');
     } else if (!this.supportedVersions || this.supportedVersions.length === 0) {
       throw Error('You need to configure supported spec version on an OP');

@@ -63,10 +63,10 @@ describe('create JWT from Request JWT should', () => {
         },
       },
       issuer: ResponseIss.SELF_ISSUED_V2,
-      registrationBy: {
-        passBy: PassBy.REFERENCE,
-        reference_uri: EXAMPLE_REFERENCE_URL,
-      },
+
+      passBy: PassBy.REFERENCE,
+      reference_uri: EXAMPLE_REFERENCE_URL,
+
       logo_uri: VERIFIER_LOGO_FOR_CLIENT,
       clientName: VERIFIER_NAME_FOR_CLIENT,
       'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100310',
@@ -174,10 +174,10 @@ describe('create JWT from Request JWT should', () => {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        registrationBy: {
-          passBy: PassBy.REFERENCE,
-          reference_uri: EXAMPLE_REFERENCE_URL,
-        },
+
+        passBy: PassBy.REFERENCE,
+        reference_uri: EXAMPLE_REFERENCE_URL,
+
         logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100312',
@@ -263,10 +263,10 @@ describe('create JWT from Request JWT should', () => {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
             },
           },
-          registrationBy: {
-            passBy: PassBy.REFERENCE,
-            reference_uri: EXAMPLE_REFERENCE_URL,
-          },
+
+          passBy: PassBy.REFERENCE,
+          reference_uri: EXAMPLE_REFERENCE_URL,
+
           logo_uri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100314',
@@ -417,10 +417,9 @@ describe('create JWT from Request JWT should', () => {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         issuer: ResponseIss.SELF_ISSUED_V2,
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        registrationBy: {
-          passBy: PassBy.REFERENCE,
-          reference_uri: EXAMPLE_REFERENCE_URL,
-        },
+        passBy: PassBy.REFERENCE,
+        reference_uri: EXAMPLE_REFERENCE_URL,
+
         subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormats: {
           ldp_vc: {
@@ -591,10 +590,10 @@ describe('create JWT from Request JWT should', () => {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         issuer: ResponseIss.SELF_ISSUED_V2,
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        registrationBy: {
-          passBy: PassBy.REFERENCE,
-          reference_uri: EXAMPLE_REFERENCE_URL,
-        },
+
+        passBy: PassBy.REFERENCE,
+        reference_uri: EXAMPLE_REFERENCE_URL,
+
         subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormats: {
           ldp_vc: {

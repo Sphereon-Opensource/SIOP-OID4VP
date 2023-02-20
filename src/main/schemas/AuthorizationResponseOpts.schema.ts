@@ -66,8 +66,20 @@ export const AuthorizationResponseOptsSchemaObj = {
         {
           "type": "object",
           "properties": {
-            "registrationBy": {
-              "$ref": "#/definitions/ClientMetadataProperties"
+            "passBy": {
+              "$ref": "#/definitions/PassBy"
+            },
+            "reference_uri": {
+              "type": "string"
+            },
+            "targets": {
+              "$ref": "#/definitions/PropertyTargets"
+            },
+            "id_token_encrypted_response_alg": {
+              "$ref": "#/definitions/EncKeyAlgorithm"
+            },
+            "id_token_encrypted_response_enc": {
+              "$ref": "#/definitions/EncSymmetricAlgorithmCode"
             },
             "authorizationEndpoint": {
               "anyOf": [
@@ -456,14 +468,26 @@ export const AuthorizationResponseOptsSchemaObj = {
             }
           },
           "required": [
-            "registrationBy"
+            "passBy"
           ]
         },
         {
           "type": "object",
           "properties": {
-            "registrationBy": {
-              "$ref": "#/definitions/ClientMetadataProperties"
+            "passBy": {
+              "$ref": "#/definitions/PassBy"
+            },
+            "reference_uri": {
+              "type": "string"
+            },
+            "targets": {
+              "$ref": "#/definitions/PropertyTargets"
+            },
+            "id_token_encrypted_response_alg": {
+              "$ref": "#/definitions/EncKeyAlgorithm"
+            },
+            "id_token_encrypted_response_enc": {
+              "$ref": "#/definitions/EncSymmetricAlgorithmCode"
             },
             "authorizationEndpoint": {
               "anyOf": [
@@ -846,14 +870,26 @@ export const AuthorizationResponseOptsSchemaObj = {
             }
           },
           "required": [
-            "registrationBy"
+            "passBy"
           ]
         },
         {
           "type": "object",
           "properties": {
-            "registrationBy": {
-              "$ref": "#/definitions/ClientMetadataProperties"
+            "passBy": {
+              "$ref": "#/definitions/PassBy"
+            },
+            "reference_uri": {
+              "type": "string"
+            },
+            "targets": {
+              "$ref": "#/definitions/PropertyTargets"
+            },
+            "id_token_encrypted_response_alg": {
+              "$ref": "#/definitions/EncKeyAlgorithm"
+            },
+            "id_token_encrypted_response_enc": {
+              "$ref": "#/definitions/EncSymmetricAlgorithmCode"
             },
             "authorizationEndpoint": {
               "anyOf": [
@@ -1218,33 +1254,9 @@ export const AuthorizationResponseOptsSchemaObj = {
             }
           },
           "required": [
-            "registrationBy"
+            "passBy"
           ]
         }
-      ]
-    },
-    "ClientMetadataProperties": {
-      "type": "object",
-      "properties": {
-        "passBy": {
-          "$ref": "#/definitions/PassBy"
-        },
-        "reference_uri": {
-          "type": "string"
-        },
-        "targets": {
-          "$ref": "#/definitions/PropertyTargets"
-        },
-        "id_token_encrypted_response_alg": {
-          "$ref": "#/definitions/EncKeyAlgorithm"
-        },
-        "id_token_encrypted_response_enc": {
-          "$ref": "#/definitions/EncSymmetricAlgorithmCode"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "passBy"
       ]
     },
     "PassBy": {

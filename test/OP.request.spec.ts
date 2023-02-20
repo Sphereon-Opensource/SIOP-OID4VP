@@ -54,7 +54,8 @@ describe('OP Builder should', () => {
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .withResponseMode(ResponseMode.POST)
         .withRegistration({
-          registrationBy: { passBy: PassBy.REFERENCE, reference_uri: 'https://registration.here' },
+          passBy: PassBy.REFERENCE,
+          reference_uri: 'https://registration.here',
           logo_uri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100332',
@@ -95,9 +96,7 @@ describe('OP should', () => {
       'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       //TODO: fill it up with actual value
       issuer: ResponseIss.SELF_ISSUED_V2,
-      registrationBy: {
-        passBy: PassBy.VALUE,
-      },
+      passBy: PassBy.VALUE,
     },
     responseMode: ResponseMode.POST,
     expiresIn: 2000,
@@ -245,7 +244,7 @@ describe('OP should', () => {
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         subject_syntax_types_supported: ['did', 'did:ethr'],
-        registrationBy: { passBy: PassBy.VALUE },
+        passBy: PassBy.VALUE,
         logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100336',

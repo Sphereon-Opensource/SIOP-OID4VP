@@ -1,11 +1,11 @@
-import { LanguageTagUtils } from '../helpers';
+import { LanguageTagUtils, removeNullUndefined } from '../helpers';
 import { DiscoveryMetadataOpts, DiscoveryMetadataPayload, ResponseIss, ResponseType, Schema, Scope, SigningAlgo, SubjectType } from '../types';
 
 export const createDiscoveryMetadataPayload = (opts: DiscoveryMetadataOpts): DiscoveryMetadataPayload => {
   const discoveryMetadataPayload: DiscoveryMetadataPayload = {
     authorization_endpoint: opts.authorizationEndpoint || Schema.OPENID,
-    issuer: ResponseIss.SELF_ISSUED_V2,
-    response_types_supported: ResponseType.ID_TOKEN,
+    issuer: opts.issuer ?? ResponseIss.SELF_ISSUED_V2,
+    response_types_supported: opts.responseTypesSupported ?? ResponseType.ID_TOKEN,
     scopes_supported: opts?.scopesSupported || [Scope.OPENID],
     subject_types_supported: opts?.subjectTypesSupported || [SubjectType.PAIRWISE],
     id_token_signing_alg_values_supported: opts?.idTokenSigningAlgValuesSupported || [SigningAlgo.ES256K, SigningAlgo.EDDSA],
@@ -61,5 +61,5 @@ export const createDiscoveryMetadataPayload = (opts: DiscoveryMetadataOpts): Dis
     discoveryMetadataPayload[key] = value;
   });
 
-  return discoveryMetadataPayload;
+  return removeNullUndefined(discoveryMetadataPayload);
 };

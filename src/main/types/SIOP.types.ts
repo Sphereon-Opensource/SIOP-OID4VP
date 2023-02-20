@@ -234,6 +234,7 @@ interface DiscoveryMetadataCommonOpts {
   requireRequestUriRegistration?: boolean; // from openid connect discovery 1_0
   opPolicyUri?: string; // from openid connect discovery 1_0
   opTosUri?: string; // from openid connect discovery 1_0
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
@@ -265,7 +266,7 @@ interface DiscoveryMetadataOptsVD11 extends DiscoveryMetadataCommonOpts {
 // https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
 interface DiscoveryMetadataCommonPayload {
   authorization_endpoint?: Schema | string;
-  issuer?: ResponseIss;
+  issuer?: ResponseIss | string;
   response_types_supported?: ResponseType[] | ResponseType;
   scopes_supported?: Scope[] | Scope;
   subject_types_supported?: SubjectType[] | SubjectType;
@@ -327,7 +328,7 @@ interface DiscoveryMetadataCommonPayload {
 
 interface DiscoveryMetadataPayloadVID1 extends DiscoveryMetadataCommonPayload {
   client_id?: string;
-  redirectUris?: string[];
+  redirect_uris?: string[];
   client_name?: string;
   token_endpoint_auth_method?: string;
   application_type?: string;
@@ -348,11 +349,12 @@ interface DiscoveryMetadataPayloadVD11 extends DiscoveryMetadataCommonPayload {
 
 export type DiscoveryMetadataPayload = DiscoveryMetadataPayloadVID1 | JWT_VCDiscoveryMetadataPayload | DiscoveryMetadataPayloadVD11;
 
-export type DiscoveryMetadataOpts = JWT_VCDiscoveryMetadataOpts | DiscoveryMetadataOptsVID1 | DiscoveryMetadataOptsVD11;
+export type DiscoveryMetadataOpts = (JWT_VCDiscoveryMetadataOpts | DiscoveryMetadataOptsVID1 | DiscoveryMetadataOptsVD11) &
+  DiscoveryMetadataCommonOpts;
 
 export type ClientMetadataOpts = RPRegistrationMetadataOpts & ClientMetadataProperties;
 
-export type ResponseRegistrationOpts = DiscoveryMetadataOpts & { registrationBy: ClientMetadataProperties };
+export type ResponseRegistrationOpts = DiscoveryMetadataOpts & ClientMetadataProperties;
 
 export type RPRegistrationMetadataOpts = Partial<
   Pick<

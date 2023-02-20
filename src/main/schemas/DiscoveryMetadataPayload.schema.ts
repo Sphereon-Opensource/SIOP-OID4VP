@@ -19,7 +19,14 @@ export const DiscoveryMetadataPayloadSchemaObj = {
               ]
             },
             "issuer": {
-              "$ref": "#/definitions/ResponseIss"
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ResponseIss"
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
             "response_types_supported": {
               "anyOf": [
@@ -351,7 +358,7 @@ export const DiscoveryMetadataPayloadSchemaObj = {
             "client_id": {
               "type": "string"
             },
-            "redirectUris": {
+            "redirect_uris": {
               "type": "array",
               "items": {
                 "type": "string"
@@ -391,7 +398,14 @@ export const DiscoveryMetadataPayloadSchemaObj = {
               ]
             },
             "issuer": {
-              "$ref": "#/definitions/ResponseIss"
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ResponseIss"
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
             "response_types_supported": {
               "anyOf": [
@@ -723,7 +737,7 @@ export const DiscoveryMetadataPayloadSchemaObj = {
             "client_id": {
               "type": "string"
             },
-            "redirectUris": {
+            "redirect_uris": {
               "type": "array",
               "items": {
                 "type": "string"
@@ -769,7 +783,14 @@ export const DiscoveryMetadataPayloadSchemaObj = {
               ]
             },
             "issuer": {
-              "$ref": "#/definitions/ResponseIss"
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ResponseIss"
+                },
+                {
+                  "type": "string"
+                }
+              ]
             },
             "response_types_supported": {
               "anyOf": [
