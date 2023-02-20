@@ -40,12 +40,12 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
       }
     : opts.createRequestOpts;
 
-  const valid = true; // fixme: re-enable schema: CreateAuthorizationRequestOptsSchema(createRequestOpts);
+  /*const valid = true; // fixme: re-enable schema: CreateAuthorizationRequestOptsSchema(createRequestOpts);
   if (!valid) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    throw new Error('RP builder validation error: ' + JSON.stringify(valid.errors));
-  }
+    //@ts-ignore
+    throw new Error('RP builder validation error: ' + JSON.stringify(CreateAuthorizationRequestOptsSchema.errors));
+  }*/
   return createRequestOpts;
 };
 

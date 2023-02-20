@@ -145,7 +145,8 @@ export class IDToken {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
     if (opts.payload) {
-      if (opts.payload.iss !== ResponseIss.SELF_ISSUED_V2) {
+      // todo: doublecheck for other cases where this value might differ
+      if (!opts.payload.iss || !opts.payload.iss.includes(ResponseIss.SELF_ISSUED_V2)) {
         throw new Error(`${SIOPErrors.NO_SELFISSUED_ISS}, got: ${opts.payload.iss}`);
       }
     }

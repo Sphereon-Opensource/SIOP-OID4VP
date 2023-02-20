@@ -55,7 +55,7 @@ function writeSchema(config): Schema {
 }
 
 function generateValidationCode(schemas: Schema[]) {
-  const ajv = new Ajv({ schemas, code: { source: true, lines: false, esm: false  }, allowUnionTypes: true, strict: false });
+  const ajv = new Ajv({ schemas, code: { source: true, lines: true, esm: false  }, allowUnionTypes: true, strict: false });
   const moduleCode = standaloneCode(ajv);
   fs.writeFileSync(path.join(__dirname, '../src/main/schemas/validation/schemaValidation.js'), moduleCode);
 }

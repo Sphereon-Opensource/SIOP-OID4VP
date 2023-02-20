@@ -125,7 +125,7 @@ export interface AuthorizationResponsePayload {
   access_token?: string;
   token_type?: string;
   refresh_token?: string;
-  expires_in: number;
+  expires_in?: number;
   state: string;
   id_token?: string;
   // vp_token?: VerifiablePresentationPayload | VerifiablePresentationPayload[];

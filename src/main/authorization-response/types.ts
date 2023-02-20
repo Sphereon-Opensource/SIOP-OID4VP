@@ -17,14 +17,14 @@ import {
 
 export interface AuthorizationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
-  registration: ResponseRegistrationOpts;
+  registration?: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
 
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
   nonce?: string;
   state?: string;
   responseMode?: ResponseMode;
-  did: string;
+  // did: string;
   expiresIn?: number;
   accessToken?: string;
   tokenType?: string;
@@ -91,7 +91,7 @@ export interface VerifyAuthorizationResponseOpts {
   state?: string; // mandatory? // To verify the response against the supplied state
 
   presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[]; // The presentation definitions to match against VPs in the response
-  audience: string; // The audience/redirect_uri
+  audience?: string; // The audience/redirect_uri
   // claims?: ClaimPayloadCommonOpts; // The claims, typically the same values used during request creation
   // verifyCallback?: VerifyCallback;
   // presentationVerificationCallback?: PresentationVerificationCallback;

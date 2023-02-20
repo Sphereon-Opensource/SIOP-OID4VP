@@ -40,9 +40,6 @@ export const AuthorizationResponseOptsSchemaObj = {
         "responseMode": {
           "$ref": "#/definitions/ResponseMode"
         },
-        "did": {
-          "type": "string"
-        },
         "expiresIn": {
           "type": "number"
         },
@@ -60,9 +57,7 @@ export const AuthorizationResponseOptsSchemaObj = {
         }
       },
       "required": [
-        "registration",
-        "signatureType",
-        "did"
+        "signatureType"
       ],
       "additionalProperties": false
     },

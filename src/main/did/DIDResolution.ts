@@ -9,7 +9,8 @@ export function getResolver(opts: ResolveOpts): Resolvable {
     return opts.resolver;
   }
   if (!opts || !opts.subjectSyntaxTypesSupported) {
-    throw new Error(SIOPErrors.BAD_PARAMS);
+    return new UniResolver();
+    // throw new Error(`${SIOPErrors.BAD_PARAMS} No subject syntax types supported`);
   }
 
   const uniResolvers: {

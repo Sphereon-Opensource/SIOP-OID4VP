@@ -112,7 +112,7 @@ export class PresentationExchange {
     ) {
       throw new Error(SIOPErrors.NO_VERIFIABLE_PRESENTATION_NO_CREDENTIALS);
     }
-    console.log(`Presentation (validate): ${JSON.stringify(verifiablePresentation)}`);
+    // console.log(`Presentation (validate): ${JSON.stringify(verifiablePresentation)}`);
     const evaluationResults: EvaluationResults = new PEX().evaluatePresentation(presentationDefinition, verifiablePresentation.original);
     if (evaluationResults.errors.length) {
       throw new Error(`message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(evaluationResults.errors)}`);
@@ -152,6 +152,12 @@ export class PresentationExchange {
       }
       if (vpTokens && vpTokens.length) {
         vpTokens.forEach((vpToken) => {
+          if (allDefinitions.find((value) => value.definition.id === vpToken.id)) {
+            console.log(
+              `Warning. We encountered presentation definition with id ${vpToken.id}, more then once whilst processing! Make sure your payload is valid!`
+            );
+            return;
+          }
           PresentationExchange.assertValidPresentationDefinition(vpToken.value);
           allDefinitions.push({
             definition: vpToken.value,
@@ -164,6 +170,12 @@ export class PresentationExchange {
           const pd: PresentationDefinitionV1 | PresentationDefinitionV2 = (await getWithUrl(vpTokenRef.value)) as unknown as
             | PresentationDefinitionV1
             | PresentationDefinitionV2;
+          if (allDefinitions.find((value) => value.definition.id === pd.id)) {
+            console.log(
+              `Warning. We encountered presentation definition with id ${pd.id}, more then once whilst processing! Make sure your payload is valid!`
+            );
+            return;
+          }
           PresentationExchange.assertValidPresentationDefinition(pd);
           allDefinitions.push({ definition: pd, location: PresentationDefinitionLocation.CLAIMS_VP_TOKEN, version });
         }
@@ -171,6 +183,12 @@ export class PresentationExchange {
     }
 
     function addSingleToplevelPDToPDs(definition: IPresentationDefinition, version?: SupportedVersion): void {
+      if (allDefinitions.find((value) => value.definition.id === definition.id)) {
+        console.log(
+          `Warning. We encountered presentation definition with id ${definition.id}, more then once whilst processing! Make sure your payload is valid!`
+        );
+        return;
+      }
       PresentationExchange.assertValidPresentationDefinition(definition);
       allDefinitions.push({
         definition: definition,
@@ -282,7 +300,7 @@ export class PresentationExchange {
             throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID);
           }
         }
-        console.log(`Presentation (filter): ${JSON.stringify(presentation)}`);
+        // console.log(`Presentation (filter): ${JSON.stringify(presentation)}`);
 
         // TODO: Limited disclosure suites
         const evaluationResults =
@@ -304,7 +322,7 @@ export class PresentationExchange {
     }
     const checkedPresentation = checkedPresentations[0];
     const presentation: UniformVerifiablePresentation = checkedPresentation.presentation;
-    console.log(`Presentation (checked): ${JSON.stringify(checkedPresentation.presentation)}`);
+    // console.log(`Presentation (checked): ${JSON.stringify(checkedPresentation.presentation)}`);
     if (!presentation || !presentation.verifiableCredential || presentation.verifiableCredential.length === 0) {
       throw new Error(SIOPErrors.NO_VERIFIABLE_PRESENTATION_NO_CREDENTIALS);
     }

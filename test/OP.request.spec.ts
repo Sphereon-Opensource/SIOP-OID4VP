@@ -52,8 +52,8 @@ describe('OP Builder should', () => {
         .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addDidMethod('ethr')
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
-        .response(ResponseMode.POST)
-        .registration({
+        .withResponseMode(ResponseMode.POST)
+        .withRegistration({
           registrationBy: { passBy: PassBy.REFERENCE, reference_uri: 'https://registration.here' },
           logo_uri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
@@ -100,7 +100,6 @@ describe('OP should', () => {
       },
     },
     responseMode: ResponseMode.POST,
-    did: DID,
     expiresIn: 2000,
   };
 
@@ -238,7 +237,7 @@ describe('OP should', () => {
       .addIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
-      .registration({
+      .withRegistration({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],

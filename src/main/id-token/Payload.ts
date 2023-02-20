@@ -41,12 +41,12 @@ export const createIDTokenPayload = async (
     aud: payload.redirect_uri,
     iat: Date.now() / SEC_IN_MS - 60 * SEC_IN_MS,
     exp: Date.now() / SEC_IN_MS + (responseOpts.expiresIn || 600),
-    sub: responseOpts.did,
+    sub: responseOpts.signatureType.did,
     auth_time: payload.auth_time,
     nonce,
     // ...(responseOpts.presentationExchange?._vp_token ? { _vp_token: responseOpts.presentationExchange._vp_token } : {}),
   };
-  if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !responseOpts.did) {
+  if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !responseOpts.signatureType.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(responseOpts);
     idToken['sub_jwk'] = subJwk;
     idToken.sub = thumbprint;
@@ -58,11 +58,11 @@ const createThumbprintAndJWK = async (resOpts: AuthorizationResponseOpts): Promi
   let thumbprint;
   let subJwk;
   if (isInternalSignature(resOpts.signatureType)) {
-    thumbprint = await getThumbprint(resOpts.signatureType.hexPrivateKey, resOpts.did);
+    thumbprint = await getThumbprint(resOpts.signatureType.hexPrivateKey, resOpts.signatureType.did);
     subJwk = getPublicJWKFromHexPrivateKey(
       resOpts.signatureType.hexPrivateKey,
       resOpts.signatureType.kid || `${resOpts.signatureType.did}#key-1`,
-      resOpts.did
+      resOpts.signatureType.did
     );
   } else if (isSuppliedSignature(resOpts.signatureType)) {
     // fixme: These are uninitialized. Probably we have to extend the supplied signature to provide these.

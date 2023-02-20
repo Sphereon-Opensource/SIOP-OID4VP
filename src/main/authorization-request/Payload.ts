@@ -94,8 +94,8 @@ export const assertValidRPRegistrationMedataPayload = (regObj: RPRegistrationMet
     const valid = RPRegistrationMetadataPayloadSchema(regObj);
     if (!valid) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      throw new Error('Registration data validation error: ' + JSON.stringify(valid.errors));
+      //@ts-ignore
+      throw new Error('Registration data validation error: ' + JSON.stringify(RPRegistrationMetadataPayloadSchema.errors));
     }
   }
   if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {

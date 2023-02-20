@@ -3,7 +3,7 @@ import { isExternalSignature, isExternalVerification, isInternalSignature, isInt
 import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from './types';
 
 export const assertValidResponseOpts = (opts: AuthorizationResponseOpts) => {
-  if (!opts /*|| !opts.redirectUri*/ || !opts.signatureType /*|| !opts.nonce*/ || !opts.did) {
+  if (!opts /*|| !opts.redirectUri*/ || !opts.signatureType /*|| !opts.nonce*/ /* || !opts.did*/) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   } else if (!(isInternalSignature(opts.signatureType) || isExternalSignature(opts.signatureType) || isSuppliedSignature(opts.signatureType))) {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);

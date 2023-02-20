@@ -216,6 +216,6 @@ export class AuthorizationRequest {
   }
 
   public async getPresentationDefinitions(version?: SupportedVersion): Promise<PresentationDefinitionWithLocation[] | undefined> {
-    return await PresentationExchange.findValidPresentationDefinitions(this, version);
+    return await PresentationExchange.findValidPresentationDefinitions(await this.mergedPayloads(), version);
   }
 }

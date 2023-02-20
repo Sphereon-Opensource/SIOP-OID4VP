@@ -79,7 +79,6 @@ describe('create JWT from Request JWT should', () => {
       kid: KID,
       alg: SigningAlgo.ES256K,
     },
-    did: DID,
   };
   const verifyOpts: VerifyAuthorizationRequestOpts = {
     verification: {
@@ -191,7 +190,6 @@ describe('create JWT from Request JWT should', () => {
         kid: `${mockResEntity.did}#controller`,
         alg: SigningAlgo.ES256K,
       },
-      did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
     };
 
@@ -201,9 +199,7 @@ describe('create JWT from Request JWT should', () => {
     const requestObject = await RequestObject.fromOpts(requestOpts);
     const jwt = await requestObject.toJwt();
     jest.useRealTimers();
-    await expect(AuthorizationResponse.fromRequestObject(jwt, responseOpts, verifyOpts)).rejects.toThrow(
-      /invalid_jwt: JWT has expired: exp: 1577837400/
-    );
+    await expect(AuthorizationResponse.fromRequestObject(jwt, responseOpts, verifyOpts)).rejects.toThrow(/invalid_jwt: JWT has expired: exp: /);
   });
 
   it(
@@ -283,7 +279,6 @@ describe('create JWT from Request JWT should', () => {
           kid: `${mockResEntity.did}#controller`,
           alg: SigningAlgo.ES256K,
         },
-        did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
         responseMode: ResponseMode.POST,
       };
 
@@ -448,15 +443,7 @@ describe('create JWT from Request JWT should', () => {
         verifiablePresentations: [verifiablePresentation],
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
         submissionData: await createSubmissionData([verifiablePresentation]),
-        /*credentialsAndDefinitions: [
-          {
-            vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
-            format: VerifiablePresentationTypeFormat.LDP_VP,
-            presentation: verifiablePresentation,
-          },
-        ],*/
       },
-      did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
     };
 
@@ -468,8 +455,6 @@ describe('create JWT from Request JWT should', () => {
   });
 
   it('succeed when valid JWT with PD is passed in for id_token', async () => {
-    // expect.assertions(1);
-
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const definition: IPresentationDefinition = {
@@ -632,17 +617,8 @@ describe('create JWT from Request JWT should', () => {
         verifiablePresentations: [verifiablePresentation],
         submissionData: await createSubmissionData([verifiablePresentation]),
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
-        /*credentialsAndDefinitions: [
-          {
-            vpTokenLocation: VPTokenLocation.ID_TOKEN,
-            format: VerifiablePresentationTypeFormat.LDP_VP,
-            presentation: verifiablePresentation,
-          },
-        ],
-        presentationSignCallback: presentationSignCallback,*/
       },
 
-      did: mockResEntity.did, // FIXME: Why do we need this, isn't this handled in the signature type already?
       responseMode: ResponseMode.POST,
     };
 

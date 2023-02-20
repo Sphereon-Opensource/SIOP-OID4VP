@@ -26,10 +26,10 @@ import { OP } from './OP';
 
 export class Builder {
   expiresIn?: number;
-  issuer: ResponseIss;
+  issuer?: ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-  responseMode?: ResponseMode;
-  responseRegistration: Partial<ResponseRegistrationOpts> = {};
+  responseMode?: ResponseMode = ResponseMode.POST;
+  responseRegistration?: Partial<ResponseRegistrationOpts> = {};
   customResolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
@@ -78,12 +78,12 @@ export class Builder {
     return this;
   }
 
-  response(responseMode: ResponseMode): Builder {
+  withResponseMode(responseMode: ResponseMode): Builder {
     this.responseMode = responseMode;
     return this;
   }
 
-  registration(responseRegistration: ResponseRegistrationOpts, targets?: PropertyTargets): Builder {
+  withRegistration(responseRegistration: ResponseRegistrationOpts, targets?: PropertyTargets): Builder {
     this.responseRegistration = {
       targets,
       ...responseRegistration,
@@ -151,9 +151,13 @@ export class Builder {
   }
 
   build(): OP {
-    // this.responseRegistration.didMethodsSupported = this.didMethods;
-    // this.responseRegistration.subjectIdentifiersSupported = this.subjectIdentifierTypes;
-    // this.responseRegistration.credentialFormatsSupported = this.credentialFormats;
+    /*if (!this.responseRegistration) {
+      throw Error('You need to provide response registrations values')
+    } else */if (!this.signature) {
+      throw Error('You need to supply signature values');
+    } else if (!this.supportedVersions || this.supportedVersions.length === 0) {
+      throw Error('You need to configure supported spec version on an OP');
+    }
     // We ignore the private visibility, as we don't want others to use the OP directly
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

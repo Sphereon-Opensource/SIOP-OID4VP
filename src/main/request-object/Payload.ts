@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 import { CreateAuthorizationRequestOpts, createPresentationDefinitionClaimsProperties } from '../authorization-request';
 import { createRequestRegistration } from '../authorization-request/RequestRegistration';
 import { getNonce, getState, removeNullUndefined } from '../helpers';
@@ -12,32 +14,43 @@ export const createRequestObjectPayload = async (opts: CreateAuthorizationReques
   }
   assertValidRequestObjectOpts(opts.requestObject, true);
 
-  const requestObjectOpts = opts.requestObject.payload;
+  const payload = opts.requestObject.payload;
 
-  const state = getState(requestObjectOpts.state);
+  const state = getState(payload.state);
   const registration = await createRequestRegistration(opts.clientMetadata, opts);
-  const claims = createPresentationDefinitionClaimsProperties(requestObjectOpts.claims);
+  const claims = createPresentationDefinitionClaimsProperties(payload.claims);
 
-  let clientId = requestObjectOpts.client_id;
+  let clientId = payload.client_id;
 
   const metadataKey = opts.version >= SupportedVersion.SIOPv2_D11.valueOf() ? 'client_metadata' : 'registration';
   if (!clientId) {
     clientId = registration.payload[metadataKey];
   }
 
+  const now = Math.round(new Date().getTime() / 1000);
+  const validInSec = 120; // todo config/option
+  const iat = payload.iat ?? now;
+  const nbf = payload.nbf ?? iat;
+  const exp = payload.exp ?? iat + validInSec;
+  const jti = payload.jti ?? uuidv4();
+
   return removeNullUndefined({
-    response_type: requestObjectOpts.response_type ?? ResponseType.ID_TOKEN,
-    scope: requestObjectOpts.scope ?? Scope.OPENID,
+    response_type: payload.response_type ?? ResponseType.ID_TOKEN,
+    scope: payload.scope ?? Scope.OPENID,
     //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
     client_id: clientId ? clientId : opts.requestObject.signatureType.did,
-    redirect_uri: requestObjectOpts.redirect_uri,
-    response_mode: requestObjectOpts.response_mode || ResponseMode.POST,
-    ...(requestObjectOpts.id_token_hint ? { id_token_hint: requestObjectOpts.id_token_hint } : {}),
+    redirect_uri: payload.redirect_uri,
+    response_mode: payload.response_mode || ResponseMode.POST,
+    ...(payload.id_token_hint ? { id_token_hint: payload.id_token_hint } : {}),
     registration_uri: registration.clientMetadataOpts.reference_uri, //requestObjectOpts['registrationUri'],
-    nonce: getNonce(state, requestObjectOpts.nonce),
+    nonce: getNonce(state, payload.nonce),
     state,
     ...registration.payload,
     claims,
+    iat,
+    nbf,
+    exp,
+    jti,
   });
 };
 
