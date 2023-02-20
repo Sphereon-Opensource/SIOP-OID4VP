@@ -1,3 +1,5 @@
+import { JWTVerifyOptions } from 'did-jwt';
+
 import { PresentationDefinitionWithLocation } from '../authorization-response';
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
 import { getAudience, getResolver, parseJWT, verifyDidJWT } from '../did';
@@ -117,7 +119,8 @@ export class AuthorizationRequest {
     const jwt = await this.requestObjectJwt();
     if (jwt) {
       parseJWT(jwt);
-      const options = {
+      const options: JWTVerifyOptions = {
+        ...opts.verification?.resolveOpts?.jwtVerifyOpts,
         audience: getAudience(jwt),
       };
 

@@ -114,7 +114,7 @@ export class URI implements AuthorizationRequestURI {
     if (!requestObject) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
-    return await URI.fromAuthorizationRequestPayload(requestObject.options, await requestObject.toJwt());
+    return await URI.fromAuthorizationRequestPayload(requestObject.options, await AuthorizationRequest.fromUriOrJwt(await requestObject.toJwt()));
   }
 
   static async fromAuthorizationRequest(authorizationRequest: AuthorizationRequest): Promise<URI> {
@@ -140,7 +140,7 @@ export class URI implements AuthorizationRequestURI {
    */
   private static async fromAuthorizationRequestPayload(
     opts: { uriScheme?: string; passBy: PassBy; reference_uri?: string; version?: SupportedVersion },
-    authorizationRequestPayload: AuthorizationRequestPayload | string,
+    authorizationRequestPayload: AuthorizationRequestPayload,
     requestObject?: RequestObject
   ): Promise<URI> {
     if (!authorizationRequestPayload) {
@@ -163,7 +163,7 @@ export class URI implements AuthorizationRequestURI {
 
     if (requestObjectPayload) {
       // Only used to validate if the request object contains presentation definition(s)
-      await PresentationExchange.findValidPresentationDefinitions(requestObjectPayload);
+      await PresentationExchange.findValidPresentationDefinitions({ ...authorizationRequestPayload, ...requestObjectPayload });
 
       assertValidRequestObjectPayload(requestObjectPayload);
       if (requestObjectPayload.registration) {

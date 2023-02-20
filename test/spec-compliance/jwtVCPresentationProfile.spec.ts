@@ -1,3 +1,4 @@
+import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import * as jose from 'jose';
 import { KeyLike } from 'jose';
 import nock from 'nock';
@@ -10,18 +11,254 @@ import {
   IDToken,
   OP,
   PassBy,
+  PresentationVerificationCallback,
   PropertyTarget,
   ResponseMode,
   ResponseType,
+  RevocationVerification,
   RP,
   SigningAlgo,
   SupportedVersion,
   VerificationMode,
 } from '../../src/main';
 
+let rp: RP;
+beforeAll(async () => {
+  await TestVectors.init();
+
+  TestVectors.mockDID(TestVectors.issuerDID, TestVectors.issuerKID, TestVectors.issuerJwk);
+  TestVectors.mockDID(TestVectors.holderDID, TestVectors.holderKID, TestVectors.holderJwk);
+  TestVectors.mockDID(TestVectors.verifierDID, TestVectors.verifierKID, TestVectors.verifierJwk);
+
+  rp = RP.builder({ requestVersion: SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1 })
+    .withResponseType(ResponseType.ID_TOKEN, PropertyTarget.REQUEST_OBJECT)
+    .withClientId(TestVectors.issuerDID, PropertyTarget.REQUEST_OBJECT)
+    .withScope('openid', PropertyTarget.REQUEST_OBJECT)
+    .withResponseMode(ResponseMode.POST, PropertyTarget.REQUEST_OBJECT)
+    .withClientMetadata(
+      {
+        passBy: PassBy.VALUE,
+        // targets: [PropertyTarget.REQUEST_OBJECT],
+        logo_uri: 'https://example.com/verifier-icon.png',
+        tos_uri: 'https://example.com/verifier-info',
+        clientName: 'Example Verifier',
+        vpFormatsSupported: {
+          jwt_vc: {
+            alg: ['EdDSA', 'ES256K'],
+          },
+          jwt_vp: {
+            alg: ['EdDSA', 'ES256K'],
+          },
+        },
+        subject_syntax_types_supported: ['did:ion'],
+      },
+      PropertyTarget.REQUEST_OBJECT
+    )
+    .withRedirectUri('https://example.com/siop-response', PropertyTarget.REQUEST_OBJECT)
+    .withRequestBy(PassBy.REFERENCE, TestVectors.request_uri)
+    .addDidMethod('ion')
+    .withInternalSignature(TestVectors.verifierHexPrivateKey, TestVectors.verifierDID, TestVectors.verifierKID, SigningAlgo.EDDSA)
+    .build();
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const verifyCallback: VerifyCallback = async (_args) => ({ verified: true });
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
+describe('RP using test vectors', () => {
+  it('should create matching auth request and URI', async () => {
+    const authRequest = await createAuthRequest();
+    expect(await authRequest.requestObject.getPayload()).toMatchObject({
+      response_type: 'id_token',
+      nonce: '40252afc-6a82-4a2e-905f-e41f122ef575',
+      client_id:
+        'did:ion:EiBAA99TAezxKRc2wuuBnr4zzGsS2YcsOA4IPQV0KY64Xg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkdnWkdUZzhlQ2E3bFYyOE1MOUpUbUJVdms3RFlCYmZSS1dMaHc2NUpvMXMiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaURKV0Z2WUJ5Qzd2azA2MXAzdHYwd29WSTk5MTFQTGgwUVp4cWpZM2Y4MVFRIn0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlBX1RvVlNBZDBTRWxOU2VrQ1k1UDVHZ01KQy1MTVpFY2ZSV2ZqZGNaYXJFQSIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpRDN0ZTV4eFliemJod0pYdEUwZ2tZV3Z3MlZ2VFB4MU9la0RTcXduZzRTWmcifX0',
+      response_mode: 'post',
+      // "nbf" : 1674772063,
+      scope: 'openid',
+      claims: {
+        vp_token: {
+          presentation_definition: {
+            input_descriptors: [
+              {
+                schema: [
+                  {
+                    uri: 'VerifiedEmployee',
+                  },
+                ],
+                purpose: 'We need to verify that you have a valid VerifiedEmployee Verifiable Credential.',
+                name: 'VerifiedEmployeeVC',
+                id: 'VerifiedEmployeeVC',
+              },
+            ],
+            id: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
+          },
+        },
+      },
+      registration: {
+        logo_uri: 'https://example.com/verifier-icon.png',
+        tos_uri: 'https://example.com/verifier-info',
+        client_name: 'Example Verifier',
+        vp_formats: {
+          jwt_vc: {
+            alg: ['EdDSA', 'ES256K'],
+          },
+          jwt_vp: {
+            alg: ['EdDSA', 'ES256K'],
+          },
+        },
+        subject_syntax_types_supported: ['did:ion'],
+      },
+      state: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
+      redirect_uri: 'https://example.com/siop-response' /*,
+        "exp" : 1674775663,
+        "iat" : 1674772063,
+        "jti" : "f0e6dcf5-3fe6-4507-adc9-b496daf34512"*/,
+    });
+  });
+  it('should re-create uri', async () => {
+    const authRequest = await createAuthRequest();
+    const uri = await authRequest.uri();
+    expect(uri.encodedUri).toEqual(
+      'openid-vc://?request_uri=https%3A%2F%2Fexample%2Fservice%2Fapi%2Fv1%2Fpresentation-request%2F649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9'
+    );
+  });
+  it('should get presentation definition', async () => {
+    const authRequest = await createAuthRequest();
+    const defs = await authRequest.getPresentationDefinitions();
+    expect(defs).toBeDefined();
+    expect(defs).toHaveLength(1);
+  });
+  it('should decode id token jwt', async () => {
+    const idToken = await IDToken.fromIDToken(TestVectors.idTokenJwt);
+    expect(idToken).toBeDefined();
+    const payload = await idToken.payload();
+    expect(payload).toEqual(TestVectors.idTokenPayload);
+    expect(
+      await idToken.verify({
+        audience:
+          'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0',
+        verification: {
+          mode: VerificationMode.INTERNAL,
+          resolveOpts: {
+            // disable the JWT verifications, as the test vectors are expired
+            jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
+          },
+          checkLinkedDomain: CheckLinkedDomain.IF_PRESENT,
+          presentationVerificationCallback,
+          wellknownDIDVerifyCallback: verifyCallback,
+        },
+      })
+    ).toBeTruthy();
+  });
+
+  it('should decode auth response', async () => {
+    const authorizationResponse = await AuthorizationResponse.fromPayload(TestVectors.authorizationResponsePayload);
+    expect(authorizationResponse).toBeDefined();
+    expect(authorizationResponse.payload).toEqual(TestVectors.authorizationResponsePayload);
+    expect(await authorizationResponse.idToken.payload()).toEqual(TestVectors.idTokenPayload);
+    expect(
+      await authorizationResponse.idToken.verify({
+        audience:
+          'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0',
+        verification: {
+          mode: VerificationMode.INTERNAL,
+          resolveOpts: {
+            // disable the JWT verifications, as the test vectors are expired
+            jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
+          },
+          checkLinkedDomain: CheckLinkedDomain.NEVER,
+          presentationVerificationCallback,
+          wellknownDIDVerifyCallback: verifyCallback,
+          revocationOpts: {
+            revocationVerification: RevocationVerification.NEVER,
+          },
+        },
+      })
+    ).toBeTruthy();
+
+    const authRequest = await createAuthRequest();
+    const presentationDefinitions = await authRequest.getPresentationDefinitions();
+
+    const verified = await authorizationResponse.verify({
+      audience:
+        'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0',
+      verification: {
+        mode: VerificationMode.INTERNAL,
+        resolveOpts: {
+          // disable the JWT verifications, as the test vectors are expired
+          jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
+        },
+        checkLinkedDomain: CheckLinkedDomain.NEVER,
+        presentationVerificationCallback,
+        wellknownDIDVerifyCallback: verifyCallback,
+        revocationOpts: {
+          revocationVerification: RevocationVerification.NEVER,
+        },
+      },
+      presentationDefinitions,
+    });
+    expect(verified).toBeDefined();
+    // console.log(verified);
+  });
+
+  it('should import auth request and be able to provide the auth request unaltered', async () => {
+    nock('https://example').get('/service/api/v1/presentation-request/649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9').reply(200, TestVectors.requestObjectJwt);
+    // expect.assertions(1);
+
+    const op = OP.builder()
+      .addDidMethod('ion')
+      .addSupportedVersion(SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1)
+      .internalSignature(TestVectors.holderHexPrivateKey, TestVectors.holderDID, TestVectors.holderKID, SigningAlgo.ES256K)
+      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
+      .build();
+
+    const result = await op.verifyAuthorizationRequest(TestVectors.auth_request, {
+      verification: {
+        mode: VerificationMode.INTERNAL,
+        resolveOpts: {
+          // disable the JWT verifications, as the test vectors are expired
+          jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
+        },
+      },
+    });
+    expect(result).toBeDefined();
+    // console.log(JSON.stringify(result, null, 2));
+  });
+});
+
+async function createAuthRequest(): Promise<AuthorizationRequest> {
+  return await rp.createAuthorizationRequest({
+    nonce: { propertyValue: '40252afc-6a82-4a2e-905f-e41f122ef575', targets: PropertyTarget.REQUEST_OBJECT },
+    state: { propertyValue: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9', targets: PropertyTarget.REQUEST_OBJECT },
+    claims: {
+      propertyValue: {
+        vp_token: {
+          presentation_definition: {
+            input_descriptors: [
+              {
+                schema: [
+                  {
+                    uri: 'VerifiedEmployee',
+                  },
+                ],
+                purpose: 'We need to verify that you have a valid VerifiedEmployee Verifiable Credential.',
+                name: 'VerifiedEmployeeVC',
+                id: 'VerifiedEmployeeVC',
+              },
+            ],
+            id: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
+          },
+        },
+      },
+      targets: PropertyTarget.REQUEST_OBJECT,
+    },
+  });
+}
+
 class TestVectors {
   public static issuerDID =
-    'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0';
+    'did:ion:EiBAA99TAezxKRc2wuuBnr4zzGsS2YcsOA4IPQV0KY64Xg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkdnWkdUZzhlQ2E3bFYyOE1MOUpUbUJVdms3RFlCYmZSS1dMaHc2NUpvMXMiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaURKV0Z2WUJ5Qzd2azA2MXAzdHYwd29WSTk5MTFQTGgwUVp4cWpZM2Y4MVFRIn0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlBX1RvVlNBZDBTRWxOU2VrQ1k1UDVHZ01KQy1MTVpFY2ZSV2ZqZGNaYXJFQSIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpRDN0ZTV4eFliemJod0pYdEUwZ2tZV3Z3MlZ2VFB4MU9la0RTcXduZzRTWmcifX0';
   public static issuerKID = `${TestVectors.issuerDID}#key-1`;
   public static issuerJwk = {
     kty: 'OKP',
@@ -67,17 +304,17 @@ class TestVectors {
   public static verifierHexPrivateKey;
 
   public static async init() {
-    TestVectors.issuerKey = (await jose.importJWK(TestVectors.issuerJwk, 'ES256k', true)) as KeyLike;
+    TestVectors.issuerKey = (await jose.importJWK(TestVectors.issuerJwk, 'EdDSA', true)) as KeyLike;
     TestVectors.issuerPrivateKey = u8a.toString(u8a.fromString(TestVectors.issuerJwk.d, 'base64url'), 'hex');
     TestVectors.issuerPublicKey = u8a.toString(u8a.fromString(TestVectors.issuerJwk.x, 'base64url'), 'hex');
     TestVectors.issuerHexPrivateKey = `${TestVectors.issuerPrivateKey}${TestVectors.issuerPublicKey}`;
 
-    TestVectors.holderKey = (await jose.importJWK(TestVectors.holderJwk, 'ES256k', true)) as KeyLike;
+    TestVectors.holderKey = (await jose.importJWK(TestVectors.holderJwk, 'EdDSA', true)) as KeyLike;
     TestVectors.holderPrivateKey = u8a.toString(u8a.fromString(TestVectors.holderJwk.d, 'base64url'), 'hex');
     TestVectors.holderPublicKey = u8a.toString(u8a.fromString(TestVectors.holderJwk.x, 'base64url'), 'hex');
     TestVectors.holderHexPrivateKey = `${TestVectors.holderPrivateKey}${TestVectors.holderPublicKey}`;
 
-    TestVectors.verifierKey = (await jose.importJWK(TestVectors.verifierJwk, 'ES256k', true)) as KeyLike;
+    TestVectors.verifierKey = (await jose.importJWK(TestVectors.verifierJwk, 'EdDSA', true)) as KeyLike;
     TestVectors.verifierPrivateKey = u8a.toString(u8a.fromString(TestVectors.verifierJwk.d, 'base64url'), 'hex');
     TestVectors.verifierPublicKey = u8a.toString(u8a.fromString(TestVectors.verifierJwk.x, 'base64url'), 'hex');
     TestVectors.verifierHexPrivateKey = `${TestVectors.verifierPrivateKey}${TestVectors.verifierPublicKey}`;
@@ -176,179 +413,42 @@ class TestVectors {
     vp_token:
       'eyJraWQiOiJkaWQ6aW9uOkVpQWVNNk5vOWtkcG9zNl9laEJVRGg0UklOWTRVU0RNaC1RZFdrc21zSTNXa0E6ZXlKa1pXeDBZU0k2ZXlKd1lYUmphR1Z6SWpwYmV5SmhZM1JwYjI0aU9pSnlaWEJzWVdObElpd2laRzlqZFcxbGJuUWlPbnNpY0hWaWJHbGpTMlY1Y3lJNlczc2lhV1FpT2lKclpYa3RNU0lzSW5CMVlteHBZMHRsZVVwM2F5STZleUpqY25ZaU9pSkZaREkxTlRFNUlpd2lhM1I1SWpvaVQwdFFJaXdpZUNJNkluY3dOazlXTjJVMmJsUjFjblEyUnpsV2NGWlllRWwzV1c1NWFtWjFjSGhsUjNsTFFsTXRZbXh4ZG1jaUxDSnJhV1FpT2lKclpYa3RNU0o5TENKd2RYSndiM05sY3lJNld5SmhkWFJvWlc1MGFXTmhkR2x2YmlKZExDSjBlWEJsSWpvaVNuTnZibGRsWWt0bGVUSXdNakFpZlYxOWZWMHNJblZ3WkdGMFpVTnZiVzFwZEcxbGJuUWlPaUpGYVVGU05HUlZRbXhxTldOR2EzZE1ka3BUV1VZelZFeGpMVjgxTVdoRFgyeFphR3hYWmt4V1oyOXNlVFJSSW4wc0luTjFabVpwZUVSaGRHRWlPbnNpWkdWc2RHRklZWE5vSWpvaVJXbEVjVkp5V1U1ZlYzSlRha0ZRZG5sRllsSlFSVms0V1ZoUFJtTnZUMFJUWkV4VVRXSXRNMkZLVkVsR1FTSXNJbkpsWTI5MlpYSjVRMjl0YldsMGJXVnVkQ0k2SWtWcFFVd3lNRmRZYWtwUVFXNTRXV2RRWTFVNVJWOVBPRTFPZEhOcFFrMDBRa3RwYVZOd1QzWkZUV3BWT1VFaWZYMCNrZXktMSIsImFsZyI6IkVkRFNBIn0.eyJhdWQiOiJkaWQ6aW9uOkVpQldlOVJ0SFQ3VlotSnVmZjhPbm5KQXlGSnRDb2tjWUh4MUNRa0Z0cGw3cHc6ZXlKa1pXeDBZU0k2ZXlKd1lYUmphR1Z6SWpwYmV5SmhZM1JwYjI0aU9pSnlaWEJzWVdObElpd2laRzlqZFcxbGJuUWlPbnNpY0hWaWJHbGpTMlY1Y3lJNlczc2lhV1FpT2lKclpYa3RNU0lzSW5CMVlteHBZMHRsZVVwM2F5STZleUpqY25ZaU9pSkZaREkxTlRFNUlpd2lhM1I1SWpvaVQwdFFJaXdpZUNJNklrTmZUMVZLZUVnMmFVbGpRelpZWkU1b04wcHRReTFVU0ZoQlZtRllibloxT1U5RlJWbzRkSEU1VGtraUxDSnJhV1FpT2lKclpYa3RNU0o5TENKd2RYSndiM05sY3lJNld5SmhkWFJvWlc1MGFXTmhkR2x2YmlKZExDSjBlWEJsSWpvaVNuTnZibGRsWWt0bGVUSXdNakFpZlYxOWZWMHNJblZ3WkdGMFpVTnZiVzFwZEcxbGJuUWlPaUpGYVVOWVRrSnFTV1pNVkdaT1YwTkhNRlEyTTJWYVltSkVaRlpvU21KVVRqZ3RTbVpsYVV4NGRXMW9aVzUzSW4wc0luTjFabVpwZUVSaGRHRWlPbnNpWkdWc2RHRklZWE5vSWpvaVJXbENaVlo1UlhCRGIwTlBlWEo2VkRoRFNIbHZRVzFhY1UxQ1QxbzBWVFpxY20xc2RVdDFTamx4UzBwa1p5SXNJbkpsWTI5MlpYSjVRMjl0YldsMGJXVnVkQ0k2SWtWcFFuaGtjSGx5YW1sVlNGWjFha05SV1RCS01raEJVRkZZWm5Od1dGQktZV2x1VjIxbVYzUk5jRmhuZUZFaWZYMCIsImlzcyI6ImRpZDppb246RWlBZU02Tm85a2Rwb3M2X2VoQlVEaDRSSU5ZNFVTRE1oLVFkV2tzbXNJM1drQTpleUprWld4MFlTSTZleUp3WVhSamFHVnpJanBiZXlKaFkzUnBiMjRpT2lKeVpYQnNZV05sSWl3aVpHOWpkVzFsYm5RaU9uc2ljSFZpYkdsalMyVjVjeUk2VzNzaWFXUWlPaUpyWlhrdE1TSXNJbkIxWW14cFkwdGxlVXAzYXlJNmV5SmpjbllpT2lKRlpESTFOVEU1SWl3aWEzUjVJam9pVDB0UUlpd2llQ0k2SW5jd05rOVdOMlUyYmxSMWNuUTJSemxXY0ZaWWVFbDNXVzU1YW1aMWNIaGxSM2xMUWxNdFlteHhkbWNpTENKcmFXUWlPaUpyWlhrdE1TSjlMQ0p3ZFhKd2IzTmxjeUk2V3lKaGRYUm9aVzUwYVdOaGRHbHZiaUpkTENKMGVYQmxJam9pU25OdmJsZGxZa3RsZVRJd01qQWlmVjE5ZlYwc0luVndaR0YwWlVOdmJXMXBkRzFsYm5RaU9pSkZhVUZTTkdSVlFteHFOV05HYTNkTWRrcFRXVVl6VkV4akxWODFNV2hEWDJ4WmFHeFhaa3hXWjI5c2VUUlJJbjBzSW5OMVptWnBlRVJoZEdFaU9uc2laR1ZzZEdGSVlYTm9Jam9pUldsRWNWSnlXVTVmVjNKVGFrRlFkbmxGWWxKUVJWazRXVmhQUm1OdlQwUlRaRXhVVFdJdE0yRktWRWxHUVNJc0luSmxZMjkyWlhKNVEyOXRiV2wwYldWdWRDSTZJa1ZwUVV3eU1GZFlha3BRUVc1NFdXZFFZMVU1UlY5UE9FMU9kSE5wUWswMFFrdHBhVk53VDNaRlRXcFZPVUVpZlgwIiwidnAiOnsiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdLCJ0eXBlIjpbIlZlcmlmaWFibGVQcmVzZW50YXRpb24iXSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlsiZXlKcmFXUWlPaUprYVdRNmFXOXVPa1ZwUWtGQk9UbFVRV1Y2ZUV0U1l6SjNkWFZDYm5JMGVucEhjMU15V1dOelQwRTBTVkJSVmpCTFdUWTBXR2M2WlhsS2ExcFhlREJaVTBrMlpYbEtkMWxZVW1waFIxWjZTV3B3WW1WNVNtaFpNMUp3WWpJMGFVOXBTbmxhV0VKeldWZE9iRWxwZDJsYVJ6bHFaRmN4YkdKdVVXbFBibk5wWTBoV2FXSkhiR3BUTWxZMVkzbEpObGN6YzJsaFYxRnBUMmxLY2xwWWEzUk5VMGx6U1c1Q01WbHRlSEJaTUhSc1pWVndNMkY1U1RabGVVcHFZMjVaYVU5cFNrWmFSRWt4VGxSRk5VbHBkMmxoTTFJMVNXcHZhVlF3ZEZGSmFYZHBaVU5KTmtsclpHNVhhMlJWV25wb2JGRXlSVE5pUmxsNVQwVXhUVTlWY0ZWaVZVcFdaRzF6TTFKR2JFTlpiVnBUVXpGa1RXRklZekpPVlhCMlRWaE5hVXhEU25KaFYxRnBUMmxLY2xwWWEzUk5VMG81VEVOS2QyUllTbmRpTTA1c1kzbEpObGQ1U21oa1dGSnZXbGMxTUdGWFRtaGtSMngyWW1sS1pFeERTakJsV0VKc1NXcHZhVk51VG5aaWJHUnNXV3QwYkdWVVNYZE5ha0ZwWmxZeE9XWldNSE5KYmxaM1drZEdNRnBWVG5aaVZ6RndaRWN4YkdKdVVXbFBhVXBHWVZWU1MxWXdXakpYVlVvMVVYcGtNbUY2UVRKTldFRjZaRWhaZDJReU9WZFRWR3MxVFZSR1VWUkhaM2RWVm5BMFkxZHdXazB5V1RSTlZrWlNTVzR3YzBsdVRqRmFiVnB3WlVWU2FHUkhSV2xQYm5OcFdrZFdjMlJIUmtsWldFNXZTV3B2YVZKWGJFSllNVkoyVm14T1FscEVRbFJTVjNoUFZUSldjbEV4YXpGVlJGWklXakF4UzFGNU1VMVVWbkJHV1RKYVUxWXlXbkZhUjA1aFdWaEtSbEZUU1hOSmJrcHNXVEk1TWxwWVNqVlJNamwwWWxkc01HSlhWblZrUTBrMlNXdFdjRkpFVGpCYVZGWTBaVVpzYVdWdFNtOWtNSEJaWkVWVmQxb3lkRnBXTTFvelRXeGFNbFpHUWpSTlZUbHNZVEJTVkdOWVpIVmFlbEpVVjIxamFXWllNQ05yWlhrdE1TSXNJblI1Y0NJNklrcFhWQ0lzSW1Gc1p5STZJa1ZrUkZOQkluMC5leUp6ZFdJaU9pSmthV1E2YVc5dU9rVnBRV1ZOTms1dk9XdGtjRzl6Tmw5bGFFSlZSR2cwVWtsT1dUUlZVMFJOYUMxUlpGZHJjMjF6U1ROWGEwRTZaWGxLYTFwWGVEQlpVMGsyWlhsS2QxbFlVbXBoUjFaNlNXcHdZbVY1U21oWk0xSndZakkwYVU5cFNubGFXRUp6V1ZkT2JFbHBkMmxhUnpscVpGY3hiR0p1VVdsUGJuTnBZMGhXYVdKSGJHcFRNbFkxWTNsSk5sY3pjMmxoVjFGcFQybEtjbHBZYTNSTlUwbHpTVzVDTVZsdGVIQlpNSFJzWlZWd00yRjVTVFpsZVVwcVkyNVphVTlwU2taYVJFa3hUbFJGTlVscGQybGhNMUkxU1dwdmFWUXdkRkZKYVhkcFpVTkpOa2x1WTNkT2F6bFhUakpWTW1Kc1VqRmpibEV5VW5wc1YyTkdXbGxsUld3elYxYzFOV0Z0V2pGalNHaHNVak5zVEZGc1RYUlpiWGg0WkcxamFVeERTbkpoVjFGcFQybEtjbHBZYTNSTlUwbzVURU5LZDJSWVNuZGlNMDVzWTNsSk5sZDVTbWhrV0ZKdldsYzFNR0ZYVG1oa1IyeDJZbWxLWkV4RFNqQmxXRUpzU1dwdmFWTnVUblppYkdSc1dXdDBiR1ZVU1hkTmFrRnBabFl4T1daV01ITkpibFozV2tkR01GcFZUblppVnpGd1pFY3hiR0p1VVdsUGFVcEdZVlZHVTA1SFVsWlJiWGh4VGxkT1IyRXpaRTFrYTNCVVYxVlplbFpGZUdwTVZqZ3hUVmRvUkZneWVGcGhSM2hZV210NFYxb3lPWE5sVkZKU1NXNHdjMGx1VGpGYWJWcHdaVVZTYUdSSFJXbFBibk5wV2tkV2MyUkhSa2xaV0U1dlNXcHZhVkpYYkVWalZrcDVWMVUxWmxZelNsUmhhMFpSWkc1c1JsbHNTbEZTVm1zMFYxWm9VRkp0VG5aVU1GSlVXa1Y0VlZSWFNYUk5Na1pMVmtWc1IxRlRTWE5KYmtwc1dUSTVNbHBZU2pWUk1qbDBZbGRzTUdKWFZuVmtRMGsyU1d0V2NGRlZkM2xOUm1SWllXdHdVVkZYTlRSWFYyUlJXVEZWTlZKV09WQlBSVEZQWkVoT2NGRnJNREJSYTNSd1lWWk9kMVF6V2taVVYzQldUMVZGYVdaWU1DSXNJbTVpWmlJNk1UWTNORGMzTWpBMk15d2lhWE56SWpvaVpHbGtPbWx2YmpwRmFVSkJRVGs1VkVGbGVuaExVbU15ZDNWMVFtNXlOSHA2UjNOVE1sbGpjMDlCTkVsUVVWWXdTMWsyTkZobk9tVjVTbXRhVjNnd1dWTkpObVY1U25kWldGSnFZVWRXZWtscWNHSmxlVXBvV1ROU2NHSXlOR2xQYVVwNVdsaENjMWxYVG14SmFYZHBXa2M1YW1SWE1XeGlibEZwVDI1emFXTklWbWxpUjJ4cVV6SldOV041U1RaWE0zTnBZVmRSYVU5cFNuSmFXR3QwVFZOSmMwbHVRakZaYlhod1dUQjBiR1ZWY0ROaGVVazJaWGxLYW1OdVdXbFBhVXBHV2tSSk1VNVVSVFZKYVhkcFlUTlNOVWxxYjJsVU1IUlJTV2wzYVdWRFNUWkphMlJ1VjJ0a1ZWcDZhR3hSTWtVellrWlplVTlGTVUxUFZYQlZZbFZLVm1SdGN6TlNSbXhEV1cxYVUxTXhaRTFoU0dNeVRsVndkazFZVFdsTVEwcHlZVmRSYVU5cFNuSmFXR3QwVFZOS09VeERTbmRrV0VwM1lqTk9iR041U1RaWGVVcG9aRmhTYjFwWE5UQmhWMDVvWkVkc2RtSnBTbVJNUTBvd1pWaENiRWxxYjJsVGJrNTJZbXhrYkZscmRHeGxWRWwzVFdwQmFXWldNVGxtVmpCelNXNVdkMXBIUmpCYVZVNTJZbGN4Y0dSSE1XeGlibEZwVDJsS1JtRlZVa3RXTUZveVYxVktOVkY2WkRKaGVrRXlUVmhCZW1SSVdYZGtNamxYVTFSck5VMVVSbEZVUjJkM1ZWWndOR05YY0ZwTk1sazBUVlpHVWtsdU1ITkpiazR4V20xYWNHVkZVbWhrUjBWcFQyNXphVnBIVm5Oa1IwWkpXVmhPYjBscWIybFNWMnhDV0RGU2RsWnNUa0phUkVKVVVsZDRUMVV5Vm5KUk1Xc3hWVVJXU0Zvd01VdFJlVEZOVkZad1Jsa3lXbE5XTWxweFdrZE9ZVmxZU2taUlUwbHpTVzVLYkZreU9USmFXRW8xVVRJNWRHSlhiREJpVjFaMVpFTkpOa2xyVm5CU1JFNHdXbFJXTkdWR2JHbGxiVXB2WkRCd1dXUkZWWGRhTW5SYVZqTmFNMDFzV2pKV1JrSTBUVlU1YkdFd1VsUmpXR1IxV25wU1ZGZHRZMmxtV0RBaUxDSnBZWFFpT2pFMk56UTNOekl3TmpNc0luWmpJanA3SWtCamIyNTBaWGgwSWpwYkltaDBkSEJ6T2x3dlhDOTNkM2N1ZHpNdWIzSm5YQzh5TURFNFhDOWpjbVZrWlc1MGFXRnNjMXd2ZGpFaVhTd2lkSGx3WlNJNld5SldaWEpwWm1saFlteGxRM0psWkdWdWRHbGhiQ0lzSWxabGNtbG1hV1ZrUlcxd2JHOTVaV1VpWFN3aVkzSmxaR1Z1ZEdsaGJGTjFZbXBsWTNRaU9uc2laR2x6Y0d4aGVVNWhiV1VpT2lKUVlYUWdVMjFwZEdnaUxDSm5hWFpsYms1aGJXVWlPaUpRWVhRaUxDSnFiMkpVYVhSc1pTSTZJbGR2Y210bGNpSXNJbk4xY201aGJXVWlPaUpUYldsMGFDSXNJbkJ5WldabGNuSmxaRXhoYm1kMVlXZGxJam9pWlc0dFZWTWlMQ0p0WVdsc0lqb2ljR0YwTG5OdGFYUm9RR1Y0WVcxd2JHVXVZMjl0SW4wc0ltTnlaV1JsYm5ScFlXeFRkR0YwZFhNaU9uc2lhV1FpT2lKb2RIUndjenBjTDF3dlpYaGhiWEJzWlM1amIyMWNMMkZ3YVZ3dllYTjBZWFIxYzJ4cGMzUmNMMlJwWkRwcGIyNDZSV2xDUVVFNU9WUkJaWHA0UzFKak1uZDFkVUp1Y2pSNmVrZHpVekpaWTNOUFFUUkpVRkZXTUV0Wk5qUllaMXd2TVNNd0lpd2lkSGx3WlNJNklsSmxkbTlqWVhScGIyNU1hWE4wTWpBeU1WTjBZWFIxY3lJc0luTjBZWFIxYzB4cGMzUkpibVJsZUNJNklqQWlMQ0p6ZEdGMGRYTk1hWE4wUTNKbFpHVnVkR2xoYkNJNkltaDBkSEJ6T2x3dlhDOWxlR0Z0Y0d4bExtTnZiVnd2WVhCcFhDOWhjM1JoZEhWemJHbHpkRnd2Wkdsa09tbHZianBGYVVKQlFUazVWRUZsZW5oTFVtTXlkM1YxUW01eU5IcDZSM05UTWxsamMwOUJORWxRVVZZd1MxazJORmhuWEM4eEluMTlMQ0pxZEdraU9pSmlPREExTW1ZNVl5MDBaamhqTFRRek16QXRZbUpqTVMwME1ETXpZamhsWlRWa05tSWlmUS5WRWlLQ3IzUlZTY1VNRjgxRnhnckdDbGRZeEtJSmM0dWNMWDN6MHhha21sX0dPeG5udndrbzNDNlFxajdKTVVJOUs3dlFVVU1Wakk4MUt4a3RZdDBBUSJdfSwiZXhwIjoxNjc0Nzg2NDYzLCJpYXQiOjE2NzQ3NzIwNjMsIm5vbmNlIjoiNDAyNTJhZmMtNmE4Mi00YTJlLTkwNWYtZTQxZjEyMmVmNTc1IiwianRpIjoiOWNlZGFjODYtYWU1MS00MWQwLWFlNmYtOTI5NjZhNjFlMWY1In0.X9q1amromvW0WuA7bkanc-8BC9axhXh8RhN9i87FluTBzK3SRtKBS0O0alHU3Ii5HixENljCnncTKxi5_rbvDg',
   };
-}
 
-let rp: RP;
-beforeAll(async () => {
-  await TestVectors.init();
-
-  rp = RP.builder({ requestVersion: SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1 })
-    .withResponseType(ResponseType.ID_TOKEN, PropertyTarget.REQUEST_OBJECT)
-    .withClientId(TestVectors.issuerDID, PropertyTarget.REQUEST_OBJECT)
-    .withScope('openid', PropertyTarget.REQUEST_OBJECT)
-    .withResponseMode(ResponseMode.POST, PropertyTarget.REQUEST_OBJECT)
-    .withClientMetadata(
-      {
-        passBy: PassBy.VALUE,
-        // targets: [PropertyTarget.REQUEST_OBJECT],
-        logo_uri: 'https://example.com/verifier-icon.png',
-        tos_uri: 'https://example.com/verifier-info',
-        clientName: 'Example Verifier',
-        vpFormatsSupported: {
-          jwt_vc: {
-            alg: ['EdDSA', 'ES256K'],
-          },
-          jwt_vp: {
-            alg: ['EdDSA', 'ES256K'],
-          },
+  public static didDocument(did: string, vm: string, publicKeyJwk: JsonWebKey) {
+    return {
+      id: did,
+      '@context': [
+        'https://www.w3.org/ns/did/v1',
+        {
+          '@base': did,
         },
-        subject_syntax_types_supported: ['did:ion'],
-      },
-      PropertyTarget.REQUEST_OBJECT
-    )
-    .withRedirectUri('https://example.com/siop-response', PropertyTarget.REQUEST_OBJECT)
-    .withRequestBy(PassBy.REFERENCE, TestVectors.request_uri)
-    .addDidMethod('ion')
-    .withInternalSignature(TestVectors.verifierHexPrivateKey, TestVectors.verifierDID, TestVectors.verifierKID, SigningAlgo.EDDSA)
-    .build();
-});
-
-describe('RP using test vectors', () => {
-  it('should create matching auth request and URI', async () => {
-    const authRequest = await createAuthRequest();
-    expect(await authRequest.requestObject.getPayload()).toMatchObject({
-      response_type: 'id_token',
-      nonce: '40252afc-6a82-4a2e-905f-e41f122ef575',
-      client_id:
-        'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0',
-      response_mode: 'post',
-      // "nbf" : 1674772063,
-      scope: 'openid',
-      claims: {
-        vp_token: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                schema: [
-                  {
-                    uri: 'VerifiedEmployee',
-                  },
-                ],
-                purpose: 'We need to verify that you have a valid VerifiedEmployee Verifiable Credential.',
-                name: 'VerifiedEmployeeVC',
-                id: 'VerifiedEmployeeVC',
-              },
-            ],
-            id: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
-          },
+      ],
+      service: [
+        {
+          id: '#linkedin',
+          type: 'linkedin',
+          serviceEndpoint: 'linkedin.com/in/henry-tsai-6b884014',
         },
-      },
-      registration: {
-        logo_uri: 'https://example.com/verifier-icon.png',
-        tos_uri: 'https://example.com/verifier-info',
-        client_name: 'Example Verifier',
-        vp_formats: {
-          jwt_vc: {
-            alg: ['EdDSA', 'ES256K'],
-          },
-          jwt_vp: {
-            alg: ['EdDSA', 'ES256K'],
-          },
+        {
+          id: '#github',
+          type: 'github',
+          serviceEndpoint: 'github.com/thehenrytsai',
         },
-        subject_syntax_types_supported: ['did:ion'],
-      },
-      state: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
-      redirect_uri: 'https://example.com/siop-response' /*,
-        "exp" : 1674775663,
-        "iat" : 1674772063,
-        "jti" : "f0e6dcf5-3fe6-4507-adc9-b496daf34512"*/,
-    });
-  });
-  it('should re-create uri', async () => {
-    const authRequest = await createAuthRequest();
-    const uri = await authRequest.uri();
-    expect(uri.encodedUri).toEqual(
-      'openid-vc://?request_uri=https%3A%2F%2Fexample%2Fservice%2Fapi%2Fv1%2Fpresentation-request%2F649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9'
-    );
-  });
-  it('should get presentation definition', async () => {
-    const authRequest = await createAuthRequest();
-    const defs = await authRequest.getPresentationDefinitions();
-    expect(defs).toBeDefined();
-    expect(defs).toHaveLength(1);
-  });
-  it('should decode id token jwt', async () => {
-    const idToken = await IDToken.fromIDToken(TestVectors.idTokenJwt);
-    expect(idToken).toBeDefined();
-    const payload = await idToken.payload();
-    expect(payload).toEqual(TestVectors.idTokenPayload);
-    expect(await idToken.verify({ verification: { mode: VerificationMode.INTERNAL, resolveOpts: {} } })).toBeTruthy();
-  });
-
-  it('should decode auth response', async () => {
-    const authorizationResponse = await AuthorizationResponse.fromPayload(TestVectors.authorizationResponsePayload);
-    expect(authorizationResponse).toBeDefined();
-    expect(authorizationResponse.payload).toEqual(TestVectors.authorizationResponsePayload);
-    expect(await authorizationResponse.idToken.payload()).toEqual(TestVectors.idTokenPayload);
-    expect(
-      await authorizationResponse.idToken.verify({
-        verification: {
-          mode: VerificationMode.INTERNAL,
-          resolveOpts: {},
+      ],
+      verificationMethod: [
+        {
+          id: vm,
+          controller: did,
+          type: 'JsonWebKey2020',
+          publicKeyJwk,
         },
-      })
-    ).toBeTruthy();
+      ],
+      authentication: [vm],
+      assertionMethod: [vm],
+    };
+  }
 
-    const verified = await authorizationResponse.verify({
-      verification: {
-        mode: VerificationMode.INTERNAL,
-        resolveOpts: {},
-      },
-    });
-    console.log(verified);
-  });
-
-  it('should import auth request and be able to provide the auth request unaltered', async () => {
-    nock('https://example').get('/service/api/v1/presentation-request/649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9').reply(200, TestVectors.requestObjectJwt);
-    // expect.assertions(1);
-
-    const op = OP.builder()
-      .addDidMethod('ion')
-      .addSupportedVersion(SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1)
-      .internalSignature(TestVectors.holderHexPrivateKey, TestVectors.holderDID, TestVectors.holderKID, SigningAlgo.ES256K)
-      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-      .build();
-
-    const result = await op.verifyAuthorizationRequest(TestVectors.auth_request);
-    console.log(JSON.stringify(result, null, 2));
-  });
-});
-
-async function createAuthRequest(): Promise<AuthorizationRequest> {
-  return await rp.createAuthorizationRequest({
-    nonce: { propertyValue: '40252afc-6a82-4a2e-905f-e41f122ef575', targets: PropertyTarget.REQUEST_OBJECT },
-    state: { propertyValue: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9', targets: PropertyTarget.REQUEST_OBJECT },
-    claims: {
-      propertyValue: {
-        vp_token: {
-          presentation_definition: {
-            input_descriptors: [
-              {
-                schema: [
-                  {
-                    uri: 'VerifiedEmployee',
-                  },
-                ],
-                purpose: 'We need to verify that you have a valid VerifiedEmployee Verifiable Credential.',
-                name: 'VerifiedEmployeeVC',
-                id: 'VerifiedEmployeeVC',
-              },
-            ],
-            id: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
-          },
-        },
-      },
-      targets: PropertyTarget.REQUEST_OBJECT,
-    },
-  });
+  public static mockDID(did: string, vm: string, publickKeyJwk: JsonWebKey) {
+    nock('https://dev.uniresolver.io').get(`/1.0/identifiers/${did}`).times(100).reply(200, TestVectors.didDocument(did, vm, publickKeyJwk));
+  }
 }

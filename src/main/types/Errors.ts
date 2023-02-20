@@ -31,7 +31,7 @@ enum SIOPErrors {
   MALFORMED_SIGNATURE_RESPONSE = 'Response format is malformed',
   NO_ALG_SUPPORTED = 'Algorithm not supported.',
   NO_ALG_SUPPORTED_YET = 'Algorithm is not supported yet. Only ES256 supported for this version.',
-  NO_AUDIENCE = 'No audience found in JWT payload',
+  NO_AUDIENCE = 'No audience found in JWT payload or not configured',
   NO_DID_PAYLOAD = 'payload must contain did field in payload for self-issued tokens',
   NO_IDENTIFIERS_URI = 'identifiersUri must be defined to get the publick key',
   NO_ISS_DID = 'Token does not have a iss DID',

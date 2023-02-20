@@ -1,7 +1,9 @@
+import { JWTVerifyOptions } from 'did-jwt';
 import { DIDDocument as DIFDIDDocument, Resolvable } from 'did-resolver';
 import { JWK } from 'jose';
 
 export interface ResolveOpts {
+  jwtVerifyOpts?: JWTVerifyOptions;
   resolver?: Resolvable;
   resolveUrl?: string;
   subjectSyntaxTypesSupported?: string[];

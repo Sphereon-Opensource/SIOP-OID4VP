@@ -43,6 +43,9 @@ export const verifyPresentations = async (
     ? verifyOpts.verification.revocationOpts.revocationVerification
     : RevocationVerification.IF_PRESENT;
   if (revocationVerification !== RevocationVerification.NEVER) {
+    if (!verifyOpts.verification.revocationOpts?.revocationVerificationCallback) {
+      throw Error(`Please provide a revocation callback as revocation checking of credentials and presentations is not disabled`);
+    }
     for (const vp of presentations) {
       await verifyRevocation(vp, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
     }

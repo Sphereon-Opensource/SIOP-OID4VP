@@ -51,7 +51,17 @@ function checkInvalidMessages(validationErrorMessages: string[]): { status: bool
 }
 
 export async function validateLinkedDomainWithDid(did: string, verifyCallback: VerifyCallback, checkLinkedDomain: CheckLinkedDomain) {
+  if (checkLinkedDomain === CheckLinkedDomain.NEVER) {
+    return;
+  }
   const didDocument = await resolveDidDocument(did, { subjectSyntaxTypesSupported: [toSIOPRegistrationDidMethod(getMethodFromDid(did))] });
+  if (!didDocument) {
+    throw Error(`Could not resolve DID: ${did}`);
+  }
+  if ((!didDocument.service || !didDocument.service.find((s) => s.type === 'LinkedDomains')) && checkLinkedDomain === CheckLinkedDomain.IF_PRESENT) {
+    // No linked domains in DID document and it was optional. Let's cut it short here.
+    return;
+  }
   try {
     const validationResult = await checkWellKnownDid({ didDocument, verifyCallback });
     if (validationResult.status === ValidationStatusEnum.INVALID) {

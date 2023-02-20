@@ -104,7 +104,8 @@ export class IDToken {
     this.assertValidResponseJWT({ header, payload });
 
     const verifiedJWT = await verifyDidJWT(await this.jwt(), getResolver(verifyOpts.verification.resolveOpts), {
-      audience: verifyOpts.audience,
+      ...verifyOpts.verification.resolveOpts?.jwtVerifyOpts,
+      audience: verifyOpts.audience ?? verifyOpts.verification.resolveOpts?.jwtVerifyOpts?.audience,
     });
 
     const issuerDid = getSubDidFromPayload(payload);
@@ -154,14 +155,17 @@ export class IDToken {
     if (opts.verPayload) {
       if (!opts.verPayload.nonce) {
         throw Error(SIOPErrors.NO_NONCE);
-      } else if (!opts.verPayload.exp || opts.verPayload.exp < Date.now() / 1000) {
+        // No need for our own expiration check. DID jwt already does that
+        /*} else if (!opts.verPayload.exp || opts.verPayload.exp < Date.now() / 1000) {
         throw Error(SIOPErrors.EXPIRED);
-        /*} else if (!opts.verPayload.iat || opts.verPayload.iat > (Date.now() / 1000)) {
-                          throw Error(SIOPErrors.EXPIRED);*/
+        /!*} else if (!opts.verPayload.iat || opts.verPayload.iat > (Date.now() / 1000)) {
+                          throw Error(SIOPErrors.EXPIRED);*!/
         // todo: Add iat check
+
+       */
       }
       if ((opts.verPayload.aud && !opts.audience) || (!opts.verPayload.aud && opts.audience)) {
-        throw Error(SIOPErrors.BAD_PARAMS);
+        throw Error(SIOPErrors.NO_AUDIENCE);
       } else if (opts.audience && opts.audience != opts.verPayload.aud) {
         throw Error(SIOPErrors.INVALID_AUDIENCE);
       }

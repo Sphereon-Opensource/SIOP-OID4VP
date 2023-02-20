@@ -180,7 +180,7 @@ describe('OP should', () => {
       nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObjectJwt);
 
       const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthorizationRequest(requestURI.encodedUri);
-      console.log(JSON.stringify(verifiedRequest));
+      // console.log(JSON.stringify(verifiedRequest));
       expect(verifiedRequest.issuer).toMatch(mockEntity.did);
       expect(verifiedRequest.signer).toMatchObject({
         id: `${mockEntity.did}#controller`,
@@ -254,7 +254,7 @@ describe('OP should', () => {
       .build()
 
       .verifyAuthorizationRequest(requestURI.encodedUri);
-    console.log(JSON.stringify(verifiedRequest));
+    // console.log(JSON.stringify(verifiedRequest));
     expect(verifiedRequest.issuer).toMatch(rpMockEntity.did);
     expect(verifiedRequest.signer).toMatchObject({
       id: `${rpMockEntity.did}#controller`,

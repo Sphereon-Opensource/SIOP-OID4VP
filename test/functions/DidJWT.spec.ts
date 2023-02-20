@@ -19,7 +19,7 @@ describe('DidJWT ', () => {
   it('getIssuerDidFromPayload: should pass if issuer is correct', async function () {
     const decoded: JWTDecoded = parseJWT(validJWT);
     const result = getSubDidFromPayload(decoded.payload);
-    console.log('result:', result);
+    expect(result).toBeDefined();
   });
 
   it('isIssSelfIssued: should pass if fails', async function () {

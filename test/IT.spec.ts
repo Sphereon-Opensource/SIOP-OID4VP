@@ -60,6 +60,13 @@ const presentationSignCallback: PresentationSignCallback = async (_args) => ({
   },
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
+  verified: true,
+});
 function getPresentationDefinition(): IPresentationDefinition {
   return {
     id: 'Insurance Plans',
@@ -1387,10 +1394,6 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
     };
 
-    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
-      verified: true,
-    });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId('test_client_id')
       .withScope('test')
@@ -1516,10 +1519,6 @@ describe('RP and OP interaction should', () => {
 
     const eventEmitter = new EventEmitter();
     const replayRegistry = new ReplayRegistry(eventEmitter);
-
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
-      verified: true,
-    });
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId('test_client_id')
       .withScope('test')
@@ -1600,10 +1599,7 @@ describe('RP and OP interaction should', () => {
     };
     const eventEmitter = new EventEmitter();
     const replayRegistry = new ReplayRegistry(eventEmitter);
-    const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
-      verified: true,
-    });
+
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
@@ -1656,10 +1652,7 @@ describe('RP and OP interaction should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
     const eventEmitter = new EventEmitter();
     const replayRegistry = new ReplayRegistry(eventEmitter);
-    const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
-      verified: true,
-    });
+
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
@@ -1750,10 +1743,7 @@ describe('RP and OP interaction should', () => {
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
     const eventEmitter = new EventEmitter();
     const replayRegistry = new ReplayRegistry(eventEmitter);
-    const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ verified: true });
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
-      verified: true,
-    });
+
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
