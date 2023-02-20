@@ -180,10 +180,10 @@ export class RP {
       newOpts.requestObject.payload.nonce = nonce;
     }
     if (opts?.claims?.propertyValue) {
-      if (isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opts.nonce.targets)) {
+      if (isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opts.claims.targets)) {
         newOpts.payload.claims = { ...newOpts.payload.claims, ...opts.claims.propertyValue };
       }
-      if (isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, opts.nonce.targets)) {
+      if (isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, opts.claims.targets)) {
         newOpts.requestObject.payload.claims = { ...newOpts.requestObject.payload.claims, ...opts.claims.propertyValue };
       }
     }

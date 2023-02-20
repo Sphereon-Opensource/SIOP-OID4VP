@@ -56,7 +56,7 @@ describe('create JWT from Request JWT should', () => {
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
       responseTypesSupported: [ResponseType.ID_TOKEN],
-      subjectSyntaxTypesSupported: ['did:web'],
+      subject_syntax_types_supported: ['did:web'],
       vpFormats: {
         ldp_vc: {
           proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
@@ -65,9 +65,9 @@ describe('create JWT from Request JWT should', () => {
       issuer: ResponseIss.SELF_ISSUED_V2,
       registrationBy: {
         passBy: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
+        reference_uri: EXAMPLE_REFERENCE_URL,
       },
-      logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      logo_uri: VERIFIER_LOGO_FOR_CLIENT,
       clientName: VERIFIER_NAME_FOR_CLIENT,
       'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100310',
       clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -124,7 +124,7 @@ describe('create JWT from Request JWT should', () => {
       },*/
       requestObject: {
         passBy: PassBy.REFERENCE,
-        referenceUri: 'https://my-request.com/here',
+        reference_uri: 'https://my-request.com/here',
         signatureType: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
@@ -141,9 +141,9 @@ describe('create JWT from Request JWT should', () => {
         },
       },
       clientMetadata: {
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
@@ -154,7 +154,7 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         passBy: PassBy.VALUE,
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100311',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -169,7 +169,7 @@ describe('create JWT from Request JWT should', () => {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         issuer: ResponseIss.SELF_ISSUED_V2,
         responseTypesSupported: [ResponseType.ID_TOKEN],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormats: {
           ldp_vc: {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
@@ -177,9 +177,9 @@ describe('create JWT from Request JWT should', () => {
         },
         registrationBy: {
           passBy: PassBy.REFERENCE,
-          referenceUri: EXAMPLE_REFERENCE_URL,
+          reference_uri: EXAMPLE_REFERENCE_URL,
         },
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100312',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -218,7 +218,7 @@ describe('create JWT from Request JWT should', () => {
 
         requestObject: {
           passBy: PassBy.REFERENCE,
-          referenceUri: 'https://my-request.com/here',
+          reference_uri: 'https://my-request.com/here',
           signatureType: {
             hexPrivateKey: mockReqEntity.hexPrivateKey,
             did: mockReqEntity.did,
@@ -233,9 +233,9 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         clientMetadata: {
-          clientId: WELL_KNOWN_OPENID_FEDERATION,
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-          subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+          subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
@@ -246,7 +246,7 @@ describe('create JWT from Request JWT should', () => {
             },
           },
           passBy: PassBy.VALUE,
-          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100313',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -261,7 +261,7 @@ describe('create JWT from Request JWT should', () => {
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           issuer: ResponseIss.SELF_ISSUED_V2,
           responseTypesSupported: [ResponseType.ID_TOKEN],
-          subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+          subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
           vpFormats: {
             ldp_vc: {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
@@ -269,9 +269,9 @@ describe('create JWT from Request JWT should', () => {
           },
           registrationBy: {
             passBy: PassBy.REFERENCE,
-            referenceUri: EXAMPLE_REFERENCE_URL,
+            reference_uri: EXAMPLE_REFERENCE_URL,
           },
-          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100314',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -341,7 +341,7 @@ describe('create JWT from Request JWT should', () => {
       version: SupportedVersion.SIOPv2_ID1,
       requestObject: {
         passBy: PassBy.REFERENCE,
-        referenceUri: 'https://my-request.com/here',
+        reference_uri: 'https://my-request.com/here',
         signatureType: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
@@ -361,9 +361,9 @@ describe('create JWT from Request JWT should', () => {
         },
       },
       clientMetadata: {
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
@@ -374,7 +374,7 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         passBy: PassBy.VALUE,
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100315',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -424,15 +424,15 @@ describe('create JWT from Request JWT should', () => {
         responseTypesSupported: [ResponseType.ID_TOKEN],
         registrationBy: {
           passBy: PassBy.REFERENCE,
-          referenceUri: EXAMPLE_REFERENCE_URL,
+          reference_uri: EXAMPLE_REFERENCE_URL,
         },
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormats: {
           ldp_vc: {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100316',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -513,7 +513,7 @@ describe('create JWT from Request JWT should', () => {
       },
       requestObject: {
         passBy: PassBy.REFERENCE,
-        referenceUri: 'https://my-request.com/here',
+        reference_uri: 'https://my-request.com/here',
         signatureType: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
@@ -533,9 +533,9 @@ describe('create JWT from Request JWT should', () => {
         },
       },
       clientMetadata: {
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
@@ -546,7 +546,7 @@ describe('create JWT from Request JWT should', () => {
           },
         },
         passBy: PassBy.VALUE,
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -608,15 +608,15 @@ describe('create JWT from Request JWT should', () => {
         responseTypesSupported: [ResponseType.ID_TOKEN],
         registrationBy: {
           passBy: PassBy.REFERENCE,
-          referenceUri: EXAMPLE_REFERENCE_URL,
+          reference_uri: EXAMPLE_REFERENCE_URL,
         },
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectIdentifierType.DID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
         vpFormats: {
           ldp_vc: {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,

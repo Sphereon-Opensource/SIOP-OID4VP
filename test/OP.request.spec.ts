@@ -54,8 +54,8 @@ describe('OP Builder should', () => {
         .addIssuer(ResponseIss.SELF_ISSUED_V2)
         .response(ResponseMode.POST)
         .registration({
-          registrationBy: { passBy: PassBy.REFERENCE, referenceUri: 'https://registration.here' },
-          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          registrationBy: { passBy: PassBy.REFERENCE, reference_uri: 'https://registration.here' },
+          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100332',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -82,13 +82,13 @@ describe('OP should', () => {
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
       responseTypesSupported: [ResponseType.ID_TOKEN],
-      subjectSyntaxTypesSupported: ['did:web'],
+      subject_syntax_types_supported: ['did:web'],
       vpFormats: {
         ldp_vc: {
           proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
         },
       },
-      logoUri: VERIFIER_LOGO_FOR_CLIENT,
+      logo_uri: VERIFIER_LOGO_FOR_CLIENT,
       clientName: VERIFIER_NAME_FOR_CLIENT,
       'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100333',
       clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -137,7 +137,7 @@ describe('OP should', () => {
 
         requestObject: {
           passBy: PassBy.REFERENCE,
-          referenceUri: EXAMPLE_REFERENCE_URL,
+          reference_uri: EXAMPLE_REFERENCE_URL,
 
           signatureType: {
             hexPrivateKey: mockEntity.hexPrivateKey,
@@ -153,9 +153,9 @@ describe('OP should', () => {
           },
         },
         clientMetadata: {
-          clientId: WELL_KNOWN_OPENID_FEDERATION,
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-          subjectSyntaxTypesSupported: ['did:ethr', SubjectIdentifierType.DID],
+          subject_syntax_types_supported: ['did:ethr', SubjectIdentifierType.DID],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           responseTypesSupported: [ResponseType.ID_TOKEN],
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
@@ -166,7 +166,7 @@ describe('OP should', () => {
             jwt: { alg: [SigningAlgo.EDDSA, SigningAlgo.ES256K, SigningAlgo.ES256] },
           },
           passBy: PassBy.VALUE,
-          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100334',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -209,16 +209,16 @@ describe('OP should', () => {
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`, SigningAlgo.ES256K)
       .addDidMethod('ethr')
       .withClientMetadata({
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
         vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
-        subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+        subject_syntax_types_supported: ['did', 'did:ethr'],
         passBy: PassBy.VALUE,
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100335',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -245,9 +245,9 @@ describe('OP should', () => {
         vpFormats: { ldp_vc: { proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],
-        subjectSyntaxTypesSupported: ['did', 'did:ethr'],
+        subject_syntax_types_supported: ['did', 'did:ethr'],
         registrationBy: { passBy: PassBy.VALUE },
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100336',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,

@@ -8,10 +8,10 @@ export const assertValidRequestObjectOpts = (opts: RequestObjectOpts<ClaimPayloa
     throw new Error(SIOPErrors.BAD_PARAMS);
   } else if (opts.passBy !== PassBy.REFERENCE && opts.passBy !== PassBy.VALUE) {
     throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
-  } else if (opts.passBy === PassBy.REFERENCE && !opts.referenceUri) {
+  } else if (opts.passBy === PassBy.REFERENCE && !opts.reference_uri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   } else if (!opts.payload) {
-    if (opts.referenceUri) {
+    if (opts.reference_uri) {
       // reference URI, but no actual payload to host there!
       throw Error(SIOPErrors.REFERENCE_URI_NO_PAYLOAD);
     } else if (checkRequestObject) {

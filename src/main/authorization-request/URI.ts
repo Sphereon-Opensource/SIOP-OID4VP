@@ -85,7 +85,7 @@ export class URI implements AuthorizationRequestURI {
       return { passBy: PassBy.NONE };
     }
     if (this.authorizationRequestPayload.request_uri) {
-      return { passBy: PassBy.REFERENCE, referenceUri: this.authorizationRequestPayload.request_uri };
+      return { passBy: PassBy.REFERENCE, reference_uri: this.authorizationRequestPayload.request_uri };
     }
     return { passBy: PassBy.VALUE };
   }
@@ -95,7 +95,7 @@ export class URI implements AuthorizationRequestURI {
       return { passBy: PassBy.NONE };
     }
     if (this.authorizationRequestPayload.registration_uri) {
-      return { passBy: PassBy.REFERENCE, referenceUri: this.authorizationRequestPayload.registration_uri };
+      return { passBy: PassBy.REFERENCE, reference_uri: this.authorizationRequestPayload.registration_uri };
     }
     return { passBy: PassBy.VALUE };
   }
@@ -122,7 +122,11 @@ export class URI implements AuthorizationRequestURI {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
     return await URI.fromAuthorizationRequestPayload(
-      authorizationRequest.options.requestObject,
+      {
+        ...authorizationRequest.options.requestObject,
+        version: authorizationRequest.options.version,
+        uriScheme: authorizationRequest.options.uriScheme,
+      },
       authorizationRequest.payload,
       authorizationRequest.requestObject
     );
@@ -135,7 +139,7 @@ export class URI implements AuthorizationRequestURI {
    *
    */
   private static async fromAuthorizationRequestPayload(
-    opts: { uriScheme?: string; passBy: PassBy; referenceUri?: string; version?: SupportedVersion },
+    opts: { uriScheme?: string; passBy: PassBy; reference_uri?: string; version?: SupportedVersion },
     authorizationRequestPayload: AuthorizationRequestPayload | string,
     requestObject?: RequestObject
   ): Promise<URI> {
@@ -145,13 +149,7 @@ export class URI implements AuthorizationRequestURI {
       }
       authorizationRequestPayload = {}; // No auth request payload, so the eventual URI will contain a `request_uri` or `request` value only
     }
-    const scheme = opts.uriScheme
-      ? opts.uriScheme.endsWith('://')
-        ? opts.uriScheme
-        : `${opts.uriScheme}://`
-      : opts?.version && opts.version === SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1
-      ? 'openid-vc://'
-      : 'openid://';
+
     const isJwt = typeof authorizationRequestPayload === 'string';
     const requestObjectJwt = requestObject
       ? await requestObject.toJwt()
@@ -172,32 +170,51 @@ export class URI implements AuthorizationRequestURI {
         assertValidRPRegistrationMedataPayload(requestObjectPayload.registration);
       }
     }
-    const authorizationRequest: AuthorizationRequestPayload =
+    const uniformAuthorizationRequestPayload: AuthorizationRequestPayload =
       typeof authorizationRequestPayload === 'string' ? (requestObjectPayload as AuthorizationRequestPayload) : authorizationRequestPayload;
-    if (!authorizationRequest) {
+    if (!uniformAuthorizationRequestPayload) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
     const type = opts.passBy;
     if (!type) {
       throw new Error(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
     }
+    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestObjectJwt);
+
+    let scheme;
+    if (opts.uriScheme) {
+      scheme = opts.uriScheme.endsWith('://') ? opts.uriScheme : `${opts.uriScheme}://`;
+    } else if (opts.version) {
+      if (opts.version === SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1) {
+        scheme = 'openid-vc://';
+      } else {
+        scheme = 'openid://';
+      }
+    } else {
+      try {
+        scheme =
+          (await authorizationRequest.getSupportedVersion()) === SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1 ? 'openid-vc://' : 'openid://';
+      } catch (error: unknown) {
+        scheme = 'openid://';
+      }
+    }
 
     if (type === PassBy.REFERENCE) {
-      if (!opts.referenceUri) {
+      if (!opts.reference_uri) {
         throw new Error(SIOPErrors.NO_REFERENCE_URI);
       }
-      authorizationRequest.request_uri = opts.referenceUri;
-      delete authorizationRequest.request;
+      uniformAuthorizationRequestPayload.request_uri = opts.reference_uri;
+      delete uniformAuthorizationRequestPayload.request;
     } else if (type === PassBy.VALUE) {
-      authorizationRequest.request = requestObjectJwt;
-      delete authorizationRequest.request_uri;
+      uniformAuthorizationRequestPayload.request = requestObjectJwt;
+      delete uniformAuthorizationRequestPayload.request_uri;
     }
     return new URI({
       scheme,
-      encodedUri: `${scheme}?${encodeJsonAsURI(authorizationRequest)}`,
+      encodedUri: `${scheme}?${encodeJsonAsURI(uniformAuthorizationRequestPayload)}`,
       encodingFormat: UrlEncodingFormat.FORM_URL_ENCODED,
       // requestObjectBy: opts.requestBy,
-      authorizationRequestPayload: authorizationRequest,
+      authorizationRequestPayload: uniformAuthorizationRequestPayload,
       requestObjectJwt: requestObjectJwt,
     });
   }

@@ -3,7 +3,7 @@ import { decodeJWT } from 'did-jwt';
 import { ClaimPayloadCommonOpts, ClaimPayloadOptsVID1, CreateAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidAuthorizationRequestOpts } from '../authorization-request/Opts';
 import { signDidJwtPayload } from '../did';
-import { fetchByReferenceOrUseByValue } from '../helpers';
+import { fetchByReferenceOrUseByValue, removeNullUndefined } from '../helpers';
 import { AuthorizationRequestPayload, RequestObjectJwt, RequestObjectPayload, SIOPErrors } from '../types';
 
 import { assertValidRequestObjectOpts } from './Opts';
@@ -41,7 +41,10 @@ export class RequestObject {
   public static async fromOpts(authorizationRequestOpts: CreateAuthorizationRequestOpts) {
     assertValidAuthorizationRequestOpts(authorizationRequestOpts);
     const requestObjectOpts = RequestObject.mergeOAuth2AndOpenIdProperties(authorizationRequestOpts);
-    const mergedOpts = { ...authorizationRequestOpts, requestObject: { ...authorizationRequestOpts.requestObject, ...requestObjectOpts } };
+    const mergedOpts = {
+      ...authorizationRequestOpts,
+      requestObject: { ...authorizationRequestOpts.requestObject, ...requestObjectOpts },
+    };
     return new RequestObject(mergedOpts, await createRequestObjectPayload(mergedOpts));
   }
 
@@ -82,8 +85,13 @@ export class RequestObject {
       if (!this.jwt) {
         return undefined;
       }
-      this.payload = decodeJWT(this.jwt).payload as RequestObjectPayload;
+      this.payload = removeNullUndefined(decodeJWT(this.jwt).payload) as RequestObjectPayload;
       this.removeRequestProperties();
+      if (this.payload.registration_uri) {
+        delete this.payload.registration;
+      } else if (this.payload.registration) {
+        delete this.payload.registration_uri;
+      }
     }
     assertValidRequestObjectPayload(this.payload);
     return this.payload;

@@ -14,7 +14,7 @@ class TestVectors {
   };
   public static request_uri = 'https://example/service/api/v1/presentation-request/8006b5fb-6e3b-42d1-a2be-55ed2a08073d';
   public static did =
-    'did:ion:EiDXRE6GPp716GZvx404LFygQoWshiIqhOFNFBZqoZtD3g:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkFzMXNXd3RsTHdRUTgwMElLdC00aEZTMXRKcV9jeDBkSGFmODJUTTJMWUUiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUJRWHBqSk9vQ0dpVFp6NVd3ZkE3Y3BqNzFaeG9ZUTQ0cjI1S1NGSEFtZHFRIn0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlDcEt6cEdrWlNadnRVMG1ETE1QZUZSNHJ4SzlralJVaWFLenluZ3JZd2xVZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQ3NfQjVHdEczemR4Vm9wNTdxWlRjb3AzMVRDRDFuVFVXWmxfVFJ5VXlMNncifX0';
+    'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0';
   public static kid = `${TestVectors.did}#key-1`;
 }
 
@@ -37,10 +37,11 @@ describe('RP', () => {
       .withClientMetadata(
         {
           passBy: PassBy.VALUE,
-          logoUri: 'https://example.com/verifier-icon.png',
+          // targets: [PropertyTarget.REQUEST_OBJECT],
+          logo_uri: 'https://example.com/verifier-icon.png',
           tos_uri: 'https://example.com/verifier-info',
           clientName: 'Example Verifier',
-          vp_formats: {
+          vpFormatsSupported: {
             jwt_vc: {
               alg: ['EdDSA', 'ES256K'],
             },
@@ -48,21 +49,21 @@ describe('RP', () => {
               alg: ['EdDSA', 'ES256K'],
             },
           },
-          subjectSyntaxTypesSupported: ['did:ion'],
+          subject_syntax_types_supported: ['did:ion'],
         },
         PropertyTarget.REQUEST_OBJECT
       )
-      .withRedirectUri('https://example.com/siop-response')
+      .withRedirectUri('https://example.com/siop-response', PropertyTarget.REQUEST_OBJECT)
       .withRequestBy(PassBy.REFERENCE, TestVectors.request_uri)
       .addDidMethod('ion')
       .withInternalSignature(hexPrivateKey, TestVectors.did, TestVectors.kid, SigningAlgo.EDDSA)
 
       .build();
-    console.log(rp);
+    console.log(JSON.stringify(rp, null, 2));
 
     const authRequest = await rp.createAuthorizationRequest({
-      nonce: { propertyValue: 'bcceb347-1374-49b8-ace0-b868162c122d', targets: PropertyTarget.REQUEST_OBJECT },
-      state: { propertyValue: '8006b5fb-6e3b-42d1-a2be-55ed2a08073d', targets: PropertyTarget.REQUEST_OBJECT },
+      nonce: { propertyValue: '40252afc-6a82-4a2e-905f-e41f122ef575', targets: PropertyTarget.REQUEST_OBJECT },
+      state: { propertyValue: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9', targets: PropertyTarget.REQUEST_OBJECT },
       claims: {
         propertyValue: {
           vp_token: {
@@ -71,7 +72,7 @@ describe('RP', () => {
                 {
                   schema: [
                     {
-                      uri: 'https://VerifiedEmployee',
+                      uri: 'VerifiedEmployee',
                     },
                   ],
                   purpose: 'We need to verify that you have a valid VerifiedEmployee Verifiable Credential.',
@@ -79,14 +80,64 @@ describe('RP', () => {
                   id: 'VerifiedEmployeeVC',
                 },
               ],
-              id: '8006b5fb-6e3b-42d1-a2be-55ed2a08073d',
+              id: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
             },
           },
         },
         targets: PropertyTarget.REQUEST_OBJECT,
       },
     });
-    console.log(JSON.stringify(authRequest.payload, null, 2));
+    console.log('AuthReq Payload: ' + JSON.stringify(authRequest.payload, null, 2));
+
+    console.log('Request Object Payload: ' + JSON.stringify(await authRequest.requestObject.getPayload(), null, 2));
+
+    expect(await authRequest.requestObject.getPayload()).toEqual({
+      response_type: 'id_token',
+      nonce: '40252afc-6a82-4a2e-905f-e41f122ef575',
+      client_id:
+        'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0',
+      response_mode: 'post',
+      // "nbf" : 1674772063,
+      scope: 'openid',
+      claims: {
+        vp_token: {
+          presentation_definition: {
+            input_descriptors: [
+              {
+                schema: [
+                  {
+                    uri: 'VerifiedEmployee',
+                  },
+                ],
+                purpose: 'We need to verify that you have a valid VerifiedEmployee Verifiable Credential.',
+                name: 'VerifiedEmployeeVC',
+                id: 'VerifiedEmployeeVC',
+              },
+            ],
+            id: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
+          },
+        },
+      },
+      registration: {
+        logo_uri: 'https://example.com/verifier-icon.png',
+        tos_uri: 'https://example.com/verifier-info',
+        client_name: 'Example Verifier',
+        vp_formats: {
+          jwt_vc: {
+            alg: ['EdDSA', 'ES256K'],
+          },
+          jwt_vp: {
+            alg: ['EdDSA', 'ES256K'],
+          },
+        },
+        subject_syntax_types_supported: ['did:ion'],
+      },
+      state: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
+      redirect_uri: 'https://example.com/siop-response' /*,
+        "exp" : 1674775663,
+        "iat" : 1674772063,
+        "jti" : "f0e6dcf5-3fe6-4507-adc9-b496daf34512"*/,
+    });
 
     const uri = await authRequest.uri();
 

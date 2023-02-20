@@ -1,7 +1,7 @@
 import { PresentationDefinitionWithLocation } from '../authorization-response';
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
 import { getAudience, getResolver, parseJWT, verifyDidJWT } from '../did';
-import { fetchByReferenceOrUseByValue } from '../helpers';
+import { fetchByReferenceOrUseByValue, removeNullUndefined } from '../helpers';
 import { authorizationRequestVersionDiscovery } from '../helpers/SIOPSpecVersion';
 import { RequestObject } from '../request-object';
 import {
@@ -31,7 +31,7 @@ export class AuthorizationRequest {
 
   private constructor(payload: AuthorizationRequestPayload, requestObject?: RequestObject, opts?: CreateAuthorizationRequestOpts, uri?: URI) {
     this._options = opts;
-    this._payload = payload;
+    this._payload = removeNullUndefined(payload);
     this._requestObject = requestObject;
     this._uri = uri;
   }
@@ -194,7 +194,7 @@ export class AuthorizationRequest {
   public async toStateInfo(): Promise<RequestStateInfo> {
     const requestObject = await this.requestObject.getPayload();
     return {
-      client_id: this.options.clientMetadata.clientId,
+      client_id: this.options.clientMetadata.client_id,
       iat: requestObject.iat ?? this.payload.iat,
       nonce: requestObject.nonce ?? this.payload.nonce,
       state: this.payload.state,

@@ -21,6 +21,7 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
         version,
         payload: {
           ...opts.builder.authorizationRequestPayload,
+          // ...(isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opts.builder.requestObjectBy.targets) ? {passBy: opts.builder.requestObjectBy.passBy, request_uri: opts.buigfdlder.requestObjectBy.referenceUri}: {})
           //response_types_supported: opts.builder.clientMetadata?.responseTypesSupported,
           // subject_types_supported: opts.builder.clientMetadata?.subjectTypesSupported,
           // request_object_signing_alg_values_supported: opts.builder.clientMetadata?.requestObjectSigningAlgValuesSupported
@@ -50,14 +51,14 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
 
 export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builder?: Builder; verifyOpts?: VerifyAuthorizationResponseOpts }) => {
   if (opts?.builder?.resolvers.size && opts.builder?.clientMetadata) {
-    opts.builder.clientMetadata.subjectSyntaxTypesSupported = mergeAllDidMethods(
-      opts.builder.clientMetadata.subjectSyntaxTypesSupported,
+    opts.builder.clientMetadata.subject_syntax_types_supported = mergeAllDidMethods(
+      opts.builder.clientMetadata.subject_syntax_types_supported,
       opts.builder.resolvers
     );
   }
   let resolver: Resolvable;
   if (opts.builder) {
-    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.clientMetadata.subjectSyntaxTypesSupported, opts.builder.resolvers);
+    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.clientMetadata.subject_syntax_types_supported, opts.builder.resolvers);
   }
   return opts.builder
     ? {
@@ -67,7 +68,7 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
           wellknownDIDVerifyCallback: opts.builder.verifyCallback,
           presentationVerificationCallback: opts.builder.presentationVerificationCallback,
           resolveOpts: {
-            subjectSyntaxTypesSupported: opts.builder.clientMetadata.subjectSyntaxTypesSupported,
+            subjectSyntaxTypesSupported: opts.builder.clientMetadata.subject_syntax_types_supported,
             resolver: resolver,
           },
           supportedVersions: opts.builder.supportedVersions,

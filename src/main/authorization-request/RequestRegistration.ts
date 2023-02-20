@@ -1,4 +1,4 @@
-import { LanguageTagUtils } from '../helpers';
+import { LanguageTagUtils, removeNullUndefined } from '../helpers';
 import {
   ClientMetadataOpts,
   PassBy,
@@ -20,32 +20,32 @@ export const assertValidRequestRegistrationOpts = (opts: ClientMetadataOpts) => 
     throw new Error(SIOPErrors.REGISTRATION_NOT_SET);
   } else if (opts.passBy !== PassBy.REFERENCE && opts.passBy !== PassBy.VALUE) {
     throw new Error(SIOPErrors.REGISTRATION_OBJECT_TYPE_NOT_SET);
-  } else if (opts.passBy === PassBy.REFERENCE && !opts.referenceUri) {
+  } else if (opts.passBy === PassBy.REFERENCE && !opts.reference_uri) {
     throw new Error(SIOPErrors.NO_REFERENCE_URI);
   }
 };
 
 const createRequestRegistrationPayload = async (
   opts: ClientMetadataOpts,
-  metatadaPayload: RPRegistrationMetadataPayload,
+  metadataPayload: RPRegistrationMetadataPayload,
   version: SupportedVersion
 ): Promise<RequestRegistrationPayloadProperties | RequestClientMetadataPayloadProperties> => {
   assertValidRequestRegistrationOpts(opts);
 
   if (opts.passBy == PassBy.VALUE) {
     if (version >= SupportedVersion.SIOPv2_D11.valueOf()) {
-      return { client_metadata: metatadaPayload };
+      return { client_metadata: removeNullUndefined(metadataPayload) };
     } else {
-      return { registration: metatadaPayload };
+      return { registration: removeNullUndefined(metadataPayload) };
     }
   } else {
     if (version >= SupportedVersion.SIOPv2_D11.valueOf()) {
       return {
-        client_metadata_uri: opts.referenceUri,
+        client_metadata_uri: opts.reference_uri,
       };
     } else {
       return {
-        registration_uri: opts.referenceUri,
+        registration_uri: opts.reference_uri,
       };
     }
   }
@@ -77,12 +77,13 @@ const createRPRegistrationMetadataPayload = (opts: RPRegistrationMetadataOpts): 
     response_types_supported: opts.responseTypesSupported,
     scopes_supported: opts.scopesSupported,
     subject_types_supported: opts.subjectTypesSupported,
-    subject_syntax_types_supported: opts.subjectSyntaxTypesSupported || ['did:web:', 'did:ion:'],
+    subject_syntax_types_supported: opts.subject_syntax_types_supported || ['did:web:', 'did:ion:'],
     vp_formats: opts.vpFormatsSupported,
     client_name: opts.clientName,
-    logo_uri: opts.logoUri,
+    logo_uri: opts.logo_uri,
+    tos_uri: opts.tos_uri,
     client_purpose: opts.clientPurpose,
-    client_id: opts.clientId,
+    client_id: opts.client_id,
   };
 
   const languageTagEnabledFieldsNamesMapping = new Map<string, string>();
@@ -95,5 +96,5 @@ const createRPRegistrationMetadataPayload = (opts: RPRegistrationMetadataOpts): 
     rpRegistrationMetadataPayload[key] = value;
   });
 
-  return rpRegistrationMetadataPayload;
+  return removeNullUndefined(rpRegistrationMetadataPayload);
 };

@@ -255,7 +255,7 @@ describe('verifyJWT should', () => {
 
       requestObject: {
         passBy: PassBy.REFERENCE,
-        referenceUri: EXAMPLE_REFERENCE_URL,
+        reference_uri: EXAMPLE_REFERENCE_URL,
 
         signatureType: {
           hexPrivateKey:
@@ -275,20 +275,20 @@ describe('verifyJWT should', () => {
         },
       },
       clientMetadata: {
-        clientId: WELL_KNOWN_OPENID_FEDERATION,
+        client_id: WELL_KNOWN_OPENID_FEDERATION,
         responseTypesSupported: [ResponseType.ID_TOKEN],
         scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
         subjectTypesSupported: [SubjectType.PAIRWISE],
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        subjectSyntaxTypesSupported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
+        subject_syntax_types_supported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
         vpFormatsSupported: {
           ldp_vc: {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
           },
         },
         passBy: PassBy.VALUE,
-        logoUri: VERIFIER_LOGO_FOR_CLIENT,
+        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100308',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
@@ -323,7 +323,7 @@ describe('verifyJWT should', () => {
 
         requestObject: {
           passBy: PassBy.REFERENCE,
-          referenceUri: 'https://my-request.com/here',
+          reference_uri: 'https://my-request.com/here',
           signatureType: {
             hexPrivateKey: mockEntity.hexPrivateKey,
             did: mockEntity.did,
@@ -342,20 +342,20 @@ describe('verifyJWT should', () => {
           },
         },
         clientMetadata: {
-          clientId: WELL_KNOWN_OPENID_FEDERATION,
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
           responseTypesSupported: [ResponseType.ID_TOKEN],
           scopesSupported: [Scope.OPENID, Scope.OPENID_DIDAUTHN],
           subjectTypesSupported: [SubjectType.PAIRWISE],
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
           requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-          subjectSyntaxTypesSupported: ['did:ethr:'],
+          subject_syntax_types_supported: ['did:ethr:'],
           vpFormatsSupported: {
             ldp_vc: {
               proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
             },
           },
           passBy: PassBy.VALUE,
-          logoUri: VERIFIER_LOGO_FOR_CLIENT,
+          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100309',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,

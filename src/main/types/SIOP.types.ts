@@ -12,7 +12,7 @@ import { VerifyCallback as WellknownDIDVerifyCallback } from '@sphereon/wellknow
 import { Signer } from 'did-jwt';
 import { VerificationMethod } from 'did-resolver';
 
-import { AuthorizationRequest, CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from '../authorization-request';
+import { AuthorizationRequest, CreateAuthorizationRequestOpts, PropertyTargets, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import {
   AuthorizationResponseOpts,
   PresentationDefinitionWithLocation,
@@ -205,7 +205,7 @@ interface DiscoveryMetadataCommonOpts {
   idTokenSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
   //TODO add the check: Mandatory if PassBy.Value
-  subjectSyntaxTypesSupported?: string[];
+  subject_syntax_types_supported?: string[];
   tokenEndpoint?: string; // from openid connect discovery 1_0
   userinfoEndpoint?: string; // from openid connect discovery 1_0
   jwksUri?: string; // from openid connect discovery 1_0
@@ -240,7 +240,7 @@ interface DiscoveryMetadataCommonOpts {
 
 //same for jwt_vc
 interface DiscoveryMetadataOptsVID1 extends DiscoveryMetadataCommonOpts {
-  clientId?: string; // from oidc4vp
+  client_id?: string; // from oidc4vp
   redirectUris?: string[] | string; // from oidc4vp
   clientName?: string; // from oidc4vp
   tokenEndpointAuthMethod?: string; // from oidc4vp
@@ -252,7 +252,7 @@ interface DiscoveryMetadataOptsVID1 extends DiscoveryMetadataCommonOpts {
 }
 
 interface JWT_VCDiscoveryMetadataOpts extends DiscoveryMetadataOptsVID1 {
-  logoUri?: string;
+  logo_uri?: string;
   clientPurpose?: string;
 }
 
@@ -354,19 +354,22 @@ export type ClientMetadataOpts = RPRegistrationMetadataOpts & ClientMetadataProp
 
 export type ResponseRegistrationOpts = DiscoveryMetadataOpts & { registrationBy: ClientMetadataProperties };
 
-export type RPRegistrationMetadataOpts = Pick<
-  DiscoveryMetadataOpts,
-  | 'clientId'
-  | 'idTokenSigningAlgValuesSupported'
-  | 'requestObjectSigningAlgValuesSupported'
-  | 'responseTypesSupported'
-  | 'scopesSupported'
-  | 'subjectTypesSupported'
-  | 'subjectSyntaxTypesSupported'
-  | 'vpFormatsSupported'
-  | 'clientName'
-  | 'logoUri'
-  | 'clientPurpose'
+export type RPRegistrationMetadataOpts = Partial<
+  Pick<
+    DiscoveryMetadataOpts,
+    | 'client_id'
+    | 'idTokenSigningAlgValuesSupported'
+    | 'requestObjectSigningAlgValuesSupported'
+    | 'responseTypesSupported'
+    | 'scopesSupported'
+    | 'subjectTypesSupported'
+    | 'subject_syntax_types_supported'
+    | 'vpFormatsSupported'
+    | 'clientName'
+    | 'logo_uri'
+    | 'tos_uri'
+    | 'clientPurpose'
+  >
 > & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
@@ -397,7 +400,9 @@ export interface CommonSupportedMetadata {
 
 export interface ObjectBy {
   passBy: PassBy;
-  referenceUri?: string; // for pass by reference
+  reference_uri?: string; // for pass by reference
+
+  targets?: PropertyTargets;
 }
 
 export enum AuthenticationContextReferences {

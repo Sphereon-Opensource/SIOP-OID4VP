@@ -159,7 +159,7 @@ export const AuthorizationResponseOptsSchemaObj = {
                 }
               ]
             },
-            "subjectSyntaxTypesSupported": {
+            "subject_syntax_types_supported": {
               "type": "array",
               "items": {
                 "type": "string"
@@ -419,7 +419,7 @@ export const AuthorizationResponseOptsSchemaObj = {
             "opTosUri": {
               "type": "string"
             },
-            "clientId": {
+            "client_id": {
               "type": "string"
             },
             "redirectUris": {
@@ -453,7 +453,7 @@ export const AuthorizationResponseOptsSchemaObj = {
             "vpFormats": {
               "$ref": "#/definitions/Format"
             },
-            "logoUri": {
+            "logo_uri": {
               "type": "string"
             },
             "clientPurpose": {
@@ -555,7 +555,7 @@ export const AuthorizationResponseOptsSchemaObj = {
                 }
               ]
             },
-            "subjectSyntaxTypesSupported": {
+            "subject_syntax_types_supported": {
               "type": "array",
               "items": {
                 "type": "string"
@@ -815,7 +815,7 @@ export const AuthorizationResponseOptsSchemaObj = {
             "opTosUri": {
               "type": "string"
             },
-            "clientId": {
+            "client_id": {
               "type": "string"
             },
             "redirectUris": {
@@ -945,7 +945,7 @@ export const AuthorizationResponseOptsSchemaObj = {
                 }
               ]
             },
-            "subjectSyntaxTypesSupported": {
+            "subject_syntax_types_supported": {
               "type": "array",
               "items": {
                 "type": "string"
@@ -1234,8 +1234,11 @@ export const AuthorizationResponseOptsSchemaObj = {
         "passBy": {
           "$ref": "#/definitions/PassBy"
         },
-        "referenceUri": {
+        "reference_uri": {
           "type": "string"
+        },
+        "targets": {
+          "$ref": "#/definitions/PropertyTargets"
         },
         "id_token_encrypted_response_alg": {
           "$ref": "#/definitions/EncKeyAlgorithm"
@@ -1256,6 +1259,27 @@ export const AuthorizationResponseOptsSchemaObj = {
         "REFERENCE",
         "VALUE"
       ]
+    },
+    "PropertyTargets": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/PropertyTarget"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PropertyTarget"
+          }
+        }
+      ]
+    },
+    "PropertyTarget": {
+      "type": "string",
+      "enum": [
+        "authorization-request",
+        "request-object"
+      ],
+      "description": "Determines where a property will end up. Methods that support this argument are optional. If you do not provide any value it will default to all targets."
     },
     "EncKeyAlgorithm": {
       "type": "string",

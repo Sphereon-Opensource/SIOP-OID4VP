@@ -142,10 +142,11 @@ export default class Builder {
     return this;
   }
 
-  withRequestBy(passBy: PassBy, referenceUri?: string): Builder {
+  withRequestBy(passBy: PassBy, referenceUri?: string, targets?: PropertyTargets): Builder {
     this.requestObjectBy = {
       passBy,
-      referenceUri,
+      reference_uri: referenceUri,
+      targets,
     };
     return this;
   }
@@ -157,12 +158,13 @@ export default class Builder {
   }
 
   withClientMetadata(clientMetadata: ClientMetadataOpts, targets?: PropertyTargets): Builder {
+    clientMetadata.targets = targets;
     if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
-      this._authorizationRequestPayload.request_registration = assignIfAuth({
+      this._authorizationRequestPayload.registration = assignIfAuth({
         propertyValue: clientMetadata,
         targets,
       });
-      this._requestObjectPayload.request_registration = assignIfRequestObject({
+      this._requestObjectPayload.registration = assignIfRequestObject({
         propertyValue: clientMetadata,
         targets,
       });

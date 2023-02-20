@@ -13,9 +13,9 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
   builder?: Builder;
   responseOpts?: AuthorizationResponseOpts;
 }): AuthorizationResponseOpts => {
-  if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subjectSyntaxTypesSupported) {
-    opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
-      opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+  if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subject_syntax_types_supported) {
+    opts.builder.responseRegistration.subject_syntax_types_supported = mergeAllDidMethods(
+      opts.builder.responseRegistration.subject_syntax_types_supported,
       opts.builder.resolvers
     );
   }
@@ -117,14 +117,18 @@ export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
   verifyOpts?: VerifyAuthorizationRequestOpts;
 }): VerifyAuthorizationRequestOpts => {
   if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration) {
-    opts.builder.responseRegistration.subjectSyntaxTypesSupported = mergeAllDidMethods(
-      opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+    opts.builder.responseRegistration.subject_syntax_types_supported = mergeAllDidMethods(
+      opts.builder.responseRegistration.subject_syntax_types_supported,
       opts.builder.resolvers
     );
   }
   let resolver: Resolvable;
   if (opts.builder) {
-    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.responseRegistration.subjectSyntaxTypesSupported, opts.builder.resolvers);
+    resolver = getResolverUnion(
+      opts.builder.customResolver,
+      opts.builder.responseRegistration.subject_syntax_types_supported,
+      opts.builder.resolvers
+    );
   }
   return opts.builder
     ? {
@@ -133,7 +137,7 @@ export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
           checkLinkedDomain: opts.builder.checkLinkedDomain,
           wellknownDIDVerifyCallback: opts.builder.verifyCallback,
           resolveOpts: {
-            subjectSyntaxTypesSupported: opts.builder.responseRegistration.subjectSyntaxTypesSupported,
+            subjectSyntaxTypesSupported: opts.builder.responseRegistration.subject_syntax_types_supported,
             resolver: resolver,
           },
         } as InternalVerification,
