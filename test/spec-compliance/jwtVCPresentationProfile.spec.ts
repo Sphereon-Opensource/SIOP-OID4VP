@@ -23,7 +23,11 @@ import {
 } from '../../src/main';
 
 let rp: RP;
-beforeAll(async () => {
+
+afterEach(() => {
+  nock.cleanAll();
+});
+beforeEach(async () => {
   await TestVectors.init();
 
   TestVectors.mockDID(TestVectors.issuerDID, TestVectors.issuerKID, TestVectors.issuerJwk);
