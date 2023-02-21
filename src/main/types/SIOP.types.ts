@@ -95,6 +95,7 @@ export interface VerifiedAuthorizationRequest extends VerifiedJWT {
   authorizationRequest: AuthorizationRequest;
   authorizationRequestPayload: AuthorizationRequestPayload;
   requestObject?: RequestObject; // The Request object
+  registrationMetadataPayload: RPRegistrationMetadataPayload;
   presentationDefinitions?: PresentationDefinitionWithLocation[]; // The optional presentation definition objects that the RP requests
   verifyOpts: VerifyAuthorizationRequestOpts; // The verification options for the authentication request
   versions: SupportedVersion[];

@@ -145,10 +145,10 @@ export class AuthorizationRequest {
     }
 
     const discoveryKey = mergedPayload['registration'] || mergedPayload['registration_uri'] ? 'registration' : 'client_metadata';
-    let registrationMetadata: RPRegistrationMetadataPayload;
+    let registrationMetadataPayload: RPRegistrationMetadataPayload;
     if (mergedPayload[discoveryKey] || mergedPayload[`${discoveryKey}_uri`]) {
-      registrationMetadata = await fetchByReferenceOrUseByValue(mergedPayload[`${discoveryKey}_uri`], mergedPayload[discoveryKey]);
-      assertValidRPRegistrationMedataPayload(registrationMetadata);
+      registrationMetadataPayload = await fetchByReferenceOrUseByValue(mergedPayload[`${discoveryKey}_uri`], mergedPayload[discoveryKey]);
+      assertValidRPRegistrationMedataPayload(registrationMetadataPayload);
       // TODO: We need to do something with the metadata probably
     }
     await checkWellknownDIDFromRequest(mergedPayload, opts);
@@ -158,6 +158,7 @@ export class AuthorizationRequest {
       authorizationRequest: this,
       verifyOpts: opts,
       presentationDefinitions,
+      registrationMetadataPayload,
       requestObject: this.requestObject,
       authorizationRequestPayload: this.payload,
       versions: await this.getSupportedVersionsFromPayload(),
