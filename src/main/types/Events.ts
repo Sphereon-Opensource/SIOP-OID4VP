@@ -48,3 +48,10 @@ export class AuthorizationEvent<T> {
     return !!this.error;
   }
 }
+
+export interface RegisterEventListener {
+  event: AuthorizationEvents | AuthorizationEvents[];
+
+  /* eslint-disable-next-line  @typescript-eslint/no-explicit-any */
+  listener: (...args: any[]) => void;
+}

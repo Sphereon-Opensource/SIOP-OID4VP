@@ -268,8 +268,8 @@ export default class Builder {
     return this;
   }
 
-  withEventEmitter(eventEmitter: EventEmitter): Builder {
-    this.eventEmitter = eventEmitter;
+  withEventEmitter(eventEmitter?: EventEmitter): Builder {
+    this.eventEmitter = eventEmitter ?? new EventEmitter();
     return this;
   }
 

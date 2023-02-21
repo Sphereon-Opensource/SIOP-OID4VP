@@ -2,15 +2,15 @@ import EventEmitter from 'events';
 
 import { AuthorizationRequest, URI, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import { AuthorizationResponse, AuthorizationResponseOpts, PresentationExchangeResponseOpts } from '../authorization-response';
-import { encodeJsonAsURI, formPost, post } from '../helpers';
+import { encodeJsonAsURI, post } from '../helpers';
 import {
   AuthorizationEvent,
   AuthorizationEvents,
-  AuthorizationResponseResult,
   ContentType,
   ExternalVerification,
   InternalVerification,
   ParsedAuthorizationRequestURI,
+  RegisterEventListener,
   ResponseMode,
   SIOPErrors,
   SIOPResonse,
@@ -39,14 +39,6 @@ export class OP {
 
   get verifyRequestOptions(): Partial<VerifyAuthorizationRequestOpts> {
     return this._verifyRequestOptions;
-  }
-
-  // TODO SK Can you please put some documentation on it?
-  public async postAuthenticationResponse(authorizationResponse: AuthorizationResponseResult): Promise<Response> {
-    const response = await formPost(authorizationResponse.responsePayload.idToken.aud, authorizationResponse.responsePayload.id_token, {
-      contentType: ContentType.FORM_URL_ENCODED,
-    });
-    return response.origResponse;
   }
 
   /**
@@ -176,6 +168,16 @@ export class OP {
   private async emitEvent(type: AuthorizationEvents, payload: { subject: unknown; error?: Error }): Promise<void> {
     if (this._eventEmitter) {
       this._eventEmitter.emit(type, new AuthorizationEvent(payload));
+    }
+  }
+
+  public addEventListener(register: RegisterEventListener) {
+    if (!this._eventEmitter) {
+      throw Error('Cannot add listeners if no event emitter is available');
+    }
+    const events = Array.isArray(register.event) ? register.event : [register.event];
+    for (const event of events) {
+      this._eventEmitter.addListener(event, register.listener);
     }
   }
 

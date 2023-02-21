@@ -18,6 +18,7 @@ import {
   CheckLinkedDomain,
   ExternalVerification,
   InternalVerification,
+  RegisterEventListener,
   SIOPErrors,
   SupportedVersion,
   VerifiedAuthenticationResponse,
@@ -211,6 +212,16 @@ export class RP {
   private async emitEvent(type: AuthorizationEvents, payload: { subject: unknown; error?: Error }): Promise<void> {
     if (this._eventEmitter) {
       this._eventEmitter.emit(type, new AuthorizationEvent(payload));
+    }
+  }
+
+  public addEventListener(register: RegisterEventListener) {
+    if (!this._eventEmitter) {
+      throw Error('Cannot add listeners if no event emitter is available');
+    }
+    const events = Array.isArray(register.event) ? register.event : [register.event];
+    for (const event of events) {
+      this._eventEmitter.addListener(event, register.listener);
     }
   }
 }
