@@ -83,7 +83,7 @@ export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
         verification: {
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,
-          wellknownDIDVerifyCallback: opts.builder.verifyCallback,
+          wellknownDIDVerifyCallback: opts.builder.wellknownDIDVerifyCallback,
           resolveOpts: {
             subjectSyntaxTypesSupported: opts.builder.responseRegistration.subject_syntax_types_supported,
             resolver: resolver,

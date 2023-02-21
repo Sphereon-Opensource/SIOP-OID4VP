@@ -41,7 +41,7 @@ export default class Builder {
   requestObjectBy: ObjectBy;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
   checkLinkedDomain?: CheckLinkedDomain;
-  verifyCallback?: VerifyCallback;
+  wellknownDIDVerifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
@@ -241,8 +241,8 @@ export default class Builder {
     return this;
   }
 
-  withVerifyCallback(verifyCallback: VerifyCallback): Builder {
-    this.verifyCallback = verifyCallback;
+  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback): Builder {
+    this.wellknownDIDVerifyCallback = wellknownDIDVerifyCallback;
     return this;
   }
 
@@ -307,7 +307,7 @@ export default class Builder {
     return this._requestObjectPayload;
   }
 
-  public mergedPayload(): Partial<AuthorizationRequestPayload> {
+  /* public mergedPayload(): Partial<AuthorizationRequestPayload> {
     return { ...this.authorizationRequestPayload, ...this.requestObjectPayload };
-  }
+  }*/
 }

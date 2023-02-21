@@ -162,7 +162,7 @@ describe('RP and OP interaction should', () => {
         .withResponseType(ResponseType.ID_TOKEN)
         .withRedirectUri(EXAMPLE_REDIRECT_URL)
         .withPresentationVerification(presentationVerificationCallback)
-        .withVerifyCallback(verifyCallback)
+        .withWellknownDIDVerifyCallback(verifyCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
         .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
         .withIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -189,8 +189,8 @@ describe('RP and OP interaction should', () => {
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
         .withExpiresIn(1000)
-        .addVerifyCallback(verifyCallback)
-        .addIssuer(ResponseIss.SELF_ISSUED_V2)
+        .withWellknownDIDVerifyCallback(verifyCallback)
+        .withIssuer(ResponseIss.SELF_ISSUED_V2)
         .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         //FIXME: Move payload options to seperate property
@@ -264,7 +264,7 @@ describe('RP and OP interaction should', () => {
       .withScope('test')
       .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
-      .withVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.VALUE)
@@ -290,7 +290,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
-      .addVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withRegistration({
@@ -363,7 +363,7 @@ describe('RP and OP interaction should', () => {
       .withScope('test')
       .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
-      .withVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.VALUE)
@@ -390,7 +390,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withExpiresIn(1000)
-      .addVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withRegistration({
@@ -462,7 +462,7 @@ describe('RP and OP interaction should', () => {
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withPresentationDefinition(getPresentationDefinition())
       .withPresentationVerification(presentationVerificationCallback)
-      .withVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.VALUE)
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
@@ -489,7 +489,7 @@ describe('RP and OP interaction should', () => {
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
       .withExpiresIn(1000)
-      .addVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withRegistration({
@@ -582,7 +582,7 @@ describe('RP and OP interaction should', () => {
         .withResponseType(ResponseType.ID_TOKEN)
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
         .withPresentationVerification(presentationVerificationCallback)
-        .withVerifyCallback(verifyCallback)
+        .withWellknownDIDVerifyCallback(verifyCallback)
         .withRedirectUri(EXAMPLE_REDIRECT_URL)
         .withRequestBy(PassBy.VALUE)
         .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
@@ -609,7 +609,7 @@ describe('RP and OP interaction should', () => {
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
         .withExpiresIn(1000)
-        .addVerifyCallback(verifyCallback)
+        .withWellknownDIDVerifyCallback(verifyCallback)
         .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
         .withRegistration({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -714,7 +714,7 @@ describe('RP and OP interaction should', () => {
       .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
-      .withVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withRequestBy(PassBy.VALUE)
@@ -746,7 +746,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
-      .addVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withRegistration({
@@ -853,7 +853,7 @@ describe('RP and OP interaction should', () => {
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
         .withPresentationVerification(presentationVerificationCallback)
         .withRevocationVerification(RevocationVerification.NEVER)
-        .withVerifyCallback(verifyCallback)
+        .withWellknownDIDVerifyCallback(verifyCallback)
         .withRedirectUri(EXAMPLE_REDIRECT_URL)
         .withRequestBy(PassBy.VALUE)
         .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
@@ -881,7 +881,7 @@ describe('RP and OP interaction should', () => {
       const op = OP.builder()
         .withPresentationSignCallback(presentationSignCallback)
         .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-        .addVerifyCallback(verifyCallback)
+        .withWellknownDIDVerifyCallback(verifyCallback)
         .withExpiresIn(1000)
         .addDidMethod('ethr')
         .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
@@ -974,7 +974,7 @@ describe('RP and OP interaction should', () => {
       .withResponseType([ResponseType.VP_TOKEN, ResponseType.ID_TOKEN])
       .withRevocationVerification(RevocationVerification.ALWAYS)
       .withPresentationVerification(presentationVerificationCallback)
-      .withVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withRevocationVerificationCallback(async () => {
         return { status: RevocationStatus.VALID };
@@ -1017,7 +1017,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withPresentationSignCallback(presentationSignCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-      .addVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withRegistration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -1280,7 +1280,7 @@ describe('RP and OP interaction should', () => {
       .withResponseType(ResponseType.ID_TOKEN)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withPresentationVerification(presentationVerificationCallback)
-      .withVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withRequestBy(PassBy.VALUE)
@@ -1310,7 +1310,7 @@ describe('RP and OP interaction should', () => {
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
-      .addVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
@@ -1439,7 +1439,7 @@ describe('RP and OP interaction should', () => {
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withPresentationSignCallback(presentationSignCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-      .addVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withRegistration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -1606,7 +1606,7 @@ describe('RP and OP interaction should', () => {
       .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withPresentationVerification(presentationVerificationCallback)
-      .withVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -1659,7 +1659,7 @@ describe('RP and OP interaction should', () => {
       .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withPresentationVerification(presentationVerificationCallback)
-      .withVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -1688,8 +1688,8 @@ describe('RP and OP interaction should', () => {
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
       .withExpiresIn(1000)
-      .addVerifyCallback(verifyCallback)
-      .addIssuer(ResponseIss.SELF_ISSUED_V2)
+      .withWellknownDIDVerifyCallback(verifyCallback)
+      .withIssuer(ResponseIss.SELF_ISSUED_V2)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       //FIXME: Move payload options to seperate property
@@ -1750,7 +1750,7 @@ describe('RP and OP interaction should', () => {
       .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withPresentationVerification(presentationVerificationCallback)
-      .withVerifyCallback(verifyCallback)
+      .withWellknownDIDVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
@@ -1779,8 +1779,8 @@ describe('RP and OP interaction should', () => {
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
       .withExpiresIn(1000)
-      .addVerifyCallback(verifyCallback)
-      .addIssuer(ResponseIss.SELF_ISSUED_V2)
+      .withWellknownDIDVerifyCallback(verifyCallback)
+      .withIssuer(ResponseIss.SELF_ISSUED_V2)
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       //FIXME: Move payload options to seperate property

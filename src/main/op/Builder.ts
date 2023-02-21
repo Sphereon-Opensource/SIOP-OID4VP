@@ -33,7 +33,7 @@ export class Builder {
   customResolver?: Resolvable;
   signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
-  verifyCallback?: VerifyCallback;
+  wellknownDIDVerifyCallback?: VerifyCallback;
   presentationSignCallback?: PresentationSignCallback;
   supportedVersions: SupportedVersion[];
   eventEmitter?: EventEmitter;
@@ -47,7 +47,7 @@ export class Builder {
     return this;
   }
 
-  addIssuer(issuer: ResponseIss): Builder {
+  withIssuer(issuer: ResponseIss): Builder {
     this.issuer = issuer;
     return this;
   }
@@ -115,8 +115,8 @@ export class Builder {
     return this;
   }
 
-  addVerifyCallback(verifyCallback: VerifyCallback) {
-    this.verifyCallback = verifyCallback;
+  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback) {
+    this.wellknownDIDVerifyCallback = wellknownDIDVerifyCallback;
     return this;
   }
 

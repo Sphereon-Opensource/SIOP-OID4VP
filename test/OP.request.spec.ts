@@ -51,7 +51,7 @@ describe('OP Builder should', () => {
       OP.builder()
         .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
         .addDidMethod('ethr')
-        .addIssuer(ResponseIss.SELF_ISSUED_V2)
+        .withIssuer(ResponseIss.SELF_ISSUED_V2)
         .withResponseMode(ResponseMode.POST)
         .withRegistration({
           passBy: PassBy.REFERENCE,
@@ -233,7 +233,7 @@ describe('OP should', () => {
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .withExpiresIn(1000)
-      .addIssuer(ResponseIss.SELF_ISSUED_V2)
+      .withIssuer(ResponseIss.SELF_ISSUED_V2)
       .addDidMethod('ethr')
       .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
       .withRegistration({
