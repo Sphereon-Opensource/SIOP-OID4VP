@@ -122,7 +122,8 @@ export const fetchByReferenceOrUseByValue = async <T>(referenceURI: string, valu
     try {
       response = await getWithUrl(referenceURI, textResponse);
     } catch (e) {
-      throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}. URL: ${referenceURI}`);
+      console.log(e);
+      throw new Error(`${SIOPErrors.REG_PASS_BY_REFERENCE_INCORRECTLY}: ${e.message}, URL: ${referenceURI}`);
     }
   }
   return response;

@@ -54,7 +54,7 @@ enum SIOPErrors {
   RESPONSE_STATUS_UNEXPECTED = 'Received unexpected response status',
   REG_OBJ_N_REG_URI_CANT_BE_SET_SIMULTANEOUSLY = 'Registration can either be passed by value or passed by reference. Hence, registration object and registration URI can not be set simultaneously',
   REG_OBJ_MALFORMED = 'The registration object is malformed.',
-  REG_PASS_BY_REFERENCE_INCORRECTLY = 'The registration by reference should always have a valid URL',
+  REG_PASS_BY_REFERENCE_INCORRECTLY = 'Request error',
   REGISTRATION_OBJECT_TYPE_NOT_SET = 'Registration object type is not set.',
   SIGNATURE_OBJECT_TYPE_NOT_SET = 'Signature object type is not set.',
   SIOP_VERSION_NOT_SUPPORTED = 'The SIOP spec version could not inferred from the authentication request payload',
