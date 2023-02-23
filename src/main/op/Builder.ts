@@ -31,11 +31,11 @@ export class Builder {
   responseMode?: ResponseMode = ResponseMode.POST;
   responseRegistration?: Partial<ResponseRegistrationOpts> = {};
   customResolver?: Resolvable;
-  signatureType: InternalSignature | ExternalSignature | SuppliedSignature;
+  signature?: InternalSignature | ExternalSignature | SuppliedSignature;
   checkLinkedDomain?: CheckLinkedDomain;
   wellknownDIDVerifyCallback?: VerifyCallback;
   presentationSignCallback?: PresentationSignCallback;
-  supportedVersions: SupportedVersion[];
+  supportedVersions?: SupportedVersion[];
   eventEmitter?: EventEmitter;
 
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): Builder {
@@ -100,22 +100,27 @@ export class Builder {
 */
 
   // Only internal and supplied signatures supported for now
-  signature(signatureType: InternalSignature | SuppliedSignature): Builder {
-    this.signatureType = signatureType;
+  withSignature(signature: InternalSignature | SuppliedSignature): Builder {
+    this.signature = signature;
     return this;
   }
 
-  internalSignature(hexPrivateKey: string, did: string, kid: string, alg: SigningAlgo, customJwtSigner?: Signer): Builder {
-    this.signature({ hexPrivateKey, did, kid, alg, customJwtSigner });
+  withInternalSignature(hexPrivateKey: string, did: string, kid: string, alg: SigningAlgo, customJwtSigner?: Signer): Builder {
+    this.withSignature({ hexPrivateKey, did, kid, alg, customJwtSigner });
     return this;
   }
 
-  suppliedSignature(signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>, did: string, kid: string, alg: SigningAlgo): Builder {
-    this.signature({ signature, did, kid, alg });
+  withSuppliedSignature(
+    signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
+    did: string,
+    kid: string,
+    alg: SigningAlgo
+  ): Builder {
+    this.withSignature({ signature, did, kid, alg });
     return this;
   }
 
-  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback) {
+  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback): Builder {
     this.wellknownDIDVerifyCallback = wellknownDIDVerifyCallback;
     return this;
   }
@@ -140,7 +145,7 @@ export class Builder {
     return this;
   }
 
-  withPresentationSignCallback(presentationSignCallback: PresentationSignCallback) {
+  withPresentationSignCallback(presentationSignCallback: PresentationSignCallback): Builder {
     this.presentationSignCallback = presentationSignCallback;
     return this;
   }
@@ -153,10 +158,10 @@ export class Builder {
   build(): OP {
     /*if (!this.responseRegistration) {
       throw Error('You need to provide response registrations values')
-    } else */ if (!this.signature) {
-      throw Error('You need to supply signature values');
-    } else if (!this.supportedVersions || this.supportedVersions.length === 0) {
-      throw Error('You need to configure supported spec version on an OP');
+    } else */ /*if (!this.withSignature) {
+      throw Error('You need to supply withSignature values');
+    } else */ if (!this.supportedVersions || this.supportedVersions.length === 0) {
+      this.supportedVersions = [SupportedVersion.SIOPv2_D11, SupportedVersion.SIOPv2_ID1, SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1];
     }
     // We ignore the private visibility, as we don't want others to use the OP directly
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment

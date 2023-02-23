@@ -64,7 +64,7 @@ function correctSchema(schemaString: string) {
   return schemaString.replace('"SuppliedSignature": {\n' +
     '      "type": "object",\n' +
     '      "properties": {\n' +
-    '        "signature": {\n' +
+    '        "withSignature": {\n' +
     '          "properties": {\n' +
     '            "isFunction": {\n' +
     '              "type": "boolean",\n' +
@@ -80,7 +80,7 @@ function correctSchema(schemaString: string) {
     '        }\n' +
     '      },\n' +
     '      "required": [\n' +
-    '        "signature",\n' +
+    '        "withSignature",\n' +
     '        "did",\n' +
     '        "kid"\n' +
     '      ],\n' +

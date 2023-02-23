@@ -213,7 +213,7 @@ describe('RP using test vectors', () => {
     const op = OP.builder()
       .addDidMethod('ion')
       .addSupportedVersion(SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1)
-      .internalSignature(TestVectors.holderHexPrivateKey, TestVectors.holderDID, TestVectors.holderKID, SigningAlgo.ES256K)
+      .withInternalSignature(TestVectors.holderHexPrivateKey, TestVectors.holderDID, TestVectors.holderKID, SigningAlgo.ES256K)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .build();
 
@@ -408,7 +408,7 @@ class TestVectors {
     '    "iat" : 1674772063,\n' +
     '    "jti" : "f0e6dcf5-3fe6-4507-adc9-b496daf34512"\n' +
     '  }.\n' +
-    '  [signature]\n';
+    '  [withSignature]\n';
 
   public static authorizationResponsePayload = {
     state: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',

@@ -20,7 +20,7 @@ export interface AuthorizationResponseOpts {
   registration?: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
 
-  signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
+  signature?: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
   nonce?: string;
   state?: string;
   responseMode?: ResponseMode;

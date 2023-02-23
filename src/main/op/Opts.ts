@@ -28,7 +28,7 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
         ...(opts.builder.responseRegistration as ResponseRegistrationOpts),
       },
       expiresIn: opts.builder.expiresIn,
-      signatureType: opts.builder.signatureType,
+      signature: opts.builder.signature,
       responseMode: opts.builder.responseMode,
     };
 

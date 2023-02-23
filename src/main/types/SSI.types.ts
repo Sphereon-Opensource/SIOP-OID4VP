@@ -1,11 +1,13 @@
 import { JWTVerifyOptions } from 'did-jwt';
 import { DIDDocument as DIFDIDDocument, Resolvable } from 'did-resolver';
-import { JWK } from 'jose';
 
 export interface ResolveOpts {
   jwtVerifyOpts?: JWTVerifyOptions;
   resolver?: Resolvable;
   resolveUrl?: string;
+
+  // By default we fallback to the universal resolver for max interop.
+  noUniversalResolverFallback?: boolean;
   subjectSyntaxTypesSupported?: string[];
 }
 
@@ -20,7 +22,7 @@ export interface ResolveOpts {
     publicKeyPem?: string;
     publicKeyJwk?: JWK;
 }*/
-export interface VerificationMethod {
+/*export interface VerificationMethod {
   id: string;
   type: string;
   controller: string;
@@ -28,7 +30,7 @@ export interface VerificationMethod {
   publicKeyMultibase?: string;
   publicKeyBase58?: string;
   publicKeyJwk?: JWK;
-}
+}*/
 /*
 export interface Authentication {
     type: string;

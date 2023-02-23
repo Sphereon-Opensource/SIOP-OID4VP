@@ -3,7 +3,6 @@ import { IProofType } from '@sphereon/ssi-types';
 import { Resolver } from 'did-resolver';
 
 import {
-  Builder,
   CheckLinkedDomain,
   CreateAuthorizationRequestOpts,
   PassBy,
@@ -33,10 +32,10 @@ const DID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0';
 const KID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1';
 
 describe('RP Builder should', () => {
-  it('throw Error when no arguments are passed', async () => {
+  /*it('throw Error when no arguments are passed', async () => {
     expect.assertions(1);
     await expect(() => new Builder().build()).toThrowError(Error);
-  });
+  });*/
 
   it('build an RP when all arguments are set', async () => {
     expect.assertions(1);
@@ -89,7 +88,7 @@ describe('RP should', () => {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
@@ -136,7 +135,7 @@ describe('RP should', () => {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,

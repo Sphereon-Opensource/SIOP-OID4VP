@@ -242,7 +242,7 @@ Flow diagram:
 10. Client does a HTTP POST to redirect_uri from the request (and the aud in the
     response): https://acme.com/siop/v1/sessions using "application/x-www-form-urlencoded"
 11. Web receives the ID token (auth response) and uses the RP's verify method
-12. RP performs the validation of the token, including signature validation, expiration and Verifiable Presentations if
+12. RP performs the validation of the token, including withSignature validation, expiration and Verifiable Presentations if
     any. It returns the Verified Auth Response to WEB
 13. WEB returns a 200 response to Client with a redirect to another page (logged in or confirmation of VP receipt etc).
 14. From that moment on Client can use the Auth Response as bearer token as long as it is valid
@@ -277,7 +277,7 @@ registration metadata will be sent as part of the Auth Request since we pass the
 we would have to host the data at the reference URL. The redirect URL means that the OP will need to deliver the
 auth response at the URL specified by the RP. Lastly we have enabled the 'ethr' DID method on the RP side for
 doing Auth Response checks with Ethereum DIDs in them. Please note that you can add multiple DID methods, and
-they have no influence on the DIDs being used to sign, the internal signature. We also populated the RP with
+they have no influence on the DIDs being used to sign, the internal withSignature. We also populated the RP with
 a `PresentationDefinition` claim, meaning we expect the OP to send in a Verifiable Presentation that matches our
 definition. You can pass where you expect this presentation_definition to end up via the required `location` property.
 This is either a top-level vp_token or it becomes part of the id_token.
@@ -299,7 +299,7 @@ const rp = RP.builder()
   .withPresentationVerification(presentationVerificationCallback)
   .addVerifyCallback(verifyCallback)
   .withRevocationVerification(RevocationVerification.NEVER)
-  .internalSignature(rpKeys.hexPrivateKey, rpKeys.did, rpKeys.didKey, rpKeys.alg)
+  .withInternalSignature(rpKeys.hexPrivateKey, rpKeys.did, rpKeys.didKey, rpKeys.alg)
   .addDidMethod("ethr")
   .withClientMetadata({
     idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -351,7 +351,7 @@ const op = OP.builder()
   .addDidMethod("ethr")
   .addVerifyCallback(verifyCallback)
   .addIssuer(ResponseIss.SELF_ISSUED_V2)
-  .internalSignature(opKeys.hexPrivateKey, opKeys.did, opKeys.didKey, opKeys.alg)
+  .withInternalSignature(opKeys.hexPrivateKey, opKeys.did, opKeys.didKey, opKeys.alg)
   .withClientMetadata({
     authorizationEndpoint: 'www.myauthorizationendpoint.com',
     idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -560,7 +560,7 @@ const userSelectedCredentials: VerifiableCredential[] // Your selected credentia
 Now that we have the final selection of VCs, the Presentation Exchange class will create the Verifiable Presentation for
 you. You can optionally sign the Verifiable Presentation, which is out of the scope of this library. As long as the VP
 contains VCs which as subject has the same DID as the OP, the RP can know that the VPs are valid, simply by the fact
-that signature of the resulting Auth Response is signed by the private key belonging to the OP and the VP.
+that withSignature of the resulting Auth Response is signed by the private key belonging to the OP and the VP.
 
 ---
 **NOTE**
@@ -663,7 +663,7 @@ export interface AuthorizationRequestOpts {
     authorizationEndpoint?: string;
     redirectUri: string;                // The redirect URI
     requestBy: ObjectBy;                // Whether the request is returned by value in the URI or retrieved by reference at the provided URL
-    signatureType: InternalSignature | ExternalSignature | NoSignature; // Whether no signature is being used, internal (access to private key), or external (hosted using authentication)
+    signature: InternalSignature | ExternalSignature | NoSignature; // Whether no withSignature is being used, internal (access to private key), or external (hosted using authentication)
     checkLinkedDomain?: CheckLinkedDomain; // determines how we'll handle the linked domains for this RP
     responseMode?: ResponseMode;        // How the URI should be returned. This is not being used by the library itself, allows an implementor to make a decision
     responseContext?: ResponseContext;  // Defines the context of these opts. Either RP side or OP side
@@ -699,7 +699,7 @@ const opts: AuthorizationRequestOpts = {
   requestBy: {
     type: PassBy.VALUE,
   },
-  signatureType: {
+  signature: {
     hexPrivateKey: HEX_KEY,
     did: DID,
     kid: KID,
@@ -844,7 +844,7 @@ export interface AuthorizationResponseOpts {
     registration: ResponseRegistrationOpts;      // Registration options
     checkLinkedDomain?: CheckLinkedDomain; // When the link domain should be checked
     presentationVerificationCallback?: PresentationVerificationCallback; // Callback function to verify the presentations
-    signatureType: InternalSignature | ExternalSignature; // Using an internal/private key signature, or hosted signature
+    signature: InternalSignature | ExternalSignature; // Using an internal/private key withSignature, or hosted withSignature
     nonce?: string;                              // Allows to override the nonce, otherwise the nonce of the request will be used
     state?: string;                              // Allows to override the state, otherwise the state of the request will be used
     responseMode?: ResponseMode;                 // Response mode should be form in case a mobile device is being used together with a browser
@@ -918,7 +918,7 @@ static async createJWTFromRequestJWT(requestJwt: string, responseOpts: SIOP.Auth
       referenceUri: "https://rp.acme.com/siop/jwts",
     },
   },
-  signatureType: {
+  signature: {
     did: "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
     hexPrivateKey: "f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f",
     kid: "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#controller"
@@ -1074,7 +1074,7 @@ Typically, you use the AuthorizationRequest and Response classes (low-level) or 
 
 ### Create JWT
 
-Creates a signed JWT given a DID which becomes the issuer, a signer function, and a payload over which the signature is
+Creates a signed JWT given a DID which becomes the issuer, a signer function, and a payload over which the withSignature is
 created.
 
 #### Data Interface

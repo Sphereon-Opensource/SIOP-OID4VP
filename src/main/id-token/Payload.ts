@@ -41,12 +41,12 @@ export const createIDTokenPayload = async (
     aud: payload.redirect_uri,
     iat: Date.now() / SEC_IN_MS - 60 * SEC_IN_MS,
     exp: Date.now() / SEC_IN_MS + (responseOpts.expiresIn || 600),
-    sub: responseOpts.signatureType.did,
+    sub: responseOpts.signature.did,
     auth_time: payload.auth_time,
     nonce,
     // ...(responseOpts.presentationExchange?._vp_token ? { _vp_token: responseOpts.presentationExchange._vp_token } : {}),
   };
-  if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !responseOpts.signatureType.did) {
+  if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !responseOpts.signature.did) {
     const { thumbprint, subJwk } = await createThumbprintAndJWK(responseOpts);
     idToken['sub_jwk'] = subJwk;
     idToken.sub = thumbprint;
@@ -57,15 +57,15 @@ export const createIDTokenPayload = async (
 const createThumbprintAndJWK = async (resOpts: AuthorizationResponseOpts): Promise<{ thumbprint: string; subJwk: JWK }> => {
   let thumbprint;
   let subJwk;
-  if (isInternalSignature(resOpts.signatureType)) {
-    thumbprint = await getThumbprint(resOpts.signatureType.hexPrivateKey, resOpts.signatureType.did);
+  if (isInternalSignature(resOpts.signature)) {
+    thumbprint = await getThumbprint(resOpts.signature.hexPrivateKey, resOpts.signature.did);
     subJwk = getPublicJWKFromHexPrivateKey(
-      resOpts.signatureType.hexPrivateKey,
-      resOpts.signatureType.kid || `${resOpts.signatureType.did}#key-1`,
-      resOpts.signatureType.did
+      resOpts.signature.hexPrivateKey,
+      resOpts.signature.kid || `${resOpts.signature.did}#key-1`,
+      resOpts.signature.did
     );
-  } else if (isSuppliedSignature(resOpts.signatureType)) {
-    // fixme: These are uninitialized. Probably we have to extend the supplied signature to provide these.
+  } else if (isSuppliedSignature(resOpts.signature)) {
+    // fixme: These are uninitialized. Probably we have to extend the supplied withSignature to provide these.
     return { thumbprint, subJwk };
   } else {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);

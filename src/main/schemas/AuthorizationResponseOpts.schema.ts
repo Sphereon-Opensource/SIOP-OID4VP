@@ -15,7 +15,7 @@ export const AuthorizationResponseOptsSchemaObj = {
         "checkLinkedDomain": {
           "$ref": "#/definitions/CheckLinkedDomain"
         },
-        "signatureType": {
+        "signature": {
           "anyOf": [
             {
               "$ref": "#/definitions/InternalSignature"
@@ -56,9 +56,6 @@ export const AuthorizationResponseOptsSchemaObj = {
           "$ref": "#/definitions/PresentationExchangeResponseOpts"
         }
       },
-      "required": [
-        "signatureType"
-      ],
       "additionalProperties": false
     },
     "ResponseRegistrationOpts": {

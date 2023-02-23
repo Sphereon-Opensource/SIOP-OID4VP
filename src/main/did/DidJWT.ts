@@ -62,7 +62,7 @@ export async function verifyDidJWT(jwt: string, resolver: Resolvable, options: J
 }
 
 /**
- *  Creates a signed JWT given an address which becomes the issuer, a signer function, and a payload for which the signature is over.
+ *  Creates a signed JWT given an address which becomes the issuer, a signer function, and a payload for which the withSignature is over.
  *
  *  @example
  *  const signer = ES256KSigner(process.env.PRIVATE_KEY)
@@ -96,30 +96,24 @@ export async function signDidJwtPayload(
       throw new Error(SIOPErrors.NO_SELFISSUED_ISS);
     }
   }
-  if (isInternalSignature(opts.signatureType)) {
+  if (isInternalSignature(opts.signature)) {
     return signDidJwtInternal(
       payload,
-      isResponse ? payload.iss : opts.signatureType.did,
-      opts.signatureType.hexPrivateKey,
-      opts.signatureType.alg,
-      opts.signatureType.kid,
-      opts.signatureType.customJwtSigner
+      isResponse ? payload.iss : opts.signature.did,
+      opts.signature.hexPrivateKey,
+      opts.signature.alg,
+      opts.signature.kid,
+      opts.signature.customJwtSigner
     );
-  } else if (isExternalSignature(opts.signatureType)) {
-    return signDidJwtExternal(
-      payload,
-      opts.signatureType.signatureUri,
-      opts.signatureType.authZToken,
-      opts.signatureType.alg,
-      opts.signatureType.kid
-    );
-  } else if (isSuppliedSignature(opts.signatureType)) {
+  } else if (isExternalSignature(opts.signature)) {
+    return signDidJwtExternal(payload, opts.signature.signatureUri, opts.signature.authZToken, opts.signature.alg, opts.signature.kid);
+  } else if (isSuppliedSignature(opts.signature)) {
     return signDidJwtSupplied(
       payload,
-      isResponse ? payload.iss : opts.signatureType.did,
-      opts.signatureType.signature,
-      opts.signatureType.alg,
-      opts.signatureType.kid
+      isResponse ? payload.iss : opts.signature.did,
+      opts.signature.signature,
+      opts.signature.alg,
+      opts.signature.kid
     );
   } else {
     throw new Error(SIOPErrors.BAD_SIGNATURE_PARAMS);

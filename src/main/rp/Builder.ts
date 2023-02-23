@@ -39,7 +39,7 @@ export default class Builder {
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   customResolver?: Resolvable;
   requestObjectBy: ObjectBy;
-  signatureType: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
+  signature: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
   checkLinkedDomain?: CheckLinkedDomain;
   wellknownDIDVerifyCallback?: VerifyCallback;
   revocationVerification?: RevocationVerification;
@@ -184,8 +184,8 @@ export default class Builder {
   }
 
   // Only internal and supplied signatures supported for now
-  withSignature(signatureType: InternalSignature | SuppliedSignature): Builder {
-    this.signatureType = signatureType;
+  withSignature(signature: InternalSignature | SuppliedSignature): Builder {
+    this.signature = signature;
     return this;
   }
 

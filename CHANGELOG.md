@@ -50,7 +50,7 @@ The DID Auth SIOP typescript library is still in an alpha state at this point. P
 ## v0.2.6 - 2022-02-10
 
 - Added:
-  - Supplied signature support. Allowing to integrate signature callbacks, next to supplying private keys or using external custodial signing with authn/authz
+  - Supplied withSignature support. Allowing to integrate withSignature callbacks, next to supplying private keys or using external custodial signing with authn/authz
 
 
 ## v0.2.5 - 2022-01-26

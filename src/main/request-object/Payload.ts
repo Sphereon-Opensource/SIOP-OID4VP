@@ -38,7 +38,7 @@ export const createRequestObjectPayload = async (opts: CreateAuthorizationReques
     response_type: payload.response_type ?? ResponseType.ID_TOKEN,
     scope: payload.scope ?? Scope.OPENID,
     //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
-    client_id: clientId ? clientId : opts.requestObject.signatureType.did,
+    client_id: clientId ? clientId : opts.requestObject.signature.did,
     redirect_uri: payload.redirect_uri,
     response_mode: payload.response_mode || ResponseMode.POST,
     ...(payload.id_token_hint ? { id_token_hint: payload.id_token_hint } : {}),

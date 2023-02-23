@@ -73,7 +73,7 @@ describe('create JWT from Request JWT should', () => {
       clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
     },
-    signatureType: {
+    signature: {
       did: DID,
       hexPrivateKey: HEX_KEY,
       kid: KID,
@@ -124,7 +124,7 @@ describe('create JWT from Request JWT should', () => {
       requestObject: {
         passBy: PassBy.REFERENCE,
         reference_uri: 'https://my-request.com/here',
-        signatureType: {
+        signature: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
@@ -184,7 +184,7 @@ describe('create JWT from Request JWT should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
-      signatureType: {
+      signature: {
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
@@ -215,7 +215,7 @@ describe('create JWT from Request JWT should', () => {
         requestObject: {
           passBy: PassBy.REFERENCE,
           reference_uri: 'https://my-request.com/here',
-          signatureType: {
+          signature: {
             hexPrivateKey: mockReqEntity.hexPrivateKey,
             did: mockReqEntity.did,
             kid: `${mockReqEntity.did}#controller`,
@@ -273,7 +273,7 @@ describe('create JWT from Request JWT should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
-        signatureType: {
+        signature: {
           did: mockResEntity.did,
           hexPrivateKey: mockResEntity.hexPrivateKey,
           kid: `${mockResEntity.did}#controller`,
@@ -337,7 +337,7 @@ describe('create JWT from Request JWT should', () => {
       requestObject: {
         passBy: PassBy.REFERENCE,
         reference_uri: 'https://my-request.com/here',
-        signatureType: {
+        signature: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
@@ -400,7 +400,7 @@ describe('create JWT from Request JWT should', () => {
     };
 
     const pex = new PresentationExchange({
-      did: 'did:example:holder',
+      allDIDs: ['did:example:holder'],
       allVerifiableCredentials: presentation.verifiableCredential,
     });
     await pex.selectVerifiableCredentialsForSubmission(definition);
@@ -432,7 +432,7 @@ describe('create JWT from Request JWT should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
-      signatureType: {
+      signature: {
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
@@ -498,7 +498,7 @@ describe('create JWT from Request JWT should', () => {
       requestObject: {
         passBy: PassBy.REFERENCE,
         reference_uri: 'https://my-request.com/here',
-        signatureType: {
+        signature: {
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
@@ -561,7 +561,7 @@ describe('create JWT from Request JWT should', () => {
     };
 
     const pex = new PresentationExchange({
-      did: 'did:example:holder',
+      allDIDs: ['did:example:holder'],
       allVerifiableCredentials: presentation.verifiableCredential,
     });
     await pex.selectVerifiableCredentialsForSubmission(definition);
@@ -606,7 +606,7 @@ describe('create JWT from Request JWT should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
-      signatureType: {
+      signature: {
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,

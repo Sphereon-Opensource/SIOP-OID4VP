@@ -297,7 +297,7 @@ describe('presentation exchange manager tests', () => {
 
   it('submissionFrom: should pass if a valid presentationSubmission object created', async function () {
     const vcs = getVCs();
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
+    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: vcs });
     const payload: AuthorizationRequestPayload = await getPayloadVID1Val();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     await PresentationExchange.validatePresentationAgainstDefinition(
@@ -336,7 +336,7 @@ describe('presentation exchange manager tests', () => {
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
     vcs[0].issuer = undefined;
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
+    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: vcs });
     try {
       await expect(pex.selectVerifiableCredentialsForSubmission(pd[0].definition)).rejects.toThrow();
     } catch (e) {
@@ -346,7 +346,7 @@ describe('presentation exchange manager tests', () => {
 
   it('selectVerifiableCredentialsForSubmission: should pass if a valid selectResults object created', async function () {
     const vcs = getVCs();
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
+    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: vcs });
     const payload: AuthorizationRequestPayload = await getPayloadVID1Val();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const result = await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
@@ -375,7 +375,7 @@ describe('presentation exchange manager tests', () => {
     const payload: AuthorizationRequestPayload = await getPayloadVID1Val();
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(payload);
     const vcs = getVCs();
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: vcs });
+    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const presentationSignCallback: PresentationSignCallback = async (_args) => ({
       ..._args.presentation,

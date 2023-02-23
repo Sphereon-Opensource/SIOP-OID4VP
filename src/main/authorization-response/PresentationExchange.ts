@@ -22,10 +22,10 @@ import {
 export class PresentationExchange {
   readonly pex = new PEX();
   readonly allVerifiableCredentials: W3CVerifiableCredential[];
-  readonly did;
+  readonly allDIDs;
 
-  constructor(opts: { did: string; allVerifiableCredentials: W3CVerifiableCredential[] }) {
-    this.did = opts.did;
+  constructor(opts: { allDIDs?: string[]; allVerifiableCredentials: W3CVerifiableCredential[] }) {
+    this.allDIDs = opts.allDIDs;
     this.allVerifiableCredentials = opts.allVerifiableCredentials;
   }
 
@@ -73,7 +73,10 @@ export class PresentationExchange {
    * returns the SelectResults object if successful
    * @param presentationDefinition: object received by the OP from the RP
    */
-  public async selectVerifiableCredentialsForSubmission(presentationDefinition: IPresentationDefinition): Promise<SelectResults> {
+  public async selectVerifiableCredentialsForSubmission(
+    presentationDefinition: IPresentationDefinition,
+    holderDIDs?: string[]
+  ): Promise<SelectResults> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
     } else if (!this.allVerifiableCredentials || this.allVerifiableCredentials.length == 0) {
@@ -81,9 +84,9 @@ export class PresentationExchange {
     }
     const selectResults: SelectResults = this.pex.selectFrom(
       presentationDefinition,
-      // fixme holder dids and limited disclosure
+      // fixme limited disclosure
       this.allVerifiableCredentials,
-      [this.did],
+      holderDIDs ?? this.allDIDs,
       []
     );
     if (selectResults.areRequiredCredentialsPresent == Status.ERROR) {

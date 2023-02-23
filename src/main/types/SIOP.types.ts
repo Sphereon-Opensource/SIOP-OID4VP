@@ -489,7 +489,7 @@ export interface NoSignature {
 }
 
 export interface ExternalSignature {
-  signatureUri: string; // url to call to generate a signature
+  signatureUri: string; // url to call to generate a withSignature
   did: string;
   authZToken?: string; // Optional: bearer token to use to the call
   hexPublicKey?: string; // Optional: hex encoded public key to compute JWK key, if not possible from DIDres Document
@@ -516,7 +516,7 @@ export interface Verification {
 export type InternalVerification = Verification;
 
 export interface ExternalVerification extends Verification {
-  verifyUri: string; // url to call to verify the id_token signature
+  verifyUri: string; // url to call to verify the id_token withSignature
   authZToken?: string; // Optional: bearer token to use to the call
 }
 

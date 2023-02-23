@@ -191,7 +191,7 @@ describe('RP and OP interaction should', () => {
         .withExpiresIn(1000)
         .withWellknownDIDVerifyCallback(verifyCallback)
         .withIssuer(ResponseIss.SELF_ISSUED_V2)
-        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
+        .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         //FIXME: Move payload options to seperate property
         .withRegistration({
@@ -292,7 +292,7 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withRegistration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -392,7 +392,7 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withRegistration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -491,7 +491,7 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withRegistration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -526,7 +526,7 @@ describe('RP and OP interaction should', () => {
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
       parsedAuthReqURI.authorizationRequestPayload
     );
@@ -610,7 +610,7 @@ describe('RP and OP interaction should', () => {
         .withPresentationSignCallback(presentationSignCallback)
         .withExpiresIn(1000)
         .withWellknownDIDVerifyCallback(verifyCallback)
-        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+        .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
         .withRegistration({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -645,7 +645,7 @@ describe('RP and OP interaction should', () => {
       const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
-      const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+      const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
         parsedAuthReqURI.authorizationRequestPayload
       );
@@ -748,7 +748,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationSignCallback(presentationSignCallback)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withRegistration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.ES256K],
@@ -788,7 +788,7 @@ describe('RP and OP interaction should', () => {
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
       parsedAuthReqURI.authorizationRequestPayload
     );
@@ -884,7 +884,7 @@ describe('RP and OP interaction should', () => {
         .withWellknownDIDVerifyCallback(verifyCallback)
         .withExpiresIn(1000)
         .addDidMethod('ethr')
-        .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+        .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
         .withRegistration({
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -919,7 +919,7 @@ describe('RP and OP interaction should', () => {
       const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
-      const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+      const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
         parsedAuthReqURI.authorizationRequestPayload
       );
@@ -1014,7 +1014,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationSignCallback(presentationSignCallback)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withPresentationSignCallback(presentationSignCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withWellknownDIDVerifyCallback(verifyCallback)
@@ -1060,7 +1060,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
       parsedAuthReqURI.authorizationRequestPayload
     );
@@ -1312,7 +1312,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationSignCallback(presentationSignCallback)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .withExpiresIn(1000)
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withRegistration({
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -1351,7 +1351,7 @@ describe('RP and OP interaction should', () => {
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
       parsedAuthReqURI.authorizationRequestPayload
     );
@@ -1436,7 +1436,7 @@ describe('RP and OP interaction should', () => {
       .withPresentationSignCallback(presentationSignCallback)
       .withExpiresIn(1000)
       .addDidMethod('ethr')
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
       .withPresentationSignCallback(presentationSignCallback)
       .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withWellknownDIDVerifyCallback(verifyCallback)
@@ -1473,7 +1473,7 @@ describe('RP and OP interaction should', () => {
 
     const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
-    const pex = new PresentationExchange({ did: HOLDER_DID, allVerifiableCredentials: getVCs() });
+    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
       parsedAuthReqURI.authorizationRequestPayload
     );
@@ -1690,7 +1690,7 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       //FIXME: Move payload options to seperate property
       .withRegistration({
@@ -1781,7 +1781,7 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
-      .internalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       //FIXME: Move payload options to seperate property
       .withRegistration({

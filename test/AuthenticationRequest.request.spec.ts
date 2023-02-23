@@ -101,7 +101,7 @@ describe('create Request Uri should', () => {
       requestObject: {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           alg: SigningAlgo.ES256,
           did: DID,
@@ -165,7 +165,7 @@ describe('create Request Uri should', () => {
       requestObject: {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
-        signatureType: {
+        signature: {
           hexPrivateKey:
             'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
           did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
@@ -220,7 +220,7 @@ describe('create Request Uri should', () => {
       requestObject: {
         passBy: PassBy.VALUE,
 
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
@@ -279,7 +279,7 @@ describe('create Request JWT should', () => {
       requestObject: {
         passBy: 'other type',
 
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
@@ -309,7 +309,7 @@ describe('create Request JWT should', () => {
       requestObject: {
         passBy: PassBy.REFERENCE,
 
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
@@ -329,7 +329,7 @@ describe('create Request JWT should', () => {
     await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
-  it('throw BAD_SIGNATURE_PARAMS when signature Type is neither internal nor external', async () => {
+  it('throw BAD_SIGNATURE_PARAMS when withSignature Type is neither internal nor external', async () => {
     expect.assertions(1);
     const opts = {
       requestObject: {
@@ -338,7 +338,7 @@ describe('create Request JWT should', () => {
         payload: {
           redirect_uri: EXAMPLE_REDIRECT_URL,
         },
-        signatureType: {},
+        signature: {},
       },
       clientMetadata: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -360,7 +360,7 @@ describe('create Request JWT should', () => {
       requestObject: {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
@@ -392,7 +392,7 @@ describe('create Request JWT should', () => {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
@@ -430,7 +430,7 @@ describe('create Request JWT should', () => {
       requestObject: {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
@@ -498,7 +498,7 @@ describe('create Request JWT should', () => {
           type: 'REFERENCE',
           reference_uri: 'https://rp.acme.com/siop/jwts',
         },
-        signatureType: {
+        withSignature: {
           hexPrivateKey: 'f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420f',
           did: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0',
           kid: 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1',
@@ -553,7 +553,7 @@ describe('create Request JWT should', () => {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
@@ -646,7 +646,7 @@ describe('create Request JWT should', () => {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signatureType: {
+        signature: {
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,

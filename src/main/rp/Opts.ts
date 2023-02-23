@@ -34,7 +34,7 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
             subject_types_supported: opts.builder.clientMetadata?.subjectTypesSupported,
             request_object_signing_alg_values_supported: opts.builder.clientMetadata?.requestObjectSigningAlgValuesSupported,
           },
-          signatureType: opts.builder.signatureType,
+          signature: opts.builder.signature,
         },
         clientMetadata: opts.builder.clientMetadata as ClientMetadataOpts,
       }

@@ -9,8 +9,10 @@ export function getResolver(opts: ResolveOpts): Resolvable {
     return opts.resolver;
   }
   if (!opts || !opts.subjectSyntaxTypesSupported) {
+    if (opts?.noUniversalResolverFallback) {
+      throw Error(`No subject syntax types nor did methods configured for DID resolution, but fallback to universal resolver has been disabled`);
+    }
     return new UniResolver();
-    // throw new Error(`${SIOPErrors.BAD_PARAMS} No subject syntax types supported`);
   }
 
   const uniResolvers: {
@@ -27,6 +29,9 @@ export function getResolver(opts: ResolveOpts): Resolvable {
     }
     return new Resolver(...uniResolvers);
   } else {
+    if (opts?.noUniversalResolverFallback) {
+      throw Error(`No subject syntax types nor did methods configured for DID resolution, but fallback to universal resolver has been disabled`);
+    }
     return new UniResolver();
   }
 }

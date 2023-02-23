@@ -26,7 +26,7 @@ class AuthenticationRequestOpts {
   <<interface>>
   redirectUri: string;
   requestBy: ObjectBy;
-  signatureType: InternalSignature | ExternalSignature | NoSignature;
+  signature: InternalSignature | ExternalSignature | NoSignature;
   responseMode?: ResponseMode;
   claims?: ClaimPayload;
   registration: RequestRegistrationOpts;
@@ -83,7 +83,7 @@ AuthenticationResponse --> VerifiedAuthenticationResponseWithJWT
 
 class AuthenticationResponseOpts {
   <<interface>>
-  signatureType: InternalSignature | ExternalSignature;
+  signature: InternalSignature | ExternalSignature;
   nonce?: string;
   state?: string;
   registration: ResponseRegistrationOpts;

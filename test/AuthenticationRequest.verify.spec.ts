@@ -257,7 +257,7 @@ describe('verifyJWT should', () => {
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signatureType: {
+        signature: {
           hexPrivateKey:
             'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
           did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
@@ -324,7 +324,7 @@ describe('verifyJWT should', () => {
         requestObject: {
           passBy: PassBy.REFERENCE,
           reference_uri: 'https://my-request.com/here',
-          signatureType: {
+          signature: {
             hexPrivateKey: mockEntity.hexPrivateKey,
             did: mockEntity.did,
             kid: `${mockEntity.did}#controller`,

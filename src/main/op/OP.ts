@@ -7,13 +7,16 @@ import {
   AuthorizationEvent,
   AuthorizationEvents,
   ContentType,
+  ExternalSignature,
   ExternalVerification,
+  InternalSignature,
   InternalVerification,
   ParsedAuthorizationRequestURI,
   RegisterEventListener,
   ResponseMode,
   SIOPErrors,
   SIOPResonse,
+  SuppliedSignature,
   UrlEncodingFormat,
   VerifiedAuthorizationRequest,
 } from '../types';
@@ -81,6 +84,7 @@ export class OP {
       nonce?: string;
       state?: string;
       audience?: string;
+      signature?: InternalSignature | ExternalSignature | SuppliedSignature;
       verification?: InternalVerification | ExternalVerification;
       presentationExchange?: PresentationExchangeResponseOpts;
     }
@@ -141,14 +145,16 @@ export class OP {
     nonce?: string;
     state?: string;
     audience?: string;
+    signature?: InternalSignature | ExternalSignature | SuppliedSignature;
     presentationExchange?: PresentationExchangeResponseOpts;
   }): AuthorizationResponseOpts {
     return {
-      ...(opts?.audience ? { redirectUri: opts.audience } : {}),
       ...this._createResponseOptions,
+      ...(opts?.audience ? { redirectUri: opts.audience } : {}),
       ...(opts?.nonce ? { nonce: opts.nonce } : {}),
       ...(opts?.state ? { state: opts.state } : {}),
       ...(opts?.presentationExchange ? { presentationExchange: opts.presentationExchange } : {}),
+      ...(opts?.signature ? { signature: opts.signature } : {}),
     };
   }
 
