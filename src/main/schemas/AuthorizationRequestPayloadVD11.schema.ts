@@ -437,6 +437,12 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
             "$ref": "#/definitions/Schema"
           }
         },
+        "issuance": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "constraints": {
           "$ref": "#/definitions/ConstraintsV1"
         }
@@ -562,34 +568,19 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
       "type": "object",
       "properties": {
         "_const": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "_enum": {
           "type": "array",
           "items": {
-            "type": [
-              "number",
-              "string"
-            ]
+            "$ref": "#/definitions/OneOfNumberString"
           }
         },
         "exclusiveMinimum": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "exclusiveMaximum": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "format": {
           "type": "string"
@@ -601,18 +592,10 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
           "type": "number"
         },
         "minimum": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "maximum": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "not": {
           "type": "object"
@@ -628,6 +611,12 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
         "type"
       ],
       "additionalProperties": false
+    },
+    "OneOfNumberString": {
+      "type": [
+        "number",
+        "string"
+      ]
     },
     "HolderSubject": {
       "type": "object",
@@ -703,6 +692,12 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
             "type": "string"
           }
         },
+        "issuance": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "constraints": {
           "$ref": "#/definitions/ConstraintsV2"
         }
@@ -773,34 +768,19 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
       "type": "object",
       "properties": {
         "_const": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "_enum": {
           "type": "array",
           "items": {
-            "type": [
-              "number",
-              "string"
-            ]
+            "$ref": "#/definitions/OneOfNumberString"
           }
         },
         "exclusiveMinimum": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "exclusiveMaximum": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "format": {
           "type": "string"
@@ -824,18 +804,10 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
           "type": "number"
         },
         "minimum": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "maximum": {
-          "type": [
-            "number",
-            "string",
-            "null"
-          ]
+          "$ref": "#/definitions/OneOfNumberString"
         },
         "not": {
           "type": "object"

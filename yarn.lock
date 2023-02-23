@@ -1484,17 +1484,17 @@
     cross-fetch "^3.1.5"
     did-resolver "^4.0.1"
 
-"@sphereon/pex-models@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@sphereon/pex-models/-/pex-models-1.1.0.tgz#716898344fd07400bbffaa0c34a1f7ecdda14166"
-  integrity sha512-kMslWspdqwuXGBFxOPXTAK8HlIHycBR/locYHMlYmyvdnau6bp40JXk2zviBRVOPfe8N3Dv2p5IPAjMk3pT77A==
+"@sphereon/pex-models@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@sphereon/pex-models/-/pex-models-1.2.0.tgz#06348e89a622470668e867795928dc926274de95"
+  integrity sha512-cvzpB12vnMNWqwVUTFifWUOjwPzT5HN2Uyu02gnvkb8+L3IMXwag0/k4oyYNPpLyQ1+WXYIzqPPPS9/zsTMbVQ==
 
-"@sphereon/pex@^2.0.0-unstable.6":
-  version "2.0.0-unstable.6"
-  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-2.0.0-unstable.6.tgz#86835a2cd2e8fd5850311aac5cb0c3010b5229c8"
-  integrity sha512-M0BkE/vPUjH09zEfqb6nKgy7i30VVe/+letZ3J/rJq0cQuve9GSXHzQFUGt/AHIpDnPVvDLoGEgscCp8T0EKTA==
+"@sphereon/pex@^2.0.0-unstable.8":
+  version "2.0.0-unstable.8"
+  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-2.0.0-unstable.8.tgz#6e27a64a372c8adc76ba1fcc2e8db02f97c0f267"
+  integrity sha512-gQFiM6TxyKeRuB/UlxEWctl8uHIlEtTfVwzoDKFjhgRNbyc0jwC13j0EGpSeQaB4GVNFMDfXDexeN/6ouEK7vA==
   dependencies:
-    "@sphereon/pex-models" "^1.1.0"
+    "@sphereon/pex-models" "^1.2.0"
     "@sphereon/ssi-types" "0.8.1-next.194"
     ajv "^8.12.0"
     ajv-formats "^2.1.1"
