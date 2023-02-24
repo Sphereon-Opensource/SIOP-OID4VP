@@ -442,7 +442,7 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         "issuance": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/Issuance"
           }
         },
         "constraints": {
@@ -469,6 +469,15 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         "uri"
       ],
       "additionalProperties": false
+    },
+    "Issuance": {
+      "type": "object",
+      "properties": {
+        "manifest": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
     },
     "ConstraintsV1": {
       "type": "object",
@@ -697,7 +706,7 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         "issuance": {
           "type": "array",
           "items": {
-            "type": "string"
+            "$ref": "#/definitions/Issuance"
           }
         },
         "constraints": {
