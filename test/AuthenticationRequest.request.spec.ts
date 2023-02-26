@@ -88,7 +88,7 @@ describe('create Request Uri should', () => {
   });
 
   it('return a reference url', async () => {
-    expect.assertions(14);
+    expect.assertions(12);
     const opts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
       payload: {
@@ -151,11 +151,10 @@ describe('create Request Uri should', () => {
     expect(uriDecoded).toContain(`&redirect_uri=${opts.payload.redirect_uri}`);
     expect(uriDecoded).toContain(`&scope=${Scope.OPENID}`);
     expect(uriDecoded).toContain(`&request_uri=`);
-    expect(uriDecoded).toContain('client_name#nl-NL');
 
     const data = parse(uriDecoded);
     expect(data.request_uri).toStrictEqual(opts.requestObject.reference_uri);
-    expect(data.registration).toContain('client_purpose#nl-NL');
+    // expect(data.registration).toContain('client_purpose#nl-NL');
   });
 
   it('return a reference url when using did:key', async () => {
@@ -518,7 +517,7 @@ describe('create Request JWT should', () => {
       },*/
     };
 
-    await URI.fromOpts(opts).then((uri) => console.log(uri.encodedUri));
+    // await URI.fromOpts(opts).then((uri) => console.log(uri.encodedUri));
     await expect((await RequestObject.fromOpts(opts)).getPayload()).resolves.toMatchObject(expected);
   });
 

@@ -31,7 +31,7 @@ import {
   SupportedVersion,
 } from '../types';
 
-import { assignIfAuth, assignIfRequestObject, isTargetOrNoTargets } from './Opts';
+import { assignIfAuth, assignIfRequestObject, isTarget, isTargetOrNoTargets } from './Opts';
 import { RP } from './RP';
 import { IReplayRegistry } from './types';
 
@@ -60,27 +60,27 @@ export default class Builder {
   }
 
   withScope(scope: string, targets?: PropertyTargets): Builder {
-    this._authorizationRequestPayload.scope = assignIfAuth({ propertyValue: scope, targets });
-    this._requestObjectPayload.scope = assignIfRequestObject({ propertyValue: scope, targets });
+    this._authorizationRequestPayload.scope = assignIfAuth({ propertyValue: scope, targets }, false);
+    this._requestObjectPayload.scope = assignIfRequestObject({ propertyValue: scope, targets }, true);
     return this;
   }
 
   withResponseType(responseType: ResponseType | ResponseType[] | string, targets?: PropertyTargets): Builder {
     const propertyValue = Array.isArray(responseType) ? responseType.join(' ').trim() : responseType;
-    this._authorizationRequestPayload.response_type = assignIfAuth({ propertyValue, targets });
-    this._requestObjectPayload.response_type = assignIfRequestObject({ propertyValue, targets });
+    this._authorizationRequestPayload.response_type = assignIfAuth({ propertyValue, targets }, false);
+    this._requestObjectPayload.response_type = assignIfRequestObject({ propertyValue, targets }, true);
     return this;
   }
 
   withClientId(clientId: string, targets?: PropertyTargets): Builder {
-    this._authorizationRequestPayload.client_id = assignIfAuth({ propertyValue: clientId, targets });
-    this._requestObjectPayload.client_id = assignIfRequestObject({ propertyValue: clientId, targets });
+    this._authorizationRequestPayload.client_id = assignIfAuth({ propertyValue: clientId, targets }, false);
+    this._requestObjectPayload.client_id = assignIfRequestObject({ propertyValue: clientId, targets }, true);
     return this;
   }
 
   withIssuer(issuer: ResponseIss, targets?: PropertyTargets): Builder {
-    this._authorizationRequestPayload.iss = assignIfAuth({ propertyValue: issuer, targets });
-    this._requestObjectPayload.iss = assignIfRequestObject({ propertyValue: issuer, targets });
+    this._authorizationRequestPayload.iss = assignIfAuth({ propertyValue: issuer, targets }, false);
+    this._requestObjectPayload.iss = assignIfRequestObject({ propertyValue: issuer, targets }, true);
     return this;
   }
 
@@ -111,14 +111,20 @@ export default class Builder {
   }
 
   withAuthorizationEndpoint(authorizationEndpoint: string, targets?: PropertyTargets): Builder {
-    this._authorizationRequestPayload.authorization_endpoint = assignIfAuth({
-      propertyValue: authorizationEndpoint,
-      targets,
-    });
-    this._requestObjectPayload.authorization_endpoint = assignIfRequestObject({
-      propertyValue: authorizationEndpoint,
-      targets,
-    });
+    this._authorizationRequestPayload.authorization_endpoint = assignIfAuth(
+      {
+        propertyValue: authorizationEndpoint,
+        targets,
+      },
+      false
+    );
+    this._requestObjectPayload.authorization_endpoint = assignIfRequestObject(
+      {
+        propertyValue: authorizationEndpoint,
+        targets,
+      },
+      true
+    );
     return this;
   }
 
@@ -137,46 +143,68 @@ export default class Builder {
   }
 
   withRedirectUri(redirectUri: string, targets?: PropertyTargets): Builder {
-    this._authorizationRequestPayload.redirect_uri = assignIfAuth({ propertyValue: redirectUri, targets });
-    this._requestObjectPayload.redirect_uri = assignIfRequestObject({ propertyValue: redirectUri, targets });
+    this._authorizationRequestPayload.redirect_uri = assignIfAuth({ propertyValue: redirectUri, targets }, false);
+    this._requestObjectPayload.redirect_uri = assignIfRequestObject({ propertyValue: redirectUri, targets }, true);
     return this;
   }
 
-  withRequestBy(passBy: PassBy, referenceUri?: string, targets?: PropertyTargets): Builder {
+  withRequestByReference(referenceUri: string): Builder {
+    return this.withRequestBy(PassBy.REFERENCE, referenceUri /*, PropertyTarget.AUTHORIZATION_REQUEST*/);
+  }
+  withRequestByValue(): Builder {
+    return this.withRequestBy(PassBy.VALUE, undefined /*, PropertyTarget.AUTHORIZATION_REQUEST*/);
+  }
+
+  withRequestBy(passBy: PassBy, referenceUri?: string /*, targets?: PropertyTargets*/): Builder {
+    if (passBy === PassBy.REFERENCE && !referenceUri) {
+      throw Error('Cannot use pass by reference without a reference URI');
+    }
     this.requestObjectBy = {
       passBy,
       reference_uri: referenceUri,
-      targets,
+      targets: PropertyTarget.AUTHORIZATION_REQUEST,
     };
     return this;
   }
 
   withResponseMode(responseMode: ResponseMode, targets?: PropertyTargets): Builder {
-    this._authorizationRequestPayload.response_mode = assignIfAuth({ propertyValue: responseMode, targets });
-    this._requestObjectPayload.response_mode = assignIfRequestObject({ propertyValue: responseMode, targets });
+    this._authorizationRequestPayload.response_mode = assignIfAuth({ propertyValue: responseMode, targets }, false);
+    this._requestObjectPayload.response_mode = assignIfRequestObject({ propertyValue: responseMode, targets }, true);
     return this;
   }
 
   withClientMetadata(clientMetadata: ClientMetadataOpts, targets?: PropertyTargets): Builder {
     clientMetadata.targets = targets;
     if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
-      this._authorizationRequestPayload.registration = assignIfAuth({
-        propertyValue: clientMetadata,
-        targets,
-      });
-      this._requestObjectPayload.registration = assignIfRequestObject({
-        propertyValue: clientMetadata,
-        targets,
-      });
+      this._authorizationRequestPayload.registration = assignIfAuth(
+        {
+          propertyValue: clientMetadata,
+          targets,
+        },
+        false
+      );
+      this._requestObjectPayload.registration = assignIfRequestObject(
+        {
+          propertyValue: clientMetadata,
+          targets,
+        },
+        true
+      );
     } else {
-      this._authorizationRequestPayload.client_metadata = assignIfAuth({
-        propertyValue: clientMetadata,
-        targets,
-      });
-      this._requestObjectPayload.client_metadata = assignIfRequestObject({
-        propertyValue: clientMetadata,
-        targets,
-      });
+      this._authorizationRequestPayload.client_metadata = assignIfAuth(
+        {
+          propertyValue: clientMetadata,
+          targets,
+        },
+        false
+      );
+      this._requestObjectPayload.client_metadata = assignIfRequestObject(
+        {
+          propertyValue: clientMetadata,
+          targets,
+        },
+        true
+      );
     }
     this.clientMetadata = clientMetadata;
     //fixme: Add URL
@@ -204,14 +232,15 @@ export default class Builder {
     return this;
   }
 
-  withPresentationDefinition(definition: IPresentationDefinition, definitionUri?: string, targets?: PropertyTargets): Builder {
+  withPresentationDefinition(definitionOpts: { definition: IPresentationDefinition; definitionUri?: string }, targets?: PropertyTargets): Builder {
+    const { definition, definitionUri } = definitionOpts;
     const definitionProperties = {
       presentation_definition: definition,
       presentation_definition_uri: definitionUri,
     };
     if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
       const vp_token = { ...definitionProperties };
-      if (isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, targets)) {
+      if (isTarget(PropertyTarget.AUTHORIZATION_REQUEST, targets)) {
         this._authorizationRequestPayload.claims = {
           ...(this._authorizationRequestPayload.claims ? this._authorizationRequestPayload.claims : {}),
           vp_token: vp_token,
@@ -224,19 +253,34 @@ export default class Builder {
         };
       }
     } else {
-      this._authorizationRequestPayload.presentation_definition = assignIfAuth({ propertyValue: definition, targets });
-      this._authorizationRequestPayload.presentation_definition_uri = assignIfAuth({
-        propertyValue: definitionUri,
-        targets,
-      });
-      this._requestObjectPayload.presentation_definition = assignIfRequestObject({
-        propertyValue: definition,
-        targets,
-      });
-      this._requestObjectPayload.presentation_definition_uri = assignIfRequestObject({
-        propertyValue: definitionUri,
-        targets,
-      });
+      this._authorizationRequestPayload.presentation_definition = assignIfAuth(
+        {
+          propertyValue: definition,
+          targets,
+        },
+        false
+      );
+      this._authorizationRequestPayload.presentation_definition_uri = assignIfAuth(
+        {
+          propertyValue: definitionUri,
+          targets,
+        },
+        true
+      );
+      this._requestObjectPayload.presentation_definition = assignIfRequestObject(
+        {
+          propertyValue: definition,
+          targets,
+        },
+        true
+      );
+      this._requestObjectPayload.presentation_definition_uri = assignIfRequestObject(
+        {
+          propertyValue: definitionUri,
+          targets,
+        },
+        true
+      );
     }
     return this;
   }

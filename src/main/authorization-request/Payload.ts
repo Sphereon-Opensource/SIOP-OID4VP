@@ -3,7 +3,7 @@ import { PEX } from '@sphereon/pex';
 import { validateLinkedDomainWithDid } from '../did';
 import { getNonce, removeNullUndefined } from '../helpers';
 import { RequestObject } from '../request-object';
-import { isTargetOrNoTargets } from '../rp/Opts';
+import { isTarget, isTargetOrNoTargets } from '../rp/Opts';
 import { RPRegistrationMetadataPayloadSchema } from '../schemas/validation/schemaValidation.js';
 import {
   AuthorizationRequestPayload,
@@ -62,10 +62,10 @@ export const createAuthorizationRequestPayload = async (
   /*if (!clientId) {
     clientId = registration.payload[metadataKey].client_id;
   }*/
-  const isTarget = isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opts.requestObject.targets);
+  const isRequestTarget = isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opts.requestObject.targets);
   const isRequestByValue = opts.requestObject.passBy === PassBy.VALUE;
 
-  if (isTarget && isRequestByValue && !requestObject) {
+  if (isRequestTarget && isRequestByValue && !requestObject) {
     throw Error(SIOPErrors.NO_JWT);
   }
   const request = isRequestByValue ? await requestObject.toJwt() : undefined;
@@ -73,13 +73,11 @@ export const createAuthorizationRequestPayload = async (
   const authRequestPayload = {
     ...payload,
     //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
-    ...(isTarget && opts.requestObject.passBy === PassBy.REFERENCE ? { request_uri: opts.requestObject.reference_uri } : {}),
-    ...(isTarget && isRequestByValue ? { request } : {}),
+    ...(isRequestTarget && opts.requestObject.passBy === PassBy.REFERENCE ? { request_uri: opts.requestObject.reference_uri } : {}),
+    ...(isRequestTarget && isRequestByValue ? { request } : {}),
     ...(nonce ? { nonce } : {}),
     ...(state ? { state } : {}),
-    ...(registration.payload && isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, registration.clientMetadataOpts.targets)
-      ? registration.payload
-      : {}),
+    ...(registration.payload && isTarget(PropertyTarget.AUTHORIZATION_REQUEST, registration.clientMetadataOpts.targets) ? registration.payload : {}),
     ...(claims ? { claims } : {}),
   };
   /*if ((payload.registration || payload.client_metadata) && registration.payload) {

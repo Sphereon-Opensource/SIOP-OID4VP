@@ -34,7 +34,11 @@ export const authorizationRequestVersionDiscovery = (authorizationRequest: Autho
   const authorizationRequestCopy: AuthorizationRequestPayload = JSON.parse(JSON.stringify(authorizationRequest));
   const vd11Validation = AuthorizationRequestPayloadVD11Schema(authorizationRequestCopy);
   if (vd11Validation) {
-    if (!authorizationRequest.registration_uri && !authorizationRequest.registration && !authorizationRequest.claims['vp_token']) {
+    if (
+      !authorizationRequestCopy.registration_uri &&
+      !authorizationRequestCopy.registration &&
+      !(authorizationRequest.claims && 'vp_token' in authorizationRequestCopy.claims)
+    ) {
       versions.push(SupportedVersion.SIOPv2_D11);
     }
   }

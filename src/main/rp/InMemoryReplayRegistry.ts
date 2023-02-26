@@ -8,7 +8,7 @@ import {
   AuthorizationRequestState,
   AuthorizationRequestStateStatus,
   AuthorizationResponseState,
-  AuthorizationResponseStateStatus
+  AuthorizationResponseStateStatus,
 } from '../types';
 
 import { IReplayRegistry } from './types';
@@ -183,7 +183,7 @@ export class InMemoryReplayRegistry implements IReplayRegistry {
         ...(event.error ? { error: event.error } : {}),
         status,
         timestamp: event.timestamp,
-        lastUpdated: event.timestamp
+        lastUpdated: event.timestamp,
       };
       if (type === 'request') {
         this.authorizationRequests[event.correlationId] = eventState as AuthorizationRequestState;

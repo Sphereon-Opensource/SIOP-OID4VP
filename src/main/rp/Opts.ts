@@ -93,15 +93,19 @@ export const isTarget = (searchTarget: PropertyTarget, targets: PropertyTargets)
   return Array.isArray(targets) ? targets.includes(searchTarget) : targets === searchTarget;
 };
 
-export const assignIfAuth = <T>(opt: RequestPropertyWithTargets<T>): T => {
-  if (isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opt.targets)) {
+export const assignIfAuth = <T>(opt: RequestPropertyWithTargets<T>, isDefaultTarget?: boolean): T => {
+  if (
+    isDefaultTarget
+      ? isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opt.targets)
+      : isTarget(PropertyTarget.AUTHORIZATION_REQUEST, opt.targets)
+  ) {
     return opt.propertyValue;
   }
   return undefined;
 };
 
-export const assignIfRequestObject = <T>(opt: RequestPropertyWithTargets<T>): T => {
-  if (isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, opt.targets)) {
+export const assignIfRequestObject = <T>(opt: RequestPropertyWithTargets<T>, isDefaultTarget?: boolean): T => {
+  if (isDefaultTarget ? isTargetOrNoTargets(PropertyTarget.REQUEST_OBJECT, opt.targets) : isTarget(PropertyTarget.REQUEST_OBJECT, opt.targets)) {
     return opt.propertyValue;
   }
   return undefined;

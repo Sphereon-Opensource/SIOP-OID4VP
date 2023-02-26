@@ -325,7 +325,6 @@ describe('RP and OP interaction should', () => {
     const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
-    expect(parsedAuthReqURI.registration).toBeDefined();
 
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt, { correlationId: '1234' });
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
@@ -390,7 +389,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .withPresentationDefinition(getPresentationDefinition())
+      .withPresentationDefinition({ definition: getPresentationDefinition() })
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
@@ -430,7 +429,7 @@ describe('RP and OP interaction should', () => {
     const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
-    expect(parsedAuthReqURI.registration).toBeDefined();
+    // expect(parsedAuthReqURI.registration).toBeDefined();
 
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
@@ -466,7 +465,7 @@ describe('RP and OP interaction should', () => {
       .withScope('test')
       .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
-      .withPresentationDefinition(getPresentationDefinition())
+      .withPresentationDefinition({ definition: getPresentationDefinition() }, [PropertyTarget.REQUEST_OBJECT, PropertyTarget.AUTHORIZATION_REQUEST])
       .withPresentationVerification(presentationVerificationCallback)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .withRevocationVerification(RevocationVerification.NEVER)
@@ -528,7 +527,7 @@ describe('RP and OP interaction should', () => {
     const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
-    expect(parsedAuthReqURI.registration).toBeDefined();
+    // expect(parsedAuthReqURI.registration).toBeDefined();
 
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
@@ -610,7 +609,10 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .withPresentationDefinition(getPresentationDefinition())
+        .withPresentationDefinition({ definition: getPresentationDefinition() }, [
+          PropertyTarget.REQUEST_OBJECT,
+          PropertyTarget.AUTHORIZATION_REQUEST,
+        ])
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
@@ -648,7 +650,7 @@ describe('RP and OP interaction should', () => {
       const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
       expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
       expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
-      expect(parsedAuthReqURI.registration).toBeDefined();
+      // expect(parsedAuthReqURI.registration).toBeDefined();
 
       const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
@@ -749,7 +751,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .withPresentationDefinition(getPresentationDefinition())
+      .withPresentationDefinition({ definition: getPresentationDefinition() }, [PropertyTarget.REQUEST_OBJECT, PropertyTarget.AUTHORIZATION_REQUEST])
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
@@ -792,7 +794,7 @@ describe('RP and OP interaction should', () => {
     const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
-    expect(parsedAuthReqURI.registration).toBeDefined();
+    // expect(parsedAuthReqURI.registration).toBeDefined();
 
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
@@ -884,7 +886,10 @@ describe('RP and OP interaction should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .withPresentationDefinition(getPresentationDefinition())
+        .withPresentationDefinition({ definition: getPresentationDefinition() }, [
+          PropertyTarget.REQUEST_OBJECT,
+          PropertyTarget.AUTHORIZATION_REQUEST,
+        ])
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build();
       const op = OP.builder()
@@ -924,7 +929,7 @@ describe('RP and OP interaction should', () => {
       const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
       expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
       expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
-      expect(parsedAuthReqURI.registration).toBeDefined();
+      // expect(parsedAuthReqURI.registration).toBeDefined();
 
       const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
       expect(verifiedAuthReqWithJWT.signer).toBeDefined();
@@ -1016,7 +1021,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .withPresentationDefinition(getPresentationDefinition())
+      .withPresentationDefinition({ definition: getPresentationDefinition() }, [PropertyTarget.REQUEST_OBJECT, PropertyTarget.AUTHORIZATION_REQUEST])
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
@@ -1065,7 +1070,7 @@ describe('RP and OP interaction should', () => {
     const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
-    expect(parsedAuthReqURI.registration).toBeDefined();
+    // expect(parsedAuthReqURI.registration).toBeDefined();
 
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt); //, rp.authRequestOpts
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
@@ -1316,7 +1321,7 @@ describe('RP and OP interaction should', () => {
         clientName: VERIFIER_NAME_FOR_CLIENT,
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       })
-      .withPresentationDefinition(getPresentationDefinition())
+      .withPresentationDefinition({ definition: getPresentationDefinition() }, [PropertyTarget.REQUEST_OBJECT, PropertyTarget.AUTHORIZATION_REQUEST])
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const op = OP.builder()
@@ -1358,7 +1363,7 @@ describe('RP and OP interaction should', () => {
     const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
     expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
-    expect(parsedAuthReqURI.registration).toBeDefined();
+    // expect(parsedAuthReqURI.registration).toBeDefined();
 
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
@@ -1440,7 +1445,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .withPresentationDefinition(getPresentationDefinition())
+      .withPresentationDefinition({ definition: getPresentationDefinition() }, [PropertyTarget.REQUEST_OBJECT, PropertyTarget.AUTHORIZATION_REQUEST])
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
 
@@ -1566,7 +1571,7 @@ describe('RP and OP interaction should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
-      .withPresentationDefinition(getPresentationDefinition())
+      .withPresentationDefinition({ definition: getPresentationDefinition() })
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .withReplayRegistry(replayRegistry)
       .withEventEmitter(eventEmitter)

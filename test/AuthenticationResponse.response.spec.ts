@@ -284,7 +284,7 @@ describe('create JWT from Request JWT should', () => {
       };
 
       const requestObject = await RequestObject.fromOpts(requestOpts);
-      console.log(JSON.stringify(await AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)));
+      // console.log(JSON.stringify(await AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)));
       await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
     },
     UNIT_TEST_TIMEOUT
