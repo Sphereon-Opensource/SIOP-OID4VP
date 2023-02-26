@@ -58,6 +58,7 @@ export class PresentationExchange {
         verificationMethod: options?.signatureOptions?.verificationMethod,
         keyEncoding: options?.signatureOptions?.keyEncoding ?? KeyEncoding.Hex,
       },
+      holder: options.holder,
     };
 
     return await this.pex.verifiablePresentationFromAsync(presentationDefinition, selectedCredentials, presentationSignCallback, signOptions);
@@ -290,7 +291,7 @@ export class PresentationExchange {
       return vpPayloads.filter(async (vpw: WrappedVerifiablePresentation) => {
         const presentation = vpw.presentation;
         if (!definition) {
-          throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
+          throw new Error(SIOPErrors.NO_PRESENTATION_SUBMISSION);
         } else if (!presentation || !presentation.verifiableCredential || presentation.verifiableCredential.length === 0) {
           throw new Error(SIOPErrors.NO_VERIFIABLE_PRESENTATION_NO_CREDENTIALS);
         }

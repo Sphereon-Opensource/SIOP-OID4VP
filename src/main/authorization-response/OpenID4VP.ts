@@ -68,17 +68,21 @@ export const createSubmissionData = async (verifiablePresentations: W3CVerifiabl
   for (const verifiablePresentation of verifiablePresentations) {
     const wrappedPresentation = CredentialMapper.toWrappedVerifiablePresentation(verifiablePresentation);
 
-    if (!wrappedPresentation.presentation.presentation_submission) {
+    const submission =
+      wrappedPresentation.presentation.presentation_submission ||
+      wrappedPresentation.decoded.presentation_submission ||
+      (typeof wrappedPresentation.original !== 'string' && wrappedPresentation.original.presentation_submission);
+    if (!submission) {
       // todo in the future PEX might supply the submission_data separately as well
       throw Error('Verifiable Presentation has no submission_data');
     }
     if (!submission_data) {
-      submission_data = wrappedPresentation.presentation.presentation_submission;
+      submission_data = submission;
     } else {
       // We are pushing multiple descriptors into one submission_data, as it seems this is something which is assumed in OpenID4VP, but not supported in Presentation Exchange (a single VP always has a single submission_data)
       Array.isArray(submission_data.descriptor_map)
-        ? submission_data.descriptor_map.push(...wrappedPresentation.presentation.presentation_submission.descriptor_map)
-        : (submission_data.descriptor_map = [...wrappedPresentation.presentation.presentation_submission.descriptor_map]);
+        ? submission_data.descriptor_map.push(...submission.descriptor_map)
+        : (submission_data.descriptor_map = [...submission.descriptor_map]);
     }
   }
   return submission_data;
