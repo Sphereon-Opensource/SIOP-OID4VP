@@ -1,7 +1,9 @@
-import { IDTokenPayload, RequestObjectPayload } from './SIOP.types';
+import { AuthorizationRequest } from '../authorization-request';
+import { AuthorizationResponse } from '../authorization-response';
 
 export interface AuthorizationRequestState {
-  payload?: RequestObjectPayload;
+  correlationId?: string;
+  request: AuthorizationRequest;
   status: AuthorizationRequestStateStatus;
   timestamp: number;
   lastUpdated: number;
@@ -9,7 +11,8 @@ export interface AuthorizationRequestState {
 }
 
 export interface AuthorizationResponseState {
-  payload?: IDTokenPayload;
+  correlationId?: string;
+  response: AuthorizationResponse;
   status: AuthorizationResponseStateStatus;
   timestamp: number;
   lastUpdated: number;

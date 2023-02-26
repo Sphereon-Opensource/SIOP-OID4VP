@@ -28,7 +28,7 @@ import {
   VPTokenLocation,
 } from '../src/main';
 import { checkSIOPSpecVersionSupported } from '../src/main/helpers/SIOPSpecVersion';
-import { ReplayRegistry } from '../src/main/rp/ReplayRegistry';
+import { InMemoryReplayRegistry } from '../src/main/rp/InMemoryReplayRegistry';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
@@ -67,6 +67,7 @@ const verifyCallback: VerifyCallback = async (_args: IVerifyCallbackArgs) => ({ 
 const presentationVerificationCallback: PresentationVerificationCallback = async (_args: W3CVerifiablePresentation) => ({
   verified: true,
 });
+
 function getPresentationDefinition(): IPresentationDefinition {
   return {
     id: 'Insurance Plans',
@@ -215,6 +216,7 @@ describe('RP and OP interaction should', () => {
         .build();
 
       const requestURI = await rp.createAuthorizationRequestURI({
+        correlationId: '1234',
         nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
         state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
       });
@@ -230,7 +232,7 @@ describe('RP and OP interaction should', () => {
       const response = await op.submitAuthorizationResponse(authenticationResponseWithJWT);
       await expect(response.json()).resolves.toMatchObject({ result: 'ok' });
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
         audience: EXAMPLE_REDIRECT_URL,
       });
 
@@ -314,6 +316,7 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const requestURI = await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
       state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
     });
@@ -324,15 +327,17 @@ describe('RP and OP interaction should', () => {
     expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
     expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
+    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt, { correlationId: '1234' });
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
 
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT);
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
-    expect(authenticationResponseWithJWT.idToken).toBeDefined();
+    expect(authenticationResponseWithJWT).toBeDefined();
+    expect(authenticationResponseWithJWT.correlationId).toEqual('1234');
+    expect(authenticationResponseWithJWT.response.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.response.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       audience: EXAMPLE_REDIRECT_URL,
     });
 
@@ -414,6 +419,7 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const requestURI = await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
       state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
     });
@@ -513,6 +519,7 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const requestURI = await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
@@ -545,10 +552,10 @@ describe('RP and OP interaction should', () => {
         ],*/
       },
     });
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
-    expect(authenticationResponseWithJWT.idToken).toBeDefined();
+    expect(authenticationResponseWithJWT.response.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.response.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       audience: EXAMPLE_REDIRECT_URL,
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
     });
@@ -632,6 +639,7 @@ describe('RP and OP interaction should', () => {
         .build();
 
       const requestURI = await rp.createAuthorizationRequestURI({
+        correlationId: '1234',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
@@ -664,9 +672,9 @@ describe('RP and OP interaction should', () => {
           ],*/
         },
       });
-      expect(authenticationResponseWithJWT.payload).toBeDefined();
+      expect(authenticationResponseWithJWT.response.payload).toBeDefined();
       await expect(
-        rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+        rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
           audience: EXAMPLE_REDIRECT_URL,
           presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
           verification: {
@@ -775,6 +783,7 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const requestURI = await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
@@ -807,7 +816,7 @@ describe('RP and OP interaction should', () => {
         ],*/
       },
     });
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.response.payload).toBeDefined();
 
     const DID_CONFIGURATION = {
       '@context': 'https://identity.foundation/.well-known/did-configuration/v1',
@@ -818,7 +827,7 @@ describe('RP and OP interaction should', () => {
     };
     expect(rp.verifyResponseOptions.verification.checkLinkedDomain).toBe(CheckLinkedDomain.ALWAYS);
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
@@ -906,6 +915,7 @@ describe('RP and OP interaction should', () => {
         .build();
 
       const requestURI = await rp.createAuthorizationRequestURI({
+        correlationId: '1234',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
@@ -938,10 +948,10 @@ describe('RP and OP interaction should', () => {
           ],*/
         },
       });
-      expect(authenticationResponseWithJWT.payload).toBeDefined();
-      expect(authenticationResponseWithJWT.idToken).toBeDefined();
+      expect(authenticationResponseWithJWT.response.payload).toBeDefined();
+      expect(authenticationResponseWithJWT.response.idToken).toBeDefined();
 
-      const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
         presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
         audience: EXAMPLE_REDIRECT_URL,
       });
@@ -1045,6 +1055,7 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const requestURI = await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
@@ -1080,8 +1091,8 @@ describe('RP and OP interaction should', () => {
         ],*/
       },
     });
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
-    expect(authenticationResponseWithJWT.idToken).toBeDefined();
+    expect(authenticationResponseWithJWT.response.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.response.idToken).toBeDefined();
 
     const DID_CONFIGURATION = {
       '@context': 'https://identity.foundation/.well-known/did-configuration/v1',
@@ -1091,7 +1102,7 @@ describe('RP and OP interaction should', () => {
       ],
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
@@ -1338,6 +1349,7 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const requestURI = await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
@@ -1370,10 +1382,10 @@ describe('RP and OP interaction should', () => {
         ]*/
       },
     });
-    expect(authenticationResponseWithJWT.payload).toBeDefined();
-    expect(authenticationResponseWithJWT.idToken).toBeDefined();
+    expect(authenticationResponseWithJWT.response.payload).toBeDefined();
+    expect(authenticationResponseWithJWT.response.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
@@ -1467,6 +1479,7 @@ describe('RP and OP interaction should', () => {
       .build();
 
     const requestURI = await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
       state: 'b32f0087fc9816eb813fd11f',
     });
@@ -1502,7 +1515,7 @@ describe('RP and OP interaction should', () => {
       ],
     };
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: EXAMPLE_REDIRECT_URL,
     });
@@ -1518,7 +1531,7 @@ describe('RP and OP interaction should', () => {
     };
 
     const eventEmitter = new EventEmitter();
-    const replayRegistry = new ReplayRegistry(eventEmitter);
+    const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId('test_client_id')
       .withScope('test')
@@ -1560,6 +1573,7 @@ describe('RP and OP interaction should', () => {
       .build();
 
     await rp.createAuthorizationRequest({
+      correlationId: '1234',
       nonce: { propertyValue: 'bcceb347-1374-49b8-ace0-b868162c122d', targets: PropertyTarget.REQUEST_OBJECT },
       state: { propertyValue: '8006b5fb-6e3b-42d1-a2be-55ed2a08073d', targets: PropertyTarget.REQUEST_OBJECT },
       claims: {
@@ -1586,9 +1600,8 @@ describe('RP and OP interaction should', () => {
       },
     });
 
-    const authRequests = await replayRegistry.getAuthorizationRequests();
-    expect(authRequests.size).toBe(1);
-    expect(authRequests.values().next().value.status).toBe('created');
+    const state = await replayRegistry.getRequestStateByCorrelationId('1234', true);
+    expect(state.status).toBe('created');
   });
 
   it('should register authorization request on create with uri', async () => {
@@ -1598,7 +1611,7 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
     const eventEmitter = new EventEmitter();
-    const replayRegistry = new ReplayRegistry(eventEmitter);
+    const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
@@ -1634,13 +1647,13 @@ describe('RP and OP interaction should', () => {
       .build();
 
     await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
       state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
     });
 
-    const authRequests = await replayRegistry.getAuthorizationRequests();
-    expect(authRequests.size).toBe(1);
-    expect(authRequests.values().next().value.status).toBe('created');
+    const state = await replayRegistry.getRequestStateByCorrelationId('1234');
+    expect(state.status).toBe('created');
   });
 
   it('should register authorization response on successful verification', async () => {
@@ -1651,7 +1664,7 @@ describe('RP and OP interaction should', () => {
     };
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
     const eventEmitter = new EventEmitter();
-    const replayRegistry = new ReplayRegistry(eventEmitter);
+    const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
@@ -1713,25 +1726,25 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const requestURI = await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
       state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
     });
-    let authRequests = await replayRegistry.getAuthorizationRequests();
-    expect(authRequests.size).toBe(1);
-    expect(authRequests.values().next().value.status).toBe('created');
+    const reqStateCreated = await replayRegistry.getRequestStateByState('b32f0087fc9816eb813fd11f', true);
+    expect(reqStateCreated.status).toBe('created');
     nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
     const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedRequest);
     nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, { result: 'ok' });
     await op.submitAuthorizationResponse(authenticationResponseWithJWT);
-    await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+    await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       audience: EXAMPLE_REDIRECT_URL,
     });
-    const authResponses = await replayRegistry.getAuthorizationResponses();
-    expect(authResponses.size).toBe(1);
-    expect(authResponses.values().next().value.status).toBe('verified');
-    authRequests = await replayRegistry.getAuthorizationRequests();
-    expect(authRequests.size).toBe(0);
+    const reqStateAfterResponse = await replayRegistry.getRequestStateByState('incorrect', false);
+    expect(reqStateAfterResponse).toBeUndefined();
+
+    const resStateAfterResponse = await replayRegistry.getResponseStateByState('b32f0087fc9816eb813fd11f', true);
+    expect(resStateAfterResponse.status).toBe('verified');
   });
 
   it('should set error status on failed authorization response verification', async () => {
@@ -1742,7 +1755,7 @@ describe('RP and OP interaction should', () => {
     };
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
     const eventEmitter = new EventEmitter();
-    const replayRegistry = new ReplayRegistry(eventEmitter);
+    const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
@@ -1804,29 +1817,30 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const requestURI = await rp.createAuthorizationRequestURI({
+      correlationId: '1234',
       nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
       state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
     });
-    let authRequests = await replayRegistry.getAuthorizationRequests();
-    expect(authRequests.size).toBe(1);
-    expect(authRequests.values().next().value.status).toBe('created');
+    const state = await replayRegistry.getRequestStateByCorrelationId('1234', true);
+    expect(state.status).toBe('created');
+
     nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
     const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedRequest);
     nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, { result: 'ok' });
     await op.submitAuthorizationResponse(authenticationResponseWithJWT);
-    authenticationResponseWithJWT.payload.state = 'wrong_value';
+    authenticationResponseWithJWT.response.payload.state = 'wrong_value';
     await rp
-      .verifyAuthorizationResponse(authenticationResponseWithJWT.payload, {
+      .verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
         audience: EXAMPLE_REDIRECT_URL,
       })
       .catch(() => {
         //swallow this exception;
       });
-    const authResponses = await replayRegistry.getAuthorizationResponses();
-    expect(authResponses.size).toBe(1);
-    expect(authResponses.values().next().value.status).toBe('error');
-    authRequests = await replayRegistry.getAuthorizationRequests();
-    expect(authRequests.size).toBe(1);
+    const reqState = await replayRegistry.getRequestStateByCorrelationId('1234', true);
+    expect(reqState.status).toBe('created');
+
+    const resState = await replayRegistry.getResponseStateByCorrelationId('1234', true);
+    expect(resState.status).toBe('error');
   });
 });

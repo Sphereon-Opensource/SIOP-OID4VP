@@ -1,9 +1,8 @@
 import { JWK } from 'jose';
 
-import { AuthorizationResponseOpts } from '../authorization-response';
-import { mergeOAuth2AndOpenIdInRequestPayload } from '../authorization-response';
+import { AuthorizationResponseOpts, mergeOAuth2AndOpenIdInRequestPayload } from '../authorization-response';
 import { assertValidResponseOpts } from '../authorization-response/Opts';
-import { getNonce, getPublicJWKFromHexPrivateKey, getState, getThumbprint } from '../helpers';
+import { getPublicJWKFromHexPrivateKey, getThumbprint } from '../helpers';
 import { authorizationRequestVersionDiscovery } from '../helpers/SIOPSpecVersion';
 import {
   AuthorizationRequestPayload,
@@ -29,8 +28,13 @@ export const createIDTokenPayload = async (
   const supportedDidMethods = payload['registration']?.subject_syntax_types_supported?.filter((sst) =>
     sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
   );
-  const state = responseOpts.state || getState(payload.state);
-  const nonce = payload.nonce || responseOpts.nonce || getNonce(state);
+  if (!payload.state) {
+    throw Error('No state');
+  } else if (!payload.nonce) {
+    throw Error('No nonce');
+  }
+  const state = payload.state;
+  const nonce = payload.nonce;
   const SEC_IN_MS = 1000;
 
   authorizationRequestVersionDiscovery(authorizationRequestPayload);
@@ -44,6 +48,7 @@ export const createIDTokenPayload = async (
     sub: responseOpts.signature.did,
     auth_time: payload.auth_time,
     nonce,
+    state, // ideally this is only placed in here if required
     // ...(responseOpts.presentationExchange?._vp_token ? { _vp_token: responseOpts.presentationExchange._vp_token } : {}),
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !responseOpts.signature.did) {

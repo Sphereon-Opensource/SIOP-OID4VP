@@ -15,14 +15,14 @@ import {
   VerifiablePresentationWithFormat,
 } from '../types';
 
+import { AuthorizationResponse } from './AuthorizationResponse';
+
 export interface AuthorizationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
   registration?: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
 
   signature?: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
-  nonce?: string;
-  state?: string;
   responseMode?: ResponseMode;
   // did: string;
   expiresIn?: number;
@@ -85,14 +85,20 @@ export type PresentationVerificationCallback = (args: W3CVerifiablePresentation)
 export type PresentationSignCallback = (args: PresentationSignCallBackParams) => Promise<W3CVerifiablePresentation>;
 
 export interface VerifyAuthorizationResponseOpts {
+  correlationId: string;
   verification: InternalVerification | ExternalVerification;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
-  nonce?: string; // mandatory? // To verify the response against the supplied nonce
-  state?: string; // mandatory? // To verify the response against the supplied state
+  nonce?: string; // To verify the response against the supplied nonce
+  state?: string; // To verify the response against the supplied state
 
   presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[]; // The presentation definitions to match against VPs in the response
   audience?: string; // The audience/redirect_uri
   // claims?: ClaimPayloadCommonOpts; // The claims, typically the same values used during request creation
   // verifyCallback?: VerifyCallback;
   // presentationVerificationCallback?: PresentationVerificationCallback;
+}
+
+export interface AuthorizationResponseWithCorrelationId {
+  response: AuthorizationResponse;
+  correlationId: string;
 }

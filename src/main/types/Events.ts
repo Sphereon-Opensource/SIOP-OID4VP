@@ -22,30 +22,37 @@ export enum AuthorizationEvents {
 }
 
 export class AuthorizationEvent<T> {
-  private readonly subject: T;
-  private readonly error?: Error;
-  private readonly timestamp: number;
+  private readonly _subject: T | undefined;
+  private readonly _error?: Error;
+  private readonly _timestamp: number;
+  private readonly _correlationId: string;
 
-  public constructor(args: { subject: T; error?: Error }) {
-    this.timestamp = Date.now();
-    this.subject = args.subject;
-    this.error = args.error;
+  public constructor(args: { correlationId: string; subject?: T; error?: Error }) {
+    //fixme: Create correlationId if not provided. Might need to be deferred to registry though
+    this._correlationId = args.correlationId;
+    this._timestamp = Date.now();
+    this._subject = args.subject;
+    this._error = args.error;
   }
 
-  get getSubject(): T {
-    return this.subject;
+  get subject(): T {
+    return this._subject;
   }
 
-  get getTimestamp(): number {
-    return this.timestamp;
+  get timestamp(): number {
+    return this._timestamp;
   }
 
-  get getError(): Error {
-    return this.error;
+  get error(): Error {
+    return this._error;
   }
 
   public hasError(): boolean {
-    return !!this.error;
+    return !!this._error;
+  }
+
+  get correlationId(): string {
+    return this._correlationId;
   }
 }
 

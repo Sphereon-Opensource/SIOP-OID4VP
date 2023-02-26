@@ -11,6 +11,7 @@ const validButExpiredResJWT =
 
 describe('verify JWT from Request JWT should', () => {
   const verifyOpts: VerifyAuthorizationResponseOpts = {
+    correlationId: '1234',
     audience: DID,
     verification: {
       resolveOpts: {

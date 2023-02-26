@@ -119,10 +119,8 @@ export class AuthorizationResponse {
   }
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
-    // TODO: Add response verification next to idToken verification
-    if (verifyOpts.verification.replayRegistry) {
-      await verifyOpts.verification.replayRegistry.verify(this);
-    }
+    // Merge payloads checks for inconsistencies in properties which are present in both the auth request and request object
+    await this.mergedPayloads(true);
 
     const result = await this.idToken.verify(verifyOpts);
     await verifyPresentations(this, verifyOpts);
@@ -144,5 +142,22 @@ export class AuthorizationResponse {
 
   get idToken(): IDToken {
     return this._idToken;
+  }
+
+  public async getMergedProperty<T>(key: string, consistencyCheck?: boolean): Promise<T | undefined> {
+    const merged = await this.mergedPayloads(consistencyCheck);
+    return merged[key] as T;
+  }
+
+  public async mergedPayloads(consistencyCheck?: boolean): Promise<AuthorizationResponsePayload> {
+    const idTokenPayload = await this.idToken?.payload();
+    if (consistencyCheck !== false && idTokenPayload) {
+      Object.entries(idTokenPayload).forEach((entry) => {
+        if (typeof entry[0] === 'string' && this.payload[entry[0]] && this.payload[entry[0]] !== entry[1]) {
+          throw Error(`Mismatch in Authorization Request and Request object value for ${entry[0]}`);
+        }
+      });
+    }
+    return { ...this.payload, ...idTokenPayload };
   }
 }

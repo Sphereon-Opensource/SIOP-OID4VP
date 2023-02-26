@@ -8,6 +8,9 @@ export const assertValidVerifyAuthorizationRequestOpts = (opts: VerifyAuthorizat
   if (!opts || !opts.verification || (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
+  if (!opts.correlationId) {
+    throw new Error('No correlation id found');
+  }
 };
 
 export const assertValidAuthorizationRequestOpts = (opts: CreateAuthorizationRequestOpts) => {

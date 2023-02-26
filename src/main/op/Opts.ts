@@ -90,6 +90,7 @@ export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
           },
         } as InternalVerification,
         supportedVersions: opts.builder.supportedVersions,
+        correlationId: undefined,
       }
     : opts.verifyOpts;
 };

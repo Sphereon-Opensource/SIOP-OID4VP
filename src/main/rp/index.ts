@@ -1,3 +1,4 @@
 export * from './RP';
 export * from './Builder';
-export * from './ReplayRegistry';
+export * from './InMemoryReplayRegistry';
+export * from './types';

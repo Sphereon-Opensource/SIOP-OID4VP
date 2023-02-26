@@ -31,12 +31,6 @@ export const AuthorizationResponseOptsSchemaObj = {
             }
           ]
         },
-        "nonce": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
-        },
         "responseMode": {
           "$ref": "#/definitions/ResponseMode"
         },

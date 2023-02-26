@@ -1,6 +1,5 @@
 import { AuthorizationRequest } from '../authorization-request';
 import { signDidJwtPayload } from '../did';
-import { getState } from '../helpers';
 import { RequestObject } from '../request-object';
 import { AuthorizationRequestPayload, AuthorizationResponsePayload, IDTokenPayload, SIOPErrors } from '../types';
 
@@ -17,8 +16,11 @@ export const createResponsePayload = async (
   if (!authorizationRequest) {
     throw new Error(SIOPErrors.NO_REQUEST);
   }
+  const state: string = await authorizationRequest.getMergedProperty('state');
+  if (!state) {
+    throw Error('No state');
+  }
 
-  const state = responseOpts.state || getState(authorizationRequest.payload.state);
   const responsePayload: AuthorizationResponsePayload = {
     ...(responseOpts.accessToken ? { access_token: responseOpts.accessToken } : {}),
     token_type: responseOpts.tokenType,

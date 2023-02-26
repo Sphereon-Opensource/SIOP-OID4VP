@@ -110,6 +110,7 @@ describe('OP should', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
+    correlationId: '1234',
     supportedVersions: [SupportedVersion.SIOPv2_ID1],
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
   };
@@ -172,6 +173,7 @@ describe('OP should', () => {
       };
 
       const requestURI = await RP.fromRequestOpts(requestOpts).createAuthorizationRequestURI({
+        correlationId: '1234',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });
@@ -224,6 +226,7 @@ describe('OP should', () => {
       .build()
 
       .createAuthorizationRequestURI({
+        correlationId: '1234',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
       });

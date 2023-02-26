@@ -20,7 +20,7 @@ import {
   VerifyAuthorizationResponseOpts,
 } from '../authorization-response';
 import { RequestObject, RequestObjectOpts } from '../request-object';
-import { ReplayRegistry } from '../rp/ReplayRegistry';
+import { IReplayRegistry } from '../rp';
 
 import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './';
 
@@ -92,6 +92,7 @@ export interface RequestRegistrationPayloadProperties {
 }
 
 export interface VerifiedAuthorizationRequest extends VerifiedJWT {
+  correlationId: string;
   authorizationRequest: AuthorizationRequest;
   authorizationRequestPayload: AuthorizationRequestPayload;
   requestObject?: RequestObject; // The Request object
@@ -510,7 +511,7 @@ export interface Verification {
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
-  replayRegistry?: ReplayRegistry;
+  replayRegistry?: IReplayRegistry;
 }
 
 export type InternalVerification = Verification;

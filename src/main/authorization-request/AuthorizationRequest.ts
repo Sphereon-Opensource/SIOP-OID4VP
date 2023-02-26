@@ -140,7 +140,9 @@ export class AuthorizationRequest {
 
     // We use the orig request for default values, but the JWT payload contains signed request object properties
     const mergedPayload = { ...this.payload, ...requestObjectPayload };
-    if (opts.nonce && mergedPayload.nonce !== opts.nonce) {
+    if (opts.state && mergedPayload.state !== opts.state) {
+      throw new Error(`${SIOPErrors.BAD_STATE} payload: ${mergedPayload.state}, supplied: ${opts.state}`);
+    } else if (opts.nonce && mergedPayload.nonce !== opts.nonce) {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${mergedPayload.nonce}, supplied: ${opts.nonce}`);
     }
 
@@ -155,6 +157,7 @@ export class AuthorizationRequest {
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(mergedPayload, await this.getSupportedVersion());
     return {
       ...verifiedJwt,
+      correlationId: opts.correlationId,
       authorizationRequest: this,
       verifyOpts: opts,
       presentationDefinitions,
@@ -210,7 +213,7 @@ export class AuthorizationRequest {
     return responseType?.includes(singleType) === true;
   }
 
-  public async getMergedProperty<T>(key: string): Promise<T> {
+  public async getMergedProperty<T>(key: string): Promise<T | undefined> {
     const merged = await this.mergedPayloads();
     return merged[key] as T;
   }

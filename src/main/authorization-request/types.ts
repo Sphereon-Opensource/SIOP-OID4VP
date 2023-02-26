@@ -72,9 +72,12 @@ export interface AuthorizationRequestOptsVD11 extends AuthorizationRequestCommon
 export type CreateAuthorizationRequestOpts = AuthorizationRequestOptsVID1 | AuthorizationRequestOptsVD11;
 
 export interface VerifyAuthorizationRequestOpts {
+  correlationId: string;
+
   verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // If provided the nonce in the request needs to match
+  state?: string; // If provided the state in the request needs to match
 
   supportedVersions?: SupportedVersion[];
   // redirectUri?: string;

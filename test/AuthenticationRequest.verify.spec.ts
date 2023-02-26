@@ -307,6 +307,7 @@ describe('verifyJWT should', () => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
       },
+      correlationId: '1234',
       supportedVersions: [SupportedVersion.SIOPv2_ID1],
       nonce: 'This nonce is different and should throw error',
     };
@@ -374,6 +375,7 @@ describe('verifyJWT should', () => {
           wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
         },
         supportedVersions: [SupportedVersion.SIOPv2_ID1],
+        correlationId: '1234',
       };
 
       const verifyJWT = await AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts);

@@ -33,7 +33,7 @@ import {
 
 import { assignIfAuth, assignIfRequestObject, isTargetOrNoTargets } from './Opts';
 import { RP } from './RP';
-import { ReplayRegistry } from './ReplayRegistry';
+import { IReplayRegistry } from './types';
 
 export default class Builder {
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
@@ -47,7 +47,7 @@ export default class Builder {
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
   eventEmitter?: EventEmitter;
-  replayRegistry?: ReplayRegistry;
+  replayRegistry?: IReplayRegistry;
   private _authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
   private _requestObjectPayload: Partial<RequestObjectPayload> = {};
 
@@ -273,7 +273,7 @@ export default class Builder {
     return this;
   }
 
-  withReplayRegistry(replayRegistry: ReplayRegistry): Builder {
+  withReplayRegistry(replayRegistry: IReplayRegistry): Builder {
     this.replayRegistry = replayRegistry;
     return this;
   }
@@ -293,6 +293,10 @@ export default class Builder {
   }
 
   build(): RP {
+    if (this.replayRegistry && !this.eventEmitter) {
+      throw Error('Please enable the event emitter on the RP when using a replay registry');
+    }
+
     // We do not want others to directly use the RP class
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

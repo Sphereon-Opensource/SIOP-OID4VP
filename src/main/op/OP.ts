@@ -1,7 +1,14 @@
 import EventEmitter from 'events';
 
+import { v4 as uuidv4 } from 'uuid';
+
 import { AuthorizationRequest, URI, VerifyAuthorizationRequestOpts } from '../authorization-request';
-import { AuthorizationResponse, AuthorizationResponseOpts, PresentationExchangeResponseOpts } from '../authorization-response';
+import {
+  AuthorizationResponse,
+  AuthorizationResponseOpts,
+  AuthorizationResponseWithCorrelationId,
+  PresentationExchangeResponseOpts,
+} from '../authorization-response';
 import { encodeJsonAsURI, post } from '../helpers';
 import {
   AuthorizationEvent,
@@ -36,14 +43,6 @@ export class OP {
     this._eventEmitter = opts.builder?.eventEmitter;
   }
 
-  get createResponseOptions(): AuthorizationResponseOpts {
-    return this._createResponseOptions;
-  }
-
-  get verifyRequestOptions(): Partial<VerifyAuthorizationRequestOpts> {
-    return this._verifyRequestOptions;
-  }
-
   /**
    * This method tries to infer the SIOP specs version based on the request payload.
    * If the version cannot be inferred or is not supported it throws an exception.
@@ -54,26 +53,38 @@ export class OP {
 
   public async verifyAuthorizationRequest(
     requestJwtOrUri: string | URI,
-    requestOpts?: { nonce?: string; verification?: InternalVerification | ExternalVerification }
+    requestOpts?: { correlationId?: string; verification?: InternalVerification | ExternalVerification }
   ): Promise<VerifiedAuthorizationRequest> {
+    const correlationId = requestOpts?.correlationId || uuidv4();
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri)
       .then((result: AuthorizationRequest) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, { subject: result });
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, { correlationId, subject: result });
         return result;
       })
       .catch((error: Error) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, { subject: requestJwtOrUri, error });
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, {
+          correlationId,
+          subject: requestJwtOrUri,
+          error,
+        });
         throw error;
       });
 
     return authorizationRequest
-      .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts }))
+      .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts, correlationId }))
       .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, { subject: verifiedAuthorizationRequest.authorizationRequest });
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, {
+          correlationId,
+          subject: verifiedAuthorizationRequest.authorizationRequest,
+        });
         return verifiedAuthorizationRequest;
       })
       .catch((error) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, { subject: authorizationRequest, error });
+        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, {
+          correlationId,
+          subject: authorizationRequest,
+          error,
+        });
         throw error;
       });
   }
@@ -81,44 +92,69 @@ export class OP {
   public async createAuthorizationResponse(
     authorizationRequest: VerifiedAuthorizationRequest,
     responseOpts?: {
-      nonce?: string;
-      state?: string;
+      correlationId?: string;
       audience?: string;
       signature?: InternalSignature | ExternalSignature | SuppliedSignature;
       verification?: InternalVerification | ExternalVerification;
       presentationExchange?: PresentationExchangeResponseOpts;
     }
-  ): Promise<AuthorizationResponse> {
-    return AuthorizationResponse.fromVerifiedAuthorizationRequest(authorizationRequest, this.newAuthorizationResponseOpts(responseOpts))
-      .then((authorizationResponse: AuthorizationResponse) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, { subject: authorizationResponse });
-        return authorizationResponse;
-      })
-      .catch((error: Error) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, { subject: authorizationRequest, error });
-        throw error;
+  ): Promise<AuthorizationResponseWithCorrelationId> {
+    if (authorizationRequest.correlationId && responseOpts?.correlationId && authorizationRequest.correlationId !== responseOpts.correlationId) {
+      throw new Error(
+        `Request correlation id ${authorizationRequest.correlationId} is different from option correlation id ${responseOpts.correlationId}`
+      );
+    }
+    const correlationId = responseOpts?.correlationId || authorizationRequest.correlationId || uuidv4();
+    try {
+      const response = await AuthorizationResponse.fromVerifiedAuthorizationRequest(
+        authorizationRequest,
+        this.newAuthorizationResponseOpts({
+          ...responseOpts,
+          correlationId,
+        })
+      );
+      this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, {
+        correlationId,
+        subject: response,
       });
+      return { correlationId, response };
+    } catch (error: any) {
+      this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, {
+        correlationId,
+        subject: authorizationRequest.authorizationRequest,
+        error,
+      });
+      throw error;
+    }
   }
 
   // TODO SK Can you please put some documentation on it?
-  public async submitAuthorizationResponse(authorizationResponse: AuthorizationResponse): Promise<Response> {
+  public async submitAuthorizationResponse(authorizationResponse: AuthorizationResponseWithCorrelationId): Promise<Response> {
+    const { correlationId, response } = authorizationResponse;
+    if (!correlationId) {
+      throw Error('No correlation Id provided');
+    }
     if (
-      !authorizationResponse ||
-      (authorizationResponse.options.responseMode &&
-        !(authorizationResponse.options.responseMode == ResponseMode.POST || authorizationResponse.options.responseMode == ResponseMode.FORM_POST))
+      !response ||
+      (response.options.responseMode &&
+        !(response.options.responseMode == ResponseMode.POST || response.options.responseMode == ResponseMode.FORM_POST))
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    const payload = await authorizationResponse.payload;
-    const idToken = await authorizationResponse.idToken.payload();
+    const request = response.authorizationRequest;
+    if (!request) {
+      throw Error('Cannot submit an authorization response without a request present');
+    }
+    const payload = await response.payload;
+    const idToken = await response.idToken.payload();
     const uri = encodeJsonAsURI(payload);
     return post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED })
       .then((result: SIOPResonse<unknown>) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, { subject: authorizationResponse });
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, { correlationId, subject: response });
         return result.origResponse;
       })
       .catch((error: Error) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, { subject: authorizationResponse, error });
+        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, { correlationId, subject: response, error });
         throw error;
       });
   }
@@ -141,9 +177,8 @@ export class OP {
     };
   }
 
-  private newAuthorizationResponseOpts(opts?: {
-    nonce?: string;
-    state?: string;
+  private newAuthorizationResponseOpts(opts: {
+    correlationId: string;
     audience?: string;
     signature?: InternalSignature | ExternalSignature | SuppliedSignature;
     presentationExchange?: PresentationExchangeResponseOpts;
@@ -151,27 +186,28 @@ export class OP {
     return {
       ...this._createResponseOptions,
       ...(opts?.audience ? { redirectUri: opts.audience } : {}),
-      ...(opts?.nonce ? { nonce: opts.nonce } : {}),
-      ...(opts?.state ? { state: opts.state } : {}),
       ...(opts?.presentationExchange ? { presentationExchange: opts.presentationExchange } : {}),
       ...(opts?.signature ? { signature: opts.signature } : {}),
     };
   }
 
-  private newVerifyAuthorizationRequestOpts(opts?: {
-    nonce?: string;
+  private newVerifyAuthorizationRequestOpts(opts: {
+    correlationId: string;
     verification?: InternalVerification | ExternalVerification;
     // verifyCallback?: VerifyCallback;
   }): VerifyAuthorizationRequestOpts {
     return {
       ...this._verifyRequestOptions,
-      nonce: opts?.nonce || this._verifyRequestOptions.nonce,
+      correlationId: opts.correlationId,
       verification: { ...this._verifyRequestOptions.verification, ...opts?.verification },
       // wellknownDIDverifyCallback: opts?.verifyCallback,
     };
   }
 
-  private async emitEvent(type: AuthorizationEvents, payload: { subject: unknown; error?: Error }): Promise<void> {
+  private async emitEvent(
+    type: AuthorizationEvents,
+    payload: { correlationId: string; subject: AuthorizationRequest | AuthorizationResponse | string | URI; error?: Error }
+  ): Promise<void> {
     if (this._eventEmitter) {
       this._eventEmitter.emit(type, new AuthorizationEvent(payload));
     }
@@ -193,5 +229,13 @@ export class OP {
 
   public static builder() {
     return new Builder();
+  }
+
+  get createResponseOptions(): AuthorizationResponseOpts {
+    return this._createResponseOptions;
+  }
+
+  get verifyRequestOptions(): Partial<VerifyAuthorizationRequestOpts> {
+    return this._verifyRequestOptions;
   }
 }

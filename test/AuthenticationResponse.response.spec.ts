@@ -90,6 +90,7 @@ describe('create JWT from Request JWT should', () => {
       wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
     supportedVersions: [SupportedVersion.SIOPv2_ID1],
+    correlationId: '1234',
   };
 
   it('throw NO_JWT when no jwt is passed', async () => {
