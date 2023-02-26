@@ -58,6 +58,9 @@ const siopFetch = async <T>(
     exceptionOnHttpErrorStatus?: boolean;
   }
 ): Promise<SIOPResonse<T>> => {
+  if (!url || url.toLowerCase().startsWith('did:')) {
+    throw Error(`Invalid URL supplied. Expected a http(s) URL. Recieved: ${url}`);
+  }
   const headers = opts?.customHeaders ? opts.customHeaders : [];
   if (opts?.bearerToken) {
     headers['Authorization'] = `Bearer ${opts.bearerToken}`;

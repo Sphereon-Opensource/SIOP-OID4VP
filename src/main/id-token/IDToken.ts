@@ -141,7 +141,7 @@ export class IDToken {
     };
   }
 
-  private assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload; verPayload?: IDTokenPayload; audience?: string }) {
+  private assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload; verPayload?: IDTokenPayload; audience?: string; nonce?: string }) {
     if (!opts.header) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
@@ -168,6 +168,8 @@ export class IDToken {
         throw Error(SIOPErrors.NO_AUDIENCE);
       } else if (opts.audience && opts.audience != opts.verPayload.aud) {
         throw Error(SIOPErrors.INVALID_AUDIENCE);
+      } else if (opts.nonce && opts.nonce != opts.verPayload.nonce) {
+        throw Error(SIOPErrors.BAD_NONCE);
       }
     }
   }

@@ -12,6 +12,7 @@ import {
   ResponseIss,
   SIOPErrors,
   SubjectSyntaxTypesSupportedValues,
+  SupportedVersion,
 } from '../types';
 
 export const createIDTokenPayload = async (
@@ -33,22 +34,30 @@ export const createIDTokenPayload = async (
   } else if (!payload.nonce) {
     throw Error('No nonce');
   }
-  const state = payload.state;
+  // const state = payload.state;
   const nonce = payload.nonce;
   const SEC_IN_MS = 1000;
 
-  authorizationRequestVersionDiscovery(authorizationRequestPayload);
+  const rpSupportedVersions = authorizationRequestVersionDiscovery(authorizationRequestPayload);
+  const maxRPVersion = rpSupportedVersions.reduce(
+    (previous, current) => (current.valueOf() > previous.valueOf() ? current : previous),
+    SupportedVersion.SIOPv2_ID1
+  );
+  if (responseOpts.version && rpSupportedVersions.length > 0 && !rpSupportedVersions.includes(responseOpts.version)) {
+    throw Error(`RP does not support spec version ${responseOpts.version}, supported versions: ${rpSupportedVersions.toString()}`);
+  }
+  const opVersion = responseOpts.version ?? maxRPVersion;
+
   const idToken: IDTokenPayload = {
     // fixme: ID11 does not use this static value anymore
-    //fixme: JWT VC interop uses: https://self-issued.me/v2/openid-vc
-    iss: ResponseIss.SELF_ISSUED_V2,
-    aud: payload.redirect_uri,
-    iat: Date.now() / SEC_IN_MS - 60 * SEC_IN_MS,
-    exp: Date.now() / SEC_IN_MS + (responseOpts.expiresIn || 600),
+    iss: opVersion === SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1 ? ResponseIss.JWT_VC_PRESENTATION_V1 : ResponseIss.SELF_ISSUED_V2,
+    aud: responseOpts.audience || payload.client_id,
+    iat: Math.round(Date.now() / SEC_IN_MS - 60 * SEC_IN_MS),
+    exp: Math.round(Date.now() / SEC_IN_MS + (responseOpts.expiresIn || 600)),
     sub: responseOpts.signature.did,
     auth_time: payload.auth_time,
     nonce,
-    state, // ideally this is only placed in here if required
+    // state, // ideally this is only placed in here if required
     // ...(responseOpts.presentationExchange?._vp_token ? { _vp_token: responseOpts.presentationExchange._vp_token } : {}),
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !responseOpts.signature.did) {

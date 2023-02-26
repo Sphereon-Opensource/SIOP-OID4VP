@@ -10,6 +10,7 @@ import {
   PresentationExchangeResponseOpts,
 } from '../authorization-response';
 import { encodeJsonAsURI, post } from '../helpers';
+import { authorizationRequestVersionDiscovery } from '../helpers/SIOPSpecVersion';
 import {
   AuthorizationEvent,
   AuthorizationEvents,
@@ -24,6 +25,7 @@ import {
   SIOPErrors,
   SIOPResonse,
   SuppliedSignature,
+  SupportedVersion,
   UrlEncodingFormat,
   VerifiedAuthorizationRequest,
 } from '../types';
@@ -70,8 +72,27 @@ export class OP {
         throw error;
       });
 
+    const verification = {
+      ...requestOpts?.verification,
+      ...{
+        resolveOpts: {
+          ...requestOpts?.verification?.resolveOpts,
+          ...{
+            jwtVerifyOpts: {
+              ...requestOpts?.verification?.resolveOpts?.jwtVerifyOpts,
+              ...{
+                policies: {
+                  ...requestOpts?.verification?.resolveOpts?.jwtVerifyOpts?.policies,
+                  aud: false,
+                },
+              },
+            },
+          },
+        },
+      },
+    };
     return authorizationRequest
-      .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts, correlationId }))
+      .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts, verification, correlationId }))
       .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
         this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, {
           correlationId,
@@ -92,6 +113,7 @@ export class OP {
   public async createAuthorizationResponse(
     authorizationRequest: VerifiedAuthorizationRequest,
     responseOpts?: {
+      version?: SupportedVersion;
       correlationId?: string;
       audience?: string;
       signature?: InternalSignature | ExternalSignature | SuppliedSignature;
@@ -104,12 +126,23 @@ export class OP {
         `Request correlation id ${authorizationRequest.correlationId} is different from option correlation id ${responseOpts.correlationId}`
       );
     }
+    let version = responseOpts?.version;
+    const rpSupportedVersions = authorizationRequestVersionDiscovery(authorizationRequest.authorizationRequestPayload);
+    if (version && rpSupportedVersions.length > 0 && !rpSupportedVersions.includes(version)) {
+      throw Error(`RP does not support spec version ${version}, supported versions: ${rpSupportedVersions.toString()}`);
+    } else if (!version) {
+      version = rpSupportedVersions.reduce(
+        (previous, current) => (current.valueOf() > previous.valueOf() ? current : previous),
+        SupportedVersion.SIOPv2_ID1
+      );
+    }
     const correlationId = responseOpts?.correlationId || authorizationRequest.correlationId || uuidv4();
     try {
       const response = await AuthorizationResponse.fromVerifiedAuthorizationRequest(
         authorizationRequest,
         this.newAuthorizationResponseOpts({
           ...responseOpts,
+          version,
           correlationId,
         })
       );
@@ -117,7 +150,7 @@ export class OP {
         correlationId,
         subject: response,
       });
-      return { correlationId, response };
+      return { correlationId, response, redirectURI: authorizationRequest.redirectURI };
     } catch (error: any) {
       this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, {
         correlationId,
@@ -147,8 +180,9 @@ export class OP {
     }
     const payload = await response.payload;
     const idToken = await response.idToken.payload();
-    const uri = encodeJsonAsURI(payload);
-    return post(idToken.aud, uri, { contentType: ContentType.FORM_URL_ENCODED })
+    const redirectURI = authorizationResponse.redirectURI || idToken?.aud;
+    const authResponseAsURI = encodeJsonAsURI(payload);
+    return post(redirectURI, authResponseAsURI, { contentType: ContentType.FORM_URL_ENCODED })
       .then((result: SIOPResonse<unknown>) => {
         this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, { correlationId, subject: response });
         return result.origResponse;
@@ -179,6 +213,7 @@ export class OP {
 
   private newAuthorizationResponseOpts(opts: {
     correlationId: string;
+    version?: SupportedVersion;
     audience?: string;
     signature?: InternalSignature | ExternalSignature | SuppliedSignature;
     presentationExchange?: PresentationExchangeResponseOpts;

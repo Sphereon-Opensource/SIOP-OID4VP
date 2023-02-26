@@ -157,6 +157,7 @@ export class AuthorizationRequest {
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(mergedPayload, await this.getSupportedVersion());
     return {
       ...verifiedJwt,
+      redirectURI: mergedPayload.redirect_uri,
       correlationId: opts.correlationId,
       authorizationRequest: this,
       verifyOpts: opts,

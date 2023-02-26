@@ -22,6 +22,10 @@ export interface AuthorizationResponseOpts {
   registration?: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
 
+  version?: SupportedVersion;
+
+  audience?: string;
+
   signature?: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
   responseMode?: ResponseMode;
   // did: string;
@@ -99,6 +103,7 @@ export interface VerifyAuthorizationResponseOpts {
 }
 
 export interface AuthorizationResponseWithCorrelationId {
+  redirectURI: string;
   response: AuthorizationResponse;
   correlationId: string;
 }

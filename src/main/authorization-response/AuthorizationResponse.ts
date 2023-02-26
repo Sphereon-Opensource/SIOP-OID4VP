@@ -120,7 +120,10 @@ export class AuthorizationResponse {
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
     // Merge payloads checks for inconsistencies in properties which are present in both the auth request and request object
-    await this.mergedPayloads(true);
+    const merged = await this.mergedPayloads(true);
+    if (verifyOpts.state && merged.state !== verifyOpts.state) {
+      throw Error(SIOPErrors.BAD_STATE);
+    }
 
     const result = await this.idToken.verify(verifyOpts);
     await verifyPresentations(this, verifyOpts);

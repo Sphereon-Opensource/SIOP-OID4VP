@@ -15,6 +15,12 @@ export const AuthorizationResponseOptsSchemaObj = {
         "checkLinkedDomain": {
           "$ref": "#/definitions/CheckLinkedDomain"
         },
+        "version": {
+          "$ref": "#/definitions/SupportedVersion"
+        },
+        "audience": {
+          "type": "string"
+        },
         "signature": {
           "anyOf": [
             {
@@ -1443,6 +1449,14 @@ export const AuthorizationResponseOptsSchemaObj = {
         "never",
         "if_present",
         "always"
+      ]
+    },
+    "SupportedVersion": {
+      "type": "number",
+      "enum": [
+        70,
+        110,
+        71
       ]
     },
     "InternalSignature": {

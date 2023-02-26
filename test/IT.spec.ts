@@ -158,7 +158,7 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
-        .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .withClientId(rpMockEntity.did)
         .withScope('test')
         .withResponseType(ResponseType.ID_TOKEN)
         .withRedirectUri(EXAMPLE_REDIRECT_URL)
@@ -228,12 +228,12 @@ describe('RP and OP interaction should', () => {
       const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedRequest);
 
-      nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, { result: 'ok' });
+      nock(EXAMPLE_REDIRECT_URL).post(/.*/).times(3).reply(200, { result: 'ok' });
       const response = await op.submitAuthorizationResponse(authenticationResponseWithJWT);
       await expect(response.json()).resolves.toMatchObject({ result: 'ok' });
 
       const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
-        audience: EXAMPLE_REDIRECT_URL,
+        // audience: EXAMPLE_REDIRECT_URL,
       });
 
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -262,7 +262,7 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
-      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withClientId(rpMockEntity.did)
       .withScope('test')
       .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
@@ -337,7 +337,7 @@ describe('RP and OP interaction should', () => {
     expect(authenticationResponseWithJWT.response.idToken).toBeDefined();
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
-      audience: EXAMPLE_REDIRECT_URL,
+      /*audience: EXAMPLE_REDIRECT_URL,*/
     });
 
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
@@ -374,7 +374,7 @@ describe('RP and OP interaction should', () => {
       .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
       .addDidMethod('ethr')
       .withClientMetadata({
-        client_id: WELL_KNOWN_OPENID_FEDERATION,
+        client_id: rpMockEntity.did,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
         responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -461,7 +461,7 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
-      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withClientId(rpMockEntity.did)
       .withScope('test')
       .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
@@ -555,7 +555,7 @@ describe('RP and OP interaction should', () => {
     expect(authenticationResponseWithJWT.response.idToken).toBeDefined();
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
-      audience: EXAMPLE_REDIRECT_URL,
+      /*audience: EXAMPLE_REDIRECT_URL,*/
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
     });
 
@@ -583,7 +583,7 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
-        .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .withClientId(rpMockEntity.did)
         .withScope('test')
         .withResponseType(ResponseType.ID_TOKEN)
         .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
@@ -677,7 +677,7 @@ describe('RP and OP interaction should', () => {
       expect(authenticationResponseWithJWT.response.payload).toBeDefined();
       await expect(
         rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
-          audience: EXAMPLE_REDIRECT_URL,
+          // audience: EXAMPLE_REDIRECT_URL,
           presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
           verification: {
             mode: VerificationMode.INTERNAL,
@@ -719,7 +719,7 @@ describe('RP and OP interaction should', () => {
     const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
-      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withClientId(rpMockEntity.did)
       .withScope('test')
       .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
       .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
@@ -831,7 +831,7 @@ describe('RP and OP interaction should', () => {
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
-      audience: EXAMPLE_REDIRECT_URL,
+      // audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
@@ -858,7 +858,7 @@ describe('RP and OP interaction should', () => {
       const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
       const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
-        .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+        .withClientId(rpMockEntity.did)
         .withScope('test')
         .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
         .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
@@ -958,7 +958,7 @@ describe('RP and OP interaction should', () => {
 
       const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
         presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
-        audience: EXAMPLE_REDIRECT_URL,
+        // audience: EXAMPLE_REDIRECT_URL,
       });
       expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
       expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
@@ -1109,7 +1109,7 @@ describe('RP and OP interaction should', () => {
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
-      audience: EXAMPLE_REDIRECT_URL,
+      // audience: EXAMPLE_REDIRECT_URL,
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
@@ -1392,7 +1392,7 @@ describe('RP and OP interaction should', () => {
 
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
-      audience: EXAMPLE_REDIRECT_URL,
+      audience: 'test_client_id',
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
@@ -1522,7 +1522,7 @@ describe('RP and OP interaction should', () => {
     nock('https://ldtest.sphereon.com').get('/.well-known/did-configuration.json').times(3).reply(200, DID_CONFIGURATION);
     const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
-      audience: EXAMPLE_REDIRECT_URL,
+      audience: 'test_client_id',
     });
     expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
     expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
@@ -1672,7 +1672,7 @@ describe('RP and OP interaction should', () => {
     const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
-      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withClientId(rpMockEntity.did)
       .withScope('test')
       .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
@@ -1740,10 +1740,10 @@ describe('RP and OP interaction should', () => {
     nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
     const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedRequest);
-    nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, { result: 'ok' });
+    nock(EXAMPLE_REDIRECT_URL).post(/.*/).times(3).reply(200, { result: 'ok' });
     await op.submitAuthorizationResponse(authenticationResponseWithJWT);
     await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
-      audience: EXAMPLE_REDIRECT_URL,
+      // audience: EXAMPLE_REDIRECT_URL,
     });
     const reqStateAfterResponse = await replayRegistry.getRequestStateByState('incorrect', false);
     expect(reqStateAfterResponse).toBeUndefined();
@@ -1763,7 +1763,7 @@ describe('RP and OP interaction should', () => {
     const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
-      .withClientId(WELL_KNOWN_OPENID_FEDERATION)
+      .withClientId(rpMockEntity.did)
       .withScope('test')
       .withResponseType(ResponseType.ID_TOKEN)
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
@@ -1835,13 +1835,9 @@ describe('RP and OP interaction should', () => {
     nock(EXAMPLE_REDIRECT_URL).post(/.*/).reply(200, { result: 'ok' });
     await op.submitAuthorizationResponse(authenticationResponseWithJWT);
     authenticationResponseWithJWT.response.payload.state = 'wrong_value';
-    await rp
-      .verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
-        audience: EXAMPLE_REDIRECT_URL,
-      })
-      .catch(() => {
-        //swallow this exception;
-      });
+    await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, { correlationId: '1234' }).catch(() => {
+      //swallow this exception;
+    });
     const reqState = await replayRegistry.getRequestStateByCorrelationId('1234', true);
     expect(reqState.status).toBe('created');
 

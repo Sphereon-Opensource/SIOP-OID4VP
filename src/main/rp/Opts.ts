@@ -78,6 +78,7 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
           },
           replayRegistry: opts.builder.replayRegistry,
         } as InternalVerification,
+        audience: opts.builder.clientId || opts.builder.clientMetadata?.client_id,
       }
     : opts.verifyOpts;
 };

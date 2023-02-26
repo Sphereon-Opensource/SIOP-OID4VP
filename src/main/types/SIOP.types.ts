@@ -92,6 +92,7 @@ export interface RequestRegistrationPayloadProperties {
 }
 
 export interface VerifiedAuthorizationRequest extends VerifiedJWT {
+  redirectURI: string;
   correlationId: string;
   authorizationRequest: AuthorizationRequest;
   authorizationRequestPayload: AuthorizationRequestPayload;

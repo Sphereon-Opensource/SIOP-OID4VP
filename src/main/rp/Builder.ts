@@ -52,6 +52,7 @@ export default class Builder {
   private _requestObjectPayload: Partial<RequestObjectPayload> = {};
 
   clientMetadata?: ClientMetadataOpts = undefined;
+  clientId: string;
 
   private constructor(supportedRequestVersion?: SupportedVersion) {
     if (supportedRequestVersion) {
@@ -75,6 +76,7 @@ export default class Builder {
   withClientId(clientId: string, targets?: PropertyTargets): Builder {
     this._authorizationRequestPayload.client_id = assignIfAuth({ propertyValue: clientId, targets }, false);
     this._requestObjectPayload.client_id = assignIfRequestObject({ propertyValue: clientId, targets }, true);
+    this.clientId = clientId;
     return this;
   }
 

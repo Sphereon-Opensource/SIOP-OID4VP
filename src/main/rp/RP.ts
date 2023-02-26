@@ -123,7 +123,7 @@ export class RP {
       presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
     }
   ): Promise<VerifiedAuthenticationResponse> {
-    const state = this.verifyResponseOptions.state || opts.state;
+    const state = opts.state || this.verifyResponseOptions.state;
     let correlationId: string | undefined = opts.correlationId || state;
     let authorizationResponse: AuthorizationResponse;
     try {
@@ -267,7 +267,11 @@ export class RP {
     return {
       ...this._verifyResponseOptions,
       correlationId,
-      audience: opts?.audience || this._verifyResponseOptions.audience,
+      audience:
+        opts?.audience ||
+        this._verifyResponseOptions.audience ||
+        this._verifyResponseOptions.verification.resolveOpts.jwtVerifyOpts.audience ||
+        this._createRequestOptions.payload.client_id,
       state,
       nonce,
       verification: opts?.verification || this._verifyResponseOptions.verification,
