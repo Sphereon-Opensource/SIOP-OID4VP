@@ -236,8 +236,8 @@ describe('RP and OP interaction should', () => {
         // audience: EXAMPLE_REDIRECT_URL,
       });
 
-      expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-      expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+      expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
+      expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
     },
     UNIT_TEST_TIMEOUT
   );
@@ -340,8 +340,8 @@ describe('RP and OP interaction should', () => {
       /*audience: EXAMPLE_REDIRECT_URL,*/
     });
 
-    expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+    expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
+    expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
   it('fail when calling with presentation definitions and without verifiable presentation', async () => {
@@ -559,8 +559,8 @@ describe('RP and OP interaction should', () => {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
     });
 
-    expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+    expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
+    expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
   it(
@@ -833,8 +833,8 @@ describe('RP and OP interaction should', () => {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       // audience: EXAMPLE_REDIRECT_URL,
     });
-    expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+    expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
+    expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
   it(
@@ -960,8 +960,8 @@ describe('RP and OP interaction should', () => {
         presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
         // audience: EXAMPLE_REDIRECT_URL,
       });
-      expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-      expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+      expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
+      expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
     },
     UNIT_TEST_TIMEOUT
   );
@@ -1111,8 +1111,8 @@ describe('RP and OP interaction should', () => {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       // audience: EXAMPLE_REDIRECT_URL,
     });
-    expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+    expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
+    expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
   it('should verify revocation ldp_vp with RevocationVerification.ALWAYS', async () => {
@@ -1394,8 +1394,8 @@ describe('RP and OP interaction should', () => {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: 'test_client_id',
     });
-    expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+    expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
+    expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
   it('succeed with nonce verification with ldp_vp', async () => {
@@ -1524,8 +1524,8 @@ describe('RP and OP interaction should', () => {
       presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
       audience: 'test_client_id',
     });
-    expect(verifiedAuthResponseWithJWT.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+    expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
+    expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
   });
 
   it('should register authorization request on create', async () => {

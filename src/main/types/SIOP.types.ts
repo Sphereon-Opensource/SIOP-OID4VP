@@ -7,13 +7,15 @@ import {
   PresentationSubmission,
   W3CVerifiableCredential,
   W3CVerifiablePresentation,
+  WrappedVerifiablePresentation,
 } from '@sphereon/ssi-types';
 import { VerifyCallback as WellknownDIDVerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
-import { VerificationMethod } from 'did-resolver';
+import { DIDResolutionResult, VerificationMethod } from 'did-resolver';
 
 import { AuthorizationRequest, CreateAuthorizationRequestOpts, PropertyTargets, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import {
+  AuthorizationResponse,
   AuthorizationResponseOpts,
   PresentationDefinitionWithLocation,
   PresentationVerificationCallback,
@@ -533,9 +535,30 @@ export interface DidAuthValidationResponse {
   payload: JWTPayload;
 }
 
-export interface VerifiedAuthenticationResponse extends VerifiedJWT {
+export interface VerifiedIDToken {
+  jwt: string;
+  didResolutionResult: DIDResolutionResult;
+  signer: VerificationMethod;
+  issuer: string;
   payload: IDTokenPayload;
   verifyOpts: VerifyAuthorizationResponseOpts;
+}
+
+export interface VerifiedOpenID4VPSubmission {
+  submissionData: PresentationSubmission;
+  presentationDefinitions: PresentationDefinitionWithLocation[];
+  presentations: WrappedVerifiablePresentation[];
+}
+
+export interface VerifiedAuthorizationResponse {
+  correlationId: string;
+
+  authorizationResponse: AuthorizationResponse;
+
+  oid4vpSubmission?: VerifiedOpenID4VPSubmission;
+
+  idToken?: VerifiedIDToken;
+  verifyOpts?: VerifyAuthorizationResponseOpts;
 }
 
 export enum GrantType {

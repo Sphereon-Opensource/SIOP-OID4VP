@@ -2,7 +2,15 @@ import { CredentialMapper, PresentationSubmission, W3CVerifiablePresentation, Wr
 
 import { AuthorizationRequest } from '../authorization-request';
 import { verifyRevocation } from '../helpers';
-import { AuthorizationResponsePayload, IDTokenPayload, ResponseType, RevocationVerification, SIOPErrors, SupportedVersion } from '../types';
+import {
+  AuthorizationResponsePayload,
+  IDTokenPayload,
+  ResponseType,
+  RevocationVerification,
+  SIOPErrors,
+  SupportedVersion,
+  VerifiedOpenID4VPSubmission,
+} from '../types';
 
 import { AuthorizationResponse } from './AuthorizationResponse';
 import { PresentationExchange } from './PresentationExchange';
@@ -17,7 +25,7 @@ import {
 export const verifyPresentations = async (
   authorizationResponse: AuthorizationResponse,
   verifyOpts: VerifyAuthorizationResponseOpts
-): Promise<void> => {
+): Promise<VerifiedOpenID4VPSubmission> => {
   const presentations = await extractPresentationsFromAuthorizationResponse(authorizationResponse);
   const presentationDefinitions = verifyOpts.presentationDefinitions
     ? Array.isArray(verifyOpts.presentationDefinitions)
@@ -50,6 +58,7 @@ export const verifyPresentations = async (
       await verifyRevocation(vp, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
     }
   }
+  return { presentations, presentationDefinitions, submissionData };
 };
 
 export const extractPresentationsFromAuthorizationResponse = async (response: AuthorizationResponse): Promise<WrappedVerifiablePresentation[]> => {

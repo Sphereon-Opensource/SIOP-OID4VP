@@ -12,7 +12,7 @@ import {
   JWTPayload,
   ResponseIss,
   SIOPErrors,
-  VerifiedAuthenticationResponse,
+  VerifiedIDToken,
 } from '../types';
 
 import { createIDTokenPayload } from './Payload';
@@ -97,7 +97,7 @@ export class IDToken {
    * @param idToken ID token to be validated
    * @param verifyOpts
    */
-  public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
+  public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedIDToken> {
     assertValidVerifyOpts(verifyOpts);
 
     const { header, payload } = parseJWT(await this.jwt());
@@ -121,18 +121,16 @@ export class IDToken {
       throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_VERIFICATION_FUNCTION_MISSING);
     }
     return {
-      signer: verifiedJWT.signer,
-      didResolutionResult: verifiedJWT.didResolutionResult,
       jwt: await this.jwt(),
-      verifyOpts,
+      didResolutionResult: verifiedJWT.didResolutionResult,
+      signer: verifiedJWT.signer,
       issuer: issuerDid,
-      payload: {
-        ...verPayload,
-      },
+      payload: { ...verPayload },
+      verifyOpts,
     };
   }
 
-  static async verify(idTokenJwt: IDTokenJwt, verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
+  static async verify(idTokenJwt: IDTokenJwt, verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedIDToken> {
     const idToken = await IDToken.fromIDToken(idTokenJwt, verifyOpts);
     const verifiedIdToken = await idToken.verify(verifyOpts);
 
@@ -177,6 +175,7 @@ export class IDToken {
   get header(): JWTHeader {
     return this._header;
   }
+
   get responseOpts(): AuthorizationResponseOpts {
     return this._responseOpts;
   }

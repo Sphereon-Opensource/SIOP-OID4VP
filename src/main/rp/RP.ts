@@ -23,7 +23,7 @@ import {
   RegisterEventListener,
   SIOPErrors,
   SupportedVersion,
-  VerifiedAuthenticationResponse,
+  VerifiedAuthorizationResponse,
 } from '../types';
 
 import Builder from './Builder';
@@ -122,7 +122,7 @@ export class RP {
       verification?: InternalVerification | ExternalVerification;
       presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
     }
-  ): Promise<VerifiedAuthenticationResponse> {
+  ): Promise<VerifiedAuthorizationResponse> {
     const state = opts.state || this.verifyResponseOptions.state;
     let correlationId: string | undefined = opts.correlationId || state;
     let authorizationResponse: AuthorizationResponse;
@@ -148,12 +148,12 @@ export class RP {
         subject: authorizationResponse,
       });
 
-      const verifiedAuthenticationResponse = await authorizationResponse.verify(verifyAuthenticationResponseOpts);
+      const verifiedAuthorizationResponse = await authorizationResponse.verify(verifyAuthenticationResponseOpts);
       this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, {
         correlationId,
         subject: authorizationResponse,
       });
-      return verifiedAuthenticationResponse;
+      return verifiedAuthorizationResponse;
     } catch (error) {
       this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, {
         correlationId,

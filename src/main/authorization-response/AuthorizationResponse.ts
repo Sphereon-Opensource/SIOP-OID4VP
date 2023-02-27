@@ -1,7 +1,7 @@
 import { AuthorizationRequest, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidVerifyAuthorizationRequestOpts } from '../authorization-request/Opts';
 import { IDToken } from '../id-token';
-import { AuthorizationResponsePayload, ResponseType, SIOPErrors, VerifiedAuthenticationResponse, VerifiedAuthorizationRequest } from '../types';
+import { AuthorizationResponsePayload, ResponseType, SIOPErrors, VerifiedAuthorizationRequest, VerifiedAuthorizationResponse } from '../types';
 
 import { assertValidVerifiablePresentations, extractPresentationsFromAuthorizationResponse, verifyPresentations } from './OpenID4VP';
 import { assertValidResponseOpts } from './Opts';
@@ -118,17 +118,23 @@ export class AuthorizationResponse {
     );
   }
 
-  public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthenticationResponse> {
+  public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthorizationResponse> {
     // Merge payloads checks for inconsistencies in properties which are present in both the auth request and request object
     const merged = await this.mergedPayloads(true);
     if (verifyOpts.state && merged.state !== verifyOpts.state) {
       throw Error(SIOPErrors.BAD_STATE);
     }
 
-    const result = await this.idToken.verify(verifyOpts);
-    await verifyPresentations(this, verifyOpts);
+    const verifiedIdToken = await this.idToken?.verify(verifyOpts);
+    const oid4vp = await verifyPresentations(this, verifyOpts);
 
-    return result;
+    return {
+      authorizationResponse: this,
+      verifyOpts,
+      correlationId: verifyOpts.correlationId,
+      ...(this.idToken ? { idToken: verifiedIdToken } : {}),
+      ...(oid4vp ? { oid4vpSubmission: oid4vp } : {}),
+    };
   }
 
   get authorizationRequest(): AuthorizationRequest | undefined {
