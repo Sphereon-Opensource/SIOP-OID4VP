@@ -1635,10 +1635,17 @@ export const AuthorizationResponseOptsSchemaObj = {
           ]
         },
         "type": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         },
         "verifiableCredential": {
           "type": "array",
@@ -1655,9 +1662,7 @@ export const AuthorizationResponseOptsSchemaObj = {
       },
       "required": [
         "@context",
-        "proof",
-        "type",
-        "verifiableCredential"
+        "proof"
       ]
     },
     "IProof": {
@@ -1701,6 +1706,9 @@ export const AuthorizationResponseOptsSchemaObj = {
         "jws": {
           "type": "string"
         },
+        "jwt": {
+          "type": "string"
+        },
         "nonce": {
           "type": "string"
         },
@@ -1730,7 +1738,8 @@ export const AuthorizationResponseOptsSchemaObj = {
         "GpgSignature2020",
         "JcsEd25519Signature2020",
         "BbsBlsSignatureProof2020",
-        "BbsBlsBoundSignatureProof2020"
+        "BbsBlsBoundSignatureProof2020",
+        "JwtProof2020"
       ]
     },
     "IProofPurpose": {
