@@ -28,17 +28,17 @@ import {
 
 import Builder from './Builder';
 import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts, isTargetOrNoTargets } from './Opts';
-import { IReplayRegistry } from './types';
+import { IRPSessionManager } from './types';
 
 export class RP {
-  get replayRegistry(): IReplayRegistry {
-    return this._replayRegistry;
+  get sessionManager(): IRPSessionManager {
+    return this._sessionManager;
   }
 
   private readonly _createRequestOptions: CreateAuthorizationRequestOpts;
   private readonly _verifyResponseOptions: Partial<VerifyAuthorizationResponseOpts>;
   private readonly _eventEmitter?: EventEmitter;
-  private readonly _replayRegistry?: IReplayRegistry;
+  private readonly _sessionManager?: IRPSessionManager;
 
   private constructor(opts: {
     builder?: Builder;
@@ -50,7 +50,7 @@ export class RP {
     this._createRequestOptions = { ...authReqOpts, payload: { ...authReqOpts.payload } };
     this._verifyResponseOptions = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
     this._eventEmitter = opts.builder?.eventEmitter;
-    this._replayRegistry = opts.builder?.replayRegistry;
+    this._sessionManager = opts.builder?.sessionManager;
   }
 
   public static fromRequestOpts(opts: CreateAuthorizationRequestOpts): RP {
@@ -110,6 +110,18 @@ export class RP {
         });
         throw error;
       });
+  }
+
+  public async signalAuthRequestRetrieved(opts: { correlationId: string; error?: Error }) {
+    if (!this.sessionManager) {
+      throw Error(`Cannot signal auth request retrieval when no session manager is registered`);
+    }
+    const state = await this.sessionManager.getRequestStateByCorrelationId(opts.correlationId, true);
+    this.emitEvent(opts?.error ? AuthorizationEvents.ON_AUTH_REQUEST_SENT_FAILED : AuthorizationEvents.ON_AUTH_REQUEST_SENT_SUCCESS, {
+      correlationId: opts.correlationId,
+      ...(!opts?.error ? { subject: state.request } : {}),
+      ...(opts?.error ? { error: opts.error } : {}),
+    });
   }
 
   public async verifyAuthorizationResponse(
@@ -246,17 +258,17 @@ export class RP {
     let correlationId = opts?.correlationId || this._verifyResponseOptions.correlationId;
     let state = opts?.state || this._verifyResponseOptions.state;
     let nonce = opts?.nonce || this._verifyResponseOptions.nonce;
-    if (this.replayRegistry) {
+    if (this.sessionManager) {
       const resNonce = (await authorizationResponse.getMergedProperty('nonce', false)) as string;
       const resState = (await authorizationResponse.getMergedProperty('state', false)) as string;
-      correlationId = await this.replayRegistry.getCorrelationIdByNonce(resNonce, false);
+      correlationId = await this.sessionManager.getCorrelationIdByNonce(resNonce, false);
       if (!correlationId) {
-        correlationId = await this.replayRegistry.getCorrelationIdByState(resState, false);
+        correlationId = await this.sessionManager.getCorrelationIdByState(resState, false);
       }
       if (!correlationId) {
         correlationId = nonce;
       }
-      const requestState = await this.replayRegistry.getRequestStateByCorrelationId(correlationId, false);
+      const requestState = await this.sessionManager.getRequestStateByCorrelationId(correlationId, false);
       if (requestState) {
         const reqNonce: string = await requestState.request.getMergedProperty('nonce');
         const reqState: string = await requestState.request.getMergedProperty('state');

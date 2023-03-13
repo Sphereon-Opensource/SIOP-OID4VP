@@ -21,6 +21,7 @@ export interface AuthorizationResponseState {
 
 export enum AuthorizationRequestStateStatus {
   CREATED = 'created',
+  SENT = 'sent',
   RECEIVED = 'received',
   VERIFIED = 'verified',
   ERROR = 'error',

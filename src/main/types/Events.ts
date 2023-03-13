@@ -2,6 +2,9 @@ export enum AuthorizationEvents {
   ON_AUTH_REQUEST_CREATED_SUCCESS = 'onAuthRequestCreatedSuccess',
   ON_AUTH_REQUEST_CREATED_FAILED = 'onAuthRequestCreatedFailed',
 
+  ON_AUTH_REQUEST_SENT_SUCCESS = 'onAuthRequestSentSuccess',
+  ON_AUTH_REQUEST_SENT_FAILED = 'onAuthRequestSentFailed',
+
   ON_AUTH_REQUEST_RECEIVED_SUCCESS = 'onAuthRequestReceivedSuccess',
   ON_AUTH_REQUEST_RECEIVED_FAILED = 'onAuthRequestReceivedFailed',
 

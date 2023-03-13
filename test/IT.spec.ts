@@ -28,7 +28,7 @@ import {
   VPTokenLocation,
 } from '../src/main';
 import { checkSIOPSpecVersionSupported } from '../src/main/helpers/SIOPSpecVersion';
-import { InMemoryReplayRegistry } from '../src/main/rp/InMemoryReplayRegistry';
+import { InMemoryRPSessionManager } from '../src/main/rp/InMemoryRPSessionManager';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
@@ -1536,7 +1536,7 @@ describe('RP and OP interaction should', () => {
     };
 
     const eventEmitter = new EventEmitter();
-    const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
+    const replayRegistry = new InMemoryRPSessionManager(eventEmitter);
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId('test_client_id')
       .withScope('test')
@@ -1573,7 +1573,7 @@ describe('RP and OP interaction should', () => {
       })
       .withPresentationDefinition({ definition: getPresentationDefinition() })
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
-      .withReplayRegistry(replayRegistry)
+      .withSessionManager(replayRegistry)
       .withEventEmitter(eventEmitter)
       .build();
 
@@ -1616,7 +1616,7 @@ describe('RP and OP interaction should', () => {
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
     const eventEmitter = new EventEmitter();
-    const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
+    const replayRegistry = new InMemoryRPSessionManager(eventEmitter);
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
@@ -1647,7 +1647,7 @@ describe('RP and OP interaction should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
-      .withReplayRegistry(replayRegistry)
+      .withSessionManager(replayRegistry)
       .withEventEmitter(eventEmitter)
       .build();
 
@@ -1669,7 +1669,7 @@ describe('RP and OP interaction should', () => {
     };
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
     const eventEmitter = new EventEmitter();
-    const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
+    const replayRegistry = new InMemoryRPSessionManager(eventEmitter);
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(rpMockEntity.did)
@@ -1701,7 +1701,7 @@ describe('RP and OP interaction should', () => {
       })
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .withEventEmitter(eventEmitter)
-      .withReplayRegistry(replayRegistry)
+      .withSessionManager(replayRegistry)
       .build();
     const op = OP.builder()
       .withPresentationSignCallback(presentationSignCallback)
@@ -1760,7 +1760,7 @@ describe('RP and OP interaction should', () => {
     };
     const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
     const eventEmitter = new EventEmitter();
-    const replayRegistry = new InMemoryReplayRegistry(eventEmitter);
+    const replayRegistry = new InMemoryRPSessionManager(eventEmitter);
 
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(rpMockEntity.did)
@@ -1791,7 +1791,7 @@ describe('RP and OP interaction should', () => {
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       })
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
-      .withReplayRegistry(replayRegistry)
+      .withSessionManager(replayRegistry)
       .withEventEmitter(eventEmitter)
       .build();
     const op = OP.builder()

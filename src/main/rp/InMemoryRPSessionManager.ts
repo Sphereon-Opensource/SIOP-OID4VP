@@ -11,15 +11,15 @@ import {
   AuthorizationResponseStateStatus,
 } from '../types';
 
-import { IReplayRegistry } from './types';
+import { IRPSessionManager } from './types';
 
 /**
- * Please note that this replay registry is not really meant to be used in large production settings, as it stores everything in memory!
+ * Please note that this session manager is not really meant to be used in large production settings, as it stores everything in memory!
  * It also doesn't do scheduled cleanups. It runs a cleanup whenever a request or response is received. In a high-volume production setting you will want scheduled cleanups running in the background
  * Since this is a low level library we have not created a full-fledged implementation.
  * We suggest to create your own implementation using the event system of the library
  */
-export class InMemoryReplayRegistry implements IReplayRegistry {
+export class InMemoryRPSessionManager implements IRPSessionManager {
   private readonly authorizationRequests: Record<string, AuthorizationRequestState> = {};
   private readonly authorizationResponses: Record<string, AuthorizationResponseState> = {};
 
@@ -42,6 +42,8 @@ export class InMemoryReplayRegistry implements IReplayRegistry {
     this.maxAgeInSeconds = opts?.maxAgeInSeconds ?? 5 * 60;
     eventEmitter.on(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, this.onAuthorizationRequestCreatedSuccess.bind(this));
     eventEmitter.on(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, this.onAuthorizationRequestCreatedFailed.bind(this));
+    eventEmitter.on(AuthorizationEvents.ON_AUTH_REQUEST_SENT_SUCCESS, this.onAuthorizationRequestSentSuccess.bind(this));
+    eventEmitter.on(AuthorizationEvents.ON_AUTH_REQUEST_SENT_FAILED, this.onAuthorizationRequestSentFailed.bind(this));
     eventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, this.onAuthorizationResponseReceivedSuccess.bind(this));
     eventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, this.onAuthorizationResponseReceivedFailed.bind(this));
     eventEmitter.on(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, this.onAuthorizationResponseVerifiedSuccess.bind(this));
@@ -92,6 +94,16 @@ export class InMemoryReplayRegistry implements IReplayRegistry {
   }
 
   private async onAuthorizationRequestCreatedFailed(event: AuthorizationEvent<AuthorizationRequest>): Promise<void> {
+    this.cleanup();
+    this.updateState('request', event, AuthorizationRequestStateStatus.ERROR);
+  }
+
+  private async onAuthorizationRequestSentSuccess(event: AuthorizationEvent<AuthorizationRequest>): Promise<void> {
+    this.cleanup();
+    this.updateState('request', event, AuthorizationRequestStateStatus.SENT);
+  }
+
+  private async onAuthorizationRequestSentFailed(event: AuthorizationEvent<AuthorizationRequest>): Promise<void> {
     this.cleanup();
     this.updateState('request', event, AuthorizationRequestStateStatus.ERROR);
   }
@@ -217,7 +229,7 @@ export class InMemoryReplayRegistry implements IReplayRegistry {
     }
 
     async function cleanMappingForCorrelationId(mapping: Record<number, string>, correlationId: string): Promise<void> {
-      const keys = InMemoryReplayRegistry.getKeysForCorrelationId(mapping, correlationId);
+      const keys = InMemoryRPSessionManager.getKeysForCorrelationId(mapping, correlationId);
       if (keys && keys.length > 0) {
         keys.forEach((key) => delete mapping[key]);
       }

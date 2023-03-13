@@ -1,6 +1,6 @@
 import { AuthorizationRequestState, AuthorizationResponseState } from '../types';
 
-export interface IReplayRegistry {
+export interface IRPSessionManager {
   getRequestStateByCorrelationId(correlationId: string, errorOnNotFound?: boolean): Promise<AuthorizationRequestState | undefined>;
 
   getRequestStateByNonce(nonce: string, errorOnNotFound?: boolean): Promise<AuthorizationRequestState | undefined>;

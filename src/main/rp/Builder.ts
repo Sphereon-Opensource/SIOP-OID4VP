@@ -33,7 +33,7 @@ import {
 
 import { assignIfAuth, assignIfRequestObject, isTarget, isTargetOrNoTargets } from './Opts';
 import { RP } from './RP';
-import { IReplayRegistry } from './types';
+import { IRPSessionManager } from './types';
 
 export default class Builder {
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
@@ -47,7 +47,7 @@ export default class Builder {
   presentationVerificationCallback?: PresentationVerificationCallback;
   supportedVersions: SupportedVersion[];
   eventEmitter?: EventEmitter;
-  replayRegistry?: IReplayRegistry;
+  sessionManager?: IRPSessionManager;
   private _authorizationRequestPayload: Partial<AuthorizationRequestPayload> = {};
   private _requestObjectPayload: Partial<RequestObjectPayload> = {};
 
@@ -319,8 +319,8 @@ export default class Builder {
     return this;
   }
 
-  withReplayRegistry(replayRegistry: IReplayRegistry): Builder {
-    this.replayRegistry = replayRegistry;
+  withSessionManager(sessionManager: IRPSessionManager): Builder {
+    this.sessionManager = sessionManager;
     return this;
   }
 
@@ -339,7 +339,7 @@ export default class Builder {
   }
 
   build(): RP {
-    if (this.replayRegistry && !this.eventEmitter) {
+    if (this.sessionManager && !this.eventEmitter) {
       throw Error('Please enable the event emitter on the RP when using a replay registry');
     }
 

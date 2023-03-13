@@ -22,7 +22,7 @@ import {
   VerifyAuthorizationResponseOpts,
 } from '../authorization-response';
 import { RequestObject, RequestObjectOpts } from '../request-object';
-import { IReplayRegistry } from '../rp';
+import { IRPSessionManager } from '../rp';
 
 import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './';
 
@@ -514,7 +514,7 @@ export interface Verification {
   mode: VerificationMode;
   resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
-  replayRegistry?: IReplayRegistry;
+  replayRegistry?: IRPSessionManager;
 }
 
 export type InternalVerification = Verification;
