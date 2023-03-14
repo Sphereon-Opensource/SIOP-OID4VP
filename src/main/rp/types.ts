@@ -16,4 +16,6 @@ export interface IRPSessionManager {
   getCorrelationIdByNonce(nonce: string, errorOnNotFound?: boolean): Promise<string | undefined>;
 
   getCorrelationIdByState(state: string, errorOnNotFound?: boolean): Promise<string | undefined>;
+
+  deleteStateForCorrelationId(correlationId: string);
 }

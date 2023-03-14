@@ -20,6 +20,7 @@ import {
   CheckLinkedDomain,
   ExternalVerification,
   InternalVerification,
+  PassBy,
   RegisterEventListener,
   SIOPErrors,
   SupportedVersion,
@@ -67,6 +68,8 @@ export class RP {
     state: string | RequestPropertyWithTargets<string>;
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
     version?: SupportedVersion;
+    requestByReferenceURI?: string;
+    redirectURI?: string;
   }): Promise<AuthorizationRequest> {
     const authorizationRequestOpts = this.newAuthorizationRequestOpts(opts);
     return AuthorizationRequest.fromOpts(authorizationRequestOpts)
@@ -88,10 +91,12 @@ export class RP {
 
   public async createAuthorizationRequestURI(opts: {
     correlationId: string;
-    version?: SupportedVersion;
     nonce: string | RequestPropertyWithTargets<string>;
     state: string | RequestPropertyWithTargets<string>;
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
+    version?: SupportedVersion;
+    requestByReferenceURI?: string;
+    redirectURI?: string;
   }): Promise<URI> {
     const authorizationRequestOpts = this.newAuthorizationRequestOpts(opts);
 
@@ -190,6 +195,8 @@ export class RP {
     state: string | RequestPropertyWithTargets<string>;
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
     version?: SupportedVersion;
+    requestByReferenceURI?: string;
+    redirectURI?: string;
   }): CreateAuthorizationRequestOpts {
     const nonceWithTarget =
       typeof opts.nonce === 'string'
@@ -208,10 +215,30 @@ export class RP {
     if (!version) {
       throw Error(SIOPErrors.NO_REQUEST_VERSION);
     }
+    const referenceURI = opts.requestByReferenceURI ?? this._createRequestOptions?.requestObject?.reference_uri;
+    const redirectURI =
+      opts.redirectURI ?? this._createRequestOptions.requestObject.payload?.redirect_uri ?? this._createRequestOptions.payload?.redirect_uri;
+    if (!redirectURI) {
+      throw Error(`A redirect URI is required at this point`);
+    } else {
+      if (this._createRequestOptions.requestObject.payload?.redirect_uri || !this._createRequestOptions.payload?.redirect_uri) {
+        this._createRequestOptions.requestObject.payload.redirect_uri = redirectURI;
+      }
+      if (this._createRequestOptions.payload?.redirect_uri) {
+        this._createRequestOptions.payload.redirect_uri = redirectURI;
+      }
+    }
 
     const newOpts = { ...this._createRequestOptions, version };
     newOpts.requestObject.payload = newOpts.requestObject.payload ?? ({} as RequestObjectPayloadOpts<ClaimPayloadCommonOpts>);
     newOpts.payload = newOpts.payload ?? {};
+    if (referenceURI) {
+      if (newOpts.requestObject.passBy && newOpts.requestObject.passBy !== PassBy.REFERENCE) {
+        throw Error(`Cannot pass by reference with uri ${referenceURI} when mode is ${newOpts.requestObject.passBy}`);
+      }
+      newOpts.requestObject.reference_uri = referenceURI;
+      newOpts.requestObject.passBy = PassBy.REFERENCE;
+    }
 
     const state = getState(stateWithTarget.propertyValue);
     if (stateWithTarget.propertyValue) {

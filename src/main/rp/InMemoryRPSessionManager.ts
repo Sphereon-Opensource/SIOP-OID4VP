@@ -37,7 +37,7 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
 
   public constructor(eventEmitter: EventEmitter, opts?: { maxAgeInSeconds?: number }) {
     if (!eventEmitter) {
-      throw Error('Replay registry depends on an event emitter in the application');
+      throw Error('RP Session manager depends on an event emitter in the application');
     }
     this.maxAgeInSeconds = opts?.maxAgeInSeconds ?? 5 * 60;
     eventEmitter.on(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, this.onAuthorizationRequestCreatedSuccess.bind(this));
@@ -200,13 +200,26 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
       if (type === 'request') {
         this.authorizationRequests[event.correlationId] = eventState as AuthorizationRequestState;
         // We do not await these
-        this.updateMapping(this.nonceMapping, event, 'nonce', event.correlationId, false);
-        this.updateMapping(this.stateMapping, event, 'state', event.correlationId, false);
+        this.updateMapping(this.nonceMapping, event, 'nonce', event.correlationId, true);
+        this.updateMapping(this.stateMapping, event, 'state', event.correlationId, true);
       } else {
         this.authorizationResponses[event.correlationId] = eventState as AuthorizationResponseState;
       }
     } catch (error: unknown) {
       // TODO VDX-166 handle error
+    }
+  }
+
+  async deleteStateForCorrelationId(correlationId: string) {
+    InMemoryRPSessionManager.cleanMappingForCorrelationId(this.nonceMapping, correlationId);
+    InMemoryRPSessionManager.cleanMappingForCorrelationId(this.stateMapping, correlationId);
+    delete this.authorizationRequests[correlationId];
+    delete this.authorizationResponses[correlationId];
+  }
+  private static async cleanMappingForCorrelationId(mapping: Record<number, string>, correlationId: string): Promise<void> {
+    const keys = InMemoryRPSessionManager.getKeysForCorrelationId(mapping, correlationId);
+    if (keys && keys.length > 0) {
+      keys.forEach((key) => delete mapping[key]);
     }
   }
 
@@ -220,18 +233,8 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
       if (authRequest) {
         const ts = authRequest.lastUpdated || authRequest.timestamp;
         if (maxAgeInMS !== 0 && now > ts + maxAgeInMS) {
-          cleanMappingForCorrelationId(this.nonceMapping, correlationId);
-          cleanMappingForCorrelationId(this.stateMapping, correlationId);
-          delete this.authorizationRequests[correlationId];
-          delete this.authorizationResponses[correlationId];
+          this.deleteStateForCorrelationId(correlationId);
         }
-      }
-    }
-
-    async function cleanMappingForCorrelationId(mapping: Record<number, string>, correlationId: string): Promise<void> {
-      const keys = InMemoryRPSessionManager.getKeysForCorrelationId(mapping, correlationId);
-      if (keys && keys.length > 0) {
-        keys.forEach((key) => delete mapping[key]);
       }
     }
 
