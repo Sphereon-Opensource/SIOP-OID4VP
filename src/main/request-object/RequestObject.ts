@@ -126,9 +126,10 @@ export class RequestObject {
     }
     const isAuthReq = opts['requestObject'] !== undefined;
     const mergedOpts = JSON.parse(JSON.stringify(opts));
-    /*    mergedOpts.requestObject.payload = isAuthReq
-      ? { ...mergedOpts.payload, ...mergedOpts['requestObject']?.payload }
-      : { ...mergedOpts.payload, ...mergedOpts.request };*/
+    const signature = opts['requestObject']?.signature?.signature;
+    if (signature && mergedOpts.requestObject.signature) {
+      mergedOpts.requestObject.signature.signature = signature;
+    }
     delete mergedOpts?.request?.requestObject;
     return isAuthReq ? mergedOpts.requestObject : mergedOpts;
   }
