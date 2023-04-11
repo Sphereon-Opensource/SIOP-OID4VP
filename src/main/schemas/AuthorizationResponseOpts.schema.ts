@@ -1658,6 +1658,9 @@ export const AuthorizationResponseOptsSchemaObj = {
         },
         "holder": {
           "type": "string"
+        },
+        "verifier": {
+          "type": "string"
         }
       },
       "required": [

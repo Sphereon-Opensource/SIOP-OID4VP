@@ -40,7 +40,7 @@ export class RequestObject {
    */
   public static async fromOpts(authorizationRequestOpts: CreateAuthorizationRequestOpts) {
     assertValidAuthorizationRequestOpts(authorizationRequestOpts);
-    const signature = authorizationRequestOpts.requestObject.signature // We copy the signature separately as it can contain a function, which would be removed in the merge function below
+    const signature = authorizationRequestOpts.requestObject.signature; // We copy the signature separately as it can contain a function, which would be removed in the merge function below
     const requestObjectOpts = RequestObject.mergeOAuth2AndOpenIdProperties(authorizationRequestOpts);
     const mergedOpts = {
       ...authorizationRequestOpts,
