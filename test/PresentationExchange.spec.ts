@@ -17,8 +17,8 @@ import {
   SigningAlgo,
   SubjectIdentifierType,
   SubjectType,
-} from '../src/main';
-import { SIOPErrors } from '../src/main/types';
+} from '../src';
+import { SIOPErrors } from '../src/types';
 
 import { mockedGetEnterpriseAuthToken } from './TestUtils';
 import {

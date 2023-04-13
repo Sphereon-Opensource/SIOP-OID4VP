@@ -2,7 +2,7 @@
   "compilerOptions": {
     "incremental": true,
     "target": "ES6",
-    "outDir": "dist/main",
+    "outDir": "dist",
     "moduleResolution": "node",
     "module": "commonjs",
     "declaration": true,

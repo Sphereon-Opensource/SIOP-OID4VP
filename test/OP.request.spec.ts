@@ -19,7 +19,7 @@ import {
   SupportedVersion,
   VerificationMode,
   VerifyAuthorizationRequestOpts,
-} from '../src/main';
+} from '../src';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {

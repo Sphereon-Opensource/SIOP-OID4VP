@@ -1,7 +1,7 @@
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
-import { IDToken, VerificationMode, VerifyAuthorizationResponseOpts } from '../src/main';
-import SIOPErrors from '../src/main/types/Errors';
+import { IDToken, VerificationMode, VerifyAuthorizationResponseOpts } from '../src';
+import SIOPErrors from '../src/types/Errors';
 
 // const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const DID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0';

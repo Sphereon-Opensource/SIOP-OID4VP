@@ -20,7 +20,7 @@ import {
   SigningAlgo,
   SupportedVersion,
   VerificationMode,
-} from '../../src/main';
+} from '../../src';
 
 let rp: RP;
 

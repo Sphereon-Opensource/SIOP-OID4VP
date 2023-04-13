@@ -14,8 +14,8 @@ import {
   SubjectType,
   SupportedVersion,
   URI,
-} from '../src/main';
-import SIOPErrors from '../src/main/types/Errors';
+} from '../src';
+import SIOPErrors from '../src/types/Errors';
 
 import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {

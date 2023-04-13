@@ -15,7 +15,7 @@ import {
   SubjectIdentifierType,
   SubjectType,
   SupportedVersion,
-} from '../src/main';
+} from '../src';
 
 import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {

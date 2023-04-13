@@ -24,7 +24,7 @@ import {
 import { RequestObject, RequestObjectOpts } from '../request-object';
 import { IRPSessionManager } from '../rp';
 
-import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './';
+import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './index';
 
 export const DEFAULT_EXPIRATION_TIME = 10 * 60;
 
@@ -133,7 +133,6 @@ export interface AuthorizationResponsePayload {
   expires_in?: number;
   state: string;
   id_token?: string;
-  // vp_token?: VerifiablePresentationPayload | VerifiablePresentationPayload[];
   vp_token?: W3CVerifiablePresentation | W3CVerifiablePresentation[];
   presentation_submission?: PresentationSubmission;
 

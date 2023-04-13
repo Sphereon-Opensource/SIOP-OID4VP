@@ -11,8 +11,8 @@ import {
 } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
-import { CheckLinkedDomain, validateLinkedDomainWithDid } from '../../src/main';
-import * as didResolution from '../../src/main/did/DIDResolution';
+import { CheckLinkedDomain, validateLinkedDomainWithDid } from '../../src';
+import * as didResolution from '../../src/did/DIDResolution';
 import { DocumentLoader } from '../DocumentLoader';
 import { DID_ION_DOCUMENT, DID_ION_ORIGIN, DID_KEY, DID_KEY_DOCUMENT, DID_KEY_ORIGIN, VC_KEY_PAIR } from '../data/mockedData';
 

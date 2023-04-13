@@ -22,9 +22,9 @@ import {
   VerificationMode,
   VerifyAuthorizationRequestOpts,
   VPTokenLocation,
-} from '../src/main';
-import { createSubmissionData } from '../src/main/authorization-response/OpenID4VP';
-import SIOPErrors from '../src/main/types/Errors';
+} from '../src';
+import { createSubmissionData } from '../src/authorization-response/OpenID4VP';
+import SIOPErrors from '../src/types/Errors';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {

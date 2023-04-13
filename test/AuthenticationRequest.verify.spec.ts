@@ -16,9 +16,9 @@ import {
   SupportedVersion,
   VerificationMode,
   VerifyAuthorizationRequestOpts,
-} from '../src/main';
-import { RPRegistrationMetadataPayloadSchemaObj } from '../src/main/schemas';
-import SIOPErrors from '../src/main/types/Errors';
+} from '../src';
+import { RPRegistrationMetadataPayloadSchemaObj } from '../src/schemas';
+import SIOPErrors from '../src/types/Errors';
 
 import { metadata, mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {

@@ -22,8 +22,8 @@ import {
   SigningAlgo,
   SubjectSyntaxTypesSupportedValues,
   SubjectType,
-} from '../src/main';
-import SIOPErrors from '../src/main/types/Errors';
+} from '../src';
+import SIOPErrors from '../src/types/Errors';
 
 import {
   DID_DOCUMENT_PUBKEY_B58,

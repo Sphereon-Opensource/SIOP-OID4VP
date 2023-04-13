@@ -3,4 +3,4 @@ dist
 coverage
 
 # Ignore all schema files:
-src/main/schemas
+src/schemas

@@ -1,4 +1,4 @@
-import { LanguageTagUtils } from '../../src/main';
+import { LanguageTagUtils } from '../../src';
 
 describe('Language tag util should', () => {
   it('return no lingually tagged fields if there are no lingually tagged fields in the source object', async () => {

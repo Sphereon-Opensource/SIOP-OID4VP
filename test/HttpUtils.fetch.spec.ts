@@ -1,6 +1,6 @@
 import nock from 'nock';
 
-import { post } from '../src/main';
+import { post } from '../src';
 
 const URL = 'https://example.com';
 nock(URL)

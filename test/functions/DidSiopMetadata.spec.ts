@@ -1,7 +1,7 @@
 import { Format } from '@sphereon/pex-models';
 import { IProofType } from '@sphereon/ssi-types';
 
-import { SigningAlgo, SIOPErrors, supportedCredentialsFormats } from '../../src/main';
+import { SigningAlgo, SIOPErrors, supportedCredentialsFormats } from '../../src';
 
 describe('DidSiopMetadata should ', () => {
   it('find supportedCredentialsFormats correctly', async function () {

@@ -26,9 +26,9 @@ import {
   VerificationMode,
   verifyRevocation,
   VPTokenLocation,
-} from '../src/main';
-import { checkSIOPSpecVersionSupported } from '../src/main/helpers/SIOPSpecVersion';
-import { InMemoryRPSessionManager } from '../src/main/rp/InMemoryRPSessionManager';
+} from '../src';
+import { checkSIOPSpecVersionSupported } from '../src/helpers/SIOPSpecVersion';
+import { InMemoryRPSessionManager } from '../src/rp/InMemoryRPSessionManager';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {

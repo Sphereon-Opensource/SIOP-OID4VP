@@ -57,7 +57,7 @@ function writeSchema(config): Schema {
 function generateValidationCode(schemas: Schema[]) {
   const ajv = new Ajv({ schemas, code: { source: true, lines: true, esm: false  }, allowUnionTypes: true, strict: false });
   const moduleCode = standaloneCode(ajv);
-  fs.writeFileSync(path.join(__dirname, '../src/main/schemas/validation/schemaValidation.js'), moduleCode);
+  fs.writeFileSync(path.join(__dirname, '../src/schemas/validation/schemaValidation.js'), moduleCode);
 }
 
 function correctSchema(schemaString: string) {
@@ -105,62 +105,62 @@ function correctSchema(schemaString: string) {
 }
 /*
 const requestOptsConf = {
-  path: '../src/main/authorization-request/types.ts',
+  path: '../src/authorization-request/types.ts',
   tsconfig: 'tsconfig.json',
   type: 'CreateAuthorizationRequestOpts', // Or <type-name> if you want to generate schema for that one type only
   schemaId: 'CreateAuthorizationRequestOptsSchema',
-  outputPath: 'src/main/schemas/AuthorizationRequestOpts.schema.ts',
+  outputPath: 'src/schemas/AuthorizationRequestOpts.schema.ts',
   // outputConstName: 'AuthorizationRequestOptsSchema',
   skipTypeCheck: true
 };*/
 
 
 const responseOptsConf = {
-  path: '../src/main/authorization-response/types.ts',
+  path: '../src/authorization-response/types.ts',
   tsconfig: 'tsconfig.json',
   type: 'AuthorizationResponseOpts', // Or <type-name> if you want to generate schema for that one type only
   schemaId: 'AuthorizationResponseOptsSchema',
-  outputPath: 'src/main/schemas/AuthorizationResponseOpts.schema.ts',
+  outputPath: 'src/schemas/AuthorizationResponseOpts.schema.ts',
   // outputConstName: 'AuthorizationResponseOptsSchema',
   skipTypeCheck: true
 };
 
 const rPRegistrationMetadataPayload = {
-  path: '../src/main/types/SIOP.types.ts',
+  path: '../src/types/SIOP.types.ts',
   tsconfig: 'tsconfig.json',
   type: 'RPRegistrationMetadataPayload',
   schemaId: 'RPRegistrationMetadataPayloadSchema',
-  outputPath: 'src/main/schemas/RPRegistrationMetadataPayload.schema.ts',
+  outputPath: 'src/schemas/RPRegistrationMetadataPayload.schema.ts',
   // outputConstName: 'RPRegistrationMetadataPayloadSchema',
   skipTypeCheck: true
 };
 
 const discoveryMetadataPayload = {
-  path: '../src/main/types/SIOP.types.ts',
+  path: '../src/types/SIOP.types.ts',
   tsconfig: 'tsconfig.json',
   type: 'DiscoveryMetadataPayload',
   schemaId: 'DiscoveryMetadataPayloadSchema',
-  outputPath: 'src/main/schemas/DiscoveryMetadataPayload.schema.ts',
+  outputPath: 'src/schemas/DiscoveryMetadataPayload.schema.ts',
   // outputConstName: 'DiscoveryMetadataPayloadSchema',
   skipTypeCheck: true
 };
 
 const authorizationRequestPayloadVID1 = {
-  path: '../src/main/types/SIOP.types.ts',
+  path: '../src/types/SIOP.types.ts',
   tsconfig: 'tsconfig.json',
   type: 'AuthorizationRequestPayloadVID1', // Or <type-name> if you want to generate schema for that one type only
   schemaId: 'AuthorizationRequestPayloadVID1Schema',
-  outputPath: 'src/main/schemas/AuthorizationRequestPayloadVID1.schema.ts',
+  outputPath: 'src/schemas/AuthorizationRequestPayloadVID1.schema.ts',
   // outputConstName: 'AuthorizationRequestPayloadSchemaVID1',
   skipTypeCheck: true
 };
 
 const authorizationRequestPayloadVD11 = {
-  path: '../src/main/types/SIOP.types.ts',
+  path: '../src/types/SIOP.types.ts',
   tsconfig: 'tsconfig.json',
   type: 'AuthorizationRequestPayloadVD11', // Or <type-name> if you want to generate schema for that one type only
   schemaId: 'AuthorizationRequestPayloadVD11Schema',
-  outputPath: 'src/main/schemas/AuthorizationRequestPayloadVD11.schema.ts',
+  outputPath: 'src/schemas/AuthorizationRequestPayloadVD11.schema.ts',
   // outputConstName: 'AuthorizationRequestPayloadSchemaVD11',
   skipTypeCheck: true
 };
