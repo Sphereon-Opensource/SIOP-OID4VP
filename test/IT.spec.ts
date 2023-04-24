@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 
 import { IPresentationDefinition } from '@sphereon/pex';
 import { CredentialMapper, IProofType, IVerifiableCredential, W3CVerifiablePresentation } from '@sphereon/ssi-types';

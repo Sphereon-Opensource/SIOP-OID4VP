@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 
 import { AuthorizationRequest } from '../authorization-request';
 import { AuthorizationResponse } from '../authorization-response';

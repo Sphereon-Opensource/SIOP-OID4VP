@@ -1,4 +1,4 @@
-import EventEmitter from 'events';
+import { EventEmitter } from 'events';
 
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { IPresentationDefinition } from '@sphereon/pex';
