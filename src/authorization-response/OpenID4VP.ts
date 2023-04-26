@@ -157,10 +157,12 @@ export const putPresentationsInResponse = async (
       }
     }
   }
-  responsePayload.vp_token =
-    resOpts.presentationExchange.verifiablePresentations.length === 1
-      ? resOpts.presentationExchange.verifiablePresentations[0]
-      : resOpts.presentationExchange.verifiablePresentations;
+
+  const vps =
+    resOpts.presentationExchange?.verifiablePresentations?.map(
+      (vp) => CredentialMapper.toWrappedVerifiablePresentation(vp).original as W3CVerifiablePresentation
+    ) || [];
+  responsePayload.vp_token = vps.length === 1 ? vps[0] : vps;
 };
 
 export const assertValidVerifiablePresentations = async (args: {
