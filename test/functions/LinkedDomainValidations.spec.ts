@@ -22,7 +22,6 @@ jest.setTimeout(300000);
 const verifyCallbackTruthy = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
 
 let config;
-
 const verify = async (args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => {
   const keyPair = await Ed25519VerificationKey2020.from(VC_KEY_PAIR);
   const suite = new Ed25519Signature2020({ key: keyPair });

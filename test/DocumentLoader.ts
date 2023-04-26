@@ -6,17 +6,19 @@ export class DocumentLoader {
   getLoader() {
     return extendContextLoader(async (url: string) => {
       const response = await fetch(url);
-      if (response.status === 200) {
+      if (response.status < 300) {
         const document = await response.json();
         return {
           contextUrl: null,
           documentUrl: url,
           document,
         };
+      } else {
+        console.log(response.statusText);
       }
 
-      const { defaultDocumentLoader } = vc;
-      return defaultDocumentLoader(url);
+      const { nodeDocumentLoader } = vc;
+      return nodeDocumentLoader(url);
     });
   }
 }
