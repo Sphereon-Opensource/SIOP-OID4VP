@@ -14,7 +14,7 @@ export class DocumentLoader {
           document,
         };
       } else {
-        console.log(response.statusText);
+        console.log(`url: ${url}, error: ${response.status}: ${response.statusText}, response: ${await response.text()}`);
       }
 
       const { nodeDocumentLoader } = vc;

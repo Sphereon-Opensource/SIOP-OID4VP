@@ -1,6 +1,6 @@
 {
   "name": "@sphereon/did-auth-siop",
-  "version": "0.3.0-unstable.38",
+  "version": "0.3.0-unstable.39",
   "source": "src/index.ts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -95,8 +95,10 @@
     "SIOP",
     "Self Issued OpenID Connect",
     "SIOPv2",
+    "OID4VC",
     "OID4VP",
     "OpenID4VP",
+    "OpenID4VC",
     "OIDC4VP"
   ]
 }
