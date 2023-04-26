@@ -1,5 +1,5 @@
-import { ethers, utils as ethersUtils } from 'ethers';
 import SHA from 'sha.js';
+import { v4 as uuidv4 } from 'uuid';
 
 import { base64urlEncodeBuffer } from './Encodings';
 
@@ -17,6 +17,5 @@ export function getState(state?: string) {
 }
 
 export function createState(): string {
-  const randomNumber = ethers.BigNumber.from(ethersUtils.randomBytes(12));
-  return ethersUtils.hexlify(randomNumber).replace('0x', '');
+  return uuidv4();
 }

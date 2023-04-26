@@ -15,9 +15,7 @@ import {
   AuthorizationEvent,
   AuthorizationEvents,
   ContentType,
-  ExternalSignature,
   ExternalVerification,
-  InternalSignature,
   InternalVerification,
   ParsedAuthorizationRequestURI,
   RegisterEventListener,
@@ -116,7 +114,7 @@ export class OP {
       version?: SupportedVersion;
       correlationId?: string;
       audience?: string;
-      signature?: InternalSignature | ExternalSignature | SuppliedSignature;
+      signature?: /*InternalSignature | ExternalSignature |*/ SuppliedSignature;
       verification?: InternalVerification | ExternalVerification;
       presentationExchange?: PresentationExchangeResponseOpts;
     }
@@ -215,14 +213,18 @@ export class OP {
     correlationId: string;
     version?: SupportedVersion;
     audience?: string;
-    signature?: InternalSignature | ExternalSignature | SuppliedSignature;
+    signature?: /*InternalSignature | ExternalSignature | */ SuppliedSignature;
     presentationExchange?: PresentationExchangeResponseOpts;
   }): AuthorizationResponseOpts {
     return {
       ...this._createResponseOptions,
       ...(opts?.audience ? { redirectUri: opts.audience } : {}),
       ...(opts?.presentationExchange ? { presentationExchange: opts.presentationExchange } : {}),
-      ...(opts?.signature ? { signature: opts.signature } : {}),
+      ...(opts?.signature
+        ? { signature: opts.signature }
+        : this._createResponseOptions?.signature
+        ? { signature: this._createResponseOptions.signature }
+        : {}),
     };
   }
 
@@ -241,7 +243,11 @@ export class OP {
 
   private async emitEvent(
     type: AuthorizationEvents,
-    payload: { correlationId: string; subject: AuthorizationRequest | AuthorizationResponse | string | URI; error?: Error }
+    payload: {
+      correlationId: string;
+      subject: AuthorizationRequest | AuthorizationResponse | string | URI;
+      error?: Error;
+    }
   ): Promise<void> {
     if (this._eventEmitter) {
       this._eventEmitter.emit(type, new AuthorizationEvent(payload));

@@ -3,7 +3,7 @@ import Debug from 'debug';
 
 import { ContentType, SIOPErrors, SIOPResonse } from '../types';
 
-const debug = Debug('sphereon:openid4vci:http');
+const debug = Debug('sphereon:siopv2:http');
 
 export const getJson = async <T>(
   URL: string,

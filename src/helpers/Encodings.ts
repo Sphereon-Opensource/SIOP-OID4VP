@@ -1,5 +1,7 @@
 import { parse } from 'querystring';
 
+import * as ua8 from 'uint8arrays';
+
 import { SIOPErrors } from '../types';
 
 export function decodeUriAsJson(uri: string) {
@@ -67,8 +69,8 @@ export function encodeJsonAsURI(json: unknown): string {
   return results.join('&');
 }
 
-export function base64ToHexString(input: string): string {
-  return Buffer.from(input, 'base64').toString('hex');
+export function base64ToHexString(input: string, encoding?: 'base64url' | 'base64'): string {
+  return ua8.toString(ua8.fromString(input, encoding ?? 'base64url'), 'base16');
 }
 
 export function fromBase64(base64: string): string {

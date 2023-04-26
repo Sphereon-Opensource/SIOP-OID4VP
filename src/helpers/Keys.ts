@@ -1,10 +1,8 @@
 // import { keyUtils as ed25519KeyUtils } from '@transmute/did-key-ed25519';
-import base64url from 'base64url';
-import * as bs58 from 'bs58';
-import { ec as EC } from 'elliptic';
-import { calculateJwkThumbprint, JWK } from 'jose';
+// import { ec as EC } from 'elliptic';
+import * as u8a from 'uint8arrays';
 
-import { KeyCurve, KeyType } from '../types';
+import { JWK } from '../types';
 
 const ED25519_DID_KEY = 'did:key:z6Mk';
 
@@ -12,6 +10,7 @@ export const isEd25519DidKeyMethod = (did?: string) => {
   return did && did.includes(ED25519_DID_KEY);
 };
 
+/*
 export const isEd25519JWK = (jwk: JWK): boolean => {
   return jwk && !!jwk.crv && jwk.crv === KeyCurve.ED25519;
 };
@@ -48,7 +47,7 @@ const toJWK = (kid: string, crv: KeyCurve, pubPoint: EC.BN) => {
     kty: KeyType.EC,
     crv: crv,
     x: base64url.toBase64(pubPoint.getX().toArrayLike(Buffer)),
-    y: base64url.toBase64(pubPoint.getY().toArrayLike(Buffer)),
+    y: base64url.toBase64(pubPoint.getY().toArrayLike(Buffer))
   };
 };
 
@@ -64,7 +63,7 @@ const getThumbprintFromJwkDIDKeyImpl = (jwk: JWK): string => {
 
   // prefix with `z` to indicate multi-base encodingFormat
 
-  return base64url.encode(`z${bs58.encode(buffer)}`);
+  return base64url.encode(`z${u8a.toString(buffer, 'base58btc')}`);
 };
 
 export const getThumbprintFromJwk = async (jwk: JWK, did: string): Promise<string> => {
@@ -81,3 +80,58 @@ export const getThumbprint = async (hexPrivateKey: string, did: string): Promise
     did
   );
 };
+*/
+
+const check = (value, description) => {
+  if (typeof value !== 'string' || !value) {
+    throw Error(`${description} missing or invalid`);
+  }
+};
+
+async function calculateJwkThumbprint(jwk: JWK, digestAlgorithm?: 'sha256' | 'sha384' | 'sha512'): Promise<string> {
+  if (!jwk || typeof jwk !== 'object') {
+    throw new TypeError('JWK must be an object');
+  }
+  const algorithm = digestAlgorithm ?? 'sha256';
+  if (algorithm !== 'sha256' && algorithm !== 'sha384' && algorithm !== 'sha512') {
+    throw new TypeError('digestAlgorithm must one of "sha256", "sha384", or "sha512"');
+  }
+  let components;
+  switch (jwk.kty) {
+    case 'EC':
+      check(jwk.crv, '"crv" (Curve) Parameter');
+      check(jwk.x, '"x" (X Coordinate) Parameter');
+      check(jwk.y, '"y" (Y Coordinate) Parameter');
+      components = { crv: jwk.crv, kty: jwk.kty, x: jwk.x, y: jwk.y };
+      break;
+    case 'OKP':
+      check(jwk.crv, '"crv" (Subtype of Key Pair) Parameter');
+      check(jwk.x, '"x" (Public Key) Parameter');
+      components = { crv: jwk.crv, kty: jwk.kty, x: jwk.x };
+      break;
+    case 'RSA':
+      check(jwk.e, '"e" (Exponent) Parameter');
+      check(jwk.n, '"n" (Modulus) Parameter');
+      components = { e: jwk.e, kty: jwk.kty, n: jwk.n };
+      break;
+    case 'oct':
+      check(jwk.k, '"k" (Key Value) Parameter');
+      components = { k: jwk.k, kty: jwk.kty };
+      break;
+    default:
+      throw Error('"kty" (Key Type) Parameter missing or unsupported');
+  }
+  const data = u8a.fromString(JSON.stringify(components), 'utf-8');
+  return u8a.toString(await digest(algorithm, data), 'base64url');
+}
+
+const digest = async (algorithm: 'sha256' | 'sha384' | 'sha512', data: Uint8Array) => {
+  const subtleDigest = `SHA-${algorithm.slice(-3)}`;
+  return new Uint8Array(await crypto.subtle.digest(subtleDigest, data));
+};
+
+export async function calculateJwkThumbprintUri(jwk: JWK, digestAlgorithm?: 'sha256' | 'sha384' | 'sha512'): Promise<string> {
+  digestAlgorithm !== null && digestAlgorithm !== void 0 ? digestAlgorithm : (digestAlgorithm = 'sha256');
+  const thumbprint = await calculateJwkThumbprint(jwk, digestAlgorithm);
+  return `urn:ietf:params:oauth:jwk-thumbprint:sha-${digestAlgorithm.slice(-3)}:${thumbprint}`;
+}

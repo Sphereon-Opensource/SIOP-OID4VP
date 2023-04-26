@@ -4,7 +4,7 @@ import { validateLinkedDomainWithDid } from '../did';
 import { getNonce, removeNullUndefined } from '../helpers';
 import { RequestObject } from '../request-object';
 import { isTarget, isTargetOrNoTargets } from '../rp/Opts';
-import { RPRegistrationMetadataPayloadSchema } from '../schemas/validation/schemaValidation.js';
+import { RPRegistrationMetadataPayloadSchema } from '../schemas';
 import {
   AuthorizationRequestPayload,
   CheckLinkedDomain,

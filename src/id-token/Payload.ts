@@ -1,14 +1,11 @@
-import { JWK } from 'jose';
-
 import { AuthorizationResponseOpts, mergeOAuth2AndOpenIdInRequestPayload } from '../authorization-response';
 import { assertValidResponseOpts } from '../authorization-response/Opts';
-import { getPublicJWKFromHexPrivateKey, getThumbprint } from '../helpers';
 import { authorizationRequestVersionDiscovery } from '../helpers/SIOPSpecVersion';
 import {
   AuthorizationRequestPayload,
   IDTokenPayload,
-  isInternalSignature,
   isSuppliedSignature,
+  JWK,
   ResponseIss,
   SIOPErrors,
   SubjectSyntaxTypesSupportedValues,
@@ -71,14 +68,14 @@ export const createIDTokenPayload = async (
 const createThumbprintAndJWK = async (resOpts: AuthorizationResponseOpts): Promise<{ thumbprint: string; subJwk: JWK }> => {
   let thumbprint;
   let subJwk;
-  if (isInternalSignature(resOpts.signature)) {
+  /*  if (isInternalSignature(resOpts.signature)) {
     thumbprint = await getThumbprint(resOpts.signature.hexPrivateKey, resOpts.signature.did);
     subJwk = getPublicJWKFromHexPrivateKey(
       resOpts.signature.hexPrivateKey,
       resOpts.signature.kid || `${resOpts.signature.did}#key-1`,
       resOpts.signature.did
     );
-  } else if (isSuppliedSignature(resOpts.signature)) {
+  } else*/ if (isSuppliedSignature(resOpts.signature)) {
     // fixme: These are uninitialized. Probably we have to extend the supplied withSignature to provide these.
     return { thumbprint, subJwk };
   } else {
