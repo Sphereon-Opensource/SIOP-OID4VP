@@ -23,7 +23,6 @@ export class DocumentLoader {
           },
         };
       }
-      console.log(`url: ${url}`);
       try {
         const response = await fetch(url);
         if (response.status >= 200 && response.status < 300) {
