@@ -140,8 +140,8 @@ export class RP {
       presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
     }
   ): Promise<VerifiedAuthorizationResponse> {
-    const state = opts.state || this.verifyResponseOptions.state;
-    let correlationId: string | undefined = opts.correlationId || state;
+    const state = opts?.state || this.verifyResponseOptions.state;
+    let correlationId: string | undefined = opts?.correlationId || state;
     let authorizationResponse: AuthorizationResponse;
     try {
       authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload);

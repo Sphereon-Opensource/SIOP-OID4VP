@@ -2,16 +2,15 @@ import { JWTHeader } from 'did-jwt';
 
 import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { assertValidVerifyOpts } from '../authorization-response/Opts';
-import { getResolver, getSubDidFromPayload, parseJWT, signDidJwtPayload, validateLinkedDomainWithDid, verifyDidJWT } from '../did';
-import { fetchByReferenceOrUseByValue } from '../helpers';
+import { getResolver, getSubDidFromPayload, parseJWT, signIDTokenPayload, validateLinkedDomainWithDid, verifyDidJWT } from '../did';
 import {
-  AuthorizationRequestPayload,
   CheckLinkedDomain,
   IDTokenJwt,
   IDTokenPayload,
   JWTPayload,
   ResponseIss,
   SIOPErrors,
+  VerifiedAuthorizationRequest,
   VerifiedIDToken,
 } from '../types';
 
@@ -29,30 +28,47 @@ export class IDToken {
     this._responseOpts = responseOpts;
   }
 
-  public static async fromAuthorizationRequestPayload(
-    authorizationRequestPayload: AuthorizationRequestPayload,
+  public static async fromVerifiedAuthorizationRequest(
+    verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
     responseOpts: AuthorizationResponseOpts,
     verifyOpts?: VerifyAuthorizationResponseOpts
   ) {
+    const authorizationRequestPayload = verifiedAuthorizationRequest.authorizationRequestPayload;
     if (!authorizationRequestPayload) {
       throw new Error(SIOPErrors.NO_REQUEST);
     }
-    let jwt: string = undefined;
-    if (authorizationRequestPayload.request || authorizationRequestPayload.request_uri) {
-      jwt = await fetchByReferenceOrUseByValue(authorizationRequestPayload.request_uri, authorizationRequestPayload.request, true);
-    }
-    const idToken = new IDToken(jwt, await createIDTokenPayload(authorizationRequestPayload, responseOpts), responseOpts);
+    const mergedPayloads = await verifiedAuthorizationRequest.authorizationRequest.mergedPayloads();
+    const idToken = new IDToken(
+      null,
+      await createIDTokenPayload(mergedPayloads, responseOpts, verifiedAuthorizationRequest.requestObject),
+      responseOpts
+    );
     if (verifyOpts) {
       await idToken.verify(verifyOpts);
     }
     return idToken;
   }
 
-  public static async fromIDToken(jwt: IDTokenJwt, verifyOpts?: VerifyAuthorizationResponseOpts) {
-    if (!jwt) {
+  public static async fromIDToken(idTokenJwt: IDTokenJwt, verifyOpts?: VerifyAuthorizationResponseOpts) {
+    if (!idTokenJwt) {
       throw new Error(SIOPErrors.NO_JWT);
     }
-    const idToken = new IDToken(jwt, undefined);
+    const idToken = new IDToken(idTokenJwt, undefined);
+    if (verifyOpts) {
+      await idToken.verify(verifyOpts);
+    }
+    return idToken;
+  }
+
+  public static async fromIDTokenPayload(
+    idTokenPayload: IDTokenPayload,
+    responseOpts: AuthorizationResponseOpts,
+    verifyOpts?: VerifyAuthorizationResponseOpts
+  ) {
+    if (!idTokenPayload) {
+      throw new Error(SIOPErrors.NO_JWT);
+    }
+    const idToken = new IDToken(null, idTokenPayload, responseOpts);
     if (verifyOpts) {
       await idToken.verify(verifyOpts);
     }
@@ -76,7 +92,7 @@ export class IDToken {
       if (!this.responseOpts) {
         throw Error(SIOPErrors.BAD_SIGNATURE_PARAMS);
       }
-      this._jwt = await signDidJwtPayload(this._payload, this.responseOpts);
+      this._jwt = await signIDTokenPayload(this._payload, this.responseOpts);
       const { header, payload } = this.parseAndVerifyJwt();
       this._header = header;
       this._payload = payload;
@@ -144,8 +160,7 @@ export class IDToken {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
     if (opts.payload) {
-      // todo: doublecheck for other cases where this value might differ
-      if (!opts.payload.iss || !opts.payload.iss.includes(ResponseIss.SELF_ISSUED_V2)) {
+      if (!opts.payload.iss || !(opts.payload.iss.includes(ResponseIss.SELF_ISSUED_V2) || opts.payload.iss.startsWith('did:'))) {
         throw new Error(`${SIOPErrors.NO_SELFISSUED_ISS}, got: ${opts.payload.iss}`);
       }
     }

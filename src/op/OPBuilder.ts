@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
+import { IIssuerId } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
 import { Resolvable, Resolver } from 'did-resolver';
@@ -24,9 +25,9 @@ import {
 
 import { OP } from './OP';
 
-export class Builder {
+export class OPBuilder {
   expiresIn?: number;
-  issuer?: ResponseIss;
+  issuer?: IIssuerId | ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   responseMode?: ResponseMode = ResponseMode.POST;
   responseRegistration?: Partial<ResponseRegistrationOpts> = {};
@@ -38,7 +39,7 @@ export class Builder {
   supportedVersions?: SupportedVersion[];
   eventEmitter?: EventEmitter;
 
-  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): Builder {
+  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
     if (method === SubjectSyntaxTypesSupportedValues.DID.valueOf()) {
       opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
@@ -47,17 +48,17 @@ export class Builder {
     return this;
   }
 
-  withIssuer(issuer: ResponseIss): Builder {
+  withIssuer(issuer: ResponseIss | string): OPBuilder {
     this.issuer = issuer;
     return this;
   }
 
-  withCustomResolver(resolver: Resolvable): Builder {
+  withCustomResolver(resolver: Resolvable): OPBuilder {
     this.customResolver = resolver;
     return this;
   }
 
-  addResolver(didMethod: string, resolver: Resolvable): Builder {
+  addResolver(didMethod: string, resolver: Resolvable): OPBuilder {
     const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
     this.resolvers.set(qualifiedDidMethod, resolver);
     return this;
@@ -68,22 +69,22 @@ export class Builder {
     return this;
   }
 */
-  withExpiresIn(expiresIn: number): Builder {
+  withExpiresIn(expiresIn: number): OPBuilder {
     this.expiresIn = expiresIn;
     return this;
   }
 
-  withCheckLinkedDomain(mode: CheckLinkedDomain): Builder {
+  withCheckLinkedDomain(mode: CheckLinkedDomain): OPBuilder {
     this.checkLinkedDomain = mode;
     return this;
   }
 
-  withResponseMode(responseMode: ResponseMode): Builder {
+  withResponseMode(responseMode: ResponseMode): OPBuilder {
     this.responseMode = responseMode;
     return this;
   }
 
-  withRegistration(responseRegistration: ResponseRegistrationOpts, targets?: PropertyTargets): Builder {
+  withRegistration(responseRegistration: ResponseRegistrationOpts, targets?: PropertyTargets): OPBuilder {
     this.responseRegistration = {
       targets,
       ...responseRegistration,
@@ -100,12 +101,12 @@ export class Builder {
 */
 
   // Only internal and supplied signatures supported for now
-  withSignature(signature: InternalSignature | SuppliedSignature): Builder {
+  withSignature(signature: InternalSignature | SuppliedSignature): OPBuilder {
     this.signature = signature;
     return this;
   }
 
-  withInternalSignature(hexPrivateKey: string, did: string, kid: string, alg: SigningAlgo, customJwtSigner?: Signer): Builder {
+  withInternalSignature(hexPrivateKey: string, did: string, kid: string, alg: SigningAlgo, customJwtSigner?: Signer): OPBuilder {
     this.withSignature({ hexPrivateKey, did, kid, alg, customJwtSigner });
     return this;
   }
@@ -115,17 +116,17 @@ export class Builder {
     did: string,
     kid: string,
     alg: SigningAlgo
-  ): Builder {
+  ): OPBuilder {
     this.withSignature({ signature, did, kid, alg });
     return this;
   }
 
-  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback): Builder {
+  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback): OPBuilder {
     this.wellknownDIDVerifyCallback = wellknownDIDVerifyCallback;
     return this;
   }
 
-  withSupportedVersions(supportedVersions: SupportedVersion[] | SupportedVersion | string[] | string): Builder {
+  withSupportedVersions(supportedVersions: SupportedVersion[] | SupportedVersion | string[] | string): OPBuilder {
     const versions = Array.isArray(supportedVersions) ? supportedVersions : [supportedVersions];
     for (const version of versions) {
       this.addSupportedVersion(version);
@@ -133,7 +134,7 @@ export class Builder {
     return this;
   }
 
-  addSupportedVersion(supportedVersion: string | SupportedVersion): Builder {
+  addSupportedVersion(supportedVersion: string | SupportedVersion): OPBuilder {
     if (!this.supportedVersions) {
       this.supportedVersions = [];
     }
@@ -145,12 +146,12 @@ export class Builder {
     return this;
   }
 
-  withPresentationSignCallback(presentationSignCallback: PresentationSignCallback): Builder {
+  withPresentationSignCallback(presentationSignCallback: PresentationSignCallback): OPBuilder {
     this.presentationSignCallback = presentationSignCallback;
     return this;
   }
 
-  withEventEmitter(eventEmitter?: EventEmitter): Builder {
+  withEventEmitter(eventEmitter?: EventEmitter): OPBuilder {
     this.eventEmitter = eventEmitter ?? new EventEmitter();
     return this;
   }

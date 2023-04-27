@@ -24,8 +24,6 @@ import {
   IDTokenPayload,
   isExternalSignature,
   isInternalSignature,
-  isResponseOpts,
-  isResponsePayload,
   isSuppliedSignature,
   RequestObjectPayload,
   ResponseIss,
@@ -86,35 +84,50 @@ export async function createDidJWT(
   return createJWT(payload, { issuer, signer, expiresIn, canonicalize }, header);
 }
 
-export async function signDidJwtPayload(
-  payload: IDTokenPayload | RequestObjectPayload,
-  opts: RequestObjectOpts<ClaimPayloadCommonOpts> | AuthorizationResponseOpts
-) {
-  const isResponse = isResponseOpts(opts) || isResponsePayload(payload);
-  if (isResponse) {
-    if (!payload.iss || (payload.iss !== ResponseIss.SELF_ISSUED_V2 && payload.iss !== payload.sub)) {
-      throw new Error(SIOPErrors.NO_SELFISSUED_ISS);
-    }
+export async function signIDTokenPayload(payload: IDTokenPayload, opts: AuthorizationResponseOpts) {
+  if (!payload.sub) {
+    payload.sub = opts.signature.did;
   }
+
+  const issuer = opts.registration.issuer || payload.iss;
+  if (!issuer || !(issuer.includes(ResponseIss.SELF_ISSUED_V2) || issuer === payload.sub)) {
+    throw new Error(SIOPErrors.NO_SELFISSUED_ISS);
+  }
+  if (!payload.iss) {
+    payload.iss = issuer;
+  }
+
   if (isInternalSignature(opts.signature)) {
-    return signDidJwtInternal(
-      payload,
-      isResponse ? payload.iss : opts.signature.did,
-      opts.signature.hexPrivateKey,
-      opts.signature.alg,
-      opts.signature.kid,
-      opts.signature.customJwtSigner
-    );
+    return signDidJwtInternal(payload, issuer, opts.signature.hexPrivateKey, opts.signature.alg, opts.signature.kid, opts.signature.customJwtSigner);
   } else if (isExternalSignature(opts.signature)) {
     return signDidJwtExternal(payload, opts.signature.signatureUri, opts.signature.authZToken, opts.signature.alg, opts.signature.kid);
   } else if (isSuppliedSignature(opts.signature)) {
-    return signDidJwtSupplied(
-      payload,
-      isResponse ? payload.iss : opts.signature.did,
-      opts.signature.signature,
-      opts.signature.alg,
-      opts.signature.kid
-    );
+    return signDidJwtSupplied(payload, issuer, opts.signature.signature, opts.signature.alg, opts.signature.kid);
+  } else {
+    throw new Error(SIOPErrors.BAD_SIGNATURE_PARAMS);
+  }
+}
+
+export async function signRequestObjectPayload(payload: RequestObjectPayload, opts: RequestObjectOpts<ClaimPayloadCommonOpts>) {
+  let issuer = payload.iss;
+  if (!issuer) {
+    issuer = opts.signature.did;
+  }
+  if (!issuer) {
+    throw Error('No issuer supplied to sign the JWT');
+  }
+  if (!payload.iss) {
+    payload.iss = issuer;
+  }
+  if (!payload.sub) {
+    payload.sub = opts.signature.did;
+  }
+  if (isInternalSignature(opts.signature)) {
+    return signDidJwtInternal(payload, issuer, opts.signature.hexPrivateKey, opts.signature.alg, opts.signature.kid, opts.signature.customJwtSigner);
+  } else if (isExternalSignature(opts.signature)) {
+    return signDidJwtExternal(payload, opts.signature.signatureUri, opts.signature.authZToken, opts.signature.alg, opts.signature.kid);
+  } else if (isSuppliedSignature(opts.signature)) {
+    return signDidJwtSupplied(payload, issuer, opts.signature.signature, opts.signature.alg, opts.signature.kid);
   } else {
     throw new Error(SIOPErrors.BAD_SIGNATURE_PARAMS);
   }
@@ -196,8 +209,10 @@ const determineSigner = (alg: SigningAlgo, hexPrivateKey?: string, customSigner?
       return ES256Signer(privateKey);
     case SigningAlgo.ES256K:
       return ES256KSigner(privateKey);
+    case SigningAlgo.PS256:
+      throw Error('PS256 is not supported yet. Please provide a custom signer');
     case SigningAlgo.RS256:
-      throw Error('RS256 is not supported yet');
+      throw Error('RS256 is not supported yet. Please provide a custom signer');
   }
 };
 

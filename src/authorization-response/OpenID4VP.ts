@@ -97,7 +97,7 @@ export const createSubmissionData = async (verifiablePresentations: W3CVerifiabl
   return submission_data;
 };
 
-export const putPresentationsInResponse = async (
+export const putPresentationSubmissionInLocation = async (
   authorizationRequest: AuthorizationRequest,
   responsePayload: AuthorizationResponsePayload,
   resOpts: AuthorizationResponseOpts,

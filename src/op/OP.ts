@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 
+import { IIssuerId } from '@sphereon/ssi-types/src/types/vc';
 import { v4 as uuidv4 } from 'uuid';
 
 import { AuthorizationRequest, URI, VerifyAuthorizationRequestOpts } from '../authorization-request';
@@ -15,10 +16,13 @@ import {
   AuthorizationEvent,
   AuthorizationEvents,
   ContentType,
+  ExternalSignature,
   ExternalVerification,
+  InternalSignature,
   InternalVerification,
   ParsedAuthorizationRequestURI,
   RegisterEventListener,
+  ResponseIss,
   ResponseMode,
   SIOPErrors,
   SIOPResonse,
@@ -28,7 +32,7 @@ import {
   VerifiedAuthorizationRequest,
 } from '../types';
 
-import { Builder } from './Builder';
+import { OPBuilder } from './OPBuilder';
 import { createResponseOptsFromBuilderOrExistingOpts, createVerifyRequestOptsFromBuilderOrExistingOpts } from './Opts';
 
 // The OP publishes the formats it supports using the vp_formats_supported metadata parameter as defined above in its "openid-configuration".
@@ -37,7 +41,7 @@ export class OP {
   private readonly _verifyRequestOptions: Partial<VerifyAuthorizationRequestOpts>;
   private readonly _eventEmitter?: EventEmitter;
 
-  private constructor(opts: { builder?: Builder; responseOpts?: AuthorizationResponseOpts; verifyOpts?: VerifyAuthorizationRequestOpts }) {
+  private constructor(opts: { builder?: OPBuilder; responseOpts?: AuthorizationResponseOpts; verifyOpts?: VerifyAuthorizationRequestOpts }) {
     this._createResponseOptions = { ...createResponseOptsFromBuilderOrExistingOpts(opts) };
     this._verifyRequestOptions = { ...createVerifyRequestOptsFromBuilderOrExistingOpts(opts) };
     this._eventEmitter = opts.builder?.eventEmitter;
@@ -109,23 +113,28 @@ export class OP {
   }
 
   public async createAuthorizationResponse(
-    authorizationRequest: VerifiedAuthorizationRequest,
+    verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
     responseOpts?: {
       version?: SupportedVersion;
       correlationId?: string;
       audience?: string;
-      signature?: /*InternalSignature | ExternalSignature |*/ SuppliedSignature;
+      issuer?: ResponseIss | string;
+      signature?: InternalSignature | ExternalSignature | SuppliedSignature;
       verification?: InternalVerification | ExternalVerification;
       presentationExchange?: PresentationExchangeResponseOpts;
     }
   ): Promise<AuthorizationResponseWithCorrelationId> {
-    if (authorizationRequest.correlationId && responseOpts?.correlationId && authorizationRequest.correlationId !== responseOpts.correlationId) {
+    if (
+      verifiedAuthorizationRequest.correlationId &&
+      responseOpts?.correlationId &&
+      verifiedAuthorizationRequest.correlationId !== responseOpts.correlationId
+    ) {
       throw new Error(
-        `Request correlation id ${authorizationRequest.correlationId} is different from option correlation id ${responseOpts.correlationId}`
+        `Request correlation id ${verifiedAuthorizationRequest.correlationId} is different from option correlation id ${responseOpts.correlationId}`
       );
     }
     let version = responseOpts?.version;
-    const rpSupportedVersions = authorizationRequestVersionDiscovery(authorizationRequest.authorizationRequestPayload);
+    const rpSupportedVersions = authorizationRequestVersionDiscovery(await verifiedAuthorizationRequest.authorizationRequest.mergedPayloads());
     if (version && rpSupportedVersions.length > 0 && !rpSupportedVersions.includes(version)) {
       throw Error(`RP does not support spec version ${version}, supported versions: ${rpSupportedVersions.toString()}`);
     } else if (!version) {
@@ -134,25 +143,26 @@ export class OP {
         SupportedVersion.SIOPv2_ID1
       );
     }
-    const correlationId = responseOpts?.correlationId || authorizationRequest.correlationId || uuidv4();
+    const correlationId = responseOpts?.correlationId || verifiedAuthorizationRequest.correlationId || uuidv4();
     try {
       const response = await AuthorizationResponse.fromVerifiedAuthorizationRequest(
-        authorizationRequest,
+        verifiedAuthorizationRequest,
         this.newAuthorizationResponseOpts({
           ...responseOpts,
           version,
           correlationId,
-        })
+        }),
+        verifiedAuthorizationRequest.verifyOpts
       );
       this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, {
         correlationId,
         subject: response,
       });
-      return { correlationId, response, redirectURI: authorizationRequest.redirectURI };
+      return { correlationId, response, redirectURI: verifiedAuthorizationRequest.redirectURI };
     } catch (error: any) {
       this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, {
         correlationId,
-        subject: authorizationRequest.authorizationRequest,
+        subject: verifiedAuthorizationRequest.authorizationRequest,
         error,
       });
       throw error;
@@ -167,18 +177,21 @@ export class OP {
     }
     if (
       !response ||
-      (response.options.responseMode &&
-        !(response.options.responseMode == ResponseMode.POST || response.options.responseMode == ResponseMode.FORM_POST))
+      (response.options?.responseMode &&
+        !(response.options?.responseMode === ResponseMode.POST || response.options?.responseMode === ResponseMode.FORM_POST))
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    const request = response.authorizationRequest;
+    /*const request = response.authorizationRequest;
     if (!request) {
       throw Error('Cannot submit an authorization response without a request present');
-    }
+    }*/
     const payload = await response.payload;
-    const idToken = await response.idToken.payload();
+    const idToken = await response.idToken?.payload();
     const redirectURI = authorizationResponse.redirectURI || idToken?.aud;
+    if (!redirectURI) {
+      throw Error('No redirect URI present');
+    }
     const authResponseAsURI = encodeJsonAsURI(payload);
     return post(redirectURI, authResponseAsURI, { contentType: ContentType.FORM_URL_ENCODED })
       .then((result: SIOPResonse<unknown>) => {
@@ -212,12 +225,26 @@ export class OP {
   private newAuthorizationResponseOpts(opts: {
     correlationId: string;
     version?: SupportedVersion;
+    issuer?: IIssuerId | ResponseIss;
     audience?: string;
-    signature?: /*InternalSignature | ExternalSignature | */ SuppliedSignature;
+    signature?: InternalSignature | ExternalSignature | SuppliedSignature;
     presentationExchange?: PresentationExchangeResponseOpts;
   }): AuthorizationResponseOpts {
+    const version = opts.version ?? this._createResponseOptions.version;
+    let issuer = opts.issuer ?? this._createResponseOptions?.registration?.issuer;
+    if (!issuer && version) {
+      if (version === SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1) {
+        issuer = ResponseIss.JWT_VC_PRESENTATION_V1;
+      } else if (version === SupportedVersion.SIOPv2_ID1) {
+        issuer = ResponseIss.SELF_ISSUED_V2;
+      }
+    }
+    if (!issuer) {
+      throw Error(`No issuer value present. Either use IDv1, JWT VC Presentation profile version, or provide a DID as issuer value`);
+    }
     return {
       ...this._createResponseOptions,
+      registration: { ...this._createResponseOptions?.registration, issuer },
       ...(opts?.audience ? { redirectUri: opts.audience } : {}),
       ...(opts?.presentationExchange ? { presentationExchange: opts.presentationExchange } : {}),
       ...(opts?.signature
@@ -269,7 +296,7 @@ export class OP {
   }
 
   public static builder() {
-    return new Builder();
+    return new OPBuilder();
   }
 
   get createResponseOptions(): AuthorizationResponseOpts {

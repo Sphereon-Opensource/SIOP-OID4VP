@@ -1662,12 +1662,18 @@ describe('RP and OP interaction should', () => {
   });
 
   it('should register authorization response on successful verification', async () => {
+    await nock.cleanAll();
     const rpMockEntity = {
       hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
       did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
       didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
     };
-    const opMockEntity = await mockedGetEnterpriseAuthToken('ACME OP');
+    const opMockEntity = {
+      hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+      did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+      didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
+    };
+
     const eventEmitter = new EventEmitter();
     const replayRegistry = new InMemoryRPSessionManager(eventEmitter);
 
@@ -1681,7 +1687,7 @@ describe('RP and OP interaction should', () => {
       .withRevocationVerification(RevocationVerification.NEVER)
       .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`, SigningAlgo.ES256K)
+      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.didKey}`, SigningAlgo.ES256K)
       .addDidMethod('ethr')
       .withClientMetadata({
         client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -1708,7 +1714,7 @@ describe('RP and OP interaction should', () => {
       .withExpiresIn(1000)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
-      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
+      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.didKey}`, SigningAlgo.ES256K)
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       //FIXME: Move payload options to seperate property
       .withRegistration({
@@ -1731,11 +1737,11 @@ describe('RP and OP interaction should', () => {
       .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
       .build();
     const requestURI = await rp.createAuthorizationRequestURI({
-      correlationId: '1234',
+      correlationId: '12345',
       nonce: { propertyValue: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg' },
-      state: { propertyValue: 'b32f0087fc9816eb813fd11f' },
+      state: { propertyValue: 'b32f0087fc9816eb813fd11f1' },
     });
-    const reqStateCreated = await replayRegistry.getRequestStateByState('b32f0087fc9816eb813fd11f', true);
+    const reqStateCreated = await replayRegistry.getRequestStateByState('b32f0087fc9816eb813fd11f1', true);
     expect(reqStateCreated.status).toBe('created');
     nock('https://rp.acme.com').get('/siop/jwts').times(3).reply(200, requestURI.requestObjectJwt);
     const verifiedRequest = await op.verifyAuthorizationRequest(requestURI.encodedUri);
@@ -1748,7 +1754,7 @@ describe('RP and OP interaction should', () => {
     const reqStateAfterResponse = await replayRegistry.getRequestStateByState('incorrect', false);
     expect(reqStateAfterResponse).toBeUndefined();
 
-    const resStateAfterResponse = await replayRegistry.getResponseStateByState('b32f0087fc9816eb813fd11f', true);
+    const resStateAfterResponse = await replayRegistry.getResponseStateByState('b32f0087fc9816eb813fd11f1', true);
     expect(resStateAfterResponse.status).toBe('verified');
   });
 

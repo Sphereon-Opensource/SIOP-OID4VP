@@ -1338,6 +1338,7 @@ export const AuthorizationResponseOptsSchemaObj = {
       "enum": [
         "EdDSA",
         "RS256",
+        "PS256",
         "ES256",
         "ES256K"
       ]

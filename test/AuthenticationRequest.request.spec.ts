@@ -337,7 +337,7 @@ describe('create Request JWT should', () => {
         payload: {
           redirect_uri: EXAMPLE_REDIRECT_URL,
         },
-        signature: {},
+        signature: { did: 'did:example:123' },
       },
       clientMetadata: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],

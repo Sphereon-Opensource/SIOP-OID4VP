@@ -38,10 +38,10 @@ const HEX_KEY = 'f857544a9d1097e242ff0b287a7e6e90f19cf973efe2317f2a4678739664420
 const DID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0';
 const KID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#controller';
 
-describe('OP Builder should', () => {
+describe('OP OPBuilder should', () => {
   /*it('throw Error when no arguments are passed', async () => {
     expect.assertions(1);
-    await expect(() => new Builder().build()).toThrowError(Error);
+    await expect(() => new OPBuilder().build()).toThrowError(Error);
   });*/
   it('build an OP when all arguments are set', async () => {
     expect.assertions(1);

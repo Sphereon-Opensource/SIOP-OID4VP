@@ -77,17 +77,32 @@ export class AuthorizationResponse {
     if (!authorizationRequest) {
       throw new Error(SIOPErrors.NO_REQUEST);
     }
-
     const verifiedRequest = await authorizationRequest.verify(verifyOpts);
+    return await AuthorizationResponse.fromVerifiedAuthorizationRequest(verifiedRequest, responseOpts, verifyOpts);
+  }
 
-    // const merged = await authorizationRequest.mergedPayloads();
+  static async fromVerifiedAuthorizationRequest(
+    verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
+    responseOpts: AuthorizationResponseOpts,
+    verifyOpts: VerifyAuthorizationRequestOpts
+  ): Promise<AuthorizationResponse> {
+    assertValidResponseOpts(responseOpts);
+    if (!verifiedAuthorizationRequest) {
+      throw new Error(SIOPErrors.NO_REQUEST);
+    }
+
+    const authorizationRequest = verifiedAuthorizationRequest.authorizationRequest;
+
+    // const merged = verifiedAuthorizationRequest.authorizationRequest.requestObject, verifiedAuthorizationRequest.requestObject);
     // const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(merged, await authorizationRequest.getSupportedVersion());
-    const presentationDefinitions = JSON.parse(JSON.stringify(verifiedRequest.presentationDefinitions)) as PresentationDefinitionWithLocation[];
-    const hasIdToken = await authorizationRequest.containsResponseType(ResponseType.ID_TOKEN);
+    const presentationDefinitions = JSON.parse(
+      JSON.stringify(verifiedAuthorizationRequest.presentationDefinitions)
+    ) as PresentationDefinitionWithLocation[];
+    const wantsIdToken = await authorizationRequest.containsResponseType(ResponseType.ID_TOKEN);
     // const hasVpToken = await authorizationRequest.containsResponseType(ResponseType.VP_TOKEN);
 
-    const idToken = hasIdToken ? await IDToken.fromAuthorizationRequestPayload(authorizationRequest.payload, responseOpts) : undefined;
-    const idTokenPayload = hasIdToken ? await idToken.payload() : undefined;
+    const idToken = wantsIdToken ? await IDToken.fromVerifiedAuthorizationRequest(verifiedAuthorizationRequest, responseOpts) : undefined;
+    const idTokenPayload = wantsIdToken ? await idToken.payload() : undefined;
     const authorizationResponsePayload = await createResponsePayload(authorizationRequest, responseOpts, idTokenPayload);
     const response = new AuthorizationResponse({
       authorizationResponsePayload,
@@ -105,17 +120,6 @@ export class AuthorizationResponse {
     });
 
     return response;
-  }
-
-  static async fromVerifiedAuthorizationRequest(
-    verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
-    responseOpts: AuthorizationResponseOpts
-  ): Promise<AuthorizationResponse> {
-    return await AuthorizationResponse.fromAuthorizationRequest(
-      verifiedAuthorizationRequest.authorizationRequest,
-      responseOpts,
-      verifiedAuthorizationRequest.verifyOpts
-    );
   }
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthorizationResponse> {

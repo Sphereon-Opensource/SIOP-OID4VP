@@ -73,6 +73,7 @@ export class PresentationExchange {
    * if PEX library returns any error in the process, throws the error
    * returns the SelectResults object if successful
    * @param presentationDefinition: object received by the OP from the RP
+   * @param holderDIDs
    */
   public async selectVerifiableCredentialsForSubmission(
     presentationDefinition: IPresentationDefinition,

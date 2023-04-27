@@ -7,10 +7,10 @@ import { LanguageTagUtils } from '../helpers';
 import { AuthorizationResponseOptsSchema } from '../schemas';
 import { InternalVerification, PassBy, ResponseRegistrationOpts, VerificationMode } from '../types';
 
-import { Builder } from './Builder';
+import { OPBuilder } from './OPBuilder';
 
 export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
-  builder?: Builder;
+  builder?: OPBuilder;
   responseOpts?: AuthorizationResponseOpts;
 }): AuthorizationResponseOpts => {
   if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subject_syntax_types_supported) {
@@ -30,6 +30,11 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
       expiresIn: opts.builder.expiresIn,
       signature: opts.builder.signature,
       responseMode: opts.builder.responseMode,
+      ...(responseOpts?.version
+        ? { version: responseOpts.version }
+        : Array.isArray(opts.builder.supportedVersions) && opts.builder.supportedVersions.length > 0
+        ? { version: opts.builder.supportedVersions[0] }
+        : {}),
     };
 
     if (!responseOpts.registration.passBy) {
@@ -61,7 +66,7 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
 };
 
 export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
-  builder?: Builder;
+  builder?: OPBuilder;
   verifyOpts?: VerifyAuthorizationRequestOpts;
 }): VerifyAuthorizationRequestOpts => {
   if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration) {

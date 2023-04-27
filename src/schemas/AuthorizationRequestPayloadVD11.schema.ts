@@ -240,6 +240,7 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
       "enum": [
         "EdDSA",
         "RS256",
+        "PS256",
         "ES256",
         "ES256K"
       ]

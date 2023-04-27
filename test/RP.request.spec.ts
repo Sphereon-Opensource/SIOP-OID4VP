@@ -34,10 +34,10 @@ const KID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0#keys-1';
 
 const alltargets = [PropertyTarget.AUTHORIZATION_REQUEST, PropertyTarget.REQUEST_OBJECT];
 
-describe('RP Builder should', () => {
+describe('RP OPBuilder should', () => {
   /*it('throw Error when no arguments are passed', async () => {
     expect.assertions(1);
-    await expect(() => new Builder().build()).toThrowError(Error);
+    await expect(() => new OPBuilder().build()).toThrowError(Error);
   });*/
 
   it('build an RP when all arguments are set', async () => {

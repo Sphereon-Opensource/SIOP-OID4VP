@@ -23,7 +23,6 @@ export interface AuthorizationResponseOpts {
   checkLinkedDomain?: CheckLinkedDomain;
 
   version?: SupportedVersion;
-
   audience?: string;
 
   signature?: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;

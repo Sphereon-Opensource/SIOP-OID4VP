@@ -2,7 +2,7 @@ import { decodeJWT } from 'did-jwt';
 
 import { ClaimPayloadCommonOpts, ClaimPayloadOptsVID1, CreateAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidAuthorizationRequestOpts } from '../authorization-request/Opts';
-import { signDidJwtPayload } from '../did';
+import { signRequestObjectPayload } from '../did';
 import { fetchByReferenceOrUseByValue, removeNullUndefined } from '../helpers';
 import { AuthorizationRequestPayload, RequestObjectJwt, RequestObjectPayload, SIOPErrors } from '../types';
 
@@ -76,7 +76,7 @@ export class RequestObject {
       }
       assertValidRequestObjectPayload(this.payload);
 
-      this.jwt = await signDidJwtPayload(this.payload, this.opts);
+      this.jwt = await signRequestObjectPayload(this.payload, this.opts);
     }
     return this.jwt;
   }

@@ -628,6 +628,7 @@ export enum TokenEndpointAuthMethod {
 export enum SigningAlgo {
   EDDSA = 'EdDSA',
   RS256 = 'RS256',
+  PS256 = 'PS256',
   ES256 = 'ES256',
   ES256K = 'ES256K',
 }

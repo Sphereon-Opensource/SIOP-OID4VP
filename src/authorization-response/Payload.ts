@@ -1,9 +1,9 @@
 import { AuthorizationRequest } from '../authorization-request';
-import { signDidJwtPayload } from '../did';
+import { IDToken } from '../id-token';
 import { RequestObject } from '../request-object';
 import { AuthorizationRequestPayload, AuthorizationResponsePayload, IDTokenPayload, SIOPErrors } from '../types';
 
-import { putPresentationsInResponse } from './OpenID4VP';
+import { putPresentationSubmissionInLocation } from './OpenID4VP';
 import { assertValidResponseOpts } from './Opts';
 import { AuthorizationResponseOpts } from './types';
 
@@ -22,16 +22,17 @@ export const createResponsePayload = async (
   }
 
   const responsePayload: AuthorizationResponsePayload = {
-    ...(responseOpts.accessToken ? { access_token: responseOpts.accessToken } : {}),
-    token_type: responseOpts.tokenType,
-    refresh_token: responseOpts.refreshToken,
-    expires_in: responseOpts.expiresIn,
+    ...(responseOpts.accessToken && { access_token: responseOpts.accessToken }),
+    ...(responseOpts.tokenType && { token_type: responseOpts.tokenType }),
+    ...(responseOpts.refreshToken && { refresh_token: responseOpts.refreshToken }),
+    expires_in: responseOpts.expiresIn || 3600,
     state,
   };
 
-  await putPresentationsInResponse(authorizationRequest, responsePayload, responseOpts, idTokenPayload);
+  // vp tokens
+  await putPresentationSubmissionInLocation(authorizationRequest, responsePayload, responseOpts, idTokenPayload);
   if (idTokenPayload) {
-    responsePayload.id_token = await signDidJwtPayload(idTokenPayload, responseOpts);
+    responsePayload.id_token = await IDToken.fromIDTokenPayload(idTokenPayload, responseOpts).then((id) => id.jwt());
   }
 
   return responsePayload;
