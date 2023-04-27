@@ -6,9 +6,9 @@ import { getResolverUnion, mergeAllDidMethods } from '../did';
 // import { CreateAuthorizationRequestOptsSchema } from '../schemas';
 import { ClientMetadataOpts, InternalVerification, RequestObjectPayload, SIOPErrors, VerificationMode } from '../types';
 
-import Builder from './Builder';
+import RPBuilder from './RPBuilder';
 
-export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Builder; createRequestOpts?: CreateAuthorizationRequestOpts }) => {
+export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: RPBuilder; createRequestOpts?: CreateAuthorizationRequestOpts }) => {
   const version = opts.builder ? opts.builder.getSupportedRequestVersion() : opts.createRequestOpts.version;
   if (!version) {
     throw Error(SIOPErrors.NO_REQUEST_VERSION);
@@ -49,7 +49,7 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: Bui
   return createRequestOpts;
 };
 
-export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builder?: Builder; verifyOpts?: VerifyAuthorizationResponseOpts }) => {
+export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthorizationResponseOpts }) => {
   if (opts?.builder?.resolvers.size && opts.builder?.clientMetadata) {
     opts.builder.clientMetadata.subject_syntax_types_supported = mergeAllDidMethods(
       opts.builder.clientMetadata.subject_syntax_types_supported,

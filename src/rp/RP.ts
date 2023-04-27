@@ -27,8 +27,8 @@ import {
   VerifiedAuthorizationResponse,
 } from '../types';
 
-import Builder from './Builder';
 import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts, isTargetOrNoTargets } from './Opts';
+import RPBuilder from './RPBuilder';
 import { IRPSessionManager } from './types';
 
 export class RP {
@@ -42,7 +42,7 @@ export class RP {
   private readonly _sessionManager?: IRPSessionManager;
 
   private constructor(opts: {
-    builder?: Builder;
+    builder?: RPBuilder;
     createRequestOpts?: CreateAuthorizationRequestOpts;
     verifyResponseOpts?: VerifyAuthorizationResponseOpts;
   }) {
@@ -58,8 +58,8 @@ export class RP {
     return new RP({ createRequestOpts: opts });
   }
 
-  public static builder(opts?: { requestVersion?: SupportedVersion }): Builder {
-    return Builder.newInstance(opts?.requestVersion);
+  public static builder(opts?: { requestVersion?: SupportedVersion }): RPBuilder {
+    return RPBuilder.newInstance(opts?.requestVersion);
   }
 
   public async createAuthorizationRequest(opts: {

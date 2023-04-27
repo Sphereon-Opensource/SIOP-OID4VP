@@ -35,7 +35,7 @@ import { assignIfAuth, assignIfRequestObject, isTarget, isTargetOrNoTargets } fr
 import { RP } from './RP';
 import { IRPSessionManager } from './types';
 
-export default class Builder {
+export default class RPBuilder {
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   customResolver?: Resolvable;
   requestObjectBy: ObjectBy;
@@ -60,59 +60,59 @@ export default class Builder {
     }
   }
 
-  withScope(scope: string, targets?: PropertyTargets): Builder {
+  withScope(scope: string, targets?: PropertyTargets): RPBuilder {
     this._authorizationRequestPayload.scope = assignIfAuth({ propertyValue: scope, targets }, false);
     this._requestObjectPayload.scope = assignIfRequestObject({ propertyValue: scope, targets }, true);
     return this;
   }
 
-  withResponseType(responseType: ResponseType | ResponseType[] | string, targets?: PropertyTargets): Builder {
+  withResponseType(responseType: ResponseType | ResponseType[] | string, targets?: PropertyTargets): RPBuilder {
     const propertyValue = Array.isArray(responseType) ? responseType.join(' ').trim() : responseType;
     this._authorizationRequestPayload.response_type = assignIfAuth({ propertyValue, targets }, false);
     this._requestObjectPayload.response_type = assignIfRequestObject({ propertyValue, targets }, true);
     return this;
   }
 
-  withClientId(clientId: string, targets?: PropertyTargets): Builder {
+  withClientId(clientId: string, targets?: PropertyTargets): RPBuilder {
     this._authorizationRequestPayload.client_id = assignIfAuth({ propertyValue: clientId, targets }, false);
     this._requestObjectPayload.client_id = assignIfRequestObject({ propertyValue: clientId, targets }, true);
     this.clientId = clientId;
     return this;
   }
 
-  withIssuer(issuer: ResponseIss, targets?: PropertyTargets): Builder {
+  withIssuer(issuer: ResponseIss, targets?: PropertyTargets): RPBuilder {
     this._authorizationRequestPayload.iss = assignIfAuth({ propertyValue: issuer, targets }, false);
     this._requestObjectPayload.iss = assignIfRequestObject({ propertyValue: issuer, targets }, true);
     return this;
   }
 
-  withPresentationVerification(presentationVerificationCallback: PresentationVerificationCallback): Builder {
+  withPresentationVerification(presentationVerificationCallback: PresentationVerificationCallback): RPBuilder {
     this.presentationVerificationCallback = presentationVerificationCallback;
     return this;
   }
 
-  withRevocationVerification(mode: RevocationVerification): Builder {
+  withRevocationVerification(mode: RevocationVerification): RPBuilder {
     this.revocationVerification = mode;
     return this;
   }
 
-  withRevocationVerificationCallback(callback: RevocationVerificationCallback): Builder {
+  withRevocationVerificationCallback(callback: RevocationVerificationCallback): RPBuilder {
     this.revocationVerificationCallback = callback;
     return this;
   }
 
-  withCustomResolver(resolver: Resolvable): Builder {
+  withCustomResolver(resolver: Resolvable): RPBuilder {
     this.customResolver = resolver;
     return this;
   }
 
-  addResolver(didMethod: string, resolver: Resolvable): Builder {
+  addResolver(didMethod: string, resolver: Resolvable): RPBuilder {
     const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
     this.resolvers.set(qualifiedDidMethod, resolver);
     return this;
   }
 
-  withAuthorizationEndpoint(authorizationEndpoint: string, targets?: PropertyTargets): Builder {
+  withAuthorizationEndpoint(authorizationEndpoint: string, targets?: PropertyTargets): RPBuilder {
     this._authorizationRequestPayload.authorization_endpoint = assignIfAuth(
       {
         propertyValue: authorizationEndpoint,
@@ -130,12 +130,12 @@ export default class Builder {
     return this;
   }
 
-  withCheckLinkedDomain(mode: CheckLinkedDomain): Builder {
+  withCheckLinkedDomain(mode: CheckLinkedDomain): RPBuilder {
     this.checkLinkedDomain = mode;
     return this;
   }
 
-  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): Builder {
+  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): RPBuilder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
     if (method === SubjectSyntaxTypesSupportedValues.DID.valueOf()) {
       opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
@@ -144,20 +144,20 @@ export default class Builder {
     return this;
   }
 
-  withRedirectUri(redirectUri: string, targets?: PropertyTargets): Builder {
+  withRedirectUri(redirectUri: string, targets?: PropertyTargets): RPBuilder {
     this._authorizationRequestPayload.redirect_uri = assignIfAuth({ propertyValue: redirectUri, targets }, false);
     this._requestObjectPayload.redirect_uri = assignIfRequestObject({ propertyValue: redirectUri, targets }, true);
     return this;
   }
 
-  withRequestByReference(referenceUri: string): Builder {
+  withRequestByReference(referenceUri: string): RPBuilder {
     return this.withRequestBy(PassBy.REFERENCE, referenceUri /*, PropertyTarget.AUTHORIZATION_REQUEST*/);
   }
-  withRequestByValue(): Builder {
+  withRequestByValue(): RPBuilder {
     return this.withRequestBy(PassBy.VALUE, undefined /*, PropertyTarget.AUTHORIZATION_REQUEST*/);
   }
 
-  withRequestBy(passBy: PassBy, referenceUri?: string /*, targets?: PropertyTargets*/): Builder {
+  withRequestBy(passBy: PassBy, referenceUri?: string /*, targets?: PropertyTargets*/): RPBuilder {
     if (passBy === PassBy.REFERENCE && !referenceUri) {
       throw Error('Cannot use pass by reference without a reference URI');
     }
@@ -169,13 +169,13 @@ export default class Builder {
     return this;
   }
 
-  withResponseMode(responseMode: ResponseMode, targets?: PropertyTargets): Builder {
+  withResponseMode(responseMode: ResponseMode, targets?: PropertyTargets): RPBuilder {
     this._authorizationRequestPayload.response_mode = assignIfAuth({ propertyValue: responseMode, targets }, false);
     this._requestObjectPayload.response_mode = assignIfRequestObject({ propertyValue: responseMode, targets }, true);
     return this;
   }
 
-  withClientMetadata(clientMetadata: ClientMetadataOpts, targets?: PropertyTargets): Builder {
+  withClientMetadata(clientMetadata: ClientMetadataOpts, targets?: PropertyTargets): RPBuilder {
     clientMetadata.targets = targets;
     if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
       this._authorizationRequestPayload.registration = assignIfAuth(
@@ -214,12 +214,12 @@ export default class Builder {
   }
 
   // Only internal and supplied signatures supported for now
-  withSignature(signature: InternalSignature | SuppliedSignature): Builder {
+  withSignature(signature: InternalSignature | SuppliedSignature): RPBuilder {
     this.signature = signature;
     return this;
   }
 
-  withInternalSignature(hexPrivateKey: string, did: string, kid: string, alg: SigningAlgo, customJwtSigner?: Signer): Builder {
+  withInternalSignature(hexPrivateKey: string, did: string, kid: string, alg: SigningAlgo, customJwtSigner?: Signer): RPBuilder {
     this.withSignature({ hexPrivateKey, did, kid, alg, customJwtSigner });
     return this;
   }
@@ -229,12 +229,12 @@ export default class Builder {
     did: string,
     kid: string,
     alg: SigningAlgo
-  ): Builder {
+  ): RPBuilder {
     this.withSignature({ signature, did, kid, alg });
     return this;
   }
 
-  withPresentationDefinition(definitionOpts: { definition: IPresentationDefinition; definitionUri?: string }, targets?: PropertyTargets): Builder {
+  withPresentationDefinition(definitionOpts: { definition: IPresentationDefinition; definitionUri?: string }, targets?: PropertyTargets): RPBuilder {
     const { definition, definitionUri } = definitionOpts;
     const definitionProperties = {
       presentation_definition: definition,
@@ -287,7 +287,7 @@ export default class Builder {
     return this;
   }
 
-  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback): Builder {
+  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback): RPBuilder {
     this.wellknownDIDVerifyCallback = wellknownDIDVerifyCallback;
     return this;
   }
@@ -298,7 +298,7 @@ export default class Builder {
     }
   }
 
-  addSupportedVersion(supportedVersion: SupportedVersion): Builder {
+  addSupportedVersion(supportedVersion: SupportedVersion): RPBuilder {
     this.initSupportedVersions();
     if (!this.supportedVersions.includes(supportedVersion)) {
       this.supportedVersions.push(supportedVersion);
@@ -306,7 +306,7 @@ export default class Builder {
     return this;
   }
 
-  withSupportedVersions(supportedVersion: SupportedVersion[] | SupportedVersion): Builder {
+  withSupportedVersions(supportedVersion: SupportedVersion[] | SupportedVersion): RPBuilder {
     const versions = Array.isArray(supportedVersion) ? supportedVersion : [supportedVersion];
     for (const version of versions) {
       this.addSupportedVersion(version);
@@ -314,12 +314,12 @@ export default class Builder {
     return this;
   }
 
-  withEventEmitter(eventEmitter?: EventEmitter): Builder {
+  withEventEmitter(eventEmitter?: EventEmitter): RPBuilder {
     this.eventEmitter = eventEmitter ?? new EventEmitter();
     return this;
   }
 
-  withSessionManager(sessionManager: IRPSessionManager): Builder {
+  withSessionManager(sessionManager: IRPSessionManager): RPBuilder {
     this.sessionManager = sessionManager;
     return this;
   }
@@ -335,7 +335,7 @@ export default class Builder {
   }
 
   public static newInstance(supportedVersion?: SupportedVersion) {
-    return new Builder(supportedVersion);
+    return new RPBuilder(supportedVersion);
   }
 
   build(): RP {

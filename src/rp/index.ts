@@ -1,4 +1,4 @@
 export * from './RP';
-export * from './Builder';
+export * from './RPBuilder';
 export * from './InMemoryRPSessionManager';
 export * from './types';
