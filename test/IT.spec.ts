@@ -537,10 +537,10 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        verifiablePresentations: [vp],
+        verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
         /*credentialsAndDefinitions: [
           {
@@ -660,14 +660,14 @@ describe('RP and OP interaction should', () => {
         parsedAuthReqURI.authorizationRequestPayload
       );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
+      const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
-          verifiablePresentations: [vp],
+          verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
           // vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
           /*credentialsAndDefinitions: [
             {
-              presentation: vp,
+              presentation: verifiablePresentationResult,
               format: VerifiablePresentationTypeFormat.LDP_VP,
               vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
             },
@@ -804,10 +804,10 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        verifiablePresentations: [vp],
+        verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
         /*credentialsAndDefinitions: [
           {
@@ -939,10 +939,10 @@ describe('RP and OP interaction should', () => {
         parsedAuthReqURI.authorizationRequestPayload
       );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-      const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
+      const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
-          verifiablePresentations: [vp],
+          verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
           vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
           /*credentialsAndDefinitions: [
             {
@@ -1081,11 +1081,11 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
 
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        verifiablePresentations: [vp],
+        verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
         /*credentialsAndDefinitions: [
           {
@@ -1373,10 +1373,10 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        verifiablePresentations: [vp],
+        verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
         /*credentialsAndDefinitions: [
           {
@@ -1496,11 +1496,11 @@ describe('RP and OP interaction should', () => {
       parsedAuthReqURI.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const vp = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), {}, presentationSignCallback);
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
 
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
-        verifiablePresentations: [vp],
+        verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
         /*credentialsAndDefinitions: [
           {

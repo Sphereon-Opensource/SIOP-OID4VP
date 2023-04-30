@@ -23,7 +23,7 @@ import {
   VerifyAuthorizationRequestOpts,
   VPTokenLocation,
 } from '../src';
-import { createSubmissionData } from '../src/authorization-response/OpenID4VP';
+import { createPresentationSubmission } from '../src/authorization-response/OpenID4VP';
 import SIOPErrors from '../src/types/Errors';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
@@ -405,11 +405,11 @@ describe('create JWT from Request JWT should', () => {
       allVerifiableCredentials: presentation.verifiableCredential,
     });
     await pex.selectVerifiableCredentialsForSubmission(definition);
-    const verifiablePresentation = await pex.createVerifiablePresentation(
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(
       definition,
       presentation.verifiableCredential,
-      {},
-      presentationSignCallback
+      presentationSignCallback,
+      {}
     );
     const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
@@ -440,9 +440,9 @@ describe('create JWT from Request JWT should', () => {
         alg: SigningAlgo.ES256K,
       },
       presentationExchange: {
-        verifiablePresentations: [verifiablePresentation],
+        verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
-        submissionData: await createSubmissionData([verifiablePresentation]),
+        presentationSubmission: await createPresentationSubmission([verifiablePresentationResult.verifiablePresentation]),
       },
       responseMode: ResponseMode.POST,
     };
@@ -578,11 +578,11 @@ describe('create JWT from Request JWT should', () => {
         jws: 'eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqsLfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh4vGHSrQyHUGlcTwLtjPAnKb78',
       },
     });
-    const verifiablePresentation = await pex.createVerifiablePresentation(
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(
       definition,
       presentation.verifiableCredential,
-      {},
-      presentationSignCallback
+      presentationSignCallback,
+      {}
     );
     const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
@@ -614,8 +614,8 @@ describe('create JWT from Request JWT should', () => {
         alg: SigningAlgo.ES256K,
       },
       presentationExchange: {
-        verifiablePresentations: [verifiablePresentation],
-        submissionData: await createSubmissionData([verifiablePresentation]),
+        verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+        presentationSubmission: await createPresentationSubmission([verifiablePresentationResult.verifiablePresentation]),
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
       },
 

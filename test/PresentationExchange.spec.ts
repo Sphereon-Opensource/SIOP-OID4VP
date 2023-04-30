@@ -1,5 +1,5 @@
 import { PresentationDefinitionV1 } from '@sphereon/pex-models';
-import { CredentialMapper, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import { CredentialMapper, IProofType, IVerifiableCredential } from '@sphereon/ssi-types';
 import { W3CVerifiablePresentation } from '@sphereon/ssi-types/src/types/vc';
 import nock from 'nock';
 
@@ -202,6 +202,18 @@ function getVCs(): IVerifiableCredential[] {
   ];
 }
 
+const presentation_submission = {
+  id: 'L4tK2DK3rLC9sJhkPgeg_',
+  definition_id: 'Insurance Plans',
+  descriptor_map: [
+    {
+      id: 'Ontario Health Insurance Plan',
+      format: 'ldp_vc',
+      path: '$.verifiableCredential[0]',
+    },
+  ],
+};
+
 describe('presentation exchange manager tests', () => {
   it("validatePresentationAgainstDefinition: should throw error if provided VP doesn't match the PD val", async function () {
     const payload: AuthorizationRequestPayload = await getPayloadVID1Val();
@@ -213,8 +225,9 @@ describe('presentation exchange manager tests', () => {
         pd[0].definition,
         CredentialMapper.toWrappedVerifiablePresentation({
           '@context': ['https://www.w3.org/2018/credentials/v1'],
-          type: ['VerifiablePresentation'],
+          type: ['VerifiablePresentation', 'PresentationSubmission'],
           verifiableCredential: vcs,
+          presentation_submission,
         } as W3CVerifiablePresentation)
       )
     ).rejects.toThrow(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
@@ -263,7 +276,8 @@ describe('presentation exchange manager tests', () => {
         pd[0].definition,
         CredentialMapper.toWrappedVerifiablePresentation({
           '@context': ['https://www.w3.org/2018/credentials/v1'],
-          type: ['VerifiablePresentation'],
+          type: ['VerifiablePresentation', 'PresentationSubmission'],
+          presentation_submission,
           verifiableCredential: vcs,
         } as W3CVerifiablePresentation)
       )
@@ -287,7 +301,8 @@ describe('presentation exchange manager tests', () => {
       pd[0].definition,
       CredentialMapper.toWrappedVerifiablePresentation({
         '@context': ['https://www.w3.org/2018/credentials/v1'],
-        type: ['VerifiablePresentation'],
+        type: ['VerifiablePresentation', 'PresentationSubmission'],
+        presentation_submission,
         verifiableCredential: vcs,
       } as W3CVerifiablePresentation)
     );
@@ -304,7 +319,8 @@ describe('presentation exchange manager tests', () => {
       pd[0].definition,
       CredentialMapper.toWrappedVerifiablePresentation({
         '@context': ['https://www.w3.org/2018/credentials/v1'],
-        type: ['VerifiablePresentation'],
+        type: ['VerifiablePresentation', 'PresentationSubmission'],
+        presentation_submission,
         verifiableCredential: vcs,
       } as W3CVerifiablePresentation)
     );
@@ -321,10 +337,10 @@ describe('presentation exchange manager tests', () => {
         jws: 'eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqsLfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh4vGHSrQyHUGlcTwLtjPAnKb78',
       },
     });
-    const result = (await pex.createVerifiablePresentation(pd[0].definition, vcs, {}, presentationSignCallback)) as IVerifiablePresentation;
-    expect(result.presentation_submission.definition_id).toBe('Insurance Plans');
-    expect(result.presentation_submission.descriptor_map.length).toBe(1);
-    expect(result.presentation_submission.descriptor_map[0]).toStrictEqual({
+    const result = await pex.createVerifiablePresentation(pd[0].definition, vcs, presentationSignCallback, {});
+    expect(result.presentationSubmission.definition_id).toBe('Insurance Plans');
+    expect(result.presentationSubmission.descriptor_map.length).toBe(1);
+    expect(result.presentationSubmission.descriptor_map[0]).toStrictEqual({
       id: 'Ontario Health Insurance Plan',
       format: 'ldp_vc',
       path: '$.verifiableCredential[0]',
@@ -389,14 +405,14 @@ describe('presentation exchange manager tests', () => {
         jws: 'eyJhbGciOiJSUzI1NiIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..kTCYt5XsITJX1CxPCT8yAV-TVIw5WEuts01mq-pQy7UJiN5mgREEMGlv50aqzpqh4Qq_PbChOMqsLfRoPsnsgxD-WUcX16dUOqV0G_zS245-kronKb78cPktb3rk-BuQy72IFLN25DYuNzVBAh4vGHSrQyHUGlcTwLtjPAnKb78',
       },
     });
-    const vp: IVerifiablePresentation = (await pex.createVerifiablePresentation(
-      pd[0].definition,
-      vcs,
-      {},
-      presentationSignCallback
-    )) as IVerifiablePresentation;
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, vcs, presentationSignCallback, {});
     try {
-      await PresentationExchange.validatePresentationsAgainstDefinitions(pd, [CredentialMapper.toWrappedVerifiablePresentation(vp)]);
+      await PresentationExchange.validatePresentationsAgainstDefinitions(
+        pd,
+        [CredentialMapper.toWrappedVerifiablePresentation(verifiablePresentationResult.verifiablePresentation)],
+        undefined,
+        {}
+      );
     } catch (e) {
       console.log(e);
     }

@@ -1,4 +1,5 @@
 import { IPresentationDefinition, PresentationSignCallBackParams } from '@sphereon/pex';
+import { Format } from '@sphereon/pex-models';
 import { PresentationSubmission, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 
 import {
@@ -46,7 +47,8 @@ export interface PresentationExchangeResponseOpts {
 
   verifiablePresentations: W3CVerifiablePresentation[];
   vpTokenLocation?: VPTokenLocation;
-  submissionData?: PresentationSubmission;
+  presentationSubmission?: PresentationSubmission;
+  restrictToFormats?: Format;
 }
 
 export interface PresentationExchangeRequestOpts {
@@ -96,6 +98,7 @@ export interface VerifyAuthorizationResponseOpts {
 
   presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[]; // The presentation definitions to match against VPs in the response
   audience?: string; // The audience/redirect_uri
+  restrictToFormats?: Format; // Further restrict to certain VC formats, not expressed in the presentation definition
   // claims?: ClaimPayloadCommonOpts; // The claims, typically the same values used during request creation
   // verifyCallback?: VerifyCallback;
   // presentationVerificationCallback?: PresentationVerificationCallback;

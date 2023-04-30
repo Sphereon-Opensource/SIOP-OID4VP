@@ -579,10 +579,10 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
     "FilterV1": {
       "type": "object",
       "properties": {
-        "_const": {
+        "const": {
           "$ref": "#/definitions/OneOfNumberString"
         },
-        "_enum": {
+        "enum": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/OneOfNumberString"
@@ -779,10 +779,10 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
     "FilterV2": {
       "type": "object",
       "properties": {
-        "_const": {
+        "const": {
           "$ref": "#/definitions/OneOfNumberString"
         },
-        "_enum": {
+        "enum": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/OneOfNumberString"

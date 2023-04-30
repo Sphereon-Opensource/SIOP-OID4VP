@@ -1583,8 +1583,11 @@ export const AuthorizationResponseOptsSchemaObj = {
         "vpTokenLocation": {
           "$ref": "#/definitions/VPTokenLocation"
         },
-        "submissionData": {
+        "presentationSubmission": {
           "$ref": "#/definitions/PresentationSubmission"
+        },
+        "restrictToFormats": {
+          "$ref": "#/definitions/Format"
         }
       },
       "required": [

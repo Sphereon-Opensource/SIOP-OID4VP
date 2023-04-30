@@ -1,3 +1,4 @@
+import { Format } from '@sphereon/pex-models';
 import { CredentialMapper, PresentationSubmission, W3CVerifiablePresentation, WrappedVerifiablePresentation } from '@sphereon/ssi-types';
 
 import { AuthorizationRequest } from '../authorization-request';
@@ -37,14 +38,17 @@ export const verifyPresentations = async (
     idPayload = await authorizationResponse.idToken.payload();
   }
   // todo: Probably wise to check against request for the location of the submission_data
-  const submissionData = authorizationResponse.payload.presentation_submission
+  const presentationSubmission = authorizationResponse.payload.presentation_submission
     ? authorizationResponse.payload.presentation_submission
     : idPayload?._vp_token?.presentation_submission;
   await assertValidVerifiablePresentations({
     presentationDefinitions,
     presentations,
-    submissionData,
     verificationCallback: verifyOpts.verification.presentationVerificationCallback,
+    opts: {
+      presentationSubmission,
+      restrictToFormats: verifyOpts.restrictToFormats,
+    },
   });
 
   const revocationVerification = verifyOpts.verification?.revocationOpts
@@ -58,7 +62,7 @@ export const verifyPresentations = async (
       await verifyRevocation(vp, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
     }
   }
-  return { presentations, presentationDefinitions, submissionData };
+  return { presentations, presentationDefinitions, submissionData: presentationSubmission };
 };
 
 export const extractPresentationsFromAuthorizationResponse = async (response: AuthorizationResponse): Promise<WrappedVerifiablePresentation[]> => {
@@ -72,7 +76,7 @@ export const extractPresentationsFromAuthorizationResponse = async (response: Au
   return wrappedVerifiablePresentations;
 };
 
-export const createSubmissionData = async (verifiablePresentations: W3CVerifiablePresentation[]): Promise<PresentationSubmission> => {
+export const createPresentationSubmission = async (verifiablePresentations: W3CVerifiablePresentation[]): Promise<PresentationSubmission> => {
   let submission_data: PresentationSubmission;
   for (const verifiablePresentation of verifiablePresentations) {
     const wrappedPresentation = CredentialMapper.toWrappedVerifiablePresentation(verifiablePresentation);
@@ -113,7 +117,7 @@ export const putPresentationSubmissionInLocation = async (
     throw Error('Presentation Exchange options set, but no verifiable presentations provided');
   }
   const submissionData =
-    resOpts.presentationExchange.submissionData ?? (await createSubmissionData(resOpts.presentationExchange.verifiablePresentations));
+    resOpts.presentationExchange.presentationSubmission ?? (await createPresentationSubmission(resOpts.presentationExchange.verifiablePresentations));
 
   const location = resOpts.presentationExchange?.vpTokenLocation ?? (idTokenType ? VPTokenLocation.ID_TOKEN : VPTokenLocation.AUTHORIZATION_RESPONSE);
 
@@ -168,8 +172,12 @@ export const putPresentationSubmissionInLocation = async (
 export const assertValidVerifiablePresentations = async (args: {
   presentationDefinitions: PresentationDefinitionWithLocation[];
   presentations: WrappedVerifiablePresentation[];
-  submissionData?: PresentationSubmission;
-  verificationCallback?: PresentationVerificationCallback;
+  verificationCallback: PresentationVerificationCallback;
+  opts?: {
+    limitDisclosureSignatureSuites?: string[];
+    restrictToFormats?: Format;
+    presentationSubmission?: PresentationSubmission;
+  };
 }) => {
   if (
     (!args.presentationDefinitions || args.presentationDefinitions.filter((a) => a.definition).length === 0) &&
@@ -194,8 +202,8 @@ export const assertValidVerifiablePresentations = async (args: {
     await PresentationExchange.validatePresentationsAgainstDefinitions(
       args.presentationDefinitions,
       presentationsWithFormat,
-      args.submissionData,
-      args.verificationCallback
+      args.verificationCallback,
+      args.opts
     );
   }
 };

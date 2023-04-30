@@ -327,22 +327,22 @@ describe('OP using test vectors', () => {
       allDIDs: [TestVectors.holderDID],
       allVerifiableCredentials: [TestVectors.jwtVCFromVPToken],
     });
-    const vp = await presentationExchange.createVerifiablePresentation(
+    const verifiablePresentationResult = await presentationExchange.createVerifiablePresentation(
       TestVectors.presentationDef,
       [TestVectors.jwtVCFromVPToken],
+      presentationSignCallback,
       {
-        holder: TestVectors.holderDID,
+        holderDID: TestVectors.holderDID,
         signatureOptions: {},
         proofOptions: {
           type: IProofType.JwtProof2020,
         },
-      },
-      presentationSignCallback
+      }
     );
     const response = await op.createAuthorizationResponse(result, {
       presentationExchange: {
-        verifiablePresentations: [vp],
-        submissionData: TestVectors.presentation_submission,
+        verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+        presentationSubmission: TestVectors.presentation_submission,
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
       },
       verification: {

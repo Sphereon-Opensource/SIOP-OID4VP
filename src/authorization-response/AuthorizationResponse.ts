@@ -117,6 +117,7 @@ export class AuthorizationResponse {
       presentationDefinitions,
       presentations: wrappedPresentations,
       verificationCallback: verifyOpts.verification.presentationVerificationCallback,
+      opts: { ...responseOpts.presentationExchange },
     });
 
     return response;

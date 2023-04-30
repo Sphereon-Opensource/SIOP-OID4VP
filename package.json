@@ -29,9 +29,9 @@
   },
   "dependencies": {
     "@sphereon/did-uni-client": "^0.6.0",
-    "@sphereon/pex": "^2.0.0-unstable.14",
-    "@sphereon/pex-models": "^1.2.2",
-    "@sphereon/ssi-types": "^0.9.1-next.113",
+    "@sphereon/pex": "2.0.0-unstable.19",
+    "@sphereon/pex-models": "2.0.0-unstable.2",
+    "@sphereon/ssi-types": "0.9.1-next.118",
     "@sphereon/wellknown-dids-client": "^0.1.3",
     "cross-fetch": "^3.1.5",
     "did-jwt": "^6.11.6",
