@@ -1588,6 +1588,12 @@ export const AuthorizationResponseOptsSchemaObj = {
         },
         "restrictToFormats": {
           "$ref": "#/definitions/Format"
+        },
+        "restrictToDIDMethods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [

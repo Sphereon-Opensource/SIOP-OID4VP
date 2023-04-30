@@ -91,6 +91,7 @@ export class PresentationExchange {
     opts?: {
       holderDIDs?: string[];
       restrictToFormats?: Format;
+      restrictToDIDMethods?: string[];
     }
   ): Promise<SelectResults> {
     if (!presentationDefinition) {
@@ -123,6 +124,7 @@ export class PresentationExchange {
     opts?: {
       limitDisclosureSignatureSuites?: string[];
       restrictToFormats?: Format;
+      restrictToDIDMethods?: string[];
       presentationSubmission?: PresentationSubmission;
     }
   ): Promise<EvaluationResults> {
@@ -282,6 +284,7 @@ export class PresentationExchange {
     opts?: {
       limitDisclosureSignatureSuites?: string[];
       restrictToFormats?: Format;
+      restrictToDIDMethods?: string[];
       presentationSubmission?: PresentationSubmission;
     }
   ) {
@@ -302,6 +305,7 @@ export class PresentationExchange {
     opts?: {
       limitDisclosureSignatureSuites?: string[];
       restrictToFormats?: Format;
+      restrictToDIDMethods?: string[];
       presentationSubmission?: PresentationSubmission;
     }
   ) {

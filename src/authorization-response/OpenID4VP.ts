@@ -48,6 +48,7 @@ export const verifyPresentations = async (
     opts: {
       presentationSubmission,
       restrictToFormats: verifyOpts.restrictToFormats,
+      restrictToDIDMethods: verifyOpts.restrictToDIDMethods,
     },
   });
 
@@ -176,6 +177,7 @@ export const assertValidVerifiablePresentations = async (args: {
   opts?: {
     limitDisclosureSignatureSuites?: string[];
     restrictToFormats?: Format;
+    restrictToDIDMethods?: string[];
     presentationSubmission?: PresentationSubmission;
   };
 }) => {

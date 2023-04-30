@@ -14,6 +14,9 @@ methods.
     - Allow to restrict selecting VCs against Formats not communicated in a presentation definition. For instance useful
       for filtering against a OID4VP RP, which signals support for certain Formats, but uses a definition which does not
       include this information
+    - Allow to restrict selecting VCs against DID methods not communicated in a presentation definition. For instance useful
+      for filtering against a OID4VP RP, which signals support for certain DID methods, but uses a definition which does not
+      include this information
     - Allow passing in submission data separately from a VP. Again useful in a OID4VP situation, where presentation
       submission objects can be transferred next to the VP instead if in the VP
     - A simple session/state manager for the RP side. This allows to find back definitions for responses coming back in.

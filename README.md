@@ -45,7 +45,7 @@ Demo: https://vimeo.com/630104529 and a more stripped down demo: https://youtu.b
 _IMPORTANT:_
 * _This software still is in an early development stage. As such you should expect breaking changes in APIs, we
 expect to keep that to a minimum though. Version 0.3.X has changed the external API, especially for Requests, Responses and slightly for the RP/OP classes._
-* _The name of the package also changed from [@sphereon/did-auth-siop](https://www.npmjs.com/package/@sphereon/did-auth-siop) to [@sphereon/SIOP-OpenID4VP](https://www.npmjs.com/package/@sphereon/SIOP-OpenID4VP), to better reflect specification name changes_
+* _The name of the package also changed from [@sphereon/did-auth-siop](https://www.npmjs.com/package/@sphereon/did-auth-siop) to [@sphereon/siopv2-oid4vp](https://www.npmjs.com/package/@sphereon/SIOP-OpenID4VP), to better reflect specification name changes_
 
 
 ## Functionality
@@ -58,7 +58,7 @@ This library supports:
 - Verify and Create/sign Json Web Tokens (JWTs) as used in OpenID Connect using Decentralized Identifiers (DIDs) or JSON Web Keys (JWK)
 - OP class to create Authorization Requests and verify Authorization Responses
 - RP class to verify Authorization Requests and create Authorization Responses
-- Verifiable Presentation and Presentation Exchange support on the RP and OP sides, according to the OpenID4VP and Presentation Exchange specifications
+- Verifiable Presentation and Presentation Exchange support on the RP and OP sides, according to the OpenID for Verifiable Presentations (OID4VP) and Presentation Exchange specifications
 - [Well-known DID Configuration](https://identity.foundation/.well-known/resources/did-configuration/) support to bind domain names to DIDs.
 - SIOPv2 specification version discovery with support for the latest [development version (draft 11)](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html), [Implementers Draft 1](https://openid.net/specs/openid-connect-self-issued-v2-1_0-ID1.html) and the [JWT VC Presentation Interop Profile](https://identity.foundation/jwt-vc-presentation-profile/)
 

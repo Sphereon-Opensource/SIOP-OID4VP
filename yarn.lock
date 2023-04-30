@@ -1124,18 +1124,18 @@
     cross-fetch "^3.1.5"
     did-resolver "^4.1.0"
 
-"@sphereon/pex-models@2.0.0-unstable.2", "@sphereon/pex-models@^2.0.0-unstable.2":
-  version "2.0.0-unstable.2"
-  resolved "https://registry.yarnpkg.com/@sphereon/pex-models/-/pex-models-2.0.0-unstable.2.tgz#ca7844c5a4960d3d937e9790ff1e8ce952da8162"
-  integrity sha512-VNRf67G1LcJ0B8odeczJHAZ1Wec5Y4Lyhw/atW3NOlxbIMCowaMxNZddGmHIRNWHcqWnil3eL4rcMATIcoCc5Q==
+"@sphereon/pex-models@2.0.0", "@sphereon/pex-models@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@sphereon/pex-models/-/pex-models-2.0.0.tgz#144a17b91ed7062bcde6b4456f3f7d2ac3fe0504"
+  integrity sha512-DjshSMx2TxlC+jgWtc8l4iWy5sAeqsqhQeqDbDul2yZRfAzPucHALHUIC5QxZ5AU2VSbiunb/+8WJa98MSpD4Q==
 
-"@sphereon/pex@2.0.0-unstable.19":
-  version "2.0.0-unstable.19"
-  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-2.0.0-unstable.19.tgz#68da59c1ac6c4b71199d3f7f450f4d5eb596a8d3"
-  integrity sha512-k7wGRbME8ujSorN59l/pubtySGDAbrOV0WpRl5UTGp23wCLabApP2CUvUbNW3UyFbFFs24SFaJN8y2y3HEQbiQ==
+"@sphereon/pex@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-2.0.0.tgz#22f20b26e2e918b2b9d541bed4c55e99aaf6eb21"
+  integrity sha512-bjhTkuHzuPV+CZTXHGbG9R/RRTAZ2WqN4Bd3uM/ThB0eRppSi3u1yZkUff3fZC6Y6n8lAhzqv8mWgeluBZHp8Q==
   dependencies:
-    "@sphereon/pex-models" "^2.0.0-unstable.2"
-    "@sphereon/ssi-types" "0.9.1-next.118"
+    "@sphereon/pex-models" "^2.0.0"
+    "@sphereon/ssi-types" "0.9.1-next.120"
     ajv "^8.12.0"
     ajv-formats "^2.1.1"
     jsonpath "^1.1.1"
@@ -1143,10 +1143,10 @@
     nanoid "^3.3.6"
     string.prototype.matchall "^4.0.8"
 
-"@sphereon/ssi-types@0.9.1-next.118":
-  version "0.9.1-next.118"
-  resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.9.1-next.118.tgz#1e83765e0b69badb9fdd5264e7ae58128b38696b"
-  integrity sha512-N8xHmSS22uEXumHHxuuLQki/5oJ7ZXeSqK3kNkejKfYZ/iDrSduJ9wfXgD/lzsBZFwf4QRIczAtjlnSFbq3RAg==
+"@sphereon/ssi-types@0.9.1-next.120":
+  version "0.9.1-next.120"
+  resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.9.1-next.120.tgz#fe1bc2c8d1bb1f90eb4244e341327204ebfc1036"
+  integrity sha512-RauDmj27176Ovo0r6EIwrqE+CqlSlVNr0xt0wFblKHinSLdCxrbi263zp07fTlDcyEWOsQSuDBKgL2LFsryU0Q==
   dependencies:
     jwt-decode "^3.1.2"
 

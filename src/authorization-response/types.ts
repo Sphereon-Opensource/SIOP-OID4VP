@@ -49,6 +49,7 @@ export interface PresentationExchangeResponseOpts {
   vpTokenLocation?: VPTokenLocation;
   presentationSubmission?: PresentationSubmission;
   restrictToFormats?: Format;
+  restrictToDIDMethods?: string[];
 }
 
 export interface PresentationExchangeRequestOpts {
@@ -99,6 +100,7 @@ export interface VerifyAuthorizationResponseOpts {
   presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[]; // The presentation definitions to match against VPs in the response
   audience?: string; // The audience/redirect_uri
   restrictToFormats?: Format; // Further restrict to certain VC formats, not expressed in the presentation definition
+  restrictToDIDMethods?: string[];
   // claims?: ClaimPayloadCommonOpts; // The claims, typically the same values used during request creation
   // verifyCallback?: VerifyCallback;
   // presentationVerificationCallback?: PresentationVerificationCallback;
