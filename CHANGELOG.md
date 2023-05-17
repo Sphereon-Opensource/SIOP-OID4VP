@@ -3,6 +3,16 @@
 The DID Auth SIOP typescript library is still in an alpha state at this point. Please note that the interfaces might
 still change a bit as the software still is in active development.
 
+## v0.3.1 - 2023-05-17
+Bugfix release, fixing RPBuilder export and a client_id bug when not explicitly provided to the RP.
+
+- Fixed:
+  - Changed RPBuilder default export to a named export
+  - Fix #54. The client_id took the whole registration object, instead of the client_id in case it was not provided explicitly
+- Updated:
+  - SSI-types have been updated to the latest version.
+
+
 ## v0.3.0 - 2023-04-30
 
 This release contains many breaking changes. Sorry for these, but this library still is in active development, as

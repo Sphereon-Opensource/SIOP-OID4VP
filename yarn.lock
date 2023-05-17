@@ -1150,6 +1150,13 @@
   dependencies:
     jwt-decode "^3.1.2"
 
+"@sphereon/ssi-types@^0.11.0":
+  version "0.11.0"
+  resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.11.0.tgz#ab997fe885acdc4388aff606de16ee5c10b8e53b"
+  integrity sha512-0ZV/X6J8k7UWmrRE2wo4ZIBq9TFYRd1GLT9nWWqDYnkzdaLUjD3mL0qs5wcTjqupxITCgwQqGrZ5YP9bm8feSA==
+  dependencies:
+    jwt-decode "^3.1.2"
+
 "@sphereon/ssi-types@^0.9.0":
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.9.0.tgz#d140eb6abd77381926d0da7ac51b3c4b96a31b4b"
@@ -1443,6 +1450,11 @@
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.1.tgz#20f18294f797f2209b5f65c8e3b5c8e8261d127c"
   integrity sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==
+
+"@types/uuid@^9.0.1":
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-9.0.1.tgz#98586dc36aee8dacc98cc396dbca8d0429647aa6"
+  integrity sha512-rFT3ak0/2trgvp4yYZo5iKFEPsET7vKydKF+VRCxlQ9bpheehyAJH89dAkaLEq/j/RZXJIqcgsmPJKUP1Z28HA==
 
 "@types/yargs-parser@*":
   version "21.0.0"
@@ -2173,6 +2185,13 @@ cross-fetch@^3.1.5:
   integrity sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==
   dependencies:
     node-fetch "2.6.7"
+
+cross-fetch@^3.1.6:
+  version "3.1.6"
+  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.1.6.tgz#bae05aa31a4da760969756318feeee6e70f15d6c"
+  integrity sha512-riRvo06crlE8HiqOwIpQhxwdOk4fOeR7FVM/wXoxchFEqMNUjvbs3bfo4OTgMEMHzppd4DxFBDbyySj8Cv781g==
+  dependencies:
+    node-fetch "^2.6.11"
 
 cross-spawn@^6.0.5:
   version "6.0.5"
@@ -4416,6 +4435,13 @@ node-fetch@^2.6.1, node-fetch@^2.6.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.9.tgz#7c7f744b5cc6eb5fd404e0c7a9fec630a55657e6"
   integrity sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==
+  dependencies:
+    whatwg-url "^5.0.0"
+
+node-fetch@^2.6.11:
+  version "2.6.11"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.11.tgz#cde7fc71deef3131ef80a738919f999e6edfff25"
+  integrity sha512-4I6pdBY1EthSqDmJkiNk3JIT8cswwR9nfeW/cPdUagJYEQG7R95WRH74wpz7ma8Gh/9dI9FP+OU+0E4FvtA55w==
   dependencies:
     whatwg-url "^5.0.0"
 

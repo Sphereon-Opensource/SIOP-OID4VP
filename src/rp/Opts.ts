@@ -6,7 +6,7 @@ import { getResolverUnion, mergeAllDidMethods } from '../did';
 // import { CreateAuthorizationRequestOptsSchema } from '../schemas';
 import { ClientMetadataOpts, InternalVerification, RequestObjectPayload, SIOPErrors, VerificationMode } from '../types';
 
-import RPBuilder from './RPBuilder';
+import { RPBuilder } from './RPBuilder';
 
 export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: RPBuilder; createRequestOpts?: CreateAuthorizationRequestOpts }) => {
   const version = opts.builder ? opts.builder.getSupportedRequestVersion() : opts.createRequestOpts.version;

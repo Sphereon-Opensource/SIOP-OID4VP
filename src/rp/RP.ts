@@ -28,7 +28,7 @@ import {
 } from '../types';
 
 import { createRequestOptsFromBuilderOrExistingOpts, createVerifyResponseOptsFromBuilderOrExistingOpts, isTargetOrNoTargets } from './Opts';
-import RPBuilder from './RPBuilder';
+import { RPBuilder } from './RPBuilder';
 import { IRPSessionManager } from './types';
 
 export class RP {

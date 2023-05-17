@@ -47,7 +47,6 @@ export const createAuthorizationRequestPayload = async (
   requestObject?: RequestObject
 ): Promise<AuthorizationRequestPayload> => {
   const payload = opts.payload;
-  // const mergedPayload = { ...opts.payload, ...opts?.requestObject?.payload };
   const state = payload?.state ?? undefined;
   const nonce = payload?.nonce ? getNonce(state, payload.nonce) : undefined;
   // TODO: if opts['registration] throw Error to get rid of test code using that key
@@ -55,12 +54,6 @@ export const createAuthorizationRequestPayload = async (
   const registration = await createRequestRegistration(clientMetadata, opts);
   const claims =
     opts.version >= SupportedVersion.SIOPv2_ID1 ? opts.payload.claims : createPresentationDefinitionClaimsProperties(opts.payload.claims);
-  // let clientId = mergedPayload.client_id;
-  //
-  // const metadataKey = opts.version >= SupportedVersion.SIOPv2_D11.valueOf() ? 'client_metadata' : 'registration';
-  /*if (!clientId) {
-    clientId = registration.payload[metadataKey].client_id;
-  }*/
   const isRequestTarget = isTargetOrNoTargets(PropertyTarget.AUTHORIZATION_REQUEST, opts.requestObject.targets);
   const isRequestByValue = opts.requestObject.passBy === PassBy.VALUE;
 
@@ -73,15 +66,12 @@ export const createAuthorizationRequestPayload = async (
     ...payload,
     //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
     ...(isRequestTarget && opts.requestObject.passBy === PassBy.REFERENCE ? { request_uri: opts.requestObject.reference_uri } : {}),
-    ...(isRequestTarget && isRequestByValue ? { request } : {}),
-    ...(nonce ? { nonce } : {}),
-    ...(state ? { state } : {}),
+    ...(isRequestTarget && isRequestByValue && { request }),
+    ...(nonce && { nonce }),
+    ...(state && { state }),
     ...(registration.payload && isTarget(PropertyTarget.AUTHORIZATION_REQUEST, registration.clientMetadataOpts.targets) ? registration.payload : {}),
-    ...(claims ? { claims } : {}),
+    ...(claims && { claims }),
   };
-  /*if ((payload.registration || payload.client_metadata) && registration.payload) {
-    authRequestPayload[metadataKey] = { ...registration.payload };
-  }*/
 
   return removeNullUndefined(authRequestPayload);
 };

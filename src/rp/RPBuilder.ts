@@ -35,7 +35,7 @@ import { assignIfAuth, assignIfRequestObject, isTarget, isTargetOrNoTargets } fr
 import { RP } from './RP';
 import { IRPSessionManager } from './types';
 
-export default class RPBuilder {
+export class RPBuilder {
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   customResolver?: Resolvable;
   requestObjectBy: ObjectBy;

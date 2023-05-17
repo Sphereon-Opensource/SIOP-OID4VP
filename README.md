@@ -285,8 +285,9 @@ This is either a top-level vp_token or it becomes part of the id_token.
 ````typescript
 
 // The relying party (web) private key and DID and DID key (public key)
-import { SigningAlgo } from './SIOP.types';
+import { SigningAlgo } from '@sphereon/did-auth-siop';
 
+const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 const rpKeys = {
   hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
   did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
@@ -337,7 +338,7 @@ of the payload (by value).
 
 ````typescript
 // The OpenID Provider (client) private key and DID and DID key (public key)
-import { SigningAlgo } from './SIOP.types';
+import { SigningAlgo } from '@sphereon/did-auth-siop';
 
 const opKeys = {
   hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
@@ -383,15 +384,16 @@ already configured the RP itself to have a Presentation Definition, so we can om
 class will take care of that on every Auth Request creation.
 
 ````typescript
-const reqURI = await rp.createAuthorizationRequest({
-    nonce: "qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg",
-    state: "b32f0087fc9816eb813fd11f"
+const authRequest = await rp.createAuthorizationRequest({
+  correlationId: '1',
+  nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+  state: 'b32f0087fc9816eb813fd11f',
 });
 
-console.log(`nonce: ${reqURI.requestOpts.nonce}, state: ${reqURI.requestOpts.state}`);
+console.log(`nonce: ${authRequest.requestOpts.nonce}, state: ${authRequest.requestOpts.state}`);
 // nonce: qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg, state: b32f0087fc9816eb813fd11f
 
-console.log(reqURI.encodedUri)
+console.log(await authRequest.uri().then(uri => uri.encodedUri))
 // openid://?response_type=id_token&scope=openid&client_id=did.......&jwt=ey..........
 ````
 
