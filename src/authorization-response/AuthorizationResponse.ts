@@ -7,12 +7,14 @@ import { assertValidVerifiablePresentations, extractPresentationsFromAuthorizati
 import { assertValidResponseOpts } from './Opts';
 import { createResponsePayload } from './Payload';
 import { AuthorizationResponseOpts, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from './types';
+import { AdditionalClaims, IPresentation } from '@sphereon/ssi-types';
 
 export class AuthorizationResponse {
   private readonly _authorizationRequest?: AuthorizationRequest | undefined;
   // private _requestObject?: RequestObject | undefined
   private readonly _idToken?: IDToken;
   private readonly _payload: AuthorizationResponsePayload;
+  private _verifiedData?: IPresentation | AdditionalClaims;
 
   private readonly _options?: AuthorizationResponseOpts;
 
@@ -21,16 +23,19 @@ export class AuthorizationResponse {
     idToken,
     responseOpts,
     authorizationRequest,
+    verifiedData,
   }: {
     authorizationResponsePayload: AuthorizationResponsePayload;
     idToken: IDToken;
     responseOpts?: AuthorizationResponseOpts;
     authorizationRequest?: AuthorizationRequest;
+    verifiedData?: IPresentation | AdditionalClaims
   }) {
     this._authorizationRequest = authorizationRequest;
     this._options = responseOpts;
     this._idToken = idToken;
     this._payload = authorizationResponsePayload;
+    this._verifiedData = verifiedData;
   }
 
   /**
@@ -148,6 +153,14 @@ export class AuthorizationResponse {
 
   get payload(): AuthorizationResponsePayload {
     return this._payload;
+  }
+
+  get verifiedData(): IPresentation | AdditionalClaims | undefined {
+    return this._verifiedData;
+  }
+
+  public set age(verifiedData: IPresentation) {
+    this._verifiedData = verifiedData;
   }
 
   get options(): AuthorizationResponseOpts | undefined {
