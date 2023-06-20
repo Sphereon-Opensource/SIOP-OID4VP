@@ -159,7 +159,7 @@ export class AuthorizationResponse {
     return this._verifiedData;
   }
 
-  public set verifiedData(verifiedData: IPresentation) {
+  public set verifiedData(verifiedData: IPresentation | AdditionalClaims) {
     this._verifiedData = verifiedData;
   }
 
