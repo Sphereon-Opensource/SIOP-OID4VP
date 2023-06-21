@@ -8,7 +8,7 @@ import {
   PresentationSubmission,
   W3CVerifiableCredential,
   W3CVerifiablePresentation,
-  WrappedVerifiablePresentation
+  WrappedVerifiablePresentation,
 } from '@sphereon/ssi-types';
 import { VerifyCallback as WellknownDIDVerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
