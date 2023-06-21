@@ -89,32 +89,32 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
   }
 
   private async onAuthorizationRequestCreatedSuccess(event: AuthorizationEvent<AuthorizationRequest>): Promise<void> {
-    this.cleanup();
-    this.updateState('request', event, AuthorizationRequestStateStatus.CREATED);
+    this.cleanup().catch((error) => console.log(JSON.stringify(error)));
+    this.updateState('request', event, AuthorizationRequestStateStatus.CREATED).catch((error) => console.log(JSON.stringify(error)));
   }
 
   private async onAuthorizationRequestCreatedFailed(event: AuthorizationEvent<AuthorizationRequest>): Promise<void> {
-    this.cleanup();
-    this.updateState('request', event, AuthorizationRequestStateStatus.ERROR);
+    this.cleanup().catch((error) => console.log(JSON.stringify(error)));
+    this.updateState('request', event, AuthorizationRequestStateStatus.ERROR).catch((error) => console.log(JSON.stringify(error)));
   }
 
   private async onAuthorizationRequestSentSuccess(event: AuthorizationEvent<AuthorizationRequest>): Promise<void> {
-    this.cleanup();
-    this.updateState('request', event, AuthorizationRequestStateStatus.SENT);
+    this.cleanup().catch((error) => console.log(JSON.stringify(error)));
+    this.updateState('request', event, AuthorizationRequestStateStatus.SENT).catch((error) => console.log(JSON.stringify(error)));
   }
 
   private async onAuthorizationRequestSentFailed(event: AuthorizationEvent<AuthorizationRequest>): Promise<void> {
-    this.cleanup();
-    this.updateState('request', event, AuthorizationRequestStateStatus.ERROR);
+    this.cleanup().catch((error) => console.log(JSON.stringify(error)));
+    this.updateState('request', event, AuthorizationRequestStateStatus.ERROR).catch((error) => console.log(JSON.stringify(error)));
   }
 
   private async onAuthorizationResponseReceivedSuccess(event: AuthorizationEvent<AuthorizationResponse>): Promise<void> {
-    this.cleanup();
+    this.cleanup().catch((error) => console.log(JSON.stringify(error)));
     await this.updateState('response', event, AuthorizationResponseStateStatus.RECEIVED);
   }
 
   private async onAuthorizationResponseReceivedFailed(event: AuthorizationEvent<AuthorizationResponse>): Promise<void> {
-    this.cleanup();
+    this.cleanup().catch((error) => console.log(JSON.stringify(error)));
     await this.updateState('response', event, AuthorizationResponseStateStatus.ERROR);
   }
 
@@ -163,10 +163,10 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
     const hash = await hashcodeForValue(event, key);
     const existing = mapping[hash];
     if (existing) {
-      if (value && existing !== value) {
+      if (!allowExisting) {
+        throw Error(`Mapping exists for key ${key} and we do not allow overwriting values`);
+      } else if (value && existing !== value) {
         throw Error('Value changed for key');
-      } else if (!allowExisting) {
-        throw Error('Mapping exists');
       }
     }
     if (!value) {
@@ -181,13 +181,12 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
     event: AuthorizationEvent<AuthorizationRequest | AuthorizationResponse>,
     status: AuthorizationRequestStateStatus | AuthorizationResponseStateStatus
   ): Promise<void> {
+    if (!event) {
+      throw new Error('event not present');
+    } else if (!event.correlationId) {
+      throw new Error(`'${type} ${status}' event without correlation id received`);
+    }
     try {
-      if (!event) {
-        throw new Error('event not present');
-      } else if (!event.correlationId) {
-        throw new Error(`'${type} ${status}' event without correlation id received`);
-      }
-
       const eventState = {
         correlationId: event.correlationId,
         ...(type === 'request' ? { request: event.subject } : {}),
@@ -200,8 +199,8 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
       if (type === 'request') {
         this.authorizationRequests[event.correlationId] = eventState as AuthorizationRequestState;
         // We do not await these
-        this.updateMapping(this.nonceMapping, event, 'nonce', event.correlationId, true);
-        this.updateMapping(this.stateMapping, event, 'state', event.correlationId, true);
+        this.updateMapping(this.nonceMapping, event, 'nonce', event.correlationId, true).catch((error) => console.log(JSON.stringify(error)));
+        this.updateMapping(this.stateMapping, event, 'state', event.correlationId, true).catch((error) => console.log(JSON.stringify(error)));
       } else {
         this.authorizationResponses[event.correlationId] = eventState as AuthorizationResponseState;
       }
@@ -211,8 +210,8 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
   }
 
   async deleteStateForCorrelationId(correlationId: string) {
-    InMemoryRPSessionManager.cleanMappingForCorrelationId(this.nonceMapping, correlationId);
-    InMemoryRPSessionManager.cleanMappingForCorrelationId(this.stateMapping, correlationId);
+    InMemoryRPSessionManager.cleanMappingForCorrelationId(this.nonceMapping, correlationId).catch((error) => console.log(JSON.stringify(error)));
+    InMemoryRPSessionManager.cleanMappingForCorrelationId(this.stateMapping, correlationId).catch((error) => console.log(JSON.stringify(error)));
     delete this.authorizationRequests[correlationId];
     delete this.authorizationResponses[correlationId];
   }
@@ -227,7 +226,7 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
     const now = Date.now();
     const maxAgeInMS = this.maxAgeInSeconds * 1000;
 
-    function cleanupCorrelations(reqByCorrelationId: [string, AuthorizationRequestState | AuthorizationResponseState]) {
+    const cleanupCorrelations = (reqByCorrelationId: [string, AuthorizationRequestState | AuthorizationResponseState]) => {
       const correlationId = reqByCorrelationId[0];
       const authRequest = reqByCorrelationId[1];
       if (authRequest) {
@@ -236,7 +235,7 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
           this.deleteStateForCorrelationId(correlationId);
         }
       }
-    }
+    };
 
     Object.entries(this.authorizationRequests).forEach((reqByCorrelationId) => {
       cleanupCorrelations.call(this, reqByCorrelationId);
@@ -255,8 +254,8 @@ async function hashcodeForValue(event: AuthorizationEvent<AuthorizationRequest |
   return hashCode(value);
 }
 
-function hashCode(s: string) {
-  let h;
+function hashCode(s: string): number {
+  let h = 1;
   for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
 
   return h;

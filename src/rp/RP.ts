@@ -323,7 +323,12 @@ export class RP {
     payload: { correlationId: string; subject?: AuthorizationRequest | AuthorizationResponse | AuthorizationResponsePayload; error?: Error }
   ): Promise<void> {
     if (this._eventEmitter) {
-      this._eventEmitter.emit(type, new AuthorizationEvent(payload));
+      try {
+        this._eventEmitter.emit(type, new AuthorizationEvent(payload));
+      } catch (e) {
+        //Let's make sure events do not cause control flow issues
+        console.log(`Could not emit event ${type} for ${payload.correlationId} initial error if any: ${payload?.error}`);
+      }
     }
   }
 
