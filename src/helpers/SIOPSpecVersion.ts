@@ -16,6 +16,7 @@ function isJWTVC1Payload(authorizationRequest: AuthorizationRequestPayload) {
     authorizationRequest.client_id.toLowerCase().startsWith('did:') &&
     authorizationRequest.redirect_uri &&
     (authorizationRequest.registration_uri || authorizationRequest.registration) &&
+    authorizationRequest.claims &&
     authorizationRequest.claims['vp_token']
   );
 }
