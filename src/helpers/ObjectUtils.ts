@@ -1,4 +1,4 @@
-import jp from 'jsonpath';
+import { JSONPath as jp } from '@astronautlabs/jsonpath';
 
 export function extractDataFromPath(obj: unknown, path: string) {
   return jp.nodes(obj, path);

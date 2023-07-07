@@ -227,8 +227,8 @@ export class PresentationExchange {
       const definitionsFromList = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition[*]');
       const definitionRefs = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition_uri');
       const definitionRefsFromList = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition_uri[*]');
-      const hasPD = (definitions && definitions.length > 0) || (definitionsFromList && definitionsFromList > 0);
-      const hasPdRef = (definitionRefs && definitionRefs.length > 0) || (definitionRefsFromList && definitionsFromList > 0);
+      const hasPD = (definitions && definitions.length > 0) || (definitionsFromList && definitionsFromList.length > 0);
+      const hasPdRef = (definitionRefs && definitionRefs.length > 0) || (definitionRefsFromList && definitionsFromList.length > 0);
       if (hasPD && hasPdRef) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
