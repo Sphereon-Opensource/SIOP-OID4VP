@@ -1,0 +1,24 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "target": "ES2022",
+    "outDir": "dist/module",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  },
+  "include": [
+    "declarations.d.ts",
+    "index.ts",
+    "src/**/*.ts",
+    "src/**/*.js"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "coverage/**",
+    "resources/**",
+    "dist/**",
+    "test/**",
+    "generator/**/*.ts"
+  ]
+}

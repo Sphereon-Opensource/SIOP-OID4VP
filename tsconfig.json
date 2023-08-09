@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "incremental": true,
-    "target": "ES6",
+    "target": "ES2022",
     "outDir": "dist/main",
     "moduleResolution": "node",
-    "module": "commonjs",
+    "module": "ESNext",
     "declaration": true,
     "inlineSourceMap": true,
     "allowJs": true,
@@ -41,7 +41,10 @@
     "src/**/*.ts",
     "src/**/*.js",
     "test/**/*.ts",
-    "generator/**/*.ts"
+    "generator/**/*.ts",
+    "./package.json",
+    "./README.md",
+    "./LICENSE"
   ],
   "exclude": [
     "node_modules/**",

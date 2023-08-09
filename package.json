@@ -1,8 +1,12 @@
 {
   "name": "@sphereon/did-auth-siop",
   "version": "0.3.0-unstable.17",
+  "type": "module",
   "main": "dist/main/index.js",
-  "types": "dist/main/index.d.ts",
+  "typings": "dist/main/index.d.ts",
+  "browser": "dist/browser/index.js",
+  "module": "dist/module/index.js",
+  "types": "dist/module/index.d.ts",
   "license": "Apache-2.0",
   "repository": {
     "url": "https://github.com/Sphereon-Opensource/did-auth-siop.git"
@@ -10,9 +14,12 @@
   "author": "Sphereon",
   "description": "Self Issued OpenID V2 (SIOPv2) and OpenID 4 Verifiable Presentations (OID4VP)",
   "scripts": {
-    "build": "npm-run-all build:schemaGenerator build:main",
-    "build:main": "tsc -p tsconfig.build.json",
-    "build:schemaGenerator": "node --loader ts-node/esm generator/schemaGenerator.ts",
+    "build": "npm-run-all build:schemaGenerator build:schemaPatch build:main build:browser build:module",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build:browser": "tsc -p tsconfig.browser.json",
+    "build:module": "rollup -c",
+    "build:schemaGenerator": "ts-node --esm generator/schemaGenerator.ts",
+    "build:schemaPatch": "echo \"export const AuthorizationRequestPayloadVID1Schema = validate10;\nexport const AuthorizationRequestPayloadVD11Schema = validate57;\nexport const AuthorizationResponseOptsSchema = validate102;\nexport const RPRegistrationMetadataPayloadSchema = validate144;\nexport const DiscoveryMetadataPayloadSchema = validate147;\n\" >> src/main/schemas/validation/schemaValidation.js",
     "clean": "rimraf dist coverage",
     "fix": "run-s fix:*",
     "fix:prettier": "prettier \"{src,test}/**/*.ts\" --write",
@@ -60,14 +67,16 @@
     "@digitalcredentials/ed25519-signature-2020": "^3.0.2",
     "@digitalcredentials/jsonld-signatures": "^9.3.1",
     "@digitalcredentials/vc": "^5.0.0",
+    "@rollup/plugin-terser": "^0.4.3",
+    "@rollup/plugin-typescript": "^11.1.2",
     "@types/jest": "^29.4.0",
     "@types/language-tags": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
+    "ajv": "^8.12.0",
     "codecov": "^3.8.3",
     "cspell": "^6.26.3",
     "dotenv": "^16.0.3",
-    "ajv": "^8.12.0",
     "eslint": "^8.34.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
@@ -80,17 +89,38 @@
     "npm-run-all": "^4.1.5",
     "open-cli": "^7.1.0",
     "prettier": "^2.8.4",
+    "rollup": "^3.28.0",
     "ts-jest": "^29.0.5",
     "ts-json-schema-generator": "^1.2.0",
     "ts-node": "^10.9.1",
     "typescript": "4.6.4"
   },
   "files": [
-    "dist/main"
+    "dist/main",
+    "dist/module",
+    "dist/browser"
   ],
   "prettier": {
     "singleQuote": true,
     "printWidth": 150
+  },
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/module/index.d.ts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/main/index.d.ts",
+        "default": "./dist/main/index.js"
+      },
+      "browser": {
+        "types": "./dist/browser/index.d.ts",
+        "default": "./dist/browser/index.js"
+      },
+      "default": "./dist/module/index.mjs"
+    },
+    "./package.json": "./package.json"
   },
   "keywords": [
     "Sphereon",

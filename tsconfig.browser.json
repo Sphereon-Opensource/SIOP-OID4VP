@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "target": "ES6",
+    "outDir": "dist/browser",
+    "module": "commonjs"
+  },
+  "lib": [
+    "es2015", "dom", "es6"
+  ],
+  "include": [
+    "declarations.d.ts",
+    "index.ts",
+    "src/**/*.ts",
+    "src/**/*.js",
+  ],
+  "exclude": [
+    "node_modules/**",
+    "coverage/**",
+    "resources/**",
+    "dist/**",
+    "test/**",
+    "generator/**/*.ts"
+  ]
+}

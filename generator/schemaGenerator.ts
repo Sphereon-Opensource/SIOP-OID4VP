@@ -1,7 +1,8 @@
 import Ajv from 'ajv';
-import standaloneCode from 'ajv/dist/standalone';
+import standaloneCode from 'ajv/dist/standalone/index.cjs';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import {
   BaseType,
   createFormatter,
@@ -14,6 +15,9 @@ import {
   SubTypeFormatter
 } from 'ts-json-schema-generator';
 import { Schema } from 'ts-json-schema-generator/src/Schema/Schema';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class CustomTypeFormatter implements SubTypeFormatter {
   public supportsType(type: FunctionType): boolean {
