@@ -16,10 +16,9 @@ export const createResponsePayload = async (
   if (!authorizationRequest) {
     throw new Error(SIOPErrors.NO_REQUEST);
   }
-  const state: string = await authorizationRequest.getMergedProperty('state');
-  if (!state) {
-    throw Error('No state');
-  }
+
+  // If state was in request, it must be in response
+  const state: string | undefined = await authorizationRequest.getMergedProperty('state');
 
   const responsePayload: AuthorizationResponsePayload = {
     ...(responseOpts.accessToken && { access_token: responseOpts.accessToken }),

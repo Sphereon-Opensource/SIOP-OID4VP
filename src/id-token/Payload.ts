@@ -1,9 +1,7 @@
 import { AuthorizationResponseOpts, mergeOAuth2AndOpenIdInRequestPayload } from '../authorization-response';
 import { assertValidResponseOpts } from '../authorization-response/Opts';
 import { authorizationRequestVersionDiscovery } from '../helpers/SIOPSpecVersion';
-import { RequestObject } from '../request-object';
 import {
-  AuthorizationRequestPayload,
   IDTokenPayload,
   isSuppliedSignature,
   JWK,
@@ -11,29 +9,25 @@ import {
   SIOPErrors,
   SubjectSyntaxTypesSupportedValues,
   SupportedVersion,
+  VerifiedAuthorizationRequest,
 } from '../types';
 
 export const createIDTokenPayload = async (
-  authorizationRequestPayload: AuthorizationRequestPayload,
-  responseOpts: AuthorizationResponseOpts,
-  requestObject?: RequestObject
+  verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
+  responseOpts: AuthorizationResponseOpts
 ): Promise<IDTokenPayload> => {
   assertValidResponseOpts(responseOpts);
+  const authorizationRequestPayload = await verifiedAuthorizationRequest.authorizationRequest.mergedPayloads();
+  const requestObject = verifiedAuthorizationRequest.requestObject;
   if (!authorizationRequestPayload) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
   const payload = await mergeOAuth2AndOpenIdInRequestPayload(authorizationRequestPayload, requestObject);
 
-  //fixme: client_metadata and fetch
-  const supportedDidMethods = payload['registration']?.subject_syntax_types_supported?.filter((sst) =>
+  const supportedDidMethods = verifiedAuthorizationRequest.registrationMetadataPayload.subject_syntax_types_supported.filter((sst) =>
     sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
   );
-  if (!payload.state) {
-    throw Error('No state');
-  } else if (!payload.nonce) {
-    throw Error('No nonce');
-  }
-  // const state = payload.state;
+  const state = payload.state;
   const nonce = payload.nonce;
   const SEC_IN_MS = 1000;
 
@@ -58,7 +52,7 @@ export const createIDTokenPayload = async (
     sub: responseOpts.signature.did,
     auth_time: payload.auth_time,
     nonce,
-    // state, // ideally this is only placed in here if required
+    state,
     // ...(responseOpts.presentationExchange?._vp_token ? { _vp_token: responseOpts.presentationExchange._vp_token } : {}),
   };
   if (supportedDidMethods.indexOf(SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT) != -1 && !responseOpts.signature.did) {
@@ -85,5 +79,4 @@ const createThumbprintAndJWK = async (resOpts: AuthorizationResponseOpts): Promi
   } else {
     throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
-  return { thumbprint, subJwk };
 };

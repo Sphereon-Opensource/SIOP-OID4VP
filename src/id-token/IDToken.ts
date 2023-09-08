@@ -37,12 +37,7 @@ export class IDToken {
     if (!authorizationRequestPayload) {
       throw new Error(SIOPErrors.NO_REQUEST);
     }
-    const mergedPayloads = await verifiedAuthorizationRequest.authorizationRequest.mergedPayloads();
-    const idToken = new IDToken(
-      null,
-      await createIDTokenPayload(mergedPayloads, responseOpts, verifiedAuthorizationRequest.requestObject),
-      responseOpts
-    );
+    const idToken = new IDToken(null, await createIDTokenPayload(verifiedAuthorizationRequest, responseOpts), responseOpts);
     if (verifyOpts) {
       await idToken.verify(verifyOpts);
     }

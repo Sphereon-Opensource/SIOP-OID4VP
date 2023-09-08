@@ -132,7 +132,7 @@ export interface AuthorizationResponsePayload {
   token_type?: string;
   refresh_token?: string;
   expires_in?: number;
-  state: string;
+  state?: string;
   id_token?: string;
   vp_token?: W3CVerifiablePresentation | W3CVerifiablePresentation[];
   presentation_submission?: PresentationSubmission;
