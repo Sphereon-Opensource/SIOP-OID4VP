@@ -770,6 +770,9 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
         },
         "predicate": {
           "$ref": "#/definitions/Optionality"
+        },
+        "name": {
+          "type": "string"
         }
       },
       "additionalProperties": false

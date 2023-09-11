@@ -17,7 +17,7 @@ function isJWTVC1Payload(authorizationRequest: AuthorizationRequestPayload) {
     authorizationRequest.redirect_uri &&
     (authorizationRequest.registration_uri || authorizationRequest.registration) &&
     authorizationRequest.claims &&
-    authorizationRequest.claims['vp_token']
+    'vp_token' in authorizationRequest.claims
   );
 }
 

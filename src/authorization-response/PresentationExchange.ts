@@ -42,10 +42,10 @@ export class PresentationExchange {
 
   /**
    * Construct presentation submission from selected credentials
-   * @param presentationDefinition: payload object received by the OP from the RP
+   * @param presentationDefinition payload object received by the OP from the RP
    * @param selectedCredentials
    * @param presentationSignCallback
-   * @param options?
+   * @param options
    */
   public async createVerifiablePresentation(
     presentationDefinition: IPresentationDefinition,
@@ -83,7 +83,7 @@ export class PresentationExchange {
    * if requestPayload doesn't contain any valid presentationDefinition throws an error
    * if PEX library returns any error in the process, throws the error
    * returns the SelectResults object if successful
-   * @param presentationDefinition: object received by the OP from the RP
+   * @param presentationDefinition object received by the OP from the RP
    * @param opts
    */
   public async selectVerifiableCredentialsForSubmission(
@@ -114,8 +114,8 @@ export class PresentationExchange {
   /**
    * validatePresentationAgainstDefinition function is called mainly by the RP
    * after receiving the VP from the OP
-   * @param presentationDefinition: object containing PD
-   * @param verifiablePresentation:
+   * @param presentationDefinition object containing PD
+   * @param verifiablePresentation
    * @param opts
    */
   public static async validatePresentationAgainstDefinition(
@@ -157,7 +157,7 @@ export class PresentationExchange {
    * throws exception if the PresentationDefinition is not valid
    * returns null if no property named "presentation_definition" is found
    * returns a PresentationDefinition if a valid instance found
-   * @param authorizationRequestPayload: object that can have a presentation_definition inside
+   * @param authorizationRequestPayload object that can have a presentation_definition inside
    * @param version
    */
   public static async findValidPresentationDefinitions(
@@ -170,22 +170,22 @@ export class PresentationExchange {
       const vpTokens: PresentationDefinitionV1[] | PresentationDefinitionV2[] = extractDataFromPath(
         authorizationRequestPayload,
         '$..vp_token.presentation_definition'
-      );
+      ).map((d) => d.value);
       const vpTokenRefs = extractDataFromPath(authorizationRequestPayload, '$..vp_token.presentation_definition_uri');
       if (vpTokens && vpTokens.length && vpTokenRefs && vpTokenRefs.length) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }
       if (vpTokens && vpTokens.length) {
-        vpTokens.forEach((vpToken) => {
+        vpTokens.forEach((vpToken: PresentationDefinitionV1 | PresentationDefinitionV2) => {
           if (allDefinitions.find((value) => value.definition.id === vpToken.id)) {
             console.log(
               `Warning. We encountered presentation definition with id ${vpToken.id}, more then once whilst processing! Make sure your payload is valid!`
             );
             return;
           }
-          PresentationExchange.assertValidPresentationDefinition(vpToken.value);
+          PresentationExchange.assertValidPresentationDefinition(vpToken);
           allDefinitions.push({
-            definition: vpToken.value,
+            definition: vpToken,
             location: PresentationDefinitionLocation.CLAIMS_VP_TOKEN,
             version,
           });
@@ -227,8 +227,8 @@ export class PresentationExchange {
       const definitionsFromList = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition[*]');
       const definitionRefs = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition_uri');
       const definitionRefsFromList = extractDataFromPath(authorizationRequestPayload, '$.presentation_definition_uri[*]');
-      const hasPD = (definitions && definitions.length > 0) || (definitionsFromList && definitionsFromList > 0);
-      const hasPdRef = (definitionRefs && definitionRefs.length > 0) || (definitionRefsFromList && definitionsFromList > 0);
+      const hasPD = (definitions && definitions.length > 0) || (definitionsFromList && definitionsFromList.length > 0);
+      const hasPdRef = (definitionRefs && definitionRefs.length > 0) || (definitionRefsFromList && definitionsFromList.length > 0);
       if (hasPD && hasPdRef) {
         throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE);
       }

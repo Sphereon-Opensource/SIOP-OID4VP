@@ -2,6 +2,7 @@
 
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import {
+  AdditionalClaims,
   IPresentation,
   IVerifiablePresentation,
   PresentationSubmission,
@@ -131,11 +132,11 @@ export interface AuthorizationResponsePayload {
   token_type?: string;
   refresh_token?: string;
   expires_in?: number;
-  state: string;
+  state?: string;
   id_token?: string;
   vp_token?: W3CVerifiablePresentation | W3CVerifiablePresentation[];
   presentation_submission?: PresentationSubmission;
-
+  verifiedData?: IPresentation | AdditionalClaims;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
