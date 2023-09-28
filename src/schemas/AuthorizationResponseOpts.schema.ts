@@ -1349,7 +1349,8 @@ export const AuthorizationResponseOptsSchemaObj = {
         "fragment",
         "form_post",
         "post",
-        "query"
+        "query",
+        "direct_post"
       ]
     },
     "GrantType": {
