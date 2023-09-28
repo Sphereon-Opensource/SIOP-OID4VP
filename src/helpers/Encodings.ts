@@ -8,7 +8,7 @@ export function decodeUriAsJson(uri: string) {
   if (!uri) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
-  const queryString = uri.replace(/^([a-zA-Z-_]+:\/\/[?]?)/g, '');
+  const queryString = uri.replace(/^([a-zA-Z][a-zA-Z0-9-_]*:\/\/[?]?)/g, '');
   if (!queryString) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
