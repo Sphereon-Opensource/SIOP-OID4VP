@@ -569,7 +569,7 @@ export enum GrantType {
 export enum ResponseMode {
   FRAGMENT = 'fragment',
   FORM_POST = 'form_post',
-  POST = 'post',
+  POST = 'post', // Used in the spec <= version 17
   QUERY = 'query',
 }
 

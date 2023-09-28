@@ -81,7 +81,7 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
           "type": "string"
         },
         "response_mode": {
-          "$ref": "#/definitions/ResponseMode"
+          "type": "string"
         },
         "request": {
           "type": "string"
@@ -323,15 +323,6 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
         "proof_type"
       ],
       "additionalProperties": false
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
     },
     "ClaimPayloadCommon": {
       "type": "object",

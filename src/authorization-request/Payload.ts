@@ -31,14 +31,12 @@ export const createPresentationDefinitionClaimsProperties = (opts: ClaimPayloadO
 
   return {
     ...(opts.id_token ? { id_token: opts.id_token } : {}),
-    ...(opts.vp_token.presentation_definition || opts.vp_token.presentation_definition_uri
-      ? {
-          vp_token: {
-            ...(!opts.vp_token.presentation_definition_uri ? { presentation_definition: opts.vp_token.presentation_definition } : {}),
-            ...(opts.vp_token.presentation_definition_uri ? { presentation_definition_uri: opts.vp_token.presentation_definition_uri } : {}),
-          },
-        }
-      : {}),
+    ...((opts.vp_token.presentation_definition || opts.vp_token.presentation_definition_uri) && {
+      vp_token: {
+        ...(!opts.vp_token.presentation_definition_uri && { presentation_definition: opts.vp_token.presentation_definition }),
+        ...(opts.vp_token.presentation_definition_uri && { presentation_definition_uri: opts.vp_token.presentation_definition_uri }),
+      },
+    }),
   };
 };
 

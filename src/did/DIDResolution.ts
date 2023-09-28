@@ -6,13 +6,16 @@ import { DIDDocument, ResolveOpts, SIOPErrors, SubjectIdentifierType, SubjectSyn
 import { getMethodFromDid, toSIOPRegistrationDidMethod } from './index';
 
 export function getResolver(opts: ResolveOpts): Resolvable {
-  if (opts && opts.resolver) {
+  if (opts?.resolver && typeof opts.resolver === 'object') {
     return opts.resolver;
   }
   if (!opts || !opts.subjectSyntaxTypesSupported) {
     if (opts?.noUniversalResolverFallback) {
       throw Error(`No subject syntax types nor did methods configured for DID resolution, but fallback to universal resolver has been disabled`);
     }
+    console.log(
+      `Falling back to universal resolver as not resolve opts have been provided, or no subject syntax types supported are provided. It is wise to fix this`
+    );
     return new UniResolver();
   }
 
@@ -33,6 +36,9 @@ export function getResolver(opts: ResolveOpts): Resolvable {
     if (opts?.noUniversalResolverFallback) {
       throw Error(`No subject syntax types nor did methods configured for DID resolution, but fallback to universal resolver has been disabled`);
     }
+    console.log(
+      `Falling back to universal resolver as not resolve opts have been provided, or no subject syntax types supported are provided. It is wise to fix this`
+    );
     return new UniResolver();
   }
 }

@@ -119,12 +119,14 @@ export class AuthorizationRequest {
     const jwt = await this.requestObjectJwt();
     if (jwt) {
       parseJWT(jwt);
+      const resolver = getResolver(opts.verification.resolveOpts);
       const options: JWTVerifyOptions = {
         ...opts.verification?.resolveOpts?.jwtVerifyOpts,
+        resolver,
         audience: getAudience(jwt),
       };
 
-      verifiedJwt = await verifyDidJWT(jwt, getResolver(opts.verification.resolveOpts), options);
+      verifiedJwt = await verifyDidJWT(jwt, resolver, options);
       if (!verifiedJwt || !verifiedJwt.payload) {
         throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
       }

@@ -78,7 +78,7 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
           "type": "string"
         },
         "response_mode": {
-          "$ref": "#/definitions/ResponseMode"
+          "type": "string"
         },
         "request": {
           "type": "string"
@@ -295,15 +295,6 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         "proof_type"
       ],
       "additionalProperties": false
-    },
-    "ResponseMode": {
-      "type": "string",
-      "enum": [
-        "fragment",
-        "form_post",
-        "post",
-        "query"
-      ]
     },
     "ClaimPayloadVID1": {
       "type": "object",
