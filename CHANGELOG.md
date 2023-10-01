@@ -3,6 +3,14 @@
 The DID Auth SIOP typescript library is still in an alpha state at this point. Please note that the interfaces might
 still change a bit as the software still is in active development.
 
+## 0.4.2 - 2023-10-01
+
+Fixed an issue with did:key resolution used in Veramo
+
+- Fixed:
+    - Fixed an issue with did:key resolution from Veramo. The driver requires a mediaType which according to the spec is
+      optional. We now always set it as it doesn't hurt to begin with.
+
 ## 0.4.1 - 2023-10-01
 
 Fixed not being able to configure the resolver for well-known DIDs
