@@ -121,9 +121,9 @@ export class IDToken {
 
     const issuerDid = getSubDidFromPayload(payload);
     if (verifyOpts.verification.checkLinkedDomain && verifyOpts.verification.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification.wellknownDIDVerifyCallback, verifyOpts.verification.checkLinkedDomain);
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification);
     } else if (!verifyOpts.verification.checkLinkedDomain) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification.wellknownDIDVerifyCallback, CheckLinkedDomain.IF_PRESENT);
+      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification);
     }
     const verPayload = verifiedJWT.payload as IDTokenPayload;
     this.assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });

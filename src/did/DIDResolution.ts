@@ -6,7 +6,7 @@ import { DIDDocument, ResolveOpts, SIOPErrors, SubjectIdentifierType, SubjectSyn
 import { getMethodFromDid, toSIOPRegistrationDidMethod } from './index';
 
 export function getResolver(opts: ResolveOpts): Resolvable {
-  if (opts?.resolver && typeof opts.resolver === 'object') {
+  if (opts && typeof opts.resolver === 'object') {
     return opts.resolver;
   }
   if (!opts || !opts.subjectSyntaxTypesSupported) {

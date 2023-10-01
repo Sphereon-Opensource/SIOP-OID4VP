@@ -11,7 +11,7 @@ import {
 } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
-import { CheckLinkedDomain, validateLinkedDomainWithDid } from '../../src';
+import { CheckLinkedDomain, validateLinkedDomainWithDid, VerificationMode } from '../../src';
 import * as didResolution from '../../src/did/DIDResolution';
 import { DocumentLoader } from '../DocumentLoader';
 import { DID_ION_DOCUMENT, DID_ION_ORIGIN, DID_KEY, DID_KEY_DOCUMENT, DID_KEY_ORIGIN, VC_KEY_PAIR } from '../data/mockedData';
@@ -66,7 +66,14 @@ describe('validateLinkedDomainWithDid', () => {
     // Needed to verify the credential
     nock(DID_KEY_ORIGIN).get('/1234').times(1).reply(200, DID_KEY_DOCUMENT);
     jest.spyOn(didResolution, 'resolveDidDocument').mockResolvedValue(Promise.resolve(DID_KEY_DOCUMENT as never));
-    await expect(validateLinkedDomainWithDid(DID_KEY, (args: IVerifyCallbackArgs) => verify(args), CheckLinkedDomain.ALWAYS)).resolves.not.toThrow();
+    await expect(
+      validateLinkedDomainWithDid(DID_KEY, {
+        wellknownDIDVerifyCallback: (args: IVerifyCallbackArgs) => verify(args),
+        checkLinkedDomain: CheckLinkedDomain.ALWAYS,
+        resolveOpts: {},
+        mode: VerificationMode.INTERNAL,
+      })
+    ).resolves.not.toThrow();
   });
   it('should succeed with ion did and CheckLinkedDomain.ALWAYS', async () => {
     const did =
@@ -80,18 +87,39 @@ describe('validateLinkedDomainWithDid', () => {
     };
     nock(DID_ION_ORIGIN).get('/.well-known/did-configuration.json').times(1).reply(200, DID_CONFIGURATION);
     jest.spyOn(didResolution, 'resolveDidDocument').mockResolvedValue(Promise.resolve(DID_ION_DOCUMENT as never));
-    await expect(validateLinkedDomainWithDid(did, verifyCallbackTruthy, CheckLinkedDomain.ALWAYS)).resolves.not.toThrow();
+    await expect(
+      validateLinkedDomainWithDid(did, {
+        wellknownDIDVerifyCallback: verifyCallbackTruthy,
+        checkLinkedDomain: CheckLinkedDomain.ALWAYS,
+        resolveOpts: {},
+        mode: VerificationMode.INTERNAL,
+      })
+    ).resolves.not.toThrow();
   });
 
   it('should fail with ion did and CheckLinkedDomain.ALWAYS', async () => {
     const did =
       'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19';
-    await expect(validateLinkedDomainWithDid(did, verifyCallbackTruthy, CheckLinkedDomain.ALWAYS)).rejects.toThrow();
+    await expect(
+      validateLinkedDomainWithDid(did, {
+        wellknownDIDVerifyCallback: verifyCallbackTruthy,
+        checkLinkedDomain: CheckLinkedDomain.ALWAYS,
+        resolveOpts: {},
+        mode: VerificationMode.INTERNAL,
+      })
+    ).rejects.toThrow();
   });
 
   it('should fail with ion did and CheckLinkedDomain.IF_PRESENT', async () => {
     const did =
       'did:ion:EiCMvVdXv6iL3W8i4n-LmqUhE614kX4TYxVR5kTY2QGOjg:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXkxIiwicHVibGljS2V5SndrIjp7ImNydiI6InNlY3AyNTZrMSIsImt0eSI6IkVDIiwieCI6Ii1MbHNpQVk5b3JmMXpKQlJOV0NuN0RpNUpoYl8tY2xhNlY5R3pHa3FmSFUiLCJ5IjoiRXBIU25GZHQ2ZU5lRkJEZzNVNVFIVDE0TVRsNHZIc0h5NWRpWU9DWEs1TSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiIsImFzc2VydGlvbk1ldGhvZCJdLCJ0eXBlIjoiRWNkc2FTZWNwMjU2azFWZXJpZmljYXRpb25LZXkyMDE5In1dLCJzZXJ2aWNlcyI6W3siaWQiOiJsZCIsInNlcnZpY2VFbmRwb2ludCI6Imh0dHBzOi8vbGR0ZXN0LnNwaGVyZW9uLmNvbSIsInR5cGUiOiJMaW5rZWREb21haW5zIn1dfX1dLCJ1cGRhdGVDb21taXRtZW50IjoiRWlBem8wTVVZUW5HNWM0VFJKZVFsNFR5WVRrSmRyeTJoeXlQUlpENzdFQm1CdyJ9LCJzdWZmaXhEYXRhIjp7ImRlbHRhSGFzaCI6IkVpQUwtaEtrLUVsODNsRVJiZkFDUk1kSWNQVjRXWGJqZ3dsZ1ZDWTNwbDhhMGciLCJyZWNvdmVyeUNvbW1pdG1lbnQiOiJFaUItT2NSbTlTNXdhU3QxbU4zSG4zM2RnMzJKN25MOEdBVHpGQ2ZXaWdIXzh3In19';
-    await expect(validateLinkedDomainWithDid(did, verifyCallbackTruthy, CheckLinkedDomain.IF_PRESENT)).rejects.toThrow();
+    await expect(
+      validateLinkedDomainWithDid(did, {
+        wellknownDIDVerifyCallback: verifyCallbackTruthy,
+        checkLinkedDomain: CheckLinkedDomain.IF_PRESENT,
+        resolveOpts: {},
+        mode: VerificationMode.INTERNAL,
+      })
+    ).rejects.toThrow();
   });
 });

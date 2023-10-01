@@ -94,17 +94,9 @@ export const checkWellknownDIDFromRequest = async (
 ): Promise<void> => {
   if (authorizationRequestPayload.client_id.startsWith('did:')) {
     if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(
-        authorizationRequestPayload.client_id,
-        opts.verification.wellknownDIDVerifyCallback,
-        opts.verification.checkLinkedDomain
-      );
+      await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verification);
     } else if (!opts.verification.checkLinkedDomain && opts.verification.wellknownDIDVerifyCallback) {
-      await validateLinkedDomainWithDid(
-        authorizationRequestPayload.client_id,
-        opts.verification.wellknownDIDVerifyCallback,
-        CheckLinkedDomain.IF_PRESENT
-      );
+      await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verification);
     }
   }
 };

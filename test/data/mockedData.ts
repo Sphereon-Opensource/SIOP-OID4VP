@@ -2,7 +2,7 @@ import { ServiceTypesEnum } from '@sphereon/wellknown-dids-client';
 import { JWTHeader } from 'did-jwt';
 import { DIDDocument } from 'did-resolver';
 
-export const UNIT_TEST_TIMEOUT = 30000;
+export const UNIT_TEST_TIMEOUT = 90000;
 
 export const DIDAUTH_HEADER: JWTHeader = {
   typ: 'JWT',

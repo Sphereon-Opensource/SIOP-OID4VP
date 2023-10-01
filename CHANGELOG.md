@@ -3,17 +3,25 @@
 The DID Auth SIOP typescript library is still in an alpha state at this point. Please note that the interfaces might
 still change a bit as the software still is in active development.
 
+## 0.4.1 - 2023-10-01
+
+Fixed not being able to configure the resolver for well-known DIDs
+
+- Fixed:
+    - Well-known DIDs did not use a configured DID resolver and thus always used the universal resolver, which has
+      issues quite often.
+
 ## 0.4.0 - 2023-09-28
 
 - Fixed:
-  - Claims are not required in the auth request
-  - State is not required in payloads
-  - We didn't handle merging of verification options present on an object and passed in as argument nicely
+    - Claims are not required in the auth request
+    - State is not required in payloads
+    - We didn't handle merging of verification options present on an object and passed in as argument nicely
 
 - Updated:
-  - Updated to another JSONPath implementation for improved security `@astronautlabs/jsonpath`
-  - Better error handling and logging in the session manager
-  - Allow for numbers in the scheme thus supporting openid4vp://
+    - Updated to another JSONPath implementation for improved security `@astronautlabs/jsonpath`
+    - Better error handling and logging in the session manager
+    - Allow for numbers in the scheme thus supporting openid4vp://
 
 - Added:
     - Allow to pass additional claims as verified data in the authorization response. Which can be handy in case you

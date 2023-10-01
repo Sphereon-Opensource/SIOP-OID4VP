@@ -1,6 +1,6 @@
 import { IDomainLinkageValidation, ValidationStatusEnum, VerifyCallback, WDCErrors, WellKnownDidVerifier } from '@sphereon/wellknown-dids-client';
 
-import { CheckLinkedDomain, DIDDocument } from '../types';
+import { CheckLinkedDomain, DIDDocument, ExternalVerification, InternalVerification } from '../types';
 
 import { resolveDidDocument } from './DIDResolution';
 import { getMethodFromDid, toSIOPRegistrationDidMethod } from './DidJWT';
@@ -50,11 +50,15 @@ function checkInvalidMessages(validationErrorMessages: string[]): { status: bool
   return { status: true };
 }
 
-export async function validateLinkedDomainWithDid(did: string, verifyCallback: VerifyCallback, checkLinkedDomain: CheckLinkedDomain) {
+export async function validateLinkedDomainWithDid(did: string, verification: InternalVerification | ExternalVerification) {
+  const { checkLinkedDomain, resolveOpts, wellknownDIDVerifyCallback } = verification;
   if (checkLinkedDomain === CheckLinkedDomain.NEVER) {
     return;
   }
-  const didDocument = await resolveDidDocument(did, { subjectSyntaxTypesSupported: [toSIOPRegistrationDidMethod(getMethodFromDid(did))] });
+  const didDocument = await resolveDidDocument(did, {
+    ...resolveOpts,
+    subjectSyntaxTypesSupported: [toSIOPRegistrationDidMethod(getMethodFromDid(did))],
+  });
   if (!didDocument) {
     throw Error(`Could not resolve DID: ${did}`);
   }
@@ -63,7 +67,7 @@ export async function validateLinkedDomainWithDid(did: string, verifyCallback: V
     return;
   }
   try {
-    const validationResult = await checkWellKnownDid({ didDocument, verifyCallback });
+    const validationResult = await checkWellKnownDid({ didDocument, verifyCallback: wellknownDIDVerifyCallback });
     if (validationResult.status === ValidationStatusEnum.INVALID) {
       const validationErrorMessages = getValidationErrorMessages(validationResult);
       const messageCondition: { status: boolean; message?: string } = checkInvalidMessages(validationErrorMessages);
