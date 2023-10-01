@@ -205,6 +205,7 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
         this.authorizationResponses[event.correlationId] = eventState as AuthorizationResponseState;
       }
     } catch (error: unknown) {
+      console.log(`Error in update state happened: ${error}`);
       // TODO VDX-166 handle error
     }
   }

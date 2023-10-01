@@ -31,14 +31,12 @@ export const createPresentationDefinitionClaimsProperties = (opts: ClaimPayloadO
 
   return {
     ...(opts.id_token ? { id_token: opts.id_token } : {}),
-    ...(opts.vp_token.presentation_definition || opts.vp_token.presentation_definition_uri
-      ? {
-          vp_token: {
-            ...(!opts.vp_token.presentation_definition_uri ? { presentation_definition: opts.vp_token.presentation_definition } : {}),
-            ...(opts.vp_token.presentation_definition_uri ? { presentation_definition_uri: opts.vp_token.presentation_definition_uri } : {}),
-          },
-        }
-      : {}),
+    ...((opts.vp_token.presentation_definition || opts.vp_token.presentation_definition_uri) && {
+      vp_token: {
+        ...(!opts.vp_token.presentation_definition_uri && { presentation_definition: opts.vp_token.presentation_definition }),
+        ...(opts.vp_token.presentation_definition_uri && { presentation_definition_uri: opts.vp_token.presentation_definition_uri }),
+      },
+    }),
   };
 };
 
@@ -96,17 +94,9 @@ export const checkWellknownDIDFromRequest = async (
 ): Promise<void> => {
   if (authorizationRequestPayload.client_id.startsWith('did:')) {
     if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(
-        authorizationRequestPayload.client_id,
-        opts.verification.wellknownDIDVerifyCallback,
-        opts.verification.checkLinkedDomain
-      );
+      await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verification);
     } else if (!opts.verification.checkLinkedDomain && opts.verification.wellknownDIDVerifyCallback) {
-      await validateLinkedDomainWithDid(
-        authorizationRequestPayload.client_id,
-        opts.verification.wellknownDIDVerifyCallback,
-        CheckLinkedDomain.IF_PRESENT
-      );
+      await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verification);
     }
   }
 };

@@ -4,6 +4,7 @@ import { IIssuerId } from '@sphereon/ssi-types/src/types/vc';
 import { v4 as uuidv4 } from 'uuid';
 
 import { AuthorizationRequest, URI, VerifyAuthorizationRequestOpts } from '../authorization-request';
+import { mergeVerificationOpts } from '../authorization-request/Opts';
 import {
   AuthorizationResponse,
   AuthorizationResponseOpts,
@@ -74,27 +75,8 @@ export class OP {
         throw error;
       });
 
-    const verification = {
-      ...requestOpts?.verification,
-      ...{
-        resolveOpts: {
-          ...requestOpts?.verification?.resolveOpts,
-          ...{
-            jwtVerifyOpts: {
-              ...requestOpts?.verification?.resolveOpts?.jwtVerifyOpts,
-              ...{
-                policies: {
-                  ...requestOpts?.verification?.resolveOpts?.jwtVerifyOpts?.policies,
-                  aud: false,
-                },
-              },
-            },
-          },
-        },
-      },
-    };
     return authorizationRequest
-      .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts, verification, correlationId }))
+      .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts, correlationId }))
       .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
         this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, {
           correlationId,
@@ -197,10 +179,7 @@ export class OP {
     if (response.options.redirectUri && response.options.responseUri) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    /*const request = response.authorizationRequest;
-    if (!request) {
-      throw Error('Cannot submit an authorization response without a request present');
-    }*/
+
     const payload = await response.payload;
     const idToken = await response.idToken?.payload();
     const responseUri = authorizationResponse.responseURI || idToken?.aud;
@@ -257,30 +236,33 @@ export class OP {
     if (!issuer) {
       throw Error(`No issuer value present. Either use IDv1, JWT VC Presentation profile version, or provide a DID as issuer value`);
     }
+    // We are taking the whole presentationExchange object from a certain location
+    const presentationExchange = opts.presentationExchange ?? this._createResponseOptions.presentationExchange;
     return {
       ...this._createResponseOptions,
+      ...opts,
+      signature: {
+        ...this._createResponseOptions?.signature,
+        ...opts.signature,
+      },
+      ...(presentationExchange && { presentationExchange }),
       registration: { ...this._createResponseOptions?.registration, issuer },
-      ...(opts?.audience ? { redirectUri: opts.audience } : {}),
-      ...(opts?.presentationExchange ? { presentationExchange: opts.presentationExchange } : {}),
-      ...(opts?.signature
-        ? { signature: opts.signature }
-        : this._createResponseOptions?.signature
-        ? { signature: this._createResponseOptions.signature }
-        : {}),
+      redirectUri: opts.audience ?? this._createResponseOptions.redirectUri,
     };
   }
 
-  private newVerifyAuthorizationRequestOpts(opts: {
+  private newVerifyAuthorizationRequestOpts(requestOpts: {
     correlationId: string;
     verification?: InternalVerification | ExternalVerification;
-    // verifyCallback?: VerifyCallback;
   }): VerifyAuthorizationRequestOpts {
-    return {
+    const verification: VerifyAuthorizationRequestOpts = {
       ...this._verifyRequestOptions,
-      correlationId: opts.correlationId,
-      verification: { ...this._verifyRequestOptions.verification, ...opts?.verification },
-      // wellknownDIDverifyCallback: opts?.verifyCallback,
+      ...requestOpts,
+      verification: mergeVerificationOpts(this._verifyRequestOptions, requestOpts),
+      correlationId: requestOpts.correlationId,
     };
+
+    return verification;
   }
 
   private async emitEvent(

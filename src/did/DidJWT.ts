@@ -56,7 +56,7 @@ import {
  *  @return   {Promise<Object, Error>}                  a promise which resolves with a response object or rejects with an error
  */
 export async function verifyDidJWT(jwt: string, resolver: Resolvable, options: JWTVerifyOptions): Promise<VerifiedJWT> {
-  return verifyJWT(jwt, { resolver, ...options });
+  return verifyJWT(jwt, { ...options, resolver });
 }
 
 /**

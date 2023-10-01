@@ -6,13 +6,16 @@ import { DIDDocument, ResolveOpts, SIOPErrors, SubjectIdentifierType, SubjectSyn
 import { getMethodFromDid, toSIOPRegistrationDidMethod } from './index';
 
 export function getResolver(opts: ResolveOpts): Resolvable {
-  if (opts && opts.resolver) {
+  if (opts && typeof opts.resolver === 'object') {
     return opts.resolver;
   }
   if (!opts || !opts.subjectSyntaxTypesSupported) {
     if (opts?.noUniversalResolverFallback) {
       throw Error(`No subject syntax types nor did methods configured for DID resolution, but fallback to universal resolver has been disabled`);
     }
+    console.log(
+      `Falling back to universal resolver as not resolve opts have been provided, or no subject syntax types supported are provided. It is wise to fix this`
+    );
     return new UniResolver();
   }
 
@@ -33,6 +36,9 @@ export function getResolver(opts: ResolveOpts): Resolvable {
     if (opts?.noUniversalResolverFallback) {
       throw Error(`No subject syntax types nor did methods configured for DID resolution, but fallback to universal resolver has been disabled`);
     }
+    console.log(
+      `Falling back to universal resolver as not resolve opts have been provided, or no subject syntax types supported are provided. It is wise to fix this`
+    );
     return new UniResolver();
   }
 }
@@ -95,7 +101,11 @@ export function mergeAllDidMethods(subjectSyntaxTypesSupported: string | string[
 }
 
 export async function resolveDidDocument(did: string, opts?: ResolveOpts): Promise<DIDDocument> {
-  const result = await getResolver(opts).resolve(did);
+  // todo: The accept is only there because did:key used by Veramo requires it. According to the spec it is optional. It should not hurt, but let's test
+  const result = await getResolver({ ...opts }).resolve(did, { accept: 'application/did+ld+json' });
+  if (result?.didResolutionMetadata?.error) {
+    throw Error(result.didResolutionMetadata.error);
+  }
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   if (!result.didDocument && result.id) {

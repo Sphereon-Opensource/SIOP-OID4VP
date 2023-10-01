@@ -11,6 +11,7 @@ import {
   RequestPropertyWithTargets,
   URI,
 } from '../authorization-request';
+import { mergeVerificationOpts } from '../authorization-request/Opts';
 import { AuthorizationResponse, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getNonce, getState } from '../helpers';
 import {
@@ -282,9 +283,9 @@ export class RP {
       presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
     }
   ): Promise<VerifyAuthorizationResponseOpts> {
-    let correlationId = opts?.correlationId || this._verifyResponseOptions.correlationId;
-    let state = opts?.state || this._verifyResponseOptions.state;
-    let nonce = opts?.nonce || this._verifyResponseOptions.nonce;
+    let correlationId = opts?.correlationId ?? this._verifyResponseOptions.correlationId;
+    let state = opts?.state ?? this._verifyResponseOptions.state;
+    let nonce = opts?.nonce ?? this._verifyResponseOptions.nonce;
     if (this.sessionManager) {
       const resNonce = (await authorizationResponse.getMergedProperty('nonce', false)) as string;
       const resState = (await authorizationResponse.getMergedProperty('state', false)) as string;
@@ -305,16 +306,17 @@ export class RP {
     }
     return {
       ...this._verifyResponseOptions,
+      ...opts,
       correlationId,
       audience:
-        opts?.audience ||
-        this._verifyResponseOptions.audience ||
-        this._verifyResponseOptions.verification.resolveOpts.jwtVerifyOpts.audience ||
+        opts?.audience ??
+        this._verifyResponseOptions.audience ??
+        this._verifyResponseOptions.verification.resolveOpts.jwtVerifyOpts.audience ??
         this._createRequestOptions.payload.client_id,
       state,
       nonce,
-      verification: opts?.verification || this._verifyResponseOptions.verification,
-      presentationDefinitions: opts?.presentationDefinitions || this._verifyResponseOptions.presentationDefinitions,
+      verification: mergeVerificationOpts(this._verifyResponseOptions, opts),
+      presentationDefinitions: opts?.presentationDefinitions ?? this._verifyResponseOptions.presentationDefinitions,
     };
   }
 

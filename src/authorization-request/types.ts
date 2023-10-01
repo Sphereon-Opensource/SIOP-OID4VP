@@ -52,7 +52,6 @@ interface AuthorizationRequestCommonOpts<CT extends ClaimPayloadCommonOpts> {
   // Yes, this includes common payload properties both at the payload level as well as in the requestObject.payload property. That is to support OAuth2 with or without a signed OpenID requestObject
 
   version: SupportedVersion;
-
   clientMetadata?: ClientMetadataOpts; // this maps to 'registration' for older SIOPv2 specs! OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
   payload?: AuthorizationRequestPayloadOpts<CT>;
   requestObject: RequestObjectOpts<CT>;
@@ -63,10 +62,7 @@ interface AuthorizationRequestCommonOpts<CT extends ClaimPayloadCommonOpts> {
 export type AuthorizationRequestOptsVID1 = AuthorizationRequestCommonOpts<ClaimPayloadOptsVID1>;
 
 export interface AuthorizationRequestOptsVD11 extends AuthorizationRequestCommonOpts<ClaimPayloadCommonOpts> {
-  // clientMetadata?: ClientMetadataOpts; // from openid-connect-self-issued-v2-1_0-11 look at https://openid.net/specs/openid-connect-registration-1_0.html
-  // clientMetadataUri?: string; // from openid-connect-self-issued-v2-1_0-11
   idTokenType?: string; // OPTIONAL. Space-separated string that specifies the types of ID token the RP wants to obtain, with the values appearing in order of preference. The allowed individual values are subject_signed and attester_signed (see Section 8.2). The default value is attester_signed.
-  // claims?: ClaimPayloadCommonOpts;
 }
 
 export type CreateAuthorizationRequestOpts = AuthorizationRequestOptsVID1 | AuthorizationRequestOptsVD11;
@@ -80,8 +76,6 @@ export interface VerifyAuthorizationRequestOpts {
   state?: string; // If provided the state in the request needs to match
 
   supportedVersions?: SupportedVersion[];
-  // redirectUri?: string;
-  // wellknownDIDverifyCallback?: WellknownDIDVerifyCallback;
 }
 
 /**

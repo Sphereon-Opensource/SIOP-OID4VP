@@ -3,15 +3,48 @@
 The DID Auth SIOP typescript library is still in an alpha state at this point. Please note that the interfaces might
 still change a bit as the software still is in active development.
 
+## 0.4.2 - 2023-10-01
+
+Fixed an issue with did:key resolution used in Veramo
+
+- Fixed:
+    - Fixed an issue with did:key resolution from Veramo. The driver requires a mediaType which according to the spec is
+      optional. We now always set it as it doesn't hurt to begin with.
+
+## 0.4.1 - 2023-10-01
+
+Fixed not being able to configure the resolver for well-known DIDs
+
+- Fixed:
+    - Well-known DIDs did not use a configured DID resolver and thus always used the universal resolver, which has
+      issues quite often.
+
+## 0.4.0 - 2023-09-28
+
+- Fixed:
+    - Claims are not required in the auth request
+    - State is not required in payloads
+    - We didn't handle merging of verification options present on an object and passed in as argument nicely
+
+- Updated:
+    - Updated to another JSONPath implementation for improved security `@astronautlabs/jsonpath`
+    - Better error handling and logging in the session manager
+    - Allow for numbers in the scheme thus supporting openid4vp://
+
+- Added:
+    - Allow to pass additional claims as verified data in the authorization response. Which can be handy in case you
+      want to extract data from a VP and pass that to the app that uses this library
+
 ## v0.3.1 - 2023-05-17
+
 Bugfix release, fixing RPBuilder export and a client_id bug when not explicitly provided to the RP.
 
 - Fixed:
-  - Changed RPBuilder default export to a named export
-  - Fix #54. The client_id took the whole registration object, instead of the client_id in case it was not provided explicitly
+    - Changed RPBuilder default export to a named export
+    - Fix #54. The client_id took the whole registration object, instead of the client_id in case it was not provided
+      explicitly
 - Updated:
-  - SSI-types have been updated to the latest version.
-
+    - SSI-types have been updated to the latest version.
 
 ## v0.3.0 - 2023-04-30
 
@@ -24,8 +57,10 @@ methods.
     - Allow to restrict selecting VCs against Formats not communicated in a presentation definition. For instance useful
       for filtering against a OID4VP RP, which signals support for certain Formats, but uses a definition which does not
       include this information
-    - Allow to restrict selecting VCs against DID methods not communicated in a presentation definition. For instance useful
-      for filtering against a OID4VP RP, which signals support for certain DID methods, but uses a definition which does not
+    - Allow to restrict selecting VCs against DID methods not communicated in a presentation definition. For instance
+      useful
+      for filtering against a OID4VP RP, which signals support for certain DID methods, but uses a definition which does
+      not
       include this information
     - Allow passing in submission data separately from a VP. Again useful in a OID4VP situation, where presentation
       submission objects can be transferred next to the VP instead if in the VP
