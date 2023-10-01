@@ -101,7 +101,11 @@ export function mergeAllDidMethods(subjectSyntaxTypesSupported: string | string[
 }
 
 export async function resolveDidDocument(did: string, opts?: ResolveOpts): Promise<DIDDocument> {
-  const result = await getResolver(opts).resolve(did);
+  // todo: The accept is only there because did:key used by Veramo requires it. According to the spec it is optional. It should not hurt, but let's test
+  const result = await getResolver({ ...opts }).resolve(did, { accept: 'application/did+ld+json' });
+  if (result?.didResolutionMetadata?.error) {
+    throw Error(result.didResolutionMetadata.error);
+  }
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   if (!result.didDocument && result.id) {
