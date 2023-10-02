@@ -75,9 +75,10 @@ export function encodeAsUriValue(key: string | undefined, value: unknown, base: 
   const isBool = typeof value == 'boolean';
   const isNumber = typeof value == 'number';
   const isString = typeof value == 'string';
+  const isArray = Array.isArray(value);
 
-  if (!key && (isBool || isNumber || isString)) {
-    throw new Error('Cannot encode base value (boolean, string, number) without key');
+  if (!key && !base && (isBool || isNumber || isString || isArray)) {
+    throw new Error('Cannot encode value (boolean, string, number, array) without key or base');
   }
 
   let encodedKey: string | undefined = undefined;
@@ -96,9 +97,15 @@ export function encodeAsUriValue(key: string | undefined, value: unknown, base: 
   } else if (isString) {
     results.push(`${encodedKey}=${encodeURIComponent(value)}`);
   } else if (Array.isArray(value)) {
-    for (const entry of value) {
-      results.push(encodeAsUriValue(key, entry, base));
-    }
+    value.forEach((entry, index) => {
+      results.push(
+        encodeAsUriValue(
+          undefined,
+          entry,
+          base ? `${base}[${encodeAndStripWhitespace(key)}][${index}]` : `${encodeAndStripWhitespace(key)}[${index}]`
+        )
+      );
+    });
   } else if (typeof value === 'object') {
     for (const [subKey, subValue] of Object.entries(value)) {
       results.push(encodeAsUriValue(subKey, subValue, encodedKey));

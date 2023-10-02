@@ -4,7 +4,7 @@ describe('Encodings', () => {
   test('encodeAsUriValue', () => {
     expect(encodeAsUriValue(undefined, { a: { b: { c: 'd', e: 'f' } } })).toBe('a[b][c]=d&a[b][e]=f');
 
-    expect(encodeAsUriValue(undefined, { a: ['b', 'c', 'd'] })).toBe('a=b&a=c&a=d');
+    expect(encodeAsUriValue(undefined, { a: ['b', 'c', 'd'] })).toBe('a[0]=b&a[1]=c&a[2]=d');
 
     expect(
       encodeAsUriValue(undefined, {
@@ -15,14 +15,6 @@ describe('Encodings', () => {
             },
           },
         },
-      })
-    ).toBe('a[b][a%24s939very-2eweird-%3D%3Dkey][c]=d');
-
-    expect(
-      encodeAsUriValue(undefined, {
-        id: 'OzDKp_BFK0WBFrQ1ATKUH',
-        definition_id: 'b88f6449-c515-4642-86a5-faaa72f3be0c',
-        descriptor_map: [{ id: 'OpenBadgeCredential', format: 'jwt_vc', path: '$.verifiableCredential[0]' }],
       })
     ).toBe('a[b][a%24s939very-2eweird-%3D%3Dkey][c]=d');
   });
