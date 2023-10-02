@@ -2,9 +2,9 @@ import { encodeAsUriValue, encodeJsonAsURI } from '../../src';
 
 describe('Encodings', () => {
   test('encodeAsUriValue', () => {
-    expect(encodeAsUriValue(undefined, { a: { b: { c: 'd', e: 'f' } } })).toBe('a[b][c]=d&a[b][e]=f');
+    expect(encodeAsUriValue(undefined, { a: { b: { c: 'd', e: 'f' } } })).toBe('a%5Bb%5D%5Bc%5D=d&a%5Bb%5D%5Be%5D=f');
 
-    expect(encodeAsUriValue(undefined, { a: ['b', 'c', 'd'] })).toBe('a[0]=b&a[1]=c&a[2]=d');
+    expect(encodeAsUriValue(undefined, { a: ['b', 'c', 'd'] })).toBe('a%5B0%5D=b&a%5B1%5D=c&a%5B2%5D=d');
 
     expect(
       encodeAsUriValue(undefined, {
@@ -16,7 +16,7 @@ describe('Encodings', () => {
           },
         },
       })
-    ).toBe('a[b][a%24s939very-2eweird-%3D%3Dkey][c]=d');
+    ).toBe('a%5Bb%5D%5Ba%24s939very-2eweird-%3D%3Dkey%5D%5Bc%5D=d');
   });
 
   test('encodeJsonAsURI', () => {

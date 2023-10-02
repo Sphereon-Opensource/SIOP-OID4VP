@@ -42,28 +42,25 @@ function encodeAndStripWhitespace(key: string): string {
   return encodeURIComponent(key.replace(' ', ''));
 }
 
-export function encodeJsonAsURI(json: unknown, uriEncodedJsonProperties: string[] = []): string {
-  let parsedJson = json;
-  if (typeof parsedJson === 'string') {
-    parsedJson = JSON.parse(parsedJson);
-  }
+export function encodeJsonAsURI(json: unknown, uriEncodedProperties: string[] = []): string {
+  const parsedJson = typeof json === 'string' ? JSON.parse(json) : json;
 
   // If no custom properties, we can just encode everything
-  if (uriEncodedJsonProperties.length === 0) {
-    return encodeAsUriValue(undefined, json);
+  if (uriEncodedProperties.length === 0) {
+    return encodeAsUriValue(undefined, parsedJson);
   }
 
   const results: string[] = [];
 
-  for (const [key, value] of Object.entries(json)) {
+  for (const [key, value] of Object.entries(parsedJson)) {
     // Value of property must be seen as a separate uri encoded property.
-    if (uriEncodedJsonProperties.includes(key)) {
+    if (uriEncodedProperties.includes(key)) {
       if (typeof value !== 'object' || Array.isArray(value) || value === null) {
         throw new Error('Cannot encode non-object value as URI encoded JSON property');
       }
-      results.push(`${encodeAndStripWhitespace(key)}=${encodeURIComponent(encodeAsUriValue(undefined, value))}`);
+      results.push(`${encodeAndStripWhitespace(key)}=${encodeURIComponent(encodeAsUriValue(undefined, value, undefined))}`);
     } else {
-      results.push(encodeAsUriValue(key, value));
+      results.push(encodeAsUriValue(key, value, undefined));
     }
   }
   return results.join('&');
@@ -85,7 +82,7 @@ export function encodeAsUriValue(key: string | undefined, value: unknown, base: 
   if (key && !base) {
     encodedKey = encodeAndStripWhitespace(key);
   } else if (key && base) {
-    encodedKey = `${base}[${encodeAndStripWhitespace(key)}]`;
+    encodedKey = `${base}${encodeAndStripWhitespace(`[${key}]`)}`;
   } else if (!key && base) {
     encodedKey = base;
   }
@@ -98,13 +95,7 @@ export function encodeAsUriValue(key: string | undefined, value: unknown, base: 
     results.push(`${encodedKey}=${encodeURIComponent(value)}`);
   } else if (Array.isArray(value)) {
     value.forEach((entry, index) => {
-      results.push(
-        encodeAsUriValue(
-          undefined,
-          entry,
-          base ? `${base}[${encodeAndStripWhitespace(key)}][${index}]` : `${encodeAndStripWhitespace(key)}[${index}]`
-        )
-      );
+      results.push(encodeAsUriValue(undefined, entry, encodedKey + encodeAndStripWhitespace(`[${index}]`)));
     });
   } else if (typeof value === 'object') {
     for (const [subKey, subValue] of Object.entries(value)) {
