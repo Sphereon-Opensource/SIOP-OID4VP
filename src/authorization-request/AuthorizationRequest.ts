@@ -11,17 +11,21 @@ import {
   PassBy,
   RequestObjectJwt,
   RequestObjectPayload,
-  RequestStateInfo,
+  RequestStateInfo, ResponseURIType,
   RPRegistrationMetadataPayload,
   Schema,
   SIOPErrors,
   SupportedVersion,
   VerifiedAuthorizationRequest,
-  VerifiedJWT,
+  VerifiedJWT
 } from '../types';
 
 import { assertValidAuthorizationRequestOpts, assertValidVerifyAuthorizationRequestOpts } from './Opts';
-import { assertValidRPRegistrationMedataPayload, checkWellknownDIDFromRequest, createAuthorizationRequestPayload } from './Payload';
+import {
+  assertValidRPRegistrationMedataPayload,
+  checkWellknownDIDFromRequest,
+  createAuthorizationRequestPayload
+} from './Payload';
 import { URI } from './URI';
 import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
@@ -123,7 +127,7 @@ export class AuthorizationRequest {
       const options: JWTVerifyOptions = {
         ...opts.verification?.resolveOpts?.jwtVerifyOpts,
         resolver,
-        audience: getAudience(jwt),
+        audience: getAudience(jwt)
       };
 
       verifiedJwt = await verifyDidJWT(jwt, resolver, options);
@@ -159,9 +163,23 @@ export class AuthorizationRequest {
       // TODO: We need to do something with the metadata probably
     }
     // When the response_uri parameter is present, the redirect_uri Authorization Request parameter MUST NOT be present. If the redirect_uri Authorization Request parameter is present when the Response Mode is direct_post, the Wallet MUST return an invalid_request Authorization Response error.
+    let responseURIType: ResponseURIType;
+    let responseURI: string;
     if (mergedPayload.redirect_uri && mergedPayload.response_uri) {
       throw new Error(`${SIOPErrors.INVALID_REQUEST}, redirect_uri cannot be used together with response_uri`);
+    } else if (mergedPayload.redirect_uri) {
+      responseURIType = 'redirect_uri';
+      responseURI = mergedPayload.redirect_uri;
+    } else if (mergedPayload.redirect_uri) {
+      responseURIType = 'response_uri';
+      responseURI = mergedPayload.response_uri;
+    } else if (mergedPayload.client_id_scheme === 'redirect_uri' && mergedPayload.client_id) {
+      responseURIType = 'redirect_uri';
+      responseURI = mergedPayload.client_id;
+    } else {
+      throw new Error(`${SIOPErrors.INVALID_REQUEST}, redirect_uri or response_uri is needed`);
     }
+
     await checkWellknownDIDFromRequest(mergedPayload, opts);
 
     // TODO: we need to verify somewhere that if response_mode is direct_post, that the response_uri may be present,
@@ -170,7 +188,9 @@ export class AuthorizationRequest {
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(mergedPayload, await this.getSupportedVersion());
     return {
       ...verifiedJwt,
-      redirectURI: mergedPayload.redirect_uri,
+      responseURIType,
+      responseURI,
+      clientIdScheme: mergedPayload.client_id_scheme,
       correlationId: opts.correlationId,
       authorizationRequest: this,
       verifyOpts: opts,
@@ -178,7 +198,7 @@ export class AuthorizationRequest {
       registrationMetadataPayload,
       requestObject: this.requestObject,
       authorizationRequestPayload: this.payload,
-      versions: await this.getSupportedVersionsFromPayload(),
+      versions: await this.getSupportedVersionsFromPayload()
     };
   }
 
@@ -218,7 +238,7 @@ export class AuthorizationRequest {
       client_id: this.options.clientMetadata.client_id,
       iat: requestObject.iat ?? this.payload.iat,
       nonce: requestObject.nonce ?? this.payload.nonce,
-      state: this.payload.state,
+      state: this.payload.state
     };
   }
 

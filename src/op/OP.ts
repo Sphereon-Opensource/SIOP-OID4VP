@@ -128,7 +128,7 @@ export class OP {
     const correlationId = responseOpts?.correlationId || verifiedAuthorizationRequest.correlationId || uuidv4();
     try {
       // IF using DIRECT_POST, the response_uri takes precedence over the redirect_uri
-      let responseUri = verifiedAuthorizationRequest.redirectURI;
+      let responseUri = verifiedAuthorizationRequest.responseURI;
       if (verifiedAuthorizationRequest.authorizationRequestPayload.response_mode === ResponseMode.DIRECT_POST) {
         responseUri = verifiedAuthorizationRequest.authorizationRequestPayload.response_uri ?? responseUri;
       }
