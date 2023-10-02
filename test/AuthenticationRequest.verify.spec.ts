@@ -15,7 +15,7 @@ import {
   SubjectType,
   SupportedVersion,
   VerificationMode,
-  VerifyAuthorizationRequestOpts
+  VerifyAuthorizationRequestOpts,
 } from '../src';
 import { RPRegistrationMetadataPayloadSchemaObj } from '../src/schemas';
 import SIOPErrors from '../src/types/Errors';
@@ -27,7 +27,7 @@ import {
   VERIFIER_NAME_FOR_CLIENT,
   VERIFIER_NAME_FOR_CLIENT_NL,
   VERIFIERZ_PURPOSE_TO_VERIFY,
-  VERIFIERZ_PURPOSE_TO_VERIFY_NL
+  VERIFIERZ_PURPOSE_TO_VERIFY_NL,
 } from './data/mockedData';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
@@ -47,155 +47,155 @@ describe('verifyJWT should', () => {
             client_id: {
               anyOf: [
                 {
-                  type: 'string'
+                  type: 'string',
                 },
-                {}
-              ]
+                {},
+              ],
             },
             id_token_signing_alg_values_supported: {
               anyOf: [
                 {
                   type: 'array',
                   items: {
-                    $ref: '#/definitions/SigningAlgo'
-                  }
+                    $ref: '#/definitions/SigningAlgo',
+                  },
                 },
                 {
-                  $ref: '#/definitions/SigningAlgo'
-                }
-              ]
+                  $ref: '#/definitions/SigningAlgo',
+                },
+              ],
             },
             request_object_signing_alg_values_supported: {
               anyOf: [
                 {
                   type: 'array',
                   items: {
-                    $ref: '#/definitions/SigningAlgo'
-                  }
+                    $ref: '#/definitions/SigningAlgo',
+                  },
                 },
                 {
-                  $ref: '#/definitions/SigningAlgo'
-                }
-              ]
+                  $ref: '#/definitions/SigningAlgo',
+                },
+              ],
             },
             response_types_supported: {
               anyOf: [
                 {
                   type: 'array',
                   items: {
-                    $ref: '#/definitions/ResponseType'
-                  }
+                    $ref: '#/definitions/ResponseType',
+                  },
                 },
                 {
-                  $ref: '#/definitions/ResponseType'
-                }
-              ]
+                  $ref: '#/definitions/ResponseType',
+                },
+              ],
             },
             scopes_supported: {
               anyOf: [
                 {
                   type: 'array',
                   items: {
-                    $ref: '#/definitions/Scope'
-                  }
+                    $ref: '#/definitions/Scope',
+                  },
                 },
                 {
-                  $ref: '#/definitions/Scope'
-                }
-              ]
+                  $ref: '#/definitions/Scope',
+                },
+              ],
             },
             subject_types_supported: {
               anyOf: [
                 {
                   type: 'array',
                   items: {
-                    $ref: '#/definitions/SubjectType'
-                  }
+                    $ref: '#/definitions/SubjectType',
+                  },
                 },
                 {
-                  $ref: '#/definitions/SubjectType'
-                }
-              ]
+                  $ref: '#/definitions/SubjectType',
+                },
+              ],
             },
             subject_syntax_types_supported: {
               type: 'array',
               items: {
-                type: 'string'
-              }
+                type: 'string',
+              },
             },
             vp_formats: {
               anyOf: [
                 {
-                  $ref: '#/definitions/Format'
+                  $ref: '#/definitions/Format',
                 },
-                {}
-              ]
+                {},
+              ],
             },
             client_name: {
               anyOf: [
                 {
-                  type: 'string'
+                  type: 'string',
                 },
-                {}
-              ]
+                {},
+              ],
             },
             logo_uri: {
               anyOf: [
                 {},
                 {
-                  type: 'string'
-                }
-              ]
+                  type: 'string',
+                },
+              ],
             },
             client_purpose: {
               anyOf: [
                 {},
                 {
-                  type: 'string'
-                }
-              ]
-            }
-          }
+                  type: 'string',
+                },
+              ],
+            },
+          },
         },
         SigningAlgo: {
           type: 'string',
-          enum: ['EdDSA', 'RS256', 'ES256', 'ES256K']
+          enum: ['EdDSA', 'RS256', 'ES256', 'ES256K'],
         },
         ResponseType: {
           type: 'string',
-          enum: ['id_token', 'vp_token']
+          enum: ['id_token', 'vp_token'],
         },
         Scope: {
           type: 'string',
-          enum: ['openid', 'openid did_authn', 'profile', 'email', 'address', 'phone']
+          enum: ['openid', 'openid did_authn', 'profile', 'email', 'address', 'phone'],
         },
         SubjectType: {
           type: 'string',
-          enum: ['public', 'pairwise']
+          enum: ['public', 'pairwise'],
         },
         Format: {
           type: 'object',
           properties: {
             jwt: {
-              $ref: '#/definitions/JwtObject'
+              $ref: '#/definitions/JwtObject',
             },
             jwt_vc: {
-              $ref: '#/definitions/JwtObject'
+              $ref: '#/definitions/JwtObject',
             },
             jwt_vp: {
-              $ref: '#/definitions/JwtObject'
+              $ref: '#/definitions/JwtObject',
             },
             ldp: {
-              $ref: '#/definitions/LdpObject'
+              $ref: '#/definitions/LdpObject',
             },
             ldp_vc: {
-              $ref: '#/definitions/LdpObject'
+              $ref: '#/definitions/LdpObject',
             },
             ldp_vp: {
-              $ref: '#/definitions/LdpObject'
-            }
+              $ref: '#/definitions/LdpObject',
+            },
           },
-          additionalProperties: false
+          additionalProperties: false,
         },
         JwtObject: {
           type: 'object',
@@ -203,12 +203,12 @@ describe('verifyJWT should', () => {
             alg: {
               type: 'array',
               items: {
-                type: 'string'
-              }
-            }
+                type: 'string',
+              },
+            },
           },
           required: ['alg'],
-          additionalProperties: false
+          additionalProperties: false,
         },
         LdpObject: {
           type: 'object',
@@ -216,14 +216,14 @@ describe('verifyJWT should', () => {
             proof_type: {
               type: 'array',
               items: {
-                type: 'string'
-              }
-            }
+                type: 'string',
+              },
+            },
           },
           required: ['proof_type'],
-          additionalProperties: false
-        }
-      }
+          additionalProperties: false,
+        },
+      },
     };
     const ajv = new Ajv({ allowUnionTypes: true, strict: false });
     ajv.compile(RPRegistrationMetadataPayloadSchemaObj);
@@ -262,7 +262,7 @@ describe('verifyJWT should', () => {
             'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
           did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
           kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
-          alg: SigningAlgo.EDDSA
+          alg: SigningAlgo.EDDSA,
         },
         payload: {
           state: 'expected state',
@@ -271,8 +271,8 @@ describe('verifyJWT should', () => {
           response_type: 'id_token',
           request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
           redirect_uri: EXAMPLE_REDIRECT_URL,
-          nonce: 'expected nonce'
-        }
+          nonce: 'expected nonce',
+        },
       },
       clientMetadata: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -284,16 +284,16 @@ describe('verifyJWT should', () => {
         subject_syntax_types_supported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
         vpFormatsSupported: {
           ldp_vc: {
-            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019]
-          }
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+          },
         },
         passBy: PassBy.VALUE,
         logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
         'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100308',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL
-      }
+        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+      },
     };
 
     const requestObject = await RequestObject.fromOpts(requestOpts);
@@ -302,14 +302,14 @@ describe('verifyJWT should', () => {
       verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {
-          subjectSyntaxTypesSupported: ['did:key']
+          subjectSyntaxTypesSupported: ['did:key'],
         },
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true })
+        wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
       },
       correlationId: '1234',
       supportedVersions: [SupportedVersion.SIOPv2_ID1],
-      nonce: 'This nonce is different and should throw error'
+      nonce: 'This nonce is different and should throw error',
     };
 
     // expect.assertions(1);
@@ -329,7 +329,7 @@ describe('verifyJWT should', () => {
             hexPrivateKey: mockEntity.hexPrivateKey,
             did: mockEntity.did,
             kid: `${mockEntity.did}#controller`,
-            alg: SigningAlgo.ES256K
+            alg: SigningAlgo.ES256K,
           },
           payload: {
             client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -339,8 +339,8 @@ describe('verifyJWT should', () => {
             nonce: '12345',
             request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
             authorization_endpoint: '',
-            redirect_uri: 'https://acme.com/hello'
-          }
+            redirect_uri: 'https://acme.com/hello',
+          },
         },
         clientMetadata: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -352,16 +352,16 @@ describe('verifyJWT should', () => {
           subject_syntax_types_supported: ['did:ethr:'],
           vpFormatsSupported: {
             ldp_vc: {
-              proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019]
-            }
+              proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+            },
           },
           passBy: PassBy.VALUE,
           logo_uri: VERIFIER_LOGO_FOR_CLIENT,
           clientName: VERIFIER_NAME_FOR_CLIENT,
           'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100309',
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL
-        }
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+        },
       };
       const requestObject = await RequestObject.fromOpts(requestOpts);
 
@@ -369,13 +369,13 @@ describe('verifyJWT should', () => {
         verification: {
           mode: VerificationMode.INTERNAL,
           resolveOpts: {
-            subjectSyntaxTypesSupported: ['did:ethr']
+            subjectSyntaxTypesSupported: ['did:ethr'],
           },
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true })
+          wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
         },
         supportedVersions: [SupportedVersion.SIOPv2_ID1],
-        correlationId: '1234'
+        correlationId: '1234',
       };
 
       const verifyJWT = await AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts);
@@ -392,10 +392,10 @@ describe('OP and RP communication should', () => {
       vp_formats: {
         jwt_vc: { alg: [SigningAlgo.ES256, SigningAlgo.ES256K] },
         ldp_vc: {
-          proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019']
-        }
+          proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+        },
       },
-      subject_syntax_types_supported: ['did:web']
+      subject_syntax_types_supported: ['did:web'],
     };
     expect(actualResult).toEqual(expectedResult);
   });
@@ -403,32 +403,32 @@ describe('OP and RP communication should', () => {
   it('work if RP supports any OP did methods', () => {
     metadata.opMetadata.vp_formats = {
       ldp_vc: {
-        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019]
-      }
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+      },
     };
     metadata.rpMetadata.subject_syntax_types_supported = ['did:web'];
     expect(metadata.verify()).toEqual({
       subject_syntax_types_supported: ['did:web'],
       vp_formats: {
         ldp_vc: {
-          proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019']
-        }
-      }
+          proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+        },
+      },
     });
   });
 
   it('work if RP supports any OP credential formats', () => {
     metadata.opMetadata.vp_formats = {
       ldp_vc: {
-        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019]
-      }
+        proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+      },
     };
     const result = metadata.verify();
     expect(result['subject_syntax_types_supported']).toContain('did:web');
     expect(result['vp_formats']).toStrictEqual({
       ldp_vc: {
-        proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019']
-      }
+        proof_type: ['EcdsaSecp256k1Signature2019', 'EcdsaSecp256k1Signature2019'],
+      },
     });
   });
 
@@ -455,13 +455,13 @@ describe('Mattr OID4VP v18 credential offer', () => {
       correlationId: 'test',
       verification: {
         mode: VerificationMode.INTERNAL,
-        resolveOpts: { }
-      }
+        resolveOpts: {},
+      },
     });
 
     console.log(JSON.stringify(verification));
-    expect(verification).toBeDefined()
-    expect(verification.versions).toEqual([SupportedVersion.SIOPv2_D12_OID4VP_D18])
+    expect(verification).toBeDefined();
+    expect(verification.versions).toEqual([SupportedVersion.SIOPv2_D12_OID4VP_D18]);
 
     /**
      * pd value: {"id":"dae5d9b6-8145-4297-99b2-b8fcc5abb5ad","input_descriptors":[{"id":"OpenBadgeCredential","format":{"jwt_vc_json":{"alg":["EdDSA"]},"jwt_vc":{"alg":["EdDSA"]}},"constraints":{"fields":[{"path":["$.vc.type"],"filter":{"type":"array","items":{"type":"string"},"contains":{"const":"OpenBadgeCredential"}}}]}}]}
