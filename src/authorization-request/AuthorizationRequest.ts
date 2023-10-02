@@ -26,7 +26,7 @@ import { URI } from './URI';
 import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
 export class AuthorizationRequest {
-  private readonly _requestObject: RequestObject;
+  private readonly _requestObject?: RequestObject;
   private readonly _payload: AuthorizationRequestPayload;
   private readonly _options: CreateAuthorizationRequestOpts;
   private _uri: URI;
@@ -94,7 +94,7 @@ export class AuthorizationRequest {
   }
 
   public async getSupportedVersionsFromPayload(): Promise<SupportedVersion[]> {
-    const mergedPayload = { ...this.payload, ...(await this.requestObject.getPayload()) };
+    const mergedPayload = { ...this.payload, ...(await this.requestObject?.getPayload()) };
     return authorizationRequestVersionDiscovery(mergedPayload);
   }
 
@@ -148,12 +148,19 @@ export class AuthorizationRequest {
       throw new Error(`${SIOPErrors.BAD_NONCE} payload: ${mergedPayload.nonce}, supplied: ${opts.nonce}`);
     }
 
-    const discoveryKey = mergedPayload['registration'] || mergedPayload['registration_uri'] ? 'registration' : 'client_metadata';
+    const registrationPropertyKey = mergedPayload['registration'] || mergedPayload['registration_uri'] ? 'registration' : 'client_metadata';
     let registrationMetadataPayload: RPRegistrationMetadataPayload;
-    if (mergedPayload[discoveryKey] || mergedPayload[`${discoveryKey}_uri`]) {
-      registrationMetadataPayload = await fetchByReferenceOrUseByValue(mergedPayload[`${discoveryKey}_uri`], mergedPayload[discoveryKey]);
+    if (mergedPayload[registrationPropertyKey] || mergedPayload[`${registrationPropertyKey}_uri`]) {
+      registrationMetadataPayload = await fetchByReferenceOrUseByValue(
+        mergedPayload[`${registrationPropertyKey}_uri`],
+        mergedPayload[registrationPropertyKey]
+      );
       assertValidRPRegistrationMedataPayload(registrationMetadataPayload);
       // TODO: We need to do something with the metadata probably
+    }
+    // When the response_uri parameter is present, the redirect_uri Authorization Request parameter MUST NOT be present. If the redirect_uri Authorization Request parameter is present when the Response Mode is direct_post, the Wallet MUST return an invalid_request Authorization Response error.
+    if (mergedPayload.redirect_uri && mergedPayload.response_uri) {
+      throw new Error(`${SIOPErrors.INVALID_REQUEST}, redirect_uri cannot be used together with response_uri`);
     }
     await checkWellknownDIDFromRequest(mergedPayload, opts);
 

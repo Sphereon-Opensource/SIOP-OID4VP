@@ -1,4 +1,6 @@
 enum SIOPErrors {
+  // todo: INVALID_REQUEST mapping onto response conforming to spec
+  INVALID_REQUEST = 'The request contained invalid or conflicting parameters',
   AUTH_REQUEST_EXPECTS_VP = 'authentication request expects a verifiable presentation in the response',
   AUTH_REQUEST_DOESNT_EXPECT_VP = "authentication request doesn't expect a verifiable presentation in the response",
   BAD_INTERNAL_VERIFICATION_PARAMS = 'Error: One of the either didUrlResolver or both registry and rpcUrl must be set',

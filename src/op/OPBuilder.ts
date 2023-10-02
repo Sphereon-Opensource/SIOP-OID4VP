@@ -29,7 +29,7 @@ export class OPBuilder {
   expiresIn?: number;
   issuer?: IIssuerId | ResponseIss;
   resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-  responseMode?: ResponseMode = ResponseMode.POST;
+  responseMode?: ResponseMode = ResponseMode.DIRECT_POST;
   responseRegistration?: Partial<ResponseRegistrationOpts> = {};
   customResolver?: Resolvable;
   signature?: InternalSignature | ExternalSignature | SuppliedSignature;

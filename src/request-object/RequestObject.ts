@@ -50,7 +50,7 @@ export class RequestObject {
   }
 
   public static async fromJwt(requestObjectJwt: RequestObjectJwt) {
-    return new RequestObject(undefined, undefined, requestObjectJwt);
+    return requestObjectJwt ? new RequestObject(undefined, undefined, requestObjectJwt) : undefined;
   }
 
   public static async fromPayload(requestObjectPayload: RequestObjectPayload, authorizationRequestOpts: CreateAuthorizationRequestOpts) {

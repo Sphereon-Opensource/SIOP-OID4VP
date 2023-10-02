@@ -167,20 +167,15 @@ export class OP {
       !response ||
       (response.options?.responseMode &&
         !(
-          response.options?.responseMode === ResponseMode.POST ||
-          response.options?.responseMode === ResponseMode.FORM_POST ||
+          response.options.responseMode === ResponseMode.POST ||
+          response.options.responseMode === ResponseMode.FORM_POST ||
           response.options.responseMode === ResponseMode.DIRECT_POST
         ))
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-    // TODO: there's probably a better place to check this
-    // We need to return a BAD_REQUEST error
-    if (response.options.redirectUri && response.options.responseUri) {
-      throw new Error(SIOPErrors.BAD_PARAMS);
-    }
 
-    const payload = await response.payload;
+    const payload = response.payload;
     const idToken = await response.idToken?.payload();
     const responseUri = authorizationResponse.responseURI || idToken?.aud;
     if (!responseUri) {

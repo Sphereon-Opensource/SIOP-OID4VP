@@ -306,7 +306,7 @@ describe('OP using test vectors', () => {
     await op.submitAuthorizationResponse({
       response: authorizationResponse,
       correlationId: '12345',
-      redirectURI: 'https://example/resp',
+      responseURI: 'https://example/resp',
     });
   });
   it('should create auth response', async () => {

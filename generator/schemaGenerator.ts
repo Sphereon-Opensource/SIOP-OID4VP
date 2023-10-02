@@ -165,9 +165,20 @@ const authorizationRequestPayloadVD11 = {
   skipTypeCheck: true
 };
 
+const authorizationRequestPayloadVD12OID4VPD18 = {
+  path: '../src/types/SIOP.types.ts',
+  tsconfig: 'tsconfig.json',
+  type: 'AuthorizationRequestPayloadVD12OID4VPD18', // Or <type-name> if you want to generate schema for that one type only
+  schemaId: 'AuthorizationRequestPayloadVD12OID4VPD18Schema',
+  outputPath: 'src/schemas/AuthorizationRequestPayloadVD12OID4VPD18.schema.ts',
+  // outputConstName: 'AuthorizationRequestPayloadSchemaVD11',
+  skipTypeCheck: true
+};
+
 let schemas: Schema[] = [
   writeSchema(authorizationRequestPayloadVID1),
   writeSchema(authorizationRequestPayloadVD11),
+  writeSchema(authorizationRequestPayloadVD12OID4VPD18),
   // writeSchema(requestOptsConf),
   writeSchema(responseOptsConf),
   writeSchema(rPRegistrationMetadataPayload),

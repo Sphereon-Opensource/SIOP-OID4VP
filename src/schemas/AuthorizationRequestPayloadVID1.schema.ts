@@ -305,6 +305,7 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         "fragment",
         "form_post",
         "post",
+        "direct_post",
         "query"
       ]
     },
@@ -618,12 +619,6 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         "pattern": {
           "type": "string"
         },
-        "contains": {
-          "$ref": "#/definitions/FilterV1Base"
-        },
-        "items": {
-          "$ref": "#/definitions/FilterV1BaseItems"
-        },
         "type": {
           "type": "string"
         }
@@ -638,111 +633,6 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         "number",
         "string"
       ]
-    },
-    "FilterV1Base": {
-      "type": "object",
-      "properties": {
-        "const": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "enum": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/OneOfNumberString"
-          }
-        },
-        "exclusiveMinimum": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "exclusiveMaximum": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "format": {
-          "type": "string"
-        },
-        "minLength": {
-          "type": "number"
-        },
-        "maxLength": {
-          "type": "number"
-        },
-        "minimum": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "maximum": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "not": {
-          "type": "object"
-        },
-        "pattern": {
-          "type": "string"
-        },
-        "contains": {
-          "$ref": "#/definitions/FilterV1Base"
-        },
-        "items": {
-          "$ref": "#/definitions/FilterV1BaseItems"
-        },
-        "type": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": false
-    },
-    "FilterV1BaseItems": {
-      "type": "object",
-      "properties": {
-        "const": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "enum": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/OneOfNumberString"
-          }
-        },
-        "exclusiveMinimum": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "exclusiveMaximum": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "format": {
-          "type": "string"
-        },
-        "minLength": {
-          "type": "number"
-        },
-        "maxLength": {
-          "type": "number"
-        },
-        "minimum": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "maximum": {
-          "$ref": "#/definitions/OneOfNumberString"
-        },
-        "not": {
-          "type": "object"
-        },
-        "pattern": {
-          "type": "string"
-        },
-        "contains": {
-          "$ref": "#/definitions/FilterV1Base"
-        },
-        "items": {
-          "$ref": "#/definitions/FilterV1BaseItems"
-        },
-        "type": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "additionalProperties": false
     },
     "HolderSubject": {
       "type": "object",
@@ -811,6 +701,9 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         },
         "purpose": {
           "type": "string"
+        },
+        "format": {
+          "$ref": "#/definitions/Format"
         },
         "group": {
           "type": "array",

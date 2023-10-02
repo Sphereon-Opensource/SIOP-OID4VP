@@ -26,7 +26,6 @@ import { RequestObject, RequestObjectOpts } from '../request-object';
 import { IRPSessionManager } from '../rp';
 
 import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './index';
-
 export const DEFAULT_EXPIRATION_TIME = 10 * 60;
 
 // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
@@ -35,7 +34,8 @@ export interface RequestObjectPayload extends RequestCommonPayload, JWTPayload {
   scope: string; // REQUIRED. As specified in Section 3.1.2 of [OpenID.Core].
   response_type: ResponseType | string; // REQUIRED. Constant string value id_token.
   client_id: string; // REQUIRED. RP's identifier at the Self-Issued OP.
-  redirect_uri: string; // REQUIRED. URI to which the Self-Issued OP Response will be sent
+  redirect_uri?: string; // REQUIRED before OID4VP v18, now optional because of response_uri. URI to which the Self-Issued OP Response will be sent
+  response_uri?: string; // New since OID4VP18 OPTIONAL. The Response URI to which the Wallet MUST send the Authorization Response using an HTTPS POST request as defined by the Response Mode direct_post. The Response URI receives all Authorization Response parameters as defined by the respective Response Type. When the response_uri parameter is present, the redirect_uri Authorization Request parameter MUST NOT be present. If the redirect_uri Authorization Request parameter is present when the Response Mode is direct_post, the Wallet MUST return an invalid_request Authorization Response error.
   nonce: string;
   state: string;
 }
@@ -75,8 +75,24 @@ export interface AuthorizationRequestPayloadVD11
   presentation_definition_uri?: string;
 }
 
+export interface AuthorizationRequestPayloadVD12OID4VPD18
+  extends AuthorizationRequestCommonPayload,
+    RequestClientMetadataPayloadProperties,
+    RequestIdTokenPayloadProperties {
+  claims?: ClaimPayloadCommon; // OPTIONAL. As specified in Section 5.5 of [OpenID.Core]
+  presentation_definition?: PresentationDefinitionV1 | PresentationDefinitionV2 | PresentationDefinitionV1[] | PresentationDefinitionV2[];
+  presentation_definition_uri?: string;
+  client_id_scheme?: ClientIdScheme;
+  response_uri?: string; // New since OID4VP18 OPTIONAL. The Response URI to which the Wallet MUST send the Authorization Response using an HTTPS POST request as defined by the Response Mode direct_post. The Response URI receives all Authorization Response parameters as defined by the respective Response Type. When the response_uri parameter is present, the redirect_uri Authorization Request parameter MUST NOT be present. If the redirect_uri Authorization Request parameter is present when the Response Mode is direct_post, the Wallet MUST return an invalid_request Authorization Response error.
+}
+
+export type ClientIdScheme = 'pre-registered' | 'redirect_uri' | 'entity_id' | 'did';
+
 // https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
-export type AuthorizationRequestPayload = AuthorizationRequestPayloadVID1 | AuthorizationRequestPayloadVD11;
+export type AuthorizationRequestPayload =
+  | AuthorizationRequestPayloadVID1
+  | AuthorizationRequestPayloadVD11
+  | AuthorizationRequestPayloadVD12OID4VPD18;
 
 export type JWTVcPresentationProfileAuthenticationRequestPayload = RequestIdTokenPayloadProperties;
 
@@ -569,12 +585,11 @@ export enum GrantType {
 export enum ResponseMode {
   FRAGMENT = 'fragment',
   FORM_POST = 'form_post',
-  POST = 'post', // Used in the spec <= version 17
-  QUERY = 'query',
-
-  // Defined in openid4vp
+  POST = 'post', // Used in OID4VP spec <= version 17
+  // Defined in openid4vp spec > 17 and replaces POST above
   // See https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-mode-direct_post
   DIRECT_POST = 'direct_post',
+  QUERY = 'query',
 }
 
 export enum ProtocolFlow {
@@ -746,6 +761,7 @@ export interface RevocationOpts {
 export enum SupportedVersion {
   SIOPv2_ID1 = 70,
   SIOPv2_D11 = 110,
+  SIOPv2_D12_OID4VP_D18 = 180,
   JWT_VC_PRESENTATION_PROFILE_v1 = 71,
 }
 

@@ -1195,6 +1195,7 @@ export const DiscoveryMetadataPayloadSchemaObj = {
         "fragment",
         "form_post",
         "post",
+        "direct_post",
         "query"
       ]
     },
