@@ -20,6 +20,7 @@ import { AuthorizationResponse } from './AuthorizationResponse';
 
 export interface AuthorizationResponseOpts {
   redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
+  responseUri?: string; // Alternative to the redirectUri, used when response_mode is `direct_post`
   registration?: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
 
@@ -107,7 +108,8 @@ export interface VerifyAuthorizationResponseOpts {
 }
 
 export interface AuthorizationResponseWithCorrelationId {
-  redirectURI: string;
+  // The URI to send the response to. Can be derived from either the redirect_uri or the response_uri
+  responseURI: string;
   response: AuthorizationResponse;
   correlationId: string;
 }

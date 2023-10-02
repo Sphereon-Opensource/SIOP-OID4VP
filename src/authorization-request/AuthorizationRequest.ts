@@ -156,6 +156,10 @@ export class AuthorizationRequest {
       // TODO: We need to do something with the metadata probably
     }
     await checkWellknownDIDFromRequest(mergedPayload, opts);
+
+    // TODO: we need to verify somewhere that if response_mode is direct_post, that the response_uri may be present,
+    // BUT not both redirect_uri and response_uri. What is the best place to do this?
+
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(mergedPayload, await this.getSupportedVersion());
     return {
       ...verifiedJwt,

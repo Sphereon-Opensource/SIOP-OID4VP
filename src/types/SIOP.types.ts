@@ -571,6 +571,10 @@ export enum ResponseMode {
   FORM_POST = 'form_post',
   POST = 'post', // Used in the spec <= version 17
   QUERY = 'query',
+
+  // Defined in openid4vp
+  // See https://openid.net/specs/openid-4-verifiable-presentations-1_0.html#name-response-mode-direct_post
+  DIRECT_POST = 'direct_post',
 }
 
 export enum ProtocolFlow {

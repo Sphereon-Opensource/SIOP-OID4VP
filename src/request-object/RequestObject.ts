@@ -65,6 +65,9 @@ export class RequestObject {
 
   public async toJwt(): Promise<RequestObjectJwt | undefined> {
     if (!this.jwt) {
+      if (!this.opts && !this.payload) {
+        return undefined;
+      }
       if (!this.opts) {
         throw Error(SIOPErrors.BAD_PARAMS);
       } else if (!this.payload) {

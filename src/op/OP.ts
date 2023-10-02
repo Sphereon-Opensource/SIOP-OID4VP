@@ -127,6 +127,12 @@ export class OP {
     }
     const correlationId = responseOpts?.correlationId || verifiedAuthorizationRequest.correlationId || uuidv4();
     try {
+      // IF using DIRECT_POST, the response_uri takes precedence over the redirect_uri
+      let responseUri = verifiedAuthorizationRequest.redirectURI;
+      if (verifiedAuthorizationRequest.authorizationRequestPayload.response_mode === ResponseMode.DIRECT_POST) {
+        responseUri = verifiedAuthorizationRequest.authorizationRequestPayload.response_uri ?? responseUri;
+      }
+
       const response = await AuthorizationResponse.fromVerifiedAuthorizationRequest(
         verifiedAuthorizationRequest,
         this.newAuthorizationResponseOpts({
@@ -140,7 +146,7 @@ export class OP {
         correlationId,
         subject: response,
       });
-      return { correlationId, response, redirectURI: verifiedAuthorizationRequest.redirectURI };
+      return { correlationId, response, responseURI: responseUri };
     } catch (error: any) {
       this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, {
         correlationId,
@@ -160,19 +166,31 @@ export class OP {
     if (
       !response ||
       (response.options?.responseMode &&
-        !(response.options?.responseMode === ResponseMode.POST || response.options?.responseMode === ResponseMode.FORM_POST))
+        !(
+          response.options?.responseMode === ResponseMode.POST ||
+          response.options?.responseMode === ResponseMode.FORM_POST ||
+          response.options.responseMode === ResponseMode.DIRECT_POST
+        ))
     ) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
-
+    // TODO: there's probably a better place to check this
+    // We need to return a BAD_REQUEST error
+    if (response.options.redirectUri && response.options.responseUri) {
+      throw new Error(SIOPErrors.BAD_PARAMS);
+    }
+    /*const request = response.authorizationRequest;
+    if (!request) {
+      throw Error('Cannot submit an authorization response without a request present');
+    }*/
     const payload = await response.payload;
     const idToken = await response.idToken?.payload();
-    const redirectURI = authorizationResponse.redirectURI || idToken?.aud;
-    if (!redirectURI) {
-      throw Error('No redirect URI present');
+    const responseUri = authorizationResponse.responseURI || idToken?.aud;
+    if (!responseUri) {
+      throw Error('No response URI present');
     }
     const authResponseAsURI = encodeJsonAsURI(payload);
-    return post(redirectURI, authResponseAsURI, { contentType: ContentType.FORM_URL_ENCODED })
+    return post(responseUri, authResponseAsURI, { contentType: ContentType.FORM_URL_ENCODED })
       .then((result: SIOPResonse<unknown>) => {
         this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, { correlationId, subject: response });
         return result.origResponse;
