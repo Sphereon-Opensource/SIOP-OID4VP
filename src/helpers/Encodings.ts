@@ -38,34 +38,75 @@ export function decodeUriAsJson(uri: string) {
   return json;
 }
 
-export function encodeJsonAsURI(json: unknown): string {
-  if (typeof json === 'string') {
-    return encodeJsonAsURI(JSON.parse(json));
+function encodeAndStripWhitespace(key: string): string {
+  return encodeURIComponent(key.replace(' ', ''));
+}
+
+export function encodeJsonAsURI(json: unknown, uriEncodedJsonProperties: string[] = []): string {
+  let parsedJson = json;
+  if (typeof parsedJson === 'string') {
+    parsedJson = JSON.parse(parsedJson);
+  }
+
+  // If no custom properties, we can just encode everything
+  if (uriEncodedJsonProperties.length === 0) {
+    return encodeAsUriValue(undefined, json);
   }
 
   const results: string[] = [];
 
-  function encodeAndStripWhitespace(key: string): string {
-    return encodeURIComponent(key.replace(' ', ''));
+  for (const [key, value] of Object.entries(json)) {
+    // Value of property must be seen as a separate uri encoded property.
+    if (uriEncodedJsonProperties.includes(key)) {
+      if (typeof value !== 'object' || Array.isArray(value) || value === null) {
+        throw new Error('Cannot encode non-object value as URI encoded JSON property');
+      }
+      results.push(`${encodeAndStripWhitespace(key)}=${encodeURIComponent(encodeAsUriValue(undefined, value))}`);
+    } else {
+      results.push(encodeAsUriValue(key, value));
+    }
+  }
+  return results.join('&');
+}
+
+export function encodeAsUriValue(key: string | undefined, value: unknown, base: string | undefined = undefined): string {
+  const results: string[] = [];
+
+  const isBool = typeof value == 'boolean';
+  const isNumber = typeof value == 'number';
+  const isString = typeof value == 'string';
+
+  if (!key && (isBool || isNumber || isString)) {
+    throw new Error('Cannot encode base value (boolean, string, number) without key');
   }
 
-  for (const [key, value] of Object.entries(json)) {
-    if (!value) {
-      continue;
-    }
-    const isBool = typeof value == 'boolean';
-    const isNumber = typeof value == 'number';
-    const isString = typeof value == 'string';
-    let encoded;
-    if (isBool || isNumber) {
-      encoded = `${encodeAndStripWhitespace(key)}=${value}`;
-    } else if (isString) {
-      encoded = `${encodeAndStripWhitespace(key)}=${encodeURIComponent(value)}`;
-    } else {
-      encoded = `${encodeAndStripWhitespace(key)}=${encodeURIComponent(JSON.stringify(value))}`;
-    }
-    results.push(encoded);
+  let encodedKey: string | undefined = undefined;
+  if (key && !base) {
+    encodedKey = encodeAndStripWhitespace(key);
+  } else if (key && base) {
+    encodedKey = `${base}[${encodeAndStripWhitespace(key)}]`;
+  } else if (!key && base) {
+    encodedKey = base;
   }
+
+  if (value === null || value === undefined) {
+    throw new Error('Cannot encode null or undefined value');
+  } else if (isBool || isNumber) {
+    results.push(`${encodedKey}=${value}`);
+  } else if (isString) {
+    results.push(`${encodedKey}=${encodeURIComponent(value)}`);
+  } else if (Array.isArray(value)) {
+    for (const entry of value) {
+      results.push(encodeAsUriValue(key, entry, base));
+    }
+  } else if (typeof value === 'object') {
+    for (const [subKey, subValue] of Object.entries(value)) {
+      results.push(encodeAsUriValue(subKey, subValue, encodedKey));
+    }
+  } else {
+    throw new Error('Unknown value type');
+  }
+
   return results.join('&');
 }
 
