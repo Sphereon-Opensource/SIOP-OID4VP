@@ -9,6 +9,9 @@ export const AuthorizationResponseOptsSchemaObj = {
         "redirectUri": {
           "type": "string"
         },
+        "responseUri": {
+          "type": "string"
+        },
         "registration": {
           "$ref": "#/definitions/ResponseRegistrationOpts"
         },
@@ -1349,7 +1352,8 @@ export const AuthorizationResponseOptsSchemaObj = {
         "fragment",
         "form_post",
         "post",
-        "query"
+        "query",
+        "direct_post"
       ]
     },
     "GrantType": {

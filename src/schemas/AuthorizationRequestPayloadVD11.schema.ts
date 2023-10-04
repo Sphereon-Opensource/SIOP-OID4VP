@@ -333,7 +333,8 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
         "fragment",
         "form_post",
         "post",
-        "query"
+        "query",
+        "direct_post"
       ]
     },
     "ClaimPayloadCommon": {

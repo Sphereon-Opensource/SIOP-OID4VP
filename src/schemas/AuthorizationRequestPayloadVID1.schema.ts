@@ -305,7 +305,8 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         "fragment",
         "form_post",
         "post",
-        "query"
+        "query",
+        "direct_post"
       ]
     },
     "ClaimPayloadVID1": {

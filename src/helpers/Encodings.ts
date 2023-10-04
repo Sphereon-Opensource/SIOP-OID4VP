@@ -8,7 +8,7 @@ export function decodeUriAsJson(uri: string) {
   if (!uri) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
-  const queryString = uri.replace(/^([a-zA-Z][a-zA-Z0-9-_]*:\/\/[?]?)/g, '');
+  const queryString = uri.replace(/^([a-zA-Z][a-zA-Z0-9-_]*:\/\/[a-zA-Z0-9-_%:@\.~!$&'()*+,;=]*[?]?)/, '');
   if (!queryString) {
     throw new Error(SIOPErrors.BAD_PARAMS);
   }
@@ -38,34 +38,75 @@ export function decodeUriAsJson(uri: string) {
   return json;
 }
 
-export function encodeJsonAsURI(json: unknown): string {
-  if (typeof json === 'string') {
-    return encodeJsonAsURI(JSON.parse(json));
+function encodeAndStripWhitespace(key: string): string {
+  return encodeURIComponent(key.replace(' ', ''));
+}
+
+export function encodeJsonAsURI(json: unknown, uriEncodedProperties: string[] = []): string {
+  const parsedJson = typeof json === 'string' ? JSON.parse(json) : json;
+
+  // If no custom properties, we can just encode everything
+  if (uriEncodedProperties.length === 0) {
+    return encodeAsUriValue(undefined, parsedJson);
   }
 
   const results: string[] = [];
 
-  function encodeAndStripWhitespace(key: string): string {
-    return encodeURIComponent(key.replace(' ', ''));
+  for (const [key, value] of Object.entries(parsedJson)) {
+    // Value of property must be seen as a separate uri encoded property.
+    if (uriEncodedProperties.includes(key)) {
+      if (typeof value === null || typeof value === undefined) {
+        throw new Error('Cannot encode undefined or null value as URI encoded JSON property');
+      } else if (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') {
+        results.push(encodeAsUriValue(key, value, undefined));
+      } else {
+        results.push(`${encodeAndStripWhitespace(key)}=${encodeURIComponent(encodeAsUriValue(undefined, value, undefined))}`);
+      }
+    } else {
+      results.push(encodeAsUriValue(key, value, undefined));
+    }
+  }
+  return results.join('&');
+}
+
+export function encodeAsUriValue(key: string | undefined, value: unknown, base: string | undefined = undefined): string {
+  const results: string[] = [];
+
+  const isBool = typeof value == 'boolean';
+  const isNumber = typeof value == 'number';
+  const isString = typeof value == 'string';
+
+  if (!key && !base && (isBool || isNumber || isString)) {
+    throw new Error('Cannot encode value (boolean, string, number) without key or base');
   }
 
-  for (const [key, value] of Object.entries(json)) {
-    if (!value) {
-      continue;
-    }
-    const isBool = typeof value == 'boolean';
-    const isNumber = typeof value == 'number';
-    const isString = typeof value == 'string';
-    let encoded;
-    if (isBool || isNumber) {
-      encoded = `${encodeAndStripWhitespace(key)}=${value}`;
-    } else if (isString) {
-      encoded = `${encodeAndStripWhitespace(key)}=${encodeURIComponent(value)}`;
-    } else {
-      encoded = `${encodeAndStripWhitespace(key)}=${encodeURIComponent(JSON.stringify(value))}`;
-    }
-    results.push(encoded);
+  let encodedKey: string | undefined = undefined;
+  if (key && !base) {
+    encodedKey = encodeAndStripWhitespace(key);
+  } else if (key && base) {
+    encodedKey = `${base}${encodeAndStripWhitespace(`[${key}]`)}`;
+  } else if (!key && base) {
+    encodedKey = base;
   }
+
+  if (value === null || value === undefined) {
+    throw new Error('Cannot encode null or undefined value');
+  } else if (isBool || isNumber) {
+    results.push(`${encodedKey}=${value}`);
+  } else if (isString) {
+    results.push(`${encodedKey}=${encodeURIComponent(value)}`);
+  } else if (Array.isArray(value)) {
+    value.forEach((entry, index) => {
+      results.push(encodeAsUriValue(undefined, entry, encodedKey ? encodedKey + encodeAndStripWhitespace(`[${index}]`) : `${index}`));
+    });
+  } else if (typeof value === 'object') {
+    for (const [subKey, subValue] of Object.entries(value)) {
+      results.push(encodeAsUriValue(subKey, subValue, encodedKey));
+    }
+  } else {
+    throw new Error('Unknown value type');
+  }
+
   return results.join('&');
 }
 
