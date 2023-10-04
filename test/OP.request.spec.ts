@@ -72,7 +72,8 @@ describe('OP OPBuilder should', () => {
 describe('OP should', () => {
   const responseOpts: AuthorizationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
-    redirectUri: EXAMPLE_REDIRECT_URL,
+    responseURI: EXAMPLE_REDIRECT_URL,
+    responseURIType: 'redirect_uri',
     signature: {
       hexPrivateKey: HEX_KEY,
       did: DID,

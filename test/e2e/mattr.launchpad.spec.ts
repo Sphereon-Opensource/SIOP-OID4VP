@@ -1,9 +1,19 @@
+import { PresentationSignCallBackParams, PresentationSubmissionLocation } from '@sphereon/pex';
+import { W3CVerifiablePresentation } from '@sphereon/ssi-types';
 import * as ed25519 from '@transmute/did-key-ed25519';
-import * as u8a from 'uint8arrays';
 import { fetch } from 'cross-fetch';
-import { JWK } from 'jose';
+import { importJWK, JWK, SignJWT } from 'jose';
+import * as u8a from 'uint8arrays';
 
-import { AuthorizationRequest, OP, VerificationMode } from '../../src';
+import {
+  AuthorizationRequest,
+  AuthorizationResponse,
+  PresentationDefinitionWithLocation,
+  PresentationExchange,
+  SigningAlgo,
+  SupportedVersion,
+  VerificationMode
+} from '../../src';
 
 export interface InitiateOfferRequest {
   types: string[];
@@ -18,6 +28,9 @@ export interface InitiateOfferResponse {
 export const UNIT_TEST_TIMEOUT = 30000;
 
 export const VP_CREATE_URL = 'https://launchpad.mattrlabs.com/api/vp/create';
+
+export const OPENBADGE_JWT_VC =
+  'eyJhbGciOiJFZERTQSIsImtpZCI6ImRpZDp3ZWI6bGF1bmNocGFkLnZpaS5lbGVjdHJvbi5tYXR0cmxhYnMuaW8jNkJoRk1DR1RKZyJ9.eyJpc3MiOiJkaWQ6d2ViOmxhdW5jaHBhZC52aWkuZWxlY3Ryb24ubWF0dHJsYWJzLmlvIiwic3ViIjoiZGlkOmtleTp6Nk1raXRHVmduTGRORlpqbUE5WEpwQThrM29lakVudU1GN205NkJEN3BaTGprWTIiLCJuYmYiOjE2OTYzNjA1MTEsImV4cCI6MTcyNzk4MjkxMSwidmMiOnsibmFtZSI6IkV4YW1wbGUgVW5pdmVyc2l0eSBEZWdyZWUiLCJkZXNjcmlwdGlvbiI6IkpGRiBQbHVnZmVzdCAzIE9wZW5CYWRnZSBDcmVkZW50aWFsIiwiY3JlZGVudGlhbEJyYW5kaW5nIjp7ImJhY2tncm91bmRDb2xvciI6IiM0NjRjNDkifSwiQGNvbnRleHQiOlsiaHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMvdjEiLCJodHRwczovL21hdHRyLmdsb2JhbC9jb250ZXh0cy92Yy1leHRlbnNpb25zL3YyIiwiaHR0cHM6Ly9wdXJsLmltc2dsb2JhbC5vcmcvc3BlYy9vYi92M3AwL2NvbnRleHQtMy4wLjIuanNvbiIsImh0dHBzOi8vcHVybC5pbXNnbG9iYWwub3JnL3NwZWMvb2IvdjNwMC9leHRlbnNpb25zLmpzb24iLCJodHRwczovL3czaWQub3JnL3ZjLXJldm9jYXRpb24tbGlzdC0yMDIwL3YxIl0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJPcGVuQmFkZ2VDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImlkIjoiZGlkOmtleTp6Nk1raXRHVmduTGRORlpqbUE5WEpwQThrM29lakVudU1GN205NkJEN3BaTGprWTIiLCJ0eXBlIjpbIkFjaGlldmVtZW50U3ViamVjdCJdLCJhY2hpZXZlbWVudCI6eyJpZCI6Imh0dHBzOi8vZXhhbXBsZS5jb20vYWNoaWV2ZW1lbnRzLzIxc3QtY2VudHVyeS1za2lsbHMvdGVhbXdvcmsiLCJuYW1lIjoiVGVhbXdvcmsiLCJ0eXBlIjpbIkFjaGlldmVtZW50Il0sImltYWdlIjp7ImlkIjoiaHR0cHM6Ly93M2MtY2NnLmdpdGh1Yi5pby92Yy1lZC9wbHVnZmVzdC0zLTIwMjMvaW1hZ2VzL0pGRi1WQy1FRFUtUExVR0ZFU1QzLWJhZGdlLWltYWdlLnBuZyIsInR5cGUiOiJJbWFnZSJ9LCJjcml0ZXJpYSI6eyJuYXJyYXRpdmUiOiJUZWFtIG1lbWJlcnMgYXJlIG5vbWluYXRlZCBmb3IgdGhpcyBiYWRnZSBieSB0aGVpciBwZWVycyBhbmQgcmVjb2duaXplZCB1cG9uIHJldmlldyBieSBFeGFtcGxlIENvcnAgbWFuYWdlbWVudC4ifSwiZGVzY3JpcHRpb24iOiJUaGlzIGJhZGdlIHJlY29nbml6ZXMgdGhlIGRldmVsb3BtZW50IG9mIHRoZSBjYXBhY2l0eSB0byBjb2xsYWJvcmF0ZSB3aXRoaW4gYSBncm91cCBlbnZpcm9ubWVudC4ifX0sImlzc3VlciI6eyJpZCI6ImRpZDp3ZWI6bGF1bmNocGFkLnZpaS5lbGVjdHJvbi5tYXR0cmxhYnMuaW8iLCJuYW1lIjoiRXhhbXBsZSBVbml2ZXJzaXR5IiwiaWNvblVybCI6Imh0dHBzOi8vdzNjLWNjZy5naXRodWIuaW8vdmMtZWQvcGx1Z2Zlc3QtMS0yMDIyL2ltYWdlcy9KRkZfTG9nb0xvY2t1cC5wbmciLCJpbWFnZSI6Imh0dHBzOi8vdzNjLWNjZy5naXRodWIuaW8vdmMtZWQvcGx1Z2Zlc3QtMS0yMDIyL2ltYWdlcy9KRkZfTG9nb0xvY2t1cC5wbmcifX19.JDQ5kp_nvqJbL9Q8o2xIdt_r_WG0cB1o-Boy1RiDZhXRlVTgwAxvCa41OiL97VnbovN98tL7VtXbM6slAt6TBg';
 
 export const jwk: JWK = {
   crv: 'Ed25519',
@@ -45,7 +58,6 @@ export const generateDid = async (opts?: { seed?: Uint8Array }) => {
   return { keys, didDocument };
 };
 
-
 describe('OID4VCI-Client using Mattr issuer should', () => {
   async function test(format: string | string[]) {
     const did = await generateDid({ seed: u8a.fromString('913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a88d9d1e5', 'base16') });
@@ -58,17 +70,35 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
     expect(state).toBeDefined();
     expect(nonce).toBeDefined();
 
-    const auth = await AuthorizationRequest.verify(authorizeRequestUri, {
-      correlationId: 'test', verification: {
+    const correlationId = 'test';
+
+    const verifiedAuthRequest = await AuthorizationRequest.verify(authorizeRequestUri, {
+      correlationId,
+      verification: {
         mode: VerificationMode.INTERNAL,
         resolveOpts: {}
       }
     });
-    expect(auth).toBeDefined()
-    expect(auth.presentationDefinitions).toHaveLength(1)
+    expect(verifiedAuthRequest).toBeDefined();
+    expect(verifiedAuthRequest.presentationDefinitions).toHaveLength(1);
 
+    const pex = new PresentationExchange({ allDIDs: [didStr], allVerifiableCredentials: [OPENBADGE_JWT_VC] });
+    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+      verifiedAuthRequest.authorizationRequestPayload
+    );
+    await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, [OPENBADGE_JWT_VC], presentationSignCalback, { presentationSubmissionLocation: PresentationSubmissionLocation.EXTERNAL, proofOptions: { nonce }, holderDID: didStr });
 
-    OP.builder().addDidMethod('key');
+    const authResponse = await AuthorizationResponse.fromVerifiedAuthorizationRequest(verifiedAuthRequest,
+      { presentationExchange: { verifiablePresentations: [verifiablePresentationResult.verifiablePresentation], presentationSubmission: verifiablePresentationResult.presentationSubmission },
+        signature: {hexPrivateKey: '913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a88d9d1e5', did: didStr, kid, alg: SigningAlgo.EDDSA}},
+      { correlationId, verification: { mode: VerificationMode.INTERNAL, resolveOpts: {} }, nonce, state });
+
+    expect(authResponse).toBeDefined()
+    expect(authResponse.payload).toBeDefined()
+    expect(authResponse.payload.presentation_submission).toBeDefined()
+    expect(authResponse.payload.vp_token).toBeDefined()
+    console.log(JSON.stringify(authResponse));
   }
 
   it(
@@ -87,7 +117,6 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
   );
 });
 
-
 async function getOffer(types: string | string[]): Promise<InitiateOfferResponse> {
   const credentialOffer = await fetch(VP_CREATE_URL, {
     method: 'post',
@@ -105,13 +134,45 @@ async function getOffer(types: string | string[]): Promise<InitiateOfferResponse
   return (await credentialOffer.json()) as InitiateOfferResponse;
 }
 
-/*
-async function proofOfPossessionCallbackFunction(args: Jwt, kid?: string): Promise<string> {
+describe('Mattr OID4VP v18 credential offer', () => {
+  test('should verify', async () => {
+    const offer = await getOffer('OpenBadgeCredential');
+    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(offer.authorizeRequestUri);
+    console.log(JSON.stringify(authorizationRequest.payload, null, 2));
+    console.log(JSON.stringify(await authorizationRequest.getSupportedVersionsFromPayload()));
+
+    const verification = await authorizationRequest.verify({
+      correlationId: 'test',
+      verification: {
+        mode: VerificationMode.INTERNAL,
+        resolveOpts: {}
+      }
+    });
+
+    console.log(JSON.stringify(verification));
+    expect(verification).toBeDefined();
+    expect(verification.versions).toEqual([SupportedVersion.SIOPv2_D12_OID4VP_D18]);
+
+    /**
+     * pd value: {"id":"dae5d9b6-8145-4297-99b2-b8fcc5abb5ad","input_descriptors":[{"id":"OpenBadgeCredential","format":{"jwt_vc_json":{"alg":["EdDSA"]},"jwt_vc":{"alg":["EdDSA"]}},"constraints":{"fields":[{"path":["$.vc.type"],"filter":{"type":"array","items":{"type":"string"},"contains":{"const":"OpenBadgeCredential"}}}]}}]}
+     */
+  });
+});
+
+async function presentationSignCalback(args: PresentationSignCallBackParams): Promise<W3CVerifiablePresentation> {
+
   const importedJwk = await importJWK(jwk, 'EdDSA');
-  return await new SignJWT({ ...args.payload })
-    .setProtectedHeader({ ...args.header })
+  const jwt = await new SignJWT({ vp: {...args.presentation}, nonce: args.options.proofOptions.nonce, iss: args.options.holderDID })
+    .setProtectedHeader({
+      'typ': 'JWT',
+      'alg': 'EdDSA',
+      kid
+    })
     .setIssuedAt()
     .setExpirationTime('2h')
     .sign(importedJwk);
+
+  console.log(`VP: ${jwt}`);
+  return jwt;
 }
-*/
+

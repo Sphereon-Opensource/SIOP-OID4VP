@@ -51,7 +51,8 @@ const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthorizationResponseOpts = {
     checkLinkedDomain: CheckLinkedDomain.NEVER,
-    redirectUri: EXAMPLE_REDIRECT_URL,
+    responseURI: EXAMPLE_REDIRECT_URL,
+    responseURIType: 'redirect_uri',
     responseMode: ResponseMode.POST,
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
@@ -163,7 +164,8 @@ describe('create JWT from Request JWT should', () => {
     };
     const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      responseURI: EXAMPLE_REDIRECT_URL,
+      responseURIType: 'redirect_uri',
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -252,7 +254,8 @@ describe('create JWT from Request JWT should', () => {
       };
       const responseOpts: AuthorizationResponseOpts = {
         checkLinkedDomain: CheckLinkedDomain.NEVER,
-        redirectUri: EXAMPLE_REDIRECT_URL,
+        responseURI: EXAMPLE_REDIRECT_URL,
+        responseURIType: 'redirect_uri',
         registration: {
           authorizationEndpoint: 'www.myauthorizationendpoint.com',
           idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -413,7 +416,8 @@ describe('create JWT from Request JWT should', () => {
     );
     const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      responseURI: EXAMPLE_REDIRECT_URL,
+      responseURIType: 'redirect_uri',
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         issuer: ResponseIss.SELF_ISSUED_V2,
@@ -586,7 +590,8 @@ describe('create JWT from Request JWT should', () => {
     );
     const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
-      redirectUri: EXAMPLE_REDIRECT_URL,
+      responseURI: EXAMPLE_REDIRECT_URL,
+      responseURIType: 'redirect_uri',
       registration: {
         authorizationEndpoint: 'www.myauthorizationendpoint.com',
         issuer: ResponseIss.SELF_ISSUED_V2,

@@ -61,12 +61,14 @@ export class PresentationExchange {
     const signOptions: VerifiablePresentationFromOpts = {
       ...options,
       proofOptions: {
+        ...options.proofOptions,
         proofPurpose: options?.proofOptions?.proofPurpose ?? IProofPurpose.authentication,
         type: options?.proofOptions?.type ?? IProofType.EcdsaSecp256k1Signature2019,
         challenge: options?.proofOptions?.challenge,
         domain: options?.proofOptions?.domain,
       },
       signatureOptions: {
+        ...options.signatureOptions,
         verificationMethod: options?.signatureOptions?.verificationMethod,
         keyEncoding: options?.signatureOptions?.keyEncoding ?? KeyEncoding.Hex,
       },

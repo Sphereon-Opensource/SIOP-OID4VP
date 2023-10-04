@@ -11,6 +11,7 @@ import {
   NoSignature,
   ResponseMode,
   ResponseRegistrationOpts,
+  ResponseURIType,
   SuppliedSignature,
   SupportedVersion,
   VerifiablePresentationWithFormat,
@@ -19,8 +20,9 @@ import {
 import { AuthorizationResponse } from './AuthorizationResponse';
 
 export interface AuthorizationResponseOpts {
-  redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
-  responseUri?: string; // Alternative to the redirectUri, used when response_mode is `direct_post`
+  // redirectUri?: string; // It's typically comes from the request opts as a measure to prevent hijacking.
+  responseURI?: string; // This is either the redirect URI or response URI. See also responseURIType. response URI is used when response_mode is `direct_post`
+  responseURIType?: ResponseURIType;
   registration?: ResponseRegistrationOpts;
   checkLinkedDomain?: CheckLinkedDomain;
 

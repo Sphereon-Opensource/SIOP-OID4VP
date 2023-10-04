@@ -6,11 +6,11 @@ export const AuthorizationResponseOptsSchemaObj = {
     "AuthorizationResponseOpts": {
       "type": "object",
       "properties": {
-        "redirectUri": {
+        "responseURI": {
           "type": "string"
         },
-        "responseUri": {
-          "type": "string"
+        "responseURIType": {
+          "$ref": "#/definitions/ResponseURIType"
         },
         "registration": {
           "$ref": "#/definitions/ResponseRegistrationOpts"
@@ -60,6 +60,13 @@ export const AuthorizationResponseOptsSchemaObj = {
         }
       },
       "additionalProperties": false
+    },
+    "ResponseURIType": {
+      "type": "string",
+      "enum": [
+        "response_uri",
+        "redirect_uri"
+      ]
     },
     "ResponseRegistrationOpts": {
       "anyOf": [

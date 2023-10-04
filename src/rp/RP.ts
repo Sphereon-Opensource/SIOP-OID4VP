@@ -23,6 +23,7 @@ import {
   InternalVerification,
   PassBy,
   RegisterEventListener,
+  ResponseURIType,
   SIOPErrors,
   SupportedVersion,
   VerifiedAuthorizationResponse,
@@ -70,7 +71,8 @@ export class RP {
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
     version?: SupportedVersion;
     requestByReferenceURI?: string;
-    redirectURI?: string;
+    redirectURI_TODO_NOT_IMPLEMENTED?: string; // todo: response_uri/redirect_uri is not hooked up from opts!
+    responseURIType_TODO_NOT_IMEPLEMENTED?: ResponseURIType; // todo: response_uri/redirect_uri is not hooked up from opts!
   }): Promise<AuthorizationRequest> {
     const authorizationRequestOpts = this.newAuthorizationRequestOpts(opts);
     return AuthorizationRequest.fromOpts(authorizationRequestOpts)

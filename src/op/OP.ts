@@ -177,7 +177,7 @@ export class OP {
 
     const payload = response.payload;
     const idToken = await response.idToken?.payload();
-    const responseUri = authorizationResponse.responseURI || idToken?.aud;
+    const responseUri = authorizationResponse.responseURI ?? idToken?.aud;
     if (!responseUri) {
       throw Error('No response URI present');
     }
@@ -233,6 +233,7 @@ export class OP {
     }
     // We are taking the whole presentationExchange object from a certain location
     const presentationExchange = opts.presentationExchange ?? this._createResponseOptions.presentationExchange;
+    const responseURI = opts.audience ?? this._createResponseOptions.responseURI;
     return {
       ...this._createResponseOptions,
       ...opts,
@@ -242,7 +243,9 @@ export class OP {
       },
       ...(presentationExchange && { presentationExchange }),
       registration: { ...this._createResponseOptions?.registration, issuer },
-      redirectUri: opts.audience ?? this._createResponseOptions.redirectUri,
+      responseURI,
+      responseURIType:
+        this._createResponseOptions.responseURIType ?? (version < SupportedVersion.SIOPv2_D12_OID4VP_D18 && responseURI ? 'redirect_uri' : undefined),
     };
   }
 

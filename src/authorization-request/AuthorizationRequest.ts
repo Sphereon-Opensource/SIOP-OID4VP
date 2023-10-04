@@ -11,21 +11,18 @@ import {
   PassBy,
   RequestObjectJwt,
   RequestObjectPayload,
-  RequestStateInfo, ResponseURIType,
+  RequestStateInfo,
+  ResponseURIType,
   RPRegistrationMetadataPayload,
   Schema,
   SIOPErrors,
   SupportedVersion,
   VerifiedAuthorizationRequest,
-  VerifiedJWT
+  VerifiedJWT,
 } from '../types';
 
 import { assertValidAuthorizationRequestOpts, assertValidVerifyAuthorizationRequestOpts } from './Opts';
-import {
-  assertValidRPRegistrationMedataPayload,
-  checkWellknownDIDFromRequest,
-  createAuthorizationRequestPayload
-} from './Payload';
+import { assertValidRPRegistrationMedataPayload, checkWellknownDIDFromRequest, createAuthorizationRequestPayload } from './Payload';
 import { URI } from './URI';
 import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
@@ -60,6 +57,7 @@ export class AuthorizationRequest {
   }
 
   public static async fromOpts(opts: CreateAuthorizationRequestOpts, requestObject?: RequestObject): Promise<AuthorizationRequest> {
+    // todo: response_uri/redirect_uri is not hooked up from opts!
     if (!opts || !opts.requestObject) {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
@@ -127,7 +125,7 @@ export class AuthorizationRequest {
       const options: JWTVerifyOptions = {
         ...opts.verification?.resolveOpts?.jwtVerifyOpts,
         resolver,
-        audience: getAudience(jwt)
+        audience: getAudience(jwt),
       };
 
       verifiedJwt = await verifyDidJWT(jwt, resolver, options);
@@ -170,7 +168,7 @@ export class AuthorizationRequest {
     } else if (mergedPayload.redirect_uri) {
       responseURIType = 'redirect_uri';
       responseURI = mergedPayload.redirect_uri;
-    } else if (mergedPayload.redirect_uri) {
+    } else if (mergedPayload.response_uri) {
       responseURIType = 'response_uri';
       responseURI = mergedPayload.response_uri;
     } else if (mergedPayload.client_id_scheme === 'redirect_uri' && mergedPayload.client_id) {
@@ -198,7 +196,7 @@ export class AuthorizationRequest {
       registrationMetadataPayload,
       requestObject: this.requestObject,
       authorizationRequestPayload: this.payload,
-      versions: await this.getSupportedVersionsFromPayload()
+      versions: await this.getSupportedVersionsFromPayload(),
     };
   }
 
@@ -238,7 +236,7 @@ export class AuthorizationRequest {
       client_id: this.options.clientMetadata.client_id,
       iat: requestObject.iat ?? this.payload.iat,
       nonce: requestObject.nonce ?? this.payload.nonce,
-      state: this.payload.state
+      state: this.payload.state,
     };
   }
 
@@ -253,7 +251,7 @@ export class AuthorizationRequest {
   }
 
   public async mergedPayloads(): Promise<RequestObjectPayload> {
-    return { ...this.payload, ...(await this.requestObject.getPayload()) };
+    return { ...this.payload, ...(this.requestObject && await this.requestObject.getPayload()) };
   }
 
   public async getPresentationDefinitions(version?: SupportedVersion): Promise<PresentationDefinitionWithLocation[] | undefined> {

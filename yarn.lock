@@ -1436,10 +1436,10 @@
   resolved "https://registry.yarnpkg.com/@sphereon/pex-models/-/pex-models-2.1.1.tgz#399e529db2a7e3b9abbd7314cdba619ceb6cb758"
   integrity sha512-0UX/CMwgiJSxzuBn6SLOTSKkm+uPq3dkNjl8w4EtppXp6zBB4lQMd1mJX7OifX5Bp5vPUfoz7bj2B+yyDtbZww==
 
-"@sphereon/pex@2.1.3-unstable.1":
-  version "2.1.3-unstable.1"
-  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-2.1.3-unstable.1.tgz#ad68b66f18928e69bdc369641ddc69fd01f4956e"
-  integrity sha512-aRPWOC30YoJVlqfA0VZy/0blwFIlfomv/+cpKgn4Zth8AU4QsH8a/oeFmrsRp2k7K9KDJ91UAmI3Y4wv3EaU2A==
+"@sphereon/pex@2.1.3-unstable.6":
+  version "2.1.3-unstable.6"
+  resolved "https://registry.yarnpkg.com/@sphereon/pex/-/pex-2.1.3-unstable.6.tgz#0934c07d615551bef2092673824d60f58530378a"
+  integrity sha512-8vyYwGGqtxfmlwJuSe2lFSI8sedFV8Y6DR1o+bqMe18cUtgJUZ2XlsDLbq9r0npC5URJQJWOUo5ZUoGWuRJfCg==
   dependencies:
     "@astronautlabs/jsonpath" "^1.1.2"
     "@sphereon/pex-models" "^2.1.1"

@@ -442,29 +442,3 @@ describe('OP and RP communication should', () => {
     expect(() => metadata.verify()).toThrowError(SIOPErrors.CREDENTIALS_FORMATS_NOT_PROVIDED);
   });
 });
-
-describe('Mattr OID4VP v18 credential offer', () => {
-  test('should verify', async () => {
-    const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(
-      'openid4vp://authorize?client_id=https%3A%2F%2Flaunchpad.mattrlabs.com%2Fapi%2Fvp%2Fcallback&client_id_scheme=redirect_uri&response_uri=https%3A%2F%2Flaunchpad.mattrlabs.com%2Fapi%2Fvp%2Fcallback&response_type=vp_token&response_mode=direct_post&presentation_definition_uri=https%3A%2F%2Flaunchpad.mattrlabs.com%2Fapi%2Fvp%2Frequest%3Fstate%3DfzoNJFAU3UeXQuLAsFAyWw&nonce=F-9MSA0Lb0-_MbW4bCzZiA&state=fzoNJFAU3UeXQuLAsFAyWw'
-    );
-    console.log(JSON.stringify(authorizationRequest.payload, null, 2));
-    console.log(JSON.stringify(await authorizationRequest.getSupportedVersionsFromPayload()));
-
-    const verification = await authorizationRequest.verify({
-      correlationId: 'test',
-      verification: {
-        mode: VerificationMode.INTERNAL,
-        resolveOpts: {},
-      },
-    });
-
-    console.log(JSON.stringify(verification));
-    expect(verification).toBeDefined();
-    expect(verification.versions).toEqual([SupportedVersion.SIOPv2_D12_OID4VP_D18]);
-
-    /**
-     * pd value: {"id":"dae5d9b6-8145-4297-99b2-b8fcc5abb5ad","input_descriptors":[{"id":"OpenBadgeCredential","format":{"jwt_vc_json":{"alg":["EdDSA"]},"jwt_vc":{"alg":["EdDSA"]}},"constraints":{"fields":[{"path":["$.vc.type"],"filter":{"type":"array","items":{"type":"string"},"contains":{"const":"OpenBadgeCredential"}}}]}}]}
-     */
-  });
-});
