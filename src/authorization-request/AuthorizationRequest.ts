@@ -251,7 +251,7 @@ export class AuthorizationRequest {
   }
 
   public async mergedPayloads(): Promise<RequestObjectPayload> {
-    return { ...this.payload, ...(this.requestObject && await this.requestObject.getPayload()) };
+    return { ...this.payload, ...(this.requestObject && (await this.requestObject.getPayload())) };
   }
 
   public async getPresentationDefinitions(version?: SupportedVersion): Promise<PresentationDefinitionWithLocation[] | undefined> {

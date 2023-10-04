@@ -12,7 +12,7 @@ import {
   PresentationExchange,
   SigningAlgo,
   SupportedVersion,
-  VerificationMode
+  VerificationMode,
 } from '../../src';
 
 export interface InitiateOfferRequest {
@@ -36,7 +36,7 @@ export const jwk: JWK = {
   crv: 'Ed25519',
   d: 'kTRm0aONHYwNPA-w_DtjMHUIWjE3K70qgCIhWojZ0eU',
   x: 'NeA0d8sp86xRh3DczU4m5wPNIbl0HCSwOBcMN3sNmdk',
-  kty: 'OKP'
+  kty: 'OKP',
 };
 
 // pub  hex: 35e03477cb29f3ac518770dccd4e26e703cd21b9741c24b038170c377b0d99d9
@@ -50,7 +50,7 @@ export const generateDid = async (opts?: { seed?: Uint8Array }) => {
     {
       secureRandom: () => {
         return opts?.seed ?? '913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a88d9d1e5';
-      }
+      },
     },
     { accept: 'application/did+json' }
   );
@@ -76,8 +76,8 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
       correlationId,
       verification: {
         mode: VerificationMode.INTERNAL,
-        resolveOpts: {}
-      }
+        resolveOpts: {},
+      },
     });
     expect(verifiedAuthRequest).toBeDefined();
     expect(verifiedAuthRequest.presentationDefinitions).toHaveLength(1);
@@ -87,17 +87,28 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
       verifiedAuthRequest.authorizationRequestPayload
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, [OPENBADGE_JWT_VC], presentationSignCalback, { presentationSubmissionLocation: PresentationSubmissionLocation.EXTERNAL, proofOptions: { nonce }, holderDID: didStr });
+    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, [OPENBADGE_JWT_VC], presentationSignCalback, {
+      presentationSubmissionLocation: PresentationSubmissionLocation.EXTERNAL,
+      proofOptions: { nonce },
+      holderDID: didStr,
+    });
 
-    const authResponse = await AuthorizationResponse.fromVerifiedAuthorizationRequest(verifiedAuthRequest,
-      { presentationExchange: { verifiablePresentations: [verifiablePresentationResult.verifiablePresentation], presentationSubmission: verifiablePresentationResult.presentationSubmission },
-        signature: {hexPrivateKey: '913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a88d9d1e5', did: didStr, kid, alg: SigningAlgo.EDDSA}},
-      { correlationId, verification: { mode: VerificationMode.INTERNAL, resolveOpts: {} }, nonce, state });
+    const authResponse = await AuthorizationResponse.fromVerifiedAuthorizationRequest(
+      verifiedAuthRequest,
+      {
+        presentationExchange: {
+          verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+          presentationSubmission: verifiablePresentationResult.presentationSubmission,
+        },
+        signature: { hexPrivateKey: '913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a88d9d1e5', did: didStr, kid, alg: SigningAlgo.EDDSA },
+      },
+      { correlationId, verification: { mode: VerificationMode.INTERNAL, resolveOpts: {} }, nonce, state }
+    );
 
-    expect(authResponse).toBeDefined()
-    expect(authResponse.payload).toBeDefined()
-    expect(authResponse.payload.presentation_submission).toBeDefined()
-    expect(authResponse.payload.vp_token).toBeDefined()
+    expect(authResponse).toBeDefined();
+    expect(authResponse.payload).toBeDefined();
+    expect(authResponse.payload.presentation_submission).toBeDefined();
+    expect(authResponse.payload.vp_token).toBeDefined();
     console.log(JSON.stringify(authResponse));
   }
 
@@ -122,13 +133,13 @@ async function getOffer(types: string | string[]): Promise<InitiateOfferResponse
     method: 'post',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
     },
 
     //make sure to serialize your JSON body
     body: JSON.stringify({
-      types: Array.isArray(types) ? types : [types]
-    })
+      types: Array.isArray(types) ? types : [types],
+    }),
   });
 
   return (await credentialOffer.json()) as InitiateOfferResponse;
@@ -145,8 +156,8 @@ describe('Mattr OID4VP v18 credential offer', () => {
       correlationId: 'test',
       verification: {
         mode: VerificationMode.INTERNAL,
-        resolveOpts: {}
-      }
+        resolveOpts: {},
+      },
     });
 
     console.log(JSON.stringify(verification));
@@ -160,13 +171,12 @@ describe('Mattr OID4VP v18 credential offer', () => {
 });
 
 async function presentationSignCalback(args: PresentationSignCallBackParams): Promise<W3CVerifiablePresentation> {
-
   const importedJwk = await importJWK(jwk, 'EdDSA');
-  const jwt = await new SignJWT({ vp: {...args.presentation}, nonce: args.options.proofOptions.nonce, iss: args.options.holderDID })
+  const jwt = await new SignJWT({ vp: { ...args.presentation }, nonce: args.options.proofOptions.nonce, iss: args.options.holderDID })
     .setProtectedHeader({
-      'typ': 'JWT',
-      'alg': 'EdDSA',
-      kid
+      typ: 'JWT',
+      alg: 'EdDSA',
+      kid,
     })
     .setIssuedAt()
     .setExpirationTime('2h')
@@ -175,4 +185,3 @@ async function presentationSignCalback(args: PresentationSignCallBackParams): Pr
   console.log(`VP: ${jwt}`);
   return jwt;
 }
-
