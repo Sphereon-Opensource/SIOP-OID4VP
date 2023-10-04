@@ -3,10 +3,10 @@ import { assertValidVerifyAuthorizationRequestOpts } from '../authorization-requ
 import { IDToken } from '../id-token';
 import { AuthorizationResponsePayload, ResponseType, SIOPErrors, VerifiedAuthorizationRequest, VerifiedAuthorizationResponse } from '../types';
 
-import { assertValidVerifiablePresentations, extractPresentationsFromAuthorizationResponse, verifyPresentations } from './OpenID4VP';
+import { verifyPresentations } from './OpenID4VP';
 import { assertValidResponseOpts } from './Opts';
 import { createResponsePayload } from './Payload';
-import { AuthorizationResponseOpts, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from './types';
+import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from './types';
 
 export class AuthorizationResponse {
   private readonly _authorizationRequest?: AuthorizationRequest | undefined;
@@ -84,7 +84,8 @@ export class AuthorizationResponse {
   static async fromVerifiedAuthorizationRequest(
     verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
     responseOpts: AuthorizationResponseOpts,
-    verifyOpts: VerifyAuthorizationRequestOpts
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _verifyOpts: VerifyAuthorizationRequestOpts
   ): Promise<AuthorizationResponse> {
     assertValidResponseOpts(responseOpts);
     if (!verifiedAuthorizationRequest) {
@@ -95,9 +96,9 @@ export class AuthorizationResponse {
 
     // const merged = verifiedAuthorizationRequest.authorizationRequest.requestObject, verifiedAuthorizationRequest.requestObject);
     // const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(merged, await authorizationRequest.getSupportedVersion());
-    const presentationDefinitions = JSON.parse(
-      JSON.stringify(verifiedAuthorizationRequest.presentationDefinitions)
-    ) as PresentationDefinitionWithLocation[];
+    // const presentationDefinitions = JSON.parse(
+    //   JSON.stringify(verifiedAuthorizationRequest.presentationDefinitions)
+    // ) as PresentationDefinitionWithLocation[];
     const wantsIdToken = await authorizationRequest.containsResponseType(ResponseType.ID_TOKEN);
     // const hasVpToken = await authorizationRequest.containsResponseType(ResponseType.VP_TOKEN);
 
@@ -111,14 +112,18 @@ export class AuthorizationResponse {
       authorizationRequest,
     });
 
-    const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response);
+    // const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response);
 
-    await assertValidVerifiablePresentations({
-      presentationDefinitions,
-      presentations: wrappedPresentations,
-      verificationCallback: verifyOpts.verification.presentationVerificationCallback,
-      opts: { ...responseOpts.presentationExchange },
-    });
+    // FIXME: https://github.com/Sphereon-Opensource/SIOP-OID4VP/issues/62
+    console.warn(
+      'Not verifying definition against presentations as multiple VPs for a single definition are not supported yet. See https://github.com/Sphereon-Opensource/SIOP-OID4VP/issues/62'
+    );
+    // await assertValidVerifiablePresentations({
+    //   presentationDefinitions,
+    //   presentations: wrappedPresentations,
+    //   verificationCallback: verifyOpts.verification.presentationVerificationCallback,
+    //   opts: { ...responseOpts.presentationExchange },
+    // });
 
     return response;
   }

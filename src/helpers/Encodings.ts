@@ -55,10 +55,13 @@ export function encodeJsonAsURI(json: unknown, uriEncodedProperties: string[] = 
   for (const [key, value] of Object.entries(parsedJson)) {
     // Value of property must be seen as a separate uri encoded property.
     if (uriEncodedProperties.includes(key)) {
-      if (typeof value !== 'object' || Array.isArray(value) || value === null) {
-        throw new Error('Cannot encode non-object value as URI encoded JSON property');
+      if (typeof value === null || typeof value === undefined) {
+        throw new Error('Cannot encode undefined or null value as URI encoded JSON property');
+      } else if (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') {
+        results.push(encodeAsUriValue(key, value, undefined));
+      } else {
+        results.push(`${encodeAndStripWhitespace(key)}=${encodeURIComponent(encodeAsUriValue(undefined, value, undefined))}`);
       }
-      results.push(`${encodeAndStripWhitespace(key)}=${encodeURIComponent(encodeAsUriValue(undefined, value, undefined))}`);
     } else {
       results.push(encodeAsUriValue(key, value, undefined));
     }
@@ -72,10 +75,9 @@ export function encodeAsUriValue(key: string | undefined, value: unknown, base: 
   const isBool = typeof value == 'boolean';
   const isNumber = typeof value == 'number';
   const isString = typeof value == 'string';
-  const isArray = Array.isArray(value);
 
-  if (!key && !base && (isBool || isNumber || isString || isArray)) {
-    throw new Error('Cannot encode value (boolean, string, number, array) without key or base');
+  if (!key && !base && (isBool || isNumber || isString)) {
+    throw new Error('Cannot encode value (boolean, string, number) without key or base');
   }
 
   let encodedKey: string | undefined = undefined;
@@ -95,7 +97,7 @@ export function encodeAsUriValue(key: string | undefined, value: unknown, base: 
     results.push(`${encodedKey}=${encodeURIComponent(value)}`);
   } else if (Array.isArray(value)) {
     value.forEach((entry, index) => {
-      results.push(encodeAsUriValue(undefined, entry, encodedKey + encodeAndStripWhitespace(`[${index}]`)));
+      results.push(encodeAsUriValue(undefined, entry, encodedKey ? encodedKey + encodeAndStripWhitespace(`[${index}]`) : `${index}`));
     });
   } else if (typeof value === 'object') {
     for (const [subKey, subValue] of Object.entries(value)) {

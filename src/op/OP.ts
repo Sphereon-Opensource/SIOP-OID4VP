@@ -189,7 +189,7 @@ export class OP {
     if (!responseUri) {
       throw Error('No response URI present');
     }
-    const authResponseAsURI = encodeJsonAsURI(payload, ['presentation_submission']);
+    const authResponseAsURI = encodeJsonAsURI(payload, ['presentation_submission', 'vp_token']);
     return post(responseUri, authResponseAsURI, { contentType: ContentType.FORM_URL_ENCODED })
       .then((result: SIOPResonse<unknown>) => {
         this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, { correlationId, subject: response });

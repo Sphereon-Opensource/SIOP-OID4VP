@@ -38,8 +38,10 @@ describe('Encodings', () => {
             },
           ],
         },
+        vp_token: ['ey...1', 'ey...2'],
+        vp_token_single: 'ey...3',
       },
-      ['presentation_submission']
+      ['presentation_submission', 'vp_token', 'vp_token_single']
     );
 
     expect(encoded).toBe(
