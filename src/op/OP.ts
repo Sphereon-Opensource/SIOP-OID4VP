@@ -63,11 +63,11 @@ export class OP {
     const correlationId = requestOpts?.correlationId || uuidv4();
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri)
       .then((result: AuthorizationRequest) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, { correlationId, subject: result });
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_SUCCESS, { correlationId, subject: result });
         return result;
       })
       .catch((error: Error) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, {
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_RECEIVED_FAILED, {
           correlationId,
           subject: requestJwtOrUri,
           error,
@@ -78,14 +78,14 @@ export class OP {
     return authorizationRequest
       .verify(this.newVerifyAuthorizationRequestOpts({ ...requestOpts, correlationId }))
       .then((verifiedAuthorizationRequest: VerifiedAuthorizationRequest) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, {
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_SUCCESS, {
           correlationId,
           subject: verifiedAuthorizationRequest.authorizationRequest,
         });
         return verifiedAuthorizationRequest;
       })
       .catch((error) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, {
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_VERIFIED_FAILED, {
           correlationId,
           subject: authorizationRequest,
           error,
@@ -142,13 +142,13 @@ export class OP {
         }),
         verifiedAuthorizationRequest.verifyOpts
       );
-      this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, {
+      void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, {
         correlationId,
         subject: response,
       });
       return { correlationId, response, responseURI: responseUri };
     } catch (error: any) {
-      this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, {
+      void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, {
         correlationId,
         subject: verifiedAuthorizationRequest.authorizationRequest,
         error,
@@ -181,14 +181,14 @@ export class OP {
     if (!responseUri) {
       throw Error('No response URI present');
     }
-    const authResponseAsURI = encodeJsonAsURI(payload);
+    const authResponseAsURI = encodeJsonAsURI(payload, { arraysWithIndex: ['presentation_submission', 'vp_token'] });
     return post(responseUri, authResponseAsURI, { contentType: ContentType.FORM_URL_ENCODED })
       .then((result: SIOPResonse<unknown>) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, { correlationId, subject: response });
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, { correlationId, subject: response });
         return result.origResponse;
       })
       .catch((error: Error) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, { correlationId, subject: response, error });
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_FAILED, { correlationId, subject: response, error });
         throw error;
       });
   }
@@ -221,13 +221,12 @@ export class OP {
   }): AuthorizationResponseOpts {
     const version = opts.version ?? this._createResponseOptions.version;
     let issuer = opts.issuer ?? this._createResponseOptions?.registration?.issuer;
-    if (!issuer && version) {
-      if (version === SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1) {
-        issuer = ResponseIss.JWT_VC_PRESENTATION_V1;
-      } else if (version === SupportedVersion.SIOPv2_ID1) {
-        issuer = ResponseIss.SELF_ISSUED_V2;
-      }
+    if (version === SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1) {
+      issuer = ResponseIss.JWT_VC_PRESENTATION_V1;
+    } else if (version === SupportedVersion.SIOPv2_ID1) {
+      issuer = ResponseIss.SELF_ISSUED_V2;
     }
+
     if (!issuer) {
       throw Error(`No issuer value present. Either use IDv1, JWT VC Presentation profile version, or provide a DID as issuer value`);
     }

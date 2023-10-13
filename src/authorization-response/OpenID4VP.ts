@@ -1,3 +1,4 @@
+import { PEX } from '@sphereon/pex';
 import { Format } from '@sphereon/pex-models';
 import { CredentialMapper, PresentationSubmission, W3CVerifiablePresentation, WrappedVerifiablePresentation } from '@sphereon/ssi-types';
 
@@ -77,19 +78,32 @@ export const extractPresentationsFromAuthorizationResponse = async (response: Au
   return wrappedVerifiablePresentations;
 };
 
-export const createPresentationSubmission = async (verifiablePresentations: W3CVerifiablePresentation[]): Promise<PresentationSubmission> => {
+export const createPresentationSubmission = async (
+  verifiablePresentations: W3CVerifiablePresentation[],
+  opts?: { presentationDefinitions: PresentationDefinitionWithLocation[] }
+): Promise<PresentationSubmission> => {
   let submission_data: PresentationSubmission;
   for (const verifiablePresentation of verifiablePresentations) {
     const wrappedPresentation = CredentialMapper.toWrappedVerifiablePresentation(verifiablePresentation);
 
-    const submission =
+    let submission =
       wrappedPresentation.presentation.presentation_submission ||
       wrappedPresentation.decoded.presentation_submission ||
       (typeof wrappedPresentation.original !== 'string' && wrappedPresentation.original.presentation_submission);
-    if (!submission) {
-      // todo in the future PEX might supply the submission_data separately as well
-      throw Error('Verifiable Presentation has no submission_data');
+    if (!submission && opts.presentationDefinitions) {
+      console.log(`No submission_data in VPs and not provided. Will try to deduce, but it is better to create the submission data beforehand`);
+      for (const definition of opts.presentationDefinitions) {
+        const result = new PEX().evaluatePresentation(definition.definition, wrappedPresentation.original, { generatePresentationSubmission: true });
+        if (result.areRequiredCredentialsPresent) {
+          submission = result.value;
+          break;
+        }
+      }
     }
+    if (!submission) {
+      throw Error('Verifiable Presentation has no submission_data, it has not been provided seperately, and could also not be deduced');
+    }
+    // let's merge all submission data into one object
     if (!submission_data) {
       submission_data = submission;
     } else {
@@ -117,8 +131,17 @@ export const putPresentationSubmissionInLocation = async (
   } else if (resOpts.presentationExchange.verifiablePresentations.length === 0) {
     throw Error('Presentation Exchange options set, but no verifiable presentations provided');
   }
+  if (
+    !resOpts.presentationExchange.presentationSubmission &&
+    (!resOpts.presentationExchange.verifiablePresentations || resOpts.presentationExchange.verifiablePresentations.length === 0)
+  ) {
+    throw Error(`Either a presentationSubmission or verifiable presentations are needed at this point`);
+  }
   const submissionData =
-    resOpts.presentationExchange.presentationSubmission ?? (await createPresentationSubmission(resOpts.presentationExchange.verifiablePresentations));
+    resOpts.presentationExchange.presentationSubmission ??
+    (await createPresentationSubmission(resOpts.presentationExchange.verifiablePresentations, {
+      presentationDefinitions: await authorizationRequest.getPresentationDefinitions(),
+    }));
 
   const location = resOpts.presentationExchange?.vpTokenLocation ?? (idTokenType ? VPTokenLocation.ID_TOKEN : VPTokenLocation.AUTHORIZATION_RESPONSE);
 
@@ -200,6 +223,8 @@ export const assertValidVerifiablePresentations = async (args: {
     throw new Error(SIOPErrors.AUTH_REQUEST_DOESNT_EXPECT_VP);
   } else if (args.presentationDefinitions && presentationsWithFormat && args.presentationDefinitions.length != presentationsWithFormat.length) {
     throw new Error(SIOPErrors.AUTH_REQUEST_EXPECTS_VP);
+  } else if (args.presentationDefinitions && !args.opts.presentationSubmission) {
+    throw new Error(`No presentation submission present. Please use presentationSubmission opt argument!`);
   } else if (args.presentationDefinitions && presentationsWithFormat) {
     await PresentationExchange.validatePresentationsAgainstDefinitions(
       args.presentationDefinitions,

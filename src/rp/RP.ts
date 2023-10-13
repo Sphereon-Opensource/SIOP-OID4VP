@@ -71,20 +71,20 @@ export class RP {
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
     version?: SupportedVersion;
     requestByReferenceURI?: string;
-    redirectURI_TODO_NOT_IMPLEMENTED?: string; // todo: response_uri/redirect_uri is not hooked up from opts!
-    responseURIType_TODO_NOT_IMEPLEMENTED?: ResponseURIType; // todo: response_uri/redirect_uri is not hooked up from opts!
+    responseURI?: string;
+    responseURIType?: ResponseURIType;
   }): Promise<AuthorizationRequest> {
     const authorizationRequestOpts = this.newAuthorizationRequestOpts(opts);
     return AuthorizationRequest.fromOpts(authorizationRequestOpts)
       .then((authorizationRequest: AuthorizationRequest) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, {
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, {
           correlationId: opts.correlationId,
           subject: authorizationRequest,
         });
         return authorizationRequest;
       })
       .catch((error: Error) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, {
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, {
           correlationId: opts.correlationId,
           error,
         });
@@ -99,20 +99,21 @@ export class RP {
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
     version?: SupportedVersion;
     requestByReferenceURI?: string;
-    redirectURI?: string;
+    responseURI?: string;
+    responseURIType?: ResponseURIType;
   }): Promise<URI> {
     const authorizationRequestOpts = this.newAuthorizationRequestOpts(opts);
 
     return await URI.fromOpts(authorizationRequestOpts)
       .then(async (uri: URI) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, {
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_SUCCESS, {
           correlationId: opts.correlationId,
           subject: await AuthorizationRequest.fromOpts(authorizationRequestOpts),
         });
         return uri;
       })
       .catch((error: Error) => {
-        this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, {
+        void this.emitEvent(AuthorizationEvents.ON_AUTH_REQUEST_CREATED_FAILED, {
           correlationId: opts.correlationId,
           error,
         });
@@ -125,7 +126,7 @@ export class RP {
       throw Error(`Cannot signal auth request retrieval when no session manager is registered`);
     }
     const state = await this.sessionManager.getRequestStateByCorrelationId(opts.correlationId, true);
-    this.emitEvent(opts?.error ? AuthorizationEvents.ON_AUTH_REQUEST_SENT_FAILED : AuthorizationEvents.ON_AUTH_REQUEST_SENT_SUCCESS, {
+    void this.emitEvent(opts?.error ? AuthorizationEvents.ON_AUTH_REQUEST_SENT_FAILED : AuthorizationEvents.ON_AUTH_REQUEST_SENT_SUCCESS, {
       correlationId: opts.correlationId,
       ...(!opts?.error ? { subject: state.request } : {}),
       ...(opts?.error ? { error: opts.error } : {}),
@@ -149,7 +150,7 @@ export class RP {
     try {
       authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload);
     } catch (error: any) {
-      this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, {
+      void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, {
         correlationId: correlationId ?? uuidv4(), // correlation id cannot be derived from state in payload possible, hence a uuid as fallback
         subject: authorizationResponsePayload,
         error,
@@ -163,19 +164,19 @@ export class RP {
         correlationId,
       });
       correlationId = verifyAuthenticationResponseOpts.correlationId ?? correlationId;
-      this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, {
+      void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_SUCCESS, {
         correlationId,
         subject: authorizationResponse,
       });
 
       const verifiedAuthorizationResponse = await authorizationResponse.verify(verifyAuthenticationResponseOpts);
-      this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, {
+      void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_SUCCESS, {
         correlationId,
         subject: authorizationResponse,
       });
       return verifiedAuthorizationResponse;
     } catch (error) {
-      this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, {
+      void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_VERIFIED_FAILED, {
         correlationId,
         subject: authorizationResponse,
         error,
@@ -199,7 +200,8 @@ export class RP {
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
     version?: SupportedVersion;
     requestByReferenceURI?: string;
-    redirectURI?: string;
+    responseURIType?: ResponseURIType;
+    responseURI?: string;
   }): CreateAuthorizationRequestOpts {
     const nonceWithTarget =
       typeof opts.nonce === 'string'
@@ -219,16 +221,33 @@ export class RP {
       throw Error(SIOPErrors.NO_REQUEST_VERSION);
     }
     const referenceURI = opts.requestByReferenceURI ?? this._createRequestOptions?.requestObject?.reference_uri;
-    const redirectURI =
-      opts.redirectURI ?? this._createRequestOptions.requestObject.payload?.redirect_uri ?? this._createRequestOptions.payload?.redirect_uri;
-    if (!redirectURI) {
-      throw Error(`A redirect URI is required at this point`);
+
+    let responseURIType: ResponseURIType = opts?.responseURIType;
+    let responseURI = this._createRequestOptions.requestObject.payload?.redirect_uri ?? this._createRequestOptions.payload?.redirect_uri;
+    if (responseURI) {
+      responseURIType = 'redirect_uri';
     } else {
-      if (this._createRequestOptions.requestObject.payload?.redirect_uri || !this._createRequestOptions.payload?.redirect_uri) {
-        this._createRequestOptions.requestObject.payload.redirect_uri = redirectURI;
-      }
-      if (this._createRequestOptions.payload?.redirect_uri) {
-        this._createRequestOptions.payload.redirect_uri = redirectURI;
+      responseURI =
+        opts.responseURI ?? this._createRequestOptions.requestObject.payload?.response_uri ?? this._createRequestOptions.payload?.response_uri;
+      responseURIType = opts?.responseURIType ?? 'response_uri';
+    }
+    if (!responseURI) {
+      throw Error(`A response or redirect URI is required at this point`);
+    } else {
+      if (responseURIType === 'redirect_uri') {
+        if (this._createRequestOptions?.requestObject?.payload && !this._createRequestOptions.requestObject?.payload?.redirect_uri) {
+          this._createRequestOptions.requestObject.payload.redirect_uri = responseURI;
+        }
+        if (!referenceURI && !this._createRequestOptions.payload?.redirect_uri) {
+          this._createRequestOptions.payload.redirect_uri = responseURI;
+        }
+      } else if (responseURIType === 'response_uri') {
+        if (this._createRequestOptions?.requestObject?.payload && !this._createRequestOptions.requestObject?.payload?.response_uri) {
+          this._createRequestOptions.requestObject.payload.response_uri = responseURI;
+        }
+        if (!referenceURI && !this._createRequestOptions.payload?.response_uri) {
+          this._createRequestOptions.payload.response_uri = responseURI;
+        }
       }
     }
 

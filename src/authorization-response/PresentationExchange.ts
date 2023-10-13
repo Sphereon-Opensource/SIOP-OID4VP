@@ -3,6 +3,7 @@ import {
   IPresentationDefinition,
   KeyEncoding,
   PEX,
+  PresentationSubmissionLocation,
   SelectResults,
   Status,
   VerifiablePresentationFromOpts,
@@ -60,6 +61,7 @@ export class PresentationExchange {
 
     const signOptions: VerifiablePresentationFromOpts = {
       ...options,
+      presentationSubmissionLocation: PresentationSubmissionLocation.EXTERNAL,
       proofOptions: {
         ...options.proofOptions,
         proofPurpose: options?.proofOptions?.proofPurpose ?? IProofPurpose.authentication,
