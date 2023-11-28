@@ -66,12 +66,12 @@ export class PresentationExchange {
         ...options.proofOptions,
         proofPurpose: options?.proofOptions?.proofPurpose ?? IProofPurpose.authentication,
         type: options?.proofOptions?.type ?? IProofType.EcdsaSecp256k1Signature2019,
-        challenge: options?.proofOptions?.challenge,
-        domain: options?.proofOptions?.domain,
+        /* challenge: options?.proofOptions?.challenge,
+        domain: options?.proofOptions?.domain,*/
       },
       signatureOptions: {
         ...options.signatureOptions,
-        verificationMethod: options?.signatureOptions?.verificationMethod,
+        // verificationMethod: options?.signatureOptions?.verificationMethod,
         keyEncoding: options?.signatureOptions?.keyEncoding ?? KeyEncoding.Hex,
       },
     };
@@ -109,7 +109,7 @@ export class PresentationExchange {
       // fixme limited disclosure
       limitDisclosureSignatureSuites: [],
     });
-    if (selectResults.areRequiredCredentialsPresent == Status.ERROR) {
+    if (selectResults.areRequiredCredentialsPresent === Status.ERROR) {
       throw new Error(`message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(selectResults.errors)}`);
     }
     return selectResults;
@@ -220,7 +220,7 @@ export class PresentationExchange {
       }
       PresentationExchange.assertValidPresentationDefinition(definition);
       allDefinitions.push({
-        definition: definition,
+        definition,
         location: PresentationDefinitionLocation.TOPLEVEL_PRESENTATION_DEF,
         version,
       });
@@ -329,7 +329,7 @@ export class PresentationExchange {
         // So the behavior here is to bypass it if not present
         if (verifyPresentationCallback) {
           try {
-            await verifyPresentationCallback(vpw.original as W3CVerifiablePresentation);
+            await verifyPresentationCallback(vpw.original as W3CVerifiablePresentation, presentationSubmission);
           } catch (error: unknown) {
             throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID);
           }
@@ -350,7 +350,7 @@ export class PresentationExchange {
 
     const checkedPresentations: WrappedVerifiablePresentation[] = filterOutCorrectPresentation();
 
-    if (!checkedPresentations.length || checkedPresentations.length != 1) {
+    if (checkedPresentations.length !== 1) {
       throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}`);
     }
     const checkedPresentation = checkedPresentations[0];

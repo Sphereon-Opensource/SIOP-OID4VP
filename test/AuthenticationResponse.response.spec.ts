@@ -446,7 +446,9 @@ describe('create JWT from Request JWT should', () => {
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
-        presentationSubmission: await createPresentationSubmission([verifiablePresentationResult.verifiablePresentation]),
+        presentationSubmission: await createPresentationSubmission([verifiablePresentationResult.verifiablePresentation], {
+          presentationDefinitions: [definition],
+        }),
       },
       responseMode: ResponseMode.POST,
     };
@@ -620,7 +622,9 @@ describe('create JWT from Request JWT should', () => {
       },
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
-        presentationSubmission: await createPresentationSubmission([verifiablePresentationResult.verifiablePresentation]),
+        presentationSubmission: await createPresentationSubmission([verifiablePresentationResult.verifiablePresentation], {
+          presentationDefinitions: [definition],
+        }),
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
       },
 

@@ -1,4 +1,4 @@
-import { PEX } from '@sphereon/pex';
+import { IPresentationDefinition, PEX } from '@sphereon/pex';
 import { Format } from '@sphereon/pex-models';
 import { CredentialMapper, PresentationSubmission, W3CVerifiablePresentation, WrappedVerifiablePresentation } from '@sphereon/ssi-types';
 
@@ -80,7 +80,7 @@ export const extractPresentationsFromAuthorizationResponse = async (response: Au
 
 export const createPresentationSubmission = async (
   verifiablePresentations: W3CVerifiablePresentation[],
-  opts?: { presentationDefinitions: PresentationDefinitionWithLocation[] }
+  opts?: { presentationDefinitions: (PresentationDefinitionWithLocation | IPresentationDefinition)[] }
 ): Promise<PresentationSubmission> => {
   let submission_data: PresentationSubmission;
   for (const verifiablePresentation of verifiablePresentations) {
@@ -90,10 +90,11 @@ export const createPresentationSubmission = async (
       wrappedPresentation.presentation.presentation_submission ||
       wrappedPresentation.decoded.presentation_submission ||
       (typeof wrappedPresentation.original !== 'string' && wrappedPresentation.original.presentation_submission);
-    if (!submission && opts.presentationDefinitions) {
+    if (!submission && opts?.presentationDefinitions) {
       console.log(`No submission_data in VPs and not provided. Will try to deduce, but it is better to create the submission data beforehand`);
-      for (const definition of opts.presentationDefinitions) {
-        const result = new PEX().evaluatePresentation(definition.definition, wrappedPresentation.original, { generatePresentationSubmission: true });
+      for (const definitionOpt of opts.presentationDefinitions) {
+        const definition = 'definition' in definitionOpt ? definitionOpt.definition : definitionOpt;
+        const result = new PEX().evaluatePresentation(definition, wrappedPresentation.original, { generatePresentationSubmission: true });
         if (result.areRequiredCredentialsPresent) {
           submission = result.value;
           break;
@@ -101,7 +102,7 @@ export const createPresentationSubmission = async (
       }
     }
     if (!submission) {
-      throw Error('Verifiable Presentation has no submission_data, it has not been provided seperately, and could also not be deduced');
+      throw Error('Verifiable Presentation has no submission_data, it has not been provided separately, and could also not be deduced');
     }
     // let's merge all submission data into one object
     if (!submission_data) {

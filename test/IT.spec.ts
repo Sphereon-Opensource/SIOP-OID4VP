@@ -542,6 +542,7 @@ describe('RP and OP interaction should', () => {
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
+        presentationSubmission: verifiablePresentationResult.presentationSubmission,
         /*credentialsAndDefinitions: [
           {
             presentation: vp,
@@ -664,6 +665,7 @@ describe('RP and OP interaction should', () => {
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
           verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+          presentationSubmission: verifiablePresentationResult.presentationSubmission,
           // vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
           /*credentialsAndDefinitions: [
             {
@@ -808,6 +810,7 @@ describe('RP and OP interaction should', () => {
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+        presentationSubmission: verifiablePresentationResult.presentationSubmission,
         vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
         /*credentialsAndDefinitions: [
           {
@@ -943,6 +946,7 @@ describe('RP and OP interaction should', () => {
       const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
         presentationExchange: {
           verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+          presentationSubmission: verifiablePresentationResult.presentationSubmission,
           vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
           /*credentialsAndDefinitions: [
             {
@@ -1086,6 +1090,7 @@ describe('RP and OP interaction should', () => {
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+        presentationSubmission: verifiablePresentationResult.presentationSubmission,
         vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
         /*credentialsAndDefinitions: [
           {
@@ -1377,6 +1382,7 @@ describe('RP and OP interaction should', () => {
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+        presentationSubmission: verifiablePresentationResult.presentationSubmission,
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
         /*credentialsAndDefinitions: [
           {
@@ -1501,6 +1507,7 @@ describe('RP and OP interaction should', () => {
     const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+        presentationSubmission: verifiablePresentationResult.presentationSubmission,
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
         /*credentialsAndDefinitions: [
           {

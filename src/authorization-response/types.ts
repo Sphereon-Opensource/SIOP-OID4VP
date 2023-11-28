@@ -89,7 +89,7 @@ export enum VPTokenLocation {
 
 export type PresentationVerificationResult = { verified: boolean };
 
-export type PresentationVerificationCallback = (args: W3CVerifiablePresentation) => Promise<PresentationVerificationResult>;
+export type PresentationVerificationCallback = (args: W3CVerifiablePresentation, presentationSubmissionn) => Promise<PresentationVerificationResult>;
 
 export type PresentationSignCallback = (args: PresentationSignCallBackParams) => Promise<W3CVerifiablePresentation>;
 

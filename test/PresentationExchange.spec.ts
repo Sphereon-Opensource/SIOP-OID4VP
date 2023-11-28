@@ -341,9 +341,14 @@ describe('presentation exchange manager tests', () => {
     expect(result.presentationSubmission.definition_id).toBe('Insurance Plans');
     expect(result.presentationSubmission.descriptor_map.length).toBe(1);
     expect(result.presentationSubmission.descriptor_map[0]).toStrictEqual({
+      format: 'ldp_vp',
       id: 'Ontario Health Insurance Plan',
-      format: 'ldp_vc',
-      path: '$.verifiableCredential[0]',
+      path: '$',
+      path_nested: {
+        format: 'ldp_vc',
+        id: 'Ontario Health Insurance Plan',
+        path: '$.verifiableCredential[0]',
+      },
     });
   });
 

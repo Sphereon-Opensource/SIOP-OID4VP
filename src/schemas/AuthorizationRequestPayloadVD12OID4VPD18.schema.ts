@@ -299,6 +299,9 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
         },
         "ldp_vp": {
           "$ref": "#/definitions/LdpObject"
+        },
+        "vc+sd-jwt": {
+          "$ref": "#/definitions/SdJwtObject"
         }
       },
       "additionalProperties": false
@@ -331,6 +334,24 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
       "required": [
         "proof_type"
       ],
+      "additionalProperties": false
+    },
+    "SdJwtObject": {
+      "type": "object",
+      "properties": {
+        "sd_jwt_alg_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kb_jwt_alg_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
       "additionalProperties": false
     },
     "ResponseMode": {
