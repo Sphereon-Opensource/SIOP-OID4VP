@@ -3,6 +3,7 @@
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2 } from '@sphereon/pex-models';
 import {
   AdditionalClaims,
+  CompactSdJwtVc,
   IPresentation,
   IVerifiablePresentation,
   PresentationSubmission,
@@ -155,7 +156,7 @@ export interface AuthorizationResponsePayload {
   expires_in?: number;
   state?: string;
   id_token?: string;
-  vp_token?: W3CVerifiablePresentation | W3CVerifiablePresentation[];
+  vp_token?: Array<W3CVerifiablePresentation | CompactSdJwtVc> | W3CVerifiablePresentation | CompactSdJwtVc;
   presentation_submission?: PresentationSubmission;
   verifiedData?: IPresentation | AdditionalClaims;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -457,11 +458,13 @@ export interface ClientMetadataProperties extends ObjectBy {
 export enum VerifiablePresentationTypeFormat {
   JWT_VP = 'jwt_vp',
   LDP_VP = 'ldp_vp',
+  SD_JWT_VC = 'vc+sd-jwt',
 }
 
 export enum VerifiableCredentialTypeFormat {
   LDP_VC = 'ldp_vc',
   JWT_VC = 'jwt_vc',
+  SD_JWT_VC = 'vc+sd-jwt',
 }
 
 export enum EncSymmetricAlgorithmCode {

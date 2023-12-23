@@ -12,11 +12,11 @@ import {
 import { Format, PresentationDefinitionV1, PresentationDefinitionV2, PresentationSubmission } from '@sphereon/pex-models';
 import {
   CredentialMapper,
+  Hasher,
   IProofPurpose,
   IProofType,
+  OriginalVerifiableCredential,
   OriginalVerifiablePresentation,
-  UniformVerifiablePresentation,
-  W3CVerifiableCredential,
   W3CVerifiablePresentation,
   WrappedVerifiablePresentation,
 } from '@sphereon/ssi-types';
@@ -32,13 +32,14 @@ import {
 } from './types';
 
 export class PresentationExchange {
-  readonly pex = new PEX();
-  readonly allVerifiableCredentials: W3CVerifiableCredential[];
+  readonly pex: PEX;
+  readonly allVerifiableCredentials: OriginalVerifiableCredential[];
   readonly allDIDs;
 
-  constructor(opts: { allDIDs?: string[]; allVerifiableCredentials: W3CVerifiableCredential[] }) {
+  constructor(opts: { allDIDs?: string[]; allVerifiableCredentials: OriginalVerifiableCredential[]; hasher?: Hasher }) {
     this.allDIDs = opts.allDIDs;
     this.allVerifiableCredentials = opts.allVerifiableCredentials;
+    this.pex = new PEX({ hasher: opts.hasher });
   }
 
   /**
@@ -50,7 +51,7 @@ export class PresentationExchange {
    */
   public async createVerifiablePresentation(
     presentationDefinition: IPresentationDefinition,
-    selectedCredentials: W3CVerifiableCredential[],
+    selectedCredentials: OriginalVerifiableCredential[],
     presentationSignCallback: PresentationSignCallback,
     // options2?: { nonce?: string; domain?: string, proofType?: IProofType, verificationMethod?: string, signatureKeyEncoding?: KeyEncoding },
     options?: VerifiablePresentationFromOpts
@@ -130,6 +131,7 @@ export class PresentationExchange {
       restrictToFormats?: Format;
       restrictToDIDMethods?: string[];
       presentationSubmission?: PresentationSubmission;
+      hasher?: Hasher;
     }
   ): Promise<EvaluationResults> {
     const wvp: WrappedVerifiablePresentation =
@@ -138,11 +140,16 @@ export class PresentationExchange {
         : CredentialMapper.toWrappedVerifiablePresentation(verifiablePresentation as OriginalVerifiablePresentation);
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
-    } else if (!wvp || !wvp.presentation || !wvp.presentation.verifiableCredential || wvp.presentation.verifiableCredential.length === 0) {
+    } else if (
+      !wvp ||
+      !wvp.presentation ||
+      (CredentialMapper.isWrappedW3CVerifiablePresentation(wvp) &&
+        (!wvp.presentation.verifiableCredential || wvp.presentation.verifiableCredential.length === 0))
+    ) {
       throw new Error(SIOPErrors.NO_VERIFIABLE_PRESENTATION_NO_CREDENTIALS);
     }
     // console.log(`Presentation (validate): ${JSON.stringify(verifiablePresentation)}`);
-    const evaluationResults: EvaluationResults = new PEX().evaluatePresentation(presentationDefinition, wvp.original, opts);
+    const evaluationResults: EvaluationResults = new PEX({ hasher: opts?.hasher }).evaluatePresentation(presentationDefinition, wvp.original, opts);
     if (evaluationResults.errors.length) {
       throw new Error(`message: ${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}, details: ${JSON.stringify(evaluationResults.errors)}`);
     }
@@ -290,6 +297,7 @@ export class PresentationExchange {
       restrictToFormats?: Format;
       restrictToDIDMethods?: string[];
       presentationSubmission?: PresentationSubmission;
+      hasher?: Hasher;
     }
   ) {
     if (!definitions || !vpPayloads || !definitions.length || definitions.length !== vpPayloads.length) {
@@ -311,18 +319,25 @@ export class PresentationExchange {
       restrictToFormats?: Format;
       restrictToDIDMethods?: string[];
       presentationSubmission?: PresentationSubmission;
+      hasher?: Hasher;
     }
   ) {
-    const pex = new PEX();
+    const pex = new PEX({ hasher: opts?.hasher });
 
     function filterOutCorrectPresentation() {
       //TODO: add support for multiple VPs here
       return vpPayloads.filter(async (vpw: WrappedVerifiablePresentation) => {
-        const presentationSubmission = opts?.presentationSubmission ?? vpw.presentation.presentation_submission;
+        const presentationSubmission =
+          opts?.presentationSubmission ??
+          (CredentialMapper.isWrappedW3CVerifiablePresentation(vpw) ? vpw.presentation.presentation_submission : undefined);
         const presentation = vpw.presentation;
         if (!definition) {
           throw new Error(SIOPErrors.NO_PRESENTATION_SUBMISSION);
-        } else if (!presentation || !presentation.verifiableCredential || presentation.verifiableCredential.length === 0) {
+        } else if (
+          !vpw.presentation ||
+          (CredentialMapper.isWrappedW3CVerifiablePresentation(vpw) &&
+            (!vpw.presentation.verifiableCredential || vpw.presentation.verifiableCredential.length === 0))
+        ) {
           throw new Error(SIOPErrors.NO_VERIFIABLE_PRESENTATION_NO_CREDENTIALS);
         }
         // The verifyPresentationCallback function is mandatory for RP only,
@@ -354,12 +369,17 @@ export class PresentationExchange {
       throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}`);
     }
     const checkedPresentation = checkedPresentations[0];
-    const presentation: UniformVerifiablePresentation = checkedPresentation.presentation;
+    const presentation = checkedPresentation.presentation;
     // console.log(`Presentation (checked): ${JSON.stringify(checkedPresentation.presentation)}`);
-    if (!presentation || !presentation.verifiableCredential || presentation.verifiableCredential.length === 0) {
+    if (
+      !checkedPresentation.presentation ||
+      (CredentialMapper.isWrappedW3CVerifiablePresentation(checkedPresentation) &&
+        (!checkedPresentation.presentation.verifiableCredential || checkedPresentation.presentation.verifiableCredential.length === 0))
+    ) {
       throw new Error(SIOPErrors.NO_VERIFIABLE_PRESENTATION_NO_CREDENTIALS);
     }
-    const presentationSubmission = opts?.presentationSubmission ?? presentation.presentation_submission;
+    const presentationSubmission =
+      opts?.presentationSubmission ?? (CredentialMapper.isW3cPresentation(presentation) ? presentation.presentation_submission : undefined);
     const evaluationResults = pex.evaluatePresentation(definition, checkedPresentation.original, {
       ...opts,
       presentationSubmission,
@@ -368,6 +388,7 @@ export class PresentationExchange {
     await PresentationExchange.validatePresentationAgainstDefinition(definition, checkedPresentation, {
       ...opts,
       presentationSubmission,
+      hasher: opts?.hasher,
     });
   }
 }

@@ -111,13 +111,13 @@ export class AuthorizationResponse {
       authorizationRequest,
     });
 
-    const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response);
+    const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response, { hasher: verifyOpts.hasher });
 
     await assertValidVerifiablePresentations({
       presentationDefinitions,
       presentations: wrappedPresentations,
       verificationCallback: verifyOpts.verification.presentationVerificationCallback,
-      opts: { ...responseOpts.presentationExchange },
+      opts: { ...responseOpts.presentationExchange, hasher: verifyOpts.hasher },
     });
 
     return response;

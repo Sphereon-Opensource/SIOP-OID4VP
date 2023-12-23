@@ -1,6 +1,6 @@
 import { IPresentationDefinition, PresentationSignCallBackParams } from '@sphereon/pex';
 import { Format } from '@sphereon/pex-models';
-import { PresentationSubmission, W3CVerifiablePresentation } from '@sphereon/ssi-types';
+import { CompactSdJwtVc, Hasher, PresentationSubmission, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 
 import {
   CheckLinkedDomain,
@@ -48,7 +48,7 @@ export interface PresentationExchangeResponseOpts {
     selectedCredentials: W3CVerifiableCredential[]
   }[],*/
 
-  verifiablePresentations: W3CVerifiablePresentation[];
+  verifiablePresentations: Array<W3CVerifiablePresentation | CompactSdJwtVc>;
   vpTokenLocation?: VPTokenLocation;
   presentationSubmission?: PresentationSubmission;
   restrictToFormats?: Format;
@@ -96,6 +96,7 @@ export type PresentationSignCallback = (args: PresentationSignCallBackParams) =>
 export interface VerifyAuthorizationResponseOpts {
   correlationId: string;
   verification: InternalVerification | ExternalVerification;
+  hasher?: Hasher;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // To verify the response against the supplied nonce
   state?: string; // To verify the response against the supplied state

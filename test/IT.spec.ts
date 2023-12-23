@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 
 import { IPresentationDefinition } from '@sphereon/pex';
-import { CredentialMapper, IProofType, IVerifiableCredential, W3CVerifiablePresentation } from '@sphereon/ssi-types';
+import { CredentialMapper, IPresentation, IProofType, IVerifiableCredential, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 import { IVerifyCallbackArgs, IVerifyCredentialResult, VerifyCallback, WDCErrors } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
@@ -48,7 +48,7 @@ const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 const HOLDER_DID = 'did:example:ebfeb1f712ebc6f1c276e12ec21';
 
 const presentationSignCallback: PresentationSignCallback = async (_args) => ({
-  ..._args.presentation,
+  ...(_args.presentation as IPresentation),
   proof: {
     type: 'RsaSignature2018',
     created: '2018-09-14T21:19:10Z',
@@ -105,7 +105,7 @@ function getVCs(): IVerifiableCredential[] {
     {
       identifier: '83627465',
       name: 'Permanent Resident Card',
-      type: ['PermanentResidentCard', 'verifiableCredential'],
+      type: ['PermanentResidentCard', 'VerifiableCredential'],
       id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
       credentialSubject: {
         birthCountry: 'Bahamas',
@@ -443,125 +443,133 @@ describe('RP and OP interaction should', () => {
   });
 
   it('succeed when calling with presentation definitions and right verifiable presentation', async () => {
-    const rpMockEntity = {
-      hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
-      did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
-      didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
-    };
+    try {
+      const rpMockEntity = {
+        hexPrivateKey: '2bbd6a78be9ab2193bcf74aa6d39ab59c1d1e2f7e9ef899a38fb4d94d8aa90e2',
+        did: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024',
+        didKey: 'did:ethr:goerli:0x038f8d21b0446c46b05aecdc603f73831578e28857adba14de569f31f3e569c024#controllerKey',
+      };
 
-    const opMockEntity = {
-      hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
-      did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
-      didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
-    };
+      const opMockEntity = {
+        hexPrivateKey: '73d24dd0fb69abdc12e7a99d8f9a970fdc8ad90598cc64cff35b584220ace0c8',
+        did: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca',
+        didKey: 'did:ethr:goerli:0x03a1370d4dd249eabb23245aeb4aec988fbca598ff83db59144d89b3835371daca#controllerKey',
+      };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const verifyCallback = async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
 
-    const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
-      .withClientId(rpMockEntity.did)
-      .withScope('test')
-      .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
-      .withRedirectUri(EXAMPLE_REDIRECT_URL)
-      .withPresentationDefinition({ definition: getPresentationDefinition() }, [PropertyTarget.REQUEST_OBJECT, PropertyTarget.AUTHORIZATION_REQUEST])
-      .withPresentationVerification(presentationVerificationCallback)
-      .withWellknownDIDVerifyCallback(verifyCallback)
-      .withRevocationVerification(RevocationVerification.NEVER)
-      .withRequestBy(PassBy.VALUE)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
-      .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
-      .addDidMethod('ethr')
-      .withClientMetadata({
-        client_id: WELL_KNOWN_OPENID_FEDERATION,
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        responseTypesSupported: [ResponseType.ID_TOKEN],
-        vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
-        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-        subjectTypesSupported: [SubjectType.PAIRWISE],
-        subject_syntax_types_supported: ['did', 'did:ethr'],
-        passBy: PassBy.VALUE,
-        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
-        clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100322',
-        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-      })
-      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
-      .build();
-    const op = OP.builder()
-      .withPresentationSignCallback(presentationSignCallback)
-      .withExpiresIn(1000)
-      .withWellknownDIDVerifyCallback(verifyCallback)
-      .addDidMethod('ethr')
-      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
-      .withRegistration({
-        authorizationEndpoint: 'www.myauthorizationendpoint.com',
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
-        issuer: ResponseIss.SELF_ISSUED_V2,
-        requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        responseTypesSupported: [ResponseType.ID_TOKEN, ResponseType.VP_TOKEN],
-        vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
-        scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
-        subjectTypesSupported: [SubjectType.PAIRWISE],
-        subject_syntax_types_supported: [],
-        passBy: PassBy.VALUE,
-        logo_uri: VERIFIER_LOGO_FOR_CLIENT,
-        clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100323',
-        clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
-        'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
-      })
-      .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
-      .build();
+      const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
+        .withClientId(rpMockEntity.did)
+        .withScope('test')
+        .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
+        .withRedirectUri(EXAMPLE_REDIRECT_URL)
+        .withPresentationDefinition({ definition: getPresentationDefinition() }, [
+          PropertyTarget.REQUEST_OBJECT,
+          PropertyTarget.AUTHORIZATION_REQUEST,
+        ])
+        .withPresentationVerification(presentationVerificationCallback)
+        .withWellknownDIDVerifyCallback(verifyCallback)
+        .withRevocationVerification(RevocationVerification.NEVER)
+        .withRequestBy(PassBy.VALUE)
+        .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, rpMockEntity.didKey, SigningAlgo.ES256K)
+        .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
+        .addDidMethod('ethr')
+        .withClientMetadata({
+          client_id: WELL_KNOWN_OPENID_FEDERATION,
+          idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+          requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          responseTypesSupported: [ResponseType.ID_TOKEN],
+          vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
+          scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+          subjectTypesSupported: [SubjectType.PAIRWISE],
+          subject_syntax_types_supported: ['did', 'did:ethr'],
+          passBy: PassBy.VALUE,
+          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100322',
+          clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+        })
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
+        .build();
+      const op = OP.builder()
+        .withPresentationSignCallback(presentationSignCallback)
+        .withExpiresIn(1000)
+        .withWellknownDIDVerifyCallback(verifyCallback)
+        .addDidMethod('ethr')
+        .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, opMockEntity.didKey, SigningAlgo.ES256K)
+        .withRegistration({
+          authorizationEndpoint: 'www.myauthorizationendpoint.com',
+          idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
+          issuer: ResponseIss.SELF_ISSUED_V2,
+          requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+          responseTypesSupported: [ResponseType.ID_TOKEN, ResponseType.VP_TOKEN],
+          vpFormats: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
+          scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
+          subjectTypesSupported: [SubjectType.PAIRWISE],
+          subject_syntax_types_supported: [],
+          passBy: PassBy.VALUE,
+          logo_uri: VERIFIER_LOGO_FOR_CLIENT,
+          clientName: VERIFIER_NAME_FOR_CLIENT,
+          'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100323',
+          clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
+          'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
+        })
+        .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
+        .build();
 
-    const requestURI = await rp.createAuthorizationRequestURI({
-      correlationId: '1234',
-      nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
-      state: 'b32f0087fc9816eb813fd11f',
-    });
+      const requestURI = await rp.createAuthorizationRequestURI({
+        correlationId: '1234',
+        nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+        state: 'b32f0087fc9816eb813fd11f',
+      });
 
-    // Let's test the parsing
-    const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
-    expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
-    expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
-    // expect(parsedAuthReqURI.registration).toBeDefined();
+      // Let's test the parsing
+      const parsedAuthReqURI = await op.parseAuthorizationRequestURI(requestURI.encodedUri);
+      expect(parsedAuthReqURI.authorizationRequestPayload).toBeDefined();
+      expect(parsedAuthReqURI.requestObjectJwt).toBeDefined();
+      // expect(parsedAuthReqURI.registration).toBeDefined();
 
-    const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
-    expect(verifiedAuthReqWithJWT.signer).toBeDefined();
-    expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
-    const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
-    const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequestPayload
-    );
-    await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
-    const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
-    const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
-      presentationExchange: {
-        verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
-        vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
-        presentationSubmission: verifiablePresentationResult.presentationSubmission,
-        /*credentialsAndDefinitions: [
+      const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
+      expect(verifiedAuthReqWithJWT.signer).toBeDefined();
+      expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
+      const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
+      const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
+        parsedAuthReqURI.authorizationRequestPayload
+      );
+      await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
+      const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
+      const authenticationResponseWithJWT = await op.createAuthorizationResponse(verifiedAuthReqWithJWT, {
+        presentationExchange: {
+          verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
+          vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
+          presentationSubmission: verifiablePresentationResult.presentationSubmission,
+          /*credentialsAndDefinitions: [
           {
             presentation: vp,
             format: VerifiablePresentationTypeFormat.LDP_VP,
             vpTokenLocation: VPTokenLocation.AUTHORIZATION_RESPONSE,
           },
         ],*/
-      },
-    });
-    expect(authenticationResponseWithJWT.response.payload).toBeDefined();
-    expect(authenticationResponseWithJWT.response.idToken).toBeDefined();
+        },
+      });
+      expect(authenticationResponseWithJWT.response.payload).toBeDefined();
+      expect(authenticationResponseWithJWT.response.idToken).toBeDefined();
 
-    const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
-      /*audience: EXAMPLE_REDIRECT_URL,*/
-      presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
-    });
+      const verifiedAuthResponseWithJWT = await rp.verifyAuthorizationResponse(authenticationResponseWithJWT.response.payload, {
+        /*audience: EXAMPLE_REDIRECT_URL,*/
+        presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
+      });
 
-    expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
-    expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+      expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
+      expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   });
 
   it(
@@ -1139,7 +1147,7 @@ describe('RP and OP interaction should', () => {
         {
           identifier: '83627465',
           name: 'Permanent Resident Card',
-          type: ['PermanentResidentCard', 'verifiableCredential'],
+          type: ['PermanentResidentCard', 'VerifiableCredential'],
           id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
           credentialSubject: {
             birthCountry: 'Bahamas',
@@ -1214,7 +1222,7 @@ describe('RP and OP interaction should', () => {
         {
           identifier: '83627465',
           name: 'Permanent Resident Card',
-          type: ['PermanentResidentCard', 'verifiableCredential'],
+          type: ['PermanentResidentCard', 'VerifiableCredential'],
           id: 'https://issuer.oidp.uscis.gov/credentials/83627465dsdsdsd',
           credentialSubject: {
             birthCountry: 'Bahamas',

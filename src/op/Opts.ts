@@ -85,6 +85,7 @@ export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
   }
   return opts.builder
     ? {
+        hasher: opts.builder.hasher,
         verification: {
           mode: VerificationMode.INTERNAL,
           checkLinkedDomain: opts.builder.checkLinkedDomain,

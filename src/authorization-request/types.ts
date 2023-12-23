@@ -1,3 +1,5 @@
+import { Hasher } from '@sphereon/ssi-types';
+
 import { PresentationDefinitionPayloadOpts } from '../authorization-response';
 import { RequestObjectOpts } from '../request-object';
 import {
@@ -77,6 +79,8 @@ export interface VerifyAuthorizationRequestOpts {
   state?: string; // If provided the state in the request needs to match
 
   supportedVersions?: SupportedVersion[];
+
+  hasher?: Hasher;
 }
 
 /**

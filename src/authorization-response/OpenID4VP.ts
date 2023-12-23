@@ -1,6 +1,6 @@
 import { IPresentationDefinition, PEX } from '@sphereon/pex';
 import { Format } from '@sphereon/pex-models';
-import { CredentialMapper, PresentationSubmission, W3CVerifiablePresentation, WrappedVerifiablePresentation } from '@sphereon/ssi-types';
+import { CredentialMapper, Hasher, PresentationSubmission, W3CVerifiablePresentation, WrappedVerifiablePresentation } from '@sphereon/ssi-types';
 
 import { AuthorizationRequest } from '../authorization-request';
 import { verifyRevocation } from '../helpers';
@@ -28,7 +28,7 @@ export const verifyPresentations = async (
   authorizationResponse: AuthorizationResponse,
   verifyOpts: VerifyAuthorizationResponseOpts
 ): Promise<VerifiedOpenID4VPSubmission> => {
-  const presentations = await extractPresentationsFromAuthorizationResponse(authorizationResponse);
+  const presentations = await extractPresentationsFromAuthorizationResponse(authorizationResponse, { hasher: verifyOpts.hasher });
   const presentationDefinitions = verifyOpts.presentationDefinitions
     ? Array.isArray(verifyOpts.presentationDefinitions)
       ? verifyOpts.presentationDefinitions
@@ -50,6 +50,7 @@ export const verifyPresentations = async (
       presentationSubmission,
       restrictToFormats: verifyOpts.restrictToFormats,
       restrictToDIDMethods: verifyOpts.restrictToDIDMethods,
+      hasher: verifyOpts.hasher,
     },
   });
 
@@ -67,12 +68,15 @@ export const verifyPresentations = async (
   return { presentations, presentationDefinitions, submissionData: presentationSubmission };
 };
 
-export const extractPresentationsFromAuthorizationResponse = async (response: AuthorizationResponse): Promise<WrappedVerifiablePresentation[]> => {
+export const extractPresentationsFromAuthorizationResponse = async (
+  response: AuthorizationResponse,
+  opts?: { hasher?: Hasher }
+): Promise<WrappedVerifiablePresentation[]> => {
   const wrappedVerifiablePresentations: WrappedVerifiablePresentation[] = [];
   if (response.payload.vp_token) {
     const presentations = Array.isArray(response.payload.vp_token) ? response.payload.vp_token : [response.payload.vp_token];
     for (const presentation of presentations) {
-      wrappedVerifiablePresentations.push(CredentialMapper.toWrappedVerifiablePresentation(presentation));
+      wrappedVerifiablePresentations.push(CredentialMapper.toWrappedVerifiablePresentation(presentation, { hasher: opts?.hasher }));
     }
   }
   return wrappedVerifiablePresentations;
@@ -87,9 +91,10 @@ export const createPresentationSubmission = async (
     const wrappedPresentation = CredentialMapper.toWrappedVerifiablePresentation(verifiablePresentation);
 
     let submission =
-      wrappedPresentation.presentation.presentation_submission ||
-      wrappedPresentation.decoded.presentation_submission ||
-      (typeof wrappedPresentation.original !== 'string' && wrappedPresentation.original.presentation_submission);
+      CredentialMapper.isWrappedW3CVerifiablePresentation(wrappedPresentation) &&
+      (wrappedPresentation.presentation.presentation_submission ||
+        wrappedPresentation.decoded.presentation_submission ||
+        (typeof wrappedPresentation.original !== 'string' && wrappedPresentation.original.presentation_submission));
     if (!submission && opts?.presentationDefinitions) {
       console.log(`No submission_data in VPs and not provided. Will try to deduce, but it is better to create the submission data beforehand`);
       for (const definitionOpt of opts.presentationDefinitions) {
@@ -187,11 +192,10 @@ export const putPresentationSubmissionInLocation = async (
     }
   }
 
-  const vps =
-    resOpts.presentationExchange?.verifiablePresentations?.map(
-      (vp) => CredentialMapper.toWrappedVerifiablePresentation(vp).original as W3CVerifiablePresentation
-    ) || [];
-  responsePayload.vp_token = vps.length === 1 ? vps[0] : vps;
+  responsePayload.vp_token =
+    resOpts.presentationExchange?.verifiablePresentations.length === 1
+      ? resOpts.presentationExchange.verifiablePresentations[0]
+      : resOpts.presentationExchange?.verifiablePresentations;
 };
 
 export const assertValidVerifiablePresentations = async (args: {
@@ -203,6 +207,7 @@ export const assertValidVerifiablePresentations = async (args: {
     restrictToFormats?: Format;
     restrictToDIDMethods?: string[];
     presentationSubmission?: PresentationSubmission;
+    hasher?: Hasher;
   };
 }) => {
   if (

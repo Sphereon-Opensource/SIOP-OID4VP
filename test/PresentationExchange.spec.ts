@@ -1,6 +1,6 @@
 import { PresentationDefinitionV1 } from '@sphereon/pex-models';
-import { CredentialMapper, IProofType, IVerifiableCredential } from '@sphereon/ssi-types';
-import { W3CVerifiablePresentation } from '@sphereon/ssi-types/src/types/vc';
+import { CredentialMapper, IPresentation, IProofType, IVerifiableCredential } from '@sphereon/ssi-types';
+import { W3CVerifiablePresentation } from '@sphereon/ssi-types/src/types/w3c-vc';
 import nock from 'nock';
 
 import {
@@ -326,7 +326,7 @@ describe('presentation exchange manager tests', () => {
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const presentationSignCallback: PresentationSignCallback = async (_args) => ({
-      ..._args.presentation,
+      ...(_args.presentation as IPresentation),
       proof: {
         type: 'RsaSignature2018',
         created: '2018-09-14T21:19:10Z',
@@ -399,7 +399,7 @@ describe('presentation exchange manager tests', () => {
     const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: vcs });
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const presentationSignCallback: PresentationSignCallback = async (_args) => ({
-      ..._args.presentation,
+      ...(_args.presentation as IPresentation),
       proof: {
         type: 'RsaSignature2018',
         created: '2018-09-14T21:19:10Z',

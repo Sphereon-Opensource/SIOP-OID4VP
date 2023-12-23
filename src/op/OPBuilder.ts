@@ -1,7 +1,7 @@
 import { EventEmitter } from 'events';
 
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
-import { IIssuerId } from '@sphereon/ssi-types';
+import { Hasher, IIssuerId } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
 import { Resolvable, Resolver } from 'did-resolver';
@@ -39,12 +39,20 @@ export class OPBuilder {
   supportedVersions?: SupportedVersion[];
   eventEmitter?: EventEmitter;
 
+  hasher?: Hasher;
+
   addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
     const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
     if (method === SubjectSyntaxTypesSupportedValues.DID.valueOf()) {
       opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
     }
     opts ? this.addResolver(method, new Resolver(getUniResolver(method, { ...opts }))) : this.addResolver(method, null);
+    return this;
+  }
+
+  withHasher(hasher: Hasher): OPBuilder {
+    this.hasher = hasher;
+
     return this;
   }
 

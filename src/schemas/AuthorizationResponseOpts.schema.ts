@@ -1613,7 +1613,14 @@ export const AuthorizationResponseOptsSchemaObj = {
         "verifiablePresentations": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/W3CVerifiablePresentation"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/W3CVerifiablePresentation"
+              },
+              {
+                "$ref": "#/definitions/CompactSdJwtVc"
+              }
+            ]
           }
         },
         "vpTokenLocation": {
@@ -1646,7 +1653,7 @@ export const AuthorizationResponseOptsSchemaObj = {
           "$ref": "#/definitions/CompactJWT"
         }
       ],
-      "description": "Represents a signed Verifiable Presentation (includes proof), in either JSON or compact JWT format. See  {@link  https://www.w3.org/TR/vc-data-model/#presentations | VC data model } \nSee  {@link  https://www.w3.org/TR/vc-data-model/#proof-formats | proof formats }"
+      "description": "Represents a signed Verifiable Presentation (includes proof), in either JSON or compact JWT format. See  {@link  https://www.w3.org/TR/vc-data-model/#presentations VC data model }  See  {@link  https://www.w3.org/TR/vc-data-model/#proof-formats proof formats }"
     },
     "IVerifiablePresentation": {
       "type": "object",
@@ -1830,7 +1837,7 @@ export const AuthorizationResponseOptsSchemaObj = {
           "$ref": "#/definitions/CompactJWT"
         }
       ],
-      "description": "Represents a signed Verifiable Credential (includes proof), in either JSON or compact JWT format. See  {@link  https://www.w3.org/TR/vc-data-model/#credentials | VC data model } \nSee  {@link  https://www.w3.org/TR/vc-data-model/#proof-formats | proof formats }"
+      "description": "Represents a signed Verifiable Credential (includes proof), in either JSON, compact JWT or compact SD-JWT VC format. See  {@link  https://www.w3.org/TR/vc-data-model/#credentials VC data model }  See  {@link  https://www.w3.org/TR/vc-data-model/#proof-formats proof formats }"
     },
     "IVerifiableCredential": {
       "type": "object",
@@ -2053,6 +2060,10 @@ export const AuthorizationResponseOptsSchemaObj = {
       ],
       "additionalProperties": false,
       "description": "descriptor map laying out the structure of the presentation submission."
+    },
+    "CompactSdJwtVc": {
+      "type": "string",
+      "description": "Represents a selective disclosure JWT vc in compact form."
     },
     "VPTokenLocation": {
       "type": "string",

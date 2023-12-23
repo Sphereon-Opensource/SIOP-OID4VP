@@ -1,5 +1,5 @@
 import { IPresentationDefinition } from '@sphereon/pex';
-import { ICredential, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
+import { ICredential, IPresentation, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
 import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
@@ -299,7 +299,7 @@ describe('create JWT from Request JWT should', () => {
     const mockReqEntity = await mockedGetEnterpriseAuthToken('REQ COMPANY');
     const mockResEntity = await mockedGetEnterpriseAuthToken('RES COMPANY');
     const presentationSignCallback: PresentationSignCallback = async (_args) => ({
-      ..._args.presentation,
+      ...(_args.presentation as IPresentation),
       proof: {
         type: 'RsaSignature2018',
         created: '2018-09-14T21:19:10Z',
@@ -573,7 +573,7 @@ describe('create JWT from Request JWT should', () => {
     });
     await pex.selectVerifiableCredentialsForSubmission(definition);
     const presentationSignCallback: PresentationSignCallback = async (_args) => ({
-      ..._args.presentation,
+      ...(_args.presentation as IPresentation),
       proof: {
         type: 'RsaSignature2018',
         created: '2018-09-14T21:19:10Z',

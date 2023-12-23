@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 
 import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { IPresentationDefinition } from '@sphereon/pex';
+import { Hasher } from '@sphereon/ssi-types';
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { Signer } from 'did-jwt';
 import { Resolvable, Resolver } from 'did-resolver';
@@ -54,6 +55,8 @@ export class RPBuilder {
   clientMetadata?: ClientMetadataOpts = undefined;
   clientId: string;
 
+  hasher: Hasher;
+
   private constructor(supportedRequestVersion?: SupportedVersion) {
     if (supportedRequestVersion) {
       this.addSupportedVersion(supportedRequestVersion);
@@ -70,6 +73,12 @@ export class RPBuilder {
     const propertyValue = Array.isArray(responseType) ? responseType.join(' ').trim() : responseType;
     this._authorizationRequestPayload.response_type = assignIfAuth({ propertyValue, targets }, false);
     this._requestObjectPayload.response_type = assignIfRequestObject({ propertyValue, targets }, true);
+    return this;
+  }
+
+  withHasher(hasher: Hasher): RPBuilder {
+    this.hasher = hasher;
+
     return this;
   }
 
