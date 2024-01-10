@@ -13,7 +13,7 @@
   "scripts": {
     "build": "npm-run-all build:schemaGenerator build:main",
     "build:main": "tsc -p tsconfig.build.json",
-    "build:schemaGenerator": "node --experimental-specifier-resolution=node --experimental-modules --no-warnings --loader ts-node/esm generator/schemaGenerator.ts",
+    "build:schemaGenerator": "ts-node --esm ./generator/schemaGenerator.ts",
     "clean": "rimraf dist coverage",
     "fix": "run-s fix:*",
     "fix:prettier": "prettier \"{src,test}/**/*.ts\" --write",
