@@ -13,7 +13,7 @@
   "scripts": {
     "build": "npm-run-all build:schemaGenerator build:main",
     "build:main": "tsc -p tsconfig.build.json",
-    "build:schemaGenerator": "ts-node --esm ./generator/schemaGenerator.ts",
+    "build:schemaGenerator": "ts-node --esm generator/schemaGenerator.ts",
     "clean": "rimraf dist coverage",
     "fix": "run-s fix:*",
     "fix:prettier": "prettier \"{src,test}/**/*.ts\" --write",
@@ -82,7 +82,7 @@
     "ts-interface-checker": "^1.0.2",
     "ts-jest": "^29.1.1",
     "ts-json-schema-generator": "^1.2.0",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typescript": "4.9.5"
   },
   "resolutions": {
