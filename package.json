@@ -1,6 +1,6 @@
 {
   "name": "@sphereon/did-auth-siop",
-  "version": "0.5.0-unstable.8",
+  "version": "0.5.0-unstable.9",
   "source": "src/index.ts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,7 +13,7 @@
   "scripts": {
     "build": "npm-run-all build:schemaGenerator build:main",
     "build:main": "tsc -p tsconfig.build.json",
-    "build:schemaGenerator": "node --loader ts-node/esm generator/schemaGenerator.ts",
+    "build:schemaGenerator": "node --experimental-specifier-resolution=node --experimental-modules --no-warnings --loader ts-node/esm generator/schemaGenerator.ts",
     "clean": "rimraf dist coverage",
     "fix": "run-s fix:*",
     "fix:prettier": "prettier \"{src,test}/**/*.ts\" --write",
@@ -30,7 +30,7 @@
   "dependencies": {
     "@sphereon/did-uni-client": "^0.6.0",
     "qs": "^6.11.2",
-    "@sphereon/pex": "2.2.2",
+    "@sphereon/pex": "^2.2.2",
     "@sphereon/pex-models": "^2.1.2",
     "@sphereon/ssi-types": "^0.17.5",
     "@sphereon/wellknown-dids-client": "^0.1.3",
