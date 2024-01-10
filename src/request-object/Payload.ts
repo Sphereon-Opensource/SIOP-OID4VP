@@ -50,6 +50,8 @@ export const createRequestObjectPayload = async (opts: CreateAuthorizationReques
     state,
     ...registration.payload,
     claims,
+    presentation_definition_uri: payload.presentation_definition_uri,
+    presentation_definition: payload.presentation_definition,
     iat,
     nbf,
     exp,
