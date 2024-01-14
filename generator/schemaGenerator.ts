@@ -37,7 +37,7 @@ class CustomTypeFormatter implements SubTypeFormatter {
   }
 }
 
-function writeSchema(config): Schema {
+function writeSchema(config: any): Schema {
   const formatter = createFormatter(config, (fmt: MutableTypeFormatter) => {
     fmt.addTypeFormatter(new CustomTypeFormatter());
   });
