@@ -16,7 +16,6 @@ export const verifyRevocation = async (
 
   const vcs = CredentialMapper.isWrappedSdJwtVerifiablePresentation(vpToken) ? [vpToken.vcs[0]] : vpToken.presentation.verifiableCredential;
   for (const vc of vcs) {
-    vc.format;
     if (
       revocationVerification === RevocationVerification.ALWAYS ||
       (revocationVerification === RevocationVerification.IF_PRESENT && credentialHasStatus(vc))

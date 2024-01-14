@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import { IIssuerId } from '@sphereon/ssi-types/dist/types/w3c-vc';
+import { IIssuerId } from '@sphereon/ssi-types';
 import { v4 as uuidv4 } from 'uuid';
 
 import { AuthorizationRequest, URI, VerifyAuthorizationRequestOpts } from '../authorization-request';
