@@ -147,6 +147,7 @@ export class OP {
         subject: response,
       });
       return { correlationId, response, responseURI: responseUri };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_FAILED, {
         correlationId,

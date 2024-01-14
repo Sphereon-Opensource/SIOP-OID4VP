@@ -1,5 +1,6 @@
 import { JSONPath as jp } from '@astronautlabs/jsonpath';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function extractDataFromPath(obj: unknown, path: string): { path: string[]; value: any }[] {
   return jp.nodes(obj, path);
 }

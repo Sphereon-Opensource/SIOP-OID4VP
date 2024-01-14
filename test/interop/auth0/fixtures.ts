@@ -1,10 +1,13 @@
-export const anyDef = {
+import { PresentationDefinitionV1 } from '@sphereon/pex-models';
+
+export const anyDef: PresentationDefinitionV1 = {
   id: '1',
   input_descriptors: [
     {
       id: '1',
       name: 'A specific type of VC',
       purpose: 'We want a VC of this type',
+      schema: [{ uri: 'VerifiableCredential' }],
     },
   ],
 };

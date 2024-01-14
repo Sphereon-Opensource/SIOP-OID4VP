@@ -177,9 +177,8 @@ export interface VpTokenClaimPayload {
   presentation_definition_uri?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ClaimPayloadCommon {
-  // [x: string]: any;
+  [x: string]: any;
 }
 
 export interface ClaimPayloadVID1 extends ClaimPayloadCommon {

@@ -25,7 +25,8 @@
     /* Debugging Options */
     "traceResolution": false
     /* Report module resolution log messages. */,
-    "listEmittedFiles": false
+    "listEmittedFiles": false,
+    "skipLibCheck": true
     /* Print names of generated files part of the compilation. */,
     "listFiles": false
     /* Print names of files part of the compilation. */,
@@ -41,7 +42,7 @@
     "src/**/*.ts",
     "src/**/*.js",
     "test/**/*.ts",
-    "generator/**/*.ts"
+    "generator/*.ts"
   ],
   "exclude": [
     "node_modules/**",

@@ -149,6 +149,7 @@ export class RP {
     let authorizationResponse: AuthorizationResponse;
     try {
       authorizationResponse = await AuthorizationResponse.fromPayload(authorizationResponsePayload);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_RECEIVED_FAILED, {
         correlationId: correlationId ?? uuidv4(), // correlation id cannot be derived from state in payload possible, hence a uuid as fallback

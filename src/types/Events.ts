@@ -11,8 +11,8 @@ export enum AuthorizationEvents {
   ON_AUTH_REQUEST_VERIFIED_SUCCESS = 'onAuthRequestVerifiedSuccess',
   ON_AUTH_REQUEST_VERIFIED_FAILED = 'onAuthRequestVerifiedFailed',
 
-  ON_AUTH_RESPONSE_CREATE_SUCCESS = 'onAuthResponseSentSuccess',
-  ON_AUTH_RESPONSE_CREATE_FAILED = 'onAuthResponseSentFailed',
+  ON_AUTH_RESPONSE_CREATE_SUCCESS = 'onAuthResponseCreateSuccess',
+  ON_AUTH_RESPONSE_CREATE_FAILED = 'onAuthResponseCreateFailed',
 
   ON_AUTH_RESPONSE_SENT_SUCCESS = 'onAuthResponseSentSuccess',
   ON_AUTH_RESPONSE_SENT_FAILED = 'onAuthResponseSentFailed',
@@ -21,7 +21,7 @@ export enum AuthorizationEvents {
   ON_AUTH_RESPONSE_RECEIVED_FAILED = 'onAuthResponseReceivedFailed',
 
   ON_AUTH_RESPONSE_VERIFIED_SUCCESS = 'onAuthResponseVerifiedSuccess',
-  ON_AUTH_RESPONSE_VERIFIED_FAILED = 'onAuthResponseReceivedFailed',
+  ON_AUTH_RESPONSE_VERIFIED_FAILED = 'onAuthResponseVerifiedFailed',
 }
 
 export class AuthorizationEvent<T> {

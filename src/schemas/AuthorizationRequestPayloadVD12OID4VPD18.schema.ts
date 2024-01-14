@@ -365,8 +365,7 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
       ]
     },
     "ClaimPayloadCommon": {
-      "type": "object",
-      "additionalProperties": false
+      "type": "object"
     },
     "PresentationDefinitionV1": {
       "type": "object",
@@ -603,6 +602,9 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
           "$ref": "#/definitions/Optionality"
         }
       },
+      "required": [
+        "path"
+      ],
       "additionalProperties": false
     },
     "FilterV1": {
@@ -747,7 +749,8 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
         }
       },
       "required": [
-        "id"
+        "id",
+        "constraints"
       ],
       "additionalProperties": false
     },
@@ -809,6 +812,9 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
           "type": "string"
         }
       },
+      "required": [
+        "path"
+      ],
       "additionalProperties": false
     },
     "FilterV2": {

@@ -339,8 +339,7 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         "vp_token": {
           "$ref": "#/definitions/VpTokenClaimPayload"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "IdTokenClaimPayload": {
       "type": "object"
@@ -599,6 +598,9 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
           "$ref": "#/definitions/Optionality"
         }
       },
+      "required": [
+        "path"
+      ],
       "additionalProperties": false
     },
     "FilterV1": {
@@ -743,7 +745,8 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
         }
       },
       "required": [
-        "id"
+        "id",
+        "constraints"
       ],
       "additionalProperties": false
     },
@@ -805,6 +808,9 @@ export const AuthorizationRequestPayloadVID1SchemaObj = {
           "type": "string"
         }
       },
+      "required": [
+        "path"
+      ],
       "additionalProperties": false
     },
     "FilterV2": {
