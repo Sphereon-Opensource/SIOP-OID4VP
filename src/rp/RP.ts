@@ -49,8 +49,7 @@ export class RP {
     verifyResponseOpts?: VerifyAuthorizationResponseOpts;
   }) {
     // const claims = opts.builder?.claims || opts.createRequestOpts?.payload.claims;
-    const authReqOpts = createRequestOptsFromBuilderOrExistingOpts(opts);
-    this._createRequestOptions = { ...authReqOpts, payload: { ...authReqOpts.payload } };
+    this._createRequestOptions = createRequestOptsFromBuilderOrExistingOpts(opts);
     this._verifyResponseOptions = { ...createVerifyResponseOptsFromBuilderOrExistingOpts(opts) };
     this._eventEmitter = opts.builder?.eventEmitter;
     this._sessionManager = opts.builder?.sessionManager;

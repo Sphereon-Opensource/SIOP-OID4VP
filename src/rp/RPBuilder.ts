@@ -245,11 +245,12 @@ export class RPBuilder {
 
   withPresentationDefinition(definitionOpts: { definition: IPresentationDefinition; definitionUri?: string }, targets?: PropertyTargets): RPBuilder {
     const { definition, definitionUri } = definitionOpts;
-    const definitionProperties = {
-      presentation_definition: definition,
-      presentation_definition_uri: definitionUri,
-    };
+
     if (this.getSupportedRequestVersion() < SupportedVersion.SIOPv2_D11) {
+      const definitionProperties = {
+        presentation_definition: definition,
+        presentation_definition_uri: definitionUri,
+      };
       const vp_token = { ...definitionProperties };
       if (isTarget(PropertyTarget.AUTHORIZATION_REQUEST, targets)) {
         this._authorizationRequestPayload.claims = {

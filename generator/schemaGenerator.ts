@@ -13,7 +13,7 @@ import {
   SchemaGenerator,
   SubTypeFormatter
 } from 'ts-json-schema-generator';
-import { Schema } from 'ts-json-schema-generator/src/Schema/Schema';
+import { Schema } from 'ts-json-schema-generator/dist/src/Schema/Schema';
 
 class CustomTypeFormatter implements SubTypeFormatter {
   public supportsType(type: FunctionType): boolean {
