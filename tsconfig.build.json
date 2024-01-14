@@ -3,5 +3,8 @@
   "exclude": [
     "test/**/*.ts",
     "generator/**/*.ts"
-  ]
+  ],
+  "ts-node": {
+    "esm": false
+  }
 }

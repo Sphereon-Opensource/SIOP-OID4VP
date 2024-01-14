@@ -48,5 +48,8 @@
     "node_modules/**",
     "dist/**"
   ],
+  "ts-node": {
+    "esm": true,
+  },
   "compileOnSave": false
 }
