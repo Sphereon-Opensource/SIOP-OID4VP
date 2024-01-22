@@ -39,9 +39,8 @@ export const verifyPresentations = async (
     idPayload = await authorizationResponse.idToken.payload();
   }
   // todo: Probably wise to check against request for the location of the submission_data
-  const presentationSubmission = authorizationResponse.payload.presentation_submission
-    ? authorizationResponse.payload.presentation_submission
-    : idPayload?._vp_token?.presentation_submission;
+  const presentationSubmission = idPayload?._vp_token?.presentation_submission ?? authorizationResponse.payload.presentation_submission;
+
   await assertValidVerifiablePresentations({
     presentationDefinitions,
     presentations,
@@ -54,6 +53,13 @@ export const verifyPresentations = async (
     },
   });
 
+  const nonces: Set<string> = new Set(presentations.map((presentation) => presentation.decoded.nonce));
+  if (presentations.length > 0 && nonces.size !== 1) {
+    throw Error(`${nonces.size} nonce values found for ${presentations.length}. Should be 1`);
+  }
+
+  const nonce = nonces[0];
+
   const revocationVerification = verifyOpts.verification?.revocationOpts
     ? verifyOpts.verification.revocationOpts.revocationVerification
     : RevocationVerification.IF_PRESENT;
@@ -65,7 +71,7 @@ export const verifyPresentations = async (
       await verifyRevocation(vp, verifyOpts.verification.revocationOpts.revocationVerificationCallback, revocationVerification);
     }
   }
-  return { presentations, presentationDefinitions, submissionData: presentationSubmission };
+  return { nonce, presentations, presentationDefinitions, submissionData: presentationSubmission };
 };
 
 export const extractPresentationsFromAuthorizationResponse = async (

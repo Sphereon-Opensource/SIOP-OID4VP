@@ -1,6 +1,6 @@
 {
   "name": "@sphereon/did-auth-siop",
-  "version": "0.6.0-unstable.0",
+  "version": "0.6.0-unstable.2",
   "source": "src/index.ts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,25 +28,24 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@sphereon/did-uni-client": "^0.6.1",
-    "qs": "^6.11.2",
-    "@sphereon/pex": "^3.0.0",
-    "@sphereon/pex-models": "^2.1.5",
-    "@sphereon/ssi-types": "^0.18.0",
-    "@sphereon/wellknown-dids-client": "^0.1.3",
     "@astronautlabs/jsonpath": "^1.1.2",
-    "sha.js": "^2.4.11",
+    "@sphereon/did-uni-client": "^0.6.1",
+    "@sphereon/pex": "^3.0.1",
+    "@sphereon/pex-models": "^2.1.5",
+    "@sphereon/ssi-types": "0.18.1",
+    "@sphereon/wellknown-dids-client": "^0.1.3",
     "cross-fetch": "^4.0.0",
     "did-jwt": "6.11.6",
     "did-resolver": "^4.1.0",
     "events": "^3.3.0",
     "language-tags": "^1.0.9",
     "multiformats": "^11.0.2",
+    "qs": "^6.11.2",
+    "sha.js": "^2.4.11",
     "uint8arrays": "^3.1.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "@types/qs": "^6.9.11",
     "@digitalcredentials/did-method-key": "^2.0.3",
     "@digitalcredentials/ed25519-signature-2020": "^3.0.2",
     "@digitalcredentials/jsonld-signatures": "^9.3.2",
@@ -57,6 +56,8 @@
     "did-resolver": "^4.1.0",
     "@types/jest": "^29.5.11",
     "@types/language-tags": "^1.0.4",
+    "@types/qs": "^6.9.11",
+    "@types/sha.js": "^2.4.4",
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
@@ -87,10 +88,7 @@
   },
   "resolutions": {
     "isomorphic-webcrypto": "npm:@sphereon/isomorphic-webcrypto@^2.4.0-unstable.4",
-    "esline/**/strip-ansi": "6.0.1",
-    "@sd-jwt/utils": "0.1.2-alpha.2",
-    "@sd-jwt/decode": "0.1.2-alpha.1",
-    "@sd-jwt/types": "0.1.2-alpha.3"
+    "esline/**/strip-ansi": "6.0.1"
   },
   "files": [
     "dist"

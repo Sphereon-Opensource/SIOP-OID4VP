@@ -1,3 +1,5 @@
+import { Hasher } from '@sphereon/ssi-types';
+
 import { AuthorizationRequest, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidVerifyAuthorizationRequestOpts } from '../authorization-request/Opts';
 import { IDToken } from '../id-token';
@@ -16,14 +18,14 @@ export class AuthorizationResponse {
 
   private readonly _options?: AuthorizationResponseOpts;
 
-  constructor({
+  private constructor({
     authorizationResponsePayload,
     idToken,
     responseOpts,
     authorizationRequest,
   }: {
     authorizationResponsePayload: AuthorizationResponsePayload;
-    idToken: IDToken;
+    idToken?: IDToken;
     responseOpts?: AuthorizationResponseOpts;
     authorizationRequest?: AuthorizationRequest;
   }) {
@@ -64,7 +66,7 @@ export class AuthorizationResponse {
     if (responseOpts) {
       assertValidResponseOpts(responseOpts);
     }
-    const idToken = await IDToken.fromIDToken(authorizationResponsePayload.id_token);
+    const idToken = authorizationResponsePayload.id_token ? await IDToken.fromIDToken(authorizationResponsePayload.id_token) : undefined;
     return new AuthorizationResponse({ authorizationResponsePayload, idToken, responseOpts });
   }
 
@@ -99,10 +101,10 @@ export class AuthorizationResponse {
       JSON.stringify(verifiedAuthorizationRequest.presentationDefinitions)
     ) as PresentationDefinitionWithLocation[];
     const wantsIdToken = await authorizationRequest.containsResponseType(ResponseType.ID_TOKEN);
-    // const hasVpToken = await authorizationRequest.containsResponseType(ResponseType.VP_TOKEN);
+    const hasVpToken = await authorizationRequest.containsResponseType(ResponseType.VP_TOKEN);
 
     const idToken = wantsIdToken ? await IDToken.fromVerifiedAuthorizationRequest(verifiedAuthorizationRequest, responseOpts) : undefined;
-    const idTokenPayload = wantsIdToken ? await idToken.payload() : undefined;
+    const idTokenPayload = idToken ? await idToken.payload() : undefined;
     const authorizationResponsePayload = await createResponsePayload(authorizationRequest, responseOpts, idTokenPayload);
     const response = new AuthorizationResponse({
       authorizationResponsePayload,
@@ -111,21 +113,30 @@ export class AuthorizationResponse {
       authorizationRequest,
     });
 
-    const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response, { hasher: verifyOpts.hasher });
+    /*let nonce = idTokenPayload?.nonce
+    const state = response._payload.state
+    */
 
-    await assertValidVerifiablePresentations({
-      presentationDefinitions,
-      presentations: wrappedPresentations,
-      verificationCallback: verifyOpts.verification.presentationVerificationCallback,
-      opts: { ...responseOpts.presentationExchange, hasher: verifyOpts.hasher },
-    });
+    if (hasVpToken) {
+      const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response, { hasher: verifyOpts.hasher });
+
+      await assertValidVerifiablePresentations({
+        presentationDefinitions,
+        presentations: wrappedPresentations,
+        verificationCallback: verifyOpts.verification.presentationVerificationCallback,
+        opts: { ...responseOpts.presentationExchange, hasher: verifyOpts.hasher },
+      });
+      /*if (!nonce) {
+        nonce = wrappedPresentations[0].decoded.nonce
+      }*/
+    }
 
     return response;
   }
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthorizationResponse> {
     // Merge payloads checks for inconsistencies in properties which are present in both the auth request and request object
-    const merged = await this.mergedPayloads(true);
+    const merged = await this.mergedPayloads({ consistencyCheck: true, hasher: verifyOpts.hasher });
     if (verifyOpts.state && merged.state !== verifyOpts.state) {
       throw Error(SIOPErrors.BAD_STATE);
     }
@@ -133,12 +144,23 @@ export class AuthorizationResponse {
     const verifiedIdToken = await this.idToken?.verify(verifyOpts);
     const oid4vp = await verifyPresentations(this, verifyOpts);
 
+    const nonce = merged.nonce ?? verifiedIdToken.payload.nonce ?? oid4vp.nonce;
+    const state = merged.state ?? verifiedIdToken.payload.state;
+
+    if (!state) {
+      throw Error(`State is required`);
+    } else if (oid4vp.presentationDefinitions.length > 0 && !nonce) {
+      throw Error('Nonce is required when using OID4VP');
+    }
+
     return {
       authorizationResponse: this,
       verifyOpts,
+      nonce,
+      state,
       correlationId: verifyOpts.correlationId,
-      ...(this.idToken ? { idToken: verifiedIdToken } : {}),
-      ...(oid4vp ? { oid4vpSubmission: oid4vp } : {}),
+      ...(this.idToken && { idToken: verifiedIdToken }),
+      ...(oid4vp && { oid4vpSubmission: oid4vp }),
     };
   }
 
@@ -154,24 +176,36 @@ export class AuthorizationResponse {
     return this._options;
   }
 
-  get idToken(): IDToken {
+  get idToken(): IDToken | undefined {
     return this._idToken;
   }
 
-  public async getMergedProperty<T>(key: string, consistencyCheck?: boolean): Promise<T | undefined> {
-    const merged = await this.mergedPayloads(consistencyCheck);
+  public async getMergedProperty<T>(key: string, opts?: { consistencyCheck?: boolean; hasher?: Hasher }): Promise<T | undefined> {
+    const merged = await this.mergedPayloads(opts);
     return merged[key] as T;
   }
 
-  public async mergedPayloads(consistencyCheck?: boolean): Promise<AuthorizationResponsePayload> {
+  public async mergedPayloads(opts?: { consistencyCheck?: boolean; hasher?: Hasher }): Promise<AuthorizationResponsePayload> {
+    let nonce: string | undefined = this._payload.nonce;
+    if (this._payload?.vp_token) {
+      const presentations = await extractPresentationsFromAuthorizationResponse(this, opts);
+      // We do not verify them, as that is done elsewhere. So we simply can take the first nonce
+      if (!nonce) {
+        nonce = presentations[0].decoded.nonce;
+      }
+    }
     const idTokenPayload = await this.idToken?.payload();
-    if (consistencyCheck !== false && idTokenPayload) {
+    if (opts?.consistencyCheck !== false && idTokenPayload) {
       Object.entries(idTokenPayload).forEach((entry) => {
         if (typeof entry[0] === 'string' && this.payload[entry[0]] && this.payload[entry[0]] !== entry[1]) {
           throw Error(`Mismatch in Authorization Request and Request object value for ${entry[0]}`);
         }
       });
     }
-    return { ...this.payload, ...idTokenPayload };
+    if (!nonce && this._idToken) {
+      nonce = (await this._idToken.payload()).nonce;
+    }
+
+    return { ...this.payload, ...idTokenPayload, nonce };
   }
 }

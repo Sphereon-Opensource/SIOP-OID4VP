@@ -34,7 +34,7 @@ export const createIDTokenPayload = async (
   const rpSupportedVersions = authorizationRequestVersionDiscovery(payload);
   const maxRPVersion = rpSupportedVersions.reduce(
     (previous, current) => (current.valueOf() > previous.valueOf() ? current : previous),
-    SupportedVersion.SIOPv2_ID1
+    SupportedVersion.SIOPv2_D12_OID4VP_D18
   );
   if (responseOpts.version && rpSupportedVersions.length > 0 && !rpSupportedVersions.includes(responseOpts.version)) {
     throw Error(`RP does not support spec version ${responseOpts.version}, supported versions: ${rpSupportedVersions.toString()}`);

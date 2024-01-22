@@ -365,7 +365,7 @@ describe('RP and OP interaction should', () => {
     const rp = RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
-      .withResponseType(ResponseType.ID_TOKEN)
+      .withResponseType([ResponseType.ID_TOKEN, ResponseType.VP_TOKEN])
       .withRedirectUri(EXAMPLE_REDIRECT_URL)
       .withWellknownDIDVerifyCallback(verifyCallback)
       .withPresentationVerification(presentationVerificationCallback)
@@ -377,7 +377,7 @@ describe('RP and OP interaction should', () => {
         client_id: rpMockEntity.did,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        responseTypesSupported: [ResponseType.ID_TOKEN],
+        responseTypesSupported: [ResponseType.ID_TOKEN, ResponseType.VP_TOKEN],
         vpFormatsSupported: { jwt_vc: { alg: [SigningAlgo.EDDSA] } },
         scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
         subjectTypesSupported: [SubjectType.PAIRWISE],

@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 
+import { Hasher } from '@sphereon/ssi-types';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -136,6 +137,7 @@ export class RP {
     authorizationResponsePayload: AuthorizationResponsePayload,
     opts?: {
       correlationId?: string;
+      hasher?: Hasher;
       audience?: string;
       state?: string;
       nonce?: string;
@@ -296,6 +298,7 @@ export class RP {
     authorizationResponse: AuthorizationResponse,
     opts: {
       correlationId: string;
+      hasher?: Hasher;
       state?: string;
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
@@ -308,9 +311,17 @@ export class RP {
     let state = opts?.state ?? this._verifyResponseOptions.state;
     let nonce = opts?.nonce ?? this._verifyResponseOptions.nonce;
     if (this.sessionManager) {
-      const resNonce = (await authorizationResponse.getMergedProperty('nonce', false)) as string;
-      const resState = (await authorizationResponse.getMergedProperty('state', false)) as string;
-      correlationId = await this.sessionManager.getCorrelationIdByNonce(resNonce, false);
+      const resNonce = (await authorizationResponse.getMergedProperty('nonce', {
+        consistencyCheck: false,
+        hasher: opts.hasher ?? this._verifyResponseOptions.hasher,
+      })) as string;
+      const resState = (await authorizationResponse.getMergedProperty('state', {
+        consistencyCheck: false,
+        hasher: opts.hasher ?? this._verifyResponseOptions.hasher,
+      })) as string;
+      if (resNonce && !correlationId) {
+        correlationId = await this.sessionManager.getCorrelationIdByNonce(resNonce, false);
+      }
       if (!correlationId) {
         correlationId = await this.sessionManager.getCorrelationIdByState(resState, false);
       }

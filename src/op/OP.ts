@@ -125,7 +125,7 @@ export class OP {
         SupportedVersion.SIOPv2_ID1
       );
     }
-    const correlationId = responseOpts?.correlationId || verifiedAuthorizationRequest.correlationId || uuidv4();
+    const correlationId = responseOpts?.correlationId ?? verifiedAuthorizationRequest.correlationId ?? uuidv4();
     try {
       // IF using DIRECT_POST, the response_uri takes precedence over the redirect_uri
       let responseUri = verifiedAuthorizationRequest.responseURI;

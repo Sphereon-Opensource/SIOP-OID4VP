@@ -571,6 +571,7 @@ export interface VerifiedOpenID4VPSubmission {
   submissionData: PresentationSubmission;
   presentationDefinitions: PresentationDefinitionWithLocation[];
   presentations: WrappedVerifiablePresentation[];
+  nonce: string;
 }
 
 export interface VerifiedAuthorizationResponse {
@@ -579,6 +580,9 @@ export interface VerifiedAuthorizationResponse {
   authorizationResponse: AuthorizationResponse;
 
   oid4vpSubmission?: VerifiedOpenID4VPSubmission;
+
+  nonce?: string;
+  state: string;
 
   idToken?: VerifiedIDToken;
   verifyOpts?: VerifyAuthorizationResponseOpts;
