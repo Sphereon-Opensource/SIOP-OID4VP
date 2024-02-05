@@ -12,7 +12,7 @@ export const createResponsePayload = async (
   responseOpts: AuthorizationResponseOpts,
   idTokenPayload?: IDTokenPayload
 ): Promise<AuthorizationResponsePayload | undefined> => {
-  assertValidResponseOpts(responseOpts);
+  await assertValidResponseOpts(responseOpts);
   if (!authorizationRequest) {
     throw new Error(SIOPErrors.NO_REQUEST);
   }

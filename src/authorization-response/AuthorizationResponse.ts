@@ -48,7 +48,7 @@ export class AuthorizationResponse {
     verifyOpts: VerifyAuthorizationRequestOpts
   ): Promise<AuthorizationResponse> {
     assertValidVerifyAuthorizationRequestOpts(verifyOpts);
-    assertValidResponseOpts(responseOpts);
+    await assertValidResponseOpts(responseOpts);
     if (!requestObject || !requestObject.startsWith('ey')) {
       throw new Error(SIOPErrors.NO_JWT);
     }
@@ -64,7 +64,7 @@ export class AuthorizationResponse {
       throw new Error(SIOPErrors.NO_RESPONSE);
     }
     if (responseOpts) {
-      assertValidResponseOpts(responseOpts);
+      await assertValidResponseOpts(responseOpts);
     }
     const idToken = authorizationResponsePayload.id_token ? await IDToken.fromIDToken(authorizationResponsePayload.id_token) : undefined;
     return new AuthorizationResponse({ authorizationResponsePayload, idToken, responseOpts });
@@ -75,7 +75,7 @@ export class AuthorizationResponse {
     responseOpts: AuthorizationResponseOpts,
     verifyOpts: VerifyAuthorizationRequestOpts
   ): Promise<AuthorizationResponse> {
-    assertValidResponseOpts(responseOpts);
+    await assertValidResponseOpts(responseOpts);
     if (!authorizationRequest) {
       throw new Error(SIOPErrors.NO_REQUEST);
     }
@@ -88,7 +88,7 @@ export class AuthorizationResponse {
     responseOpts: AuthorizationResponseOpts,
     verifyOpts: VerifyAuthorizationRequestOpts
   ): Promise<AuthorizationResponse> {
-    assertValidResponseOpts(responseOpts);
+    await assertValidResponseOpts(responseOpts);
     if (!verifiedAuthorizationRequest) {
       throw new Error(SIOPErrors.NO_REQUEST);
     }
@@ -113,10 +113,6 @@ export class AuthorizationResponse {
       authorizationRequest,
     });
 
-    /*let nonce = idTokenPayload?.nonce
-    const state = response._payload.state
-    */
-
     if (hasVpToken) {
       const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response, { hasher: verifyOpts.hasher });
 
@@ -126,9 +122,6 @@ export class AuthorizationResponse {
         verificationCallback: verifyOpts.verification.presentationVerificationCallback,
         opts: { ...responseOpts.presentationExchange, hasher: verifyOpts.hasher },
       });
-      /*if (!nonce) {
-        nonce = wrappedPresentations[0].decoded.nonce
-      }*/
     }
 
     return response;

@@ -16,7 +16,7 @@ export const createIDTokenPayload = async (
   verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
   responseOpts: AuthorizationResponseOpts
 ): Promise<IDTokenPayload> => {
-  assertValidResponseOpts(responseOpts);
+  await assertValidResponseOpts(responseOpts);
   const authorizationRequestPayload = await verifiedAuthorizationRequest.authorizationRequest.mergedPayloads();
   const requestObject = verifiedAuthorizationRequest.requestObject;
   if (!authorizationRequestPayload) {
@@ -24,9 +24,10 @@ export const createIDTokenPayload = async (
   }
   const payload = await mergeOAuth2AndOpenIdInRequestPayload(authorizationRequestPayload, requestObject);
 
-  const supportedDidMethods = verifiedAuthorizationRequest.registrationMetadataPayload.subject_syntax_types_supported.filter((sst) =>
-    sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
-  );
+  const supportedDidMethods =
+    verifiedAuthorizationRequest.registrationMetadataPayload?.subject_syntax_types_supported?.filter((sst) =>
+      sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
+    ) ?? [];
   const state = payload.state;
   const nonce = payload.nonce;
   const SEC_IN_MS = 1000;
@@ -50,7 +51,7 @@ export const createIDTokenPayload = async (
     iat: Math.round(Date.now() / SEC_IN_MS - 60 * SEC_IN_MS),
     exp: Math.round(Date.now() / SEC_IN_MS + (responseOpts.expiresIn || 600)),
     sub: responseOpts.signature.did,
-    auth_time: payload.auth_time,
+    ...(payload.auth_time && { auth_time: payload.auth_time }),
     nonce,
     state,
     // ...(responseOpts.presentationExchange?._vp_token ? { _vp_token: responseOpts.presentationExchange._vp_token } : {}),
