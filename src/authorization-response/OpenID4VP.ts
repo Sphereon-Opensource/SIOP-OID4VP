@@ -96,11 +96,14 @@ export const createPresentationSubmission = async (
   for (const verifiablePresentation of verifiablePresentations) {
     const wrappedPresentation = CredentialMapper.toWrappedVerifiablePresentation(verifiablePresentation);
 
-    let submission =
+    let submission: PresentationSubmission | undefined =
       CredentialMapper.isWrappedW3CVerifiablePresentation(wrappedPresentation) &&
-      (wrappedPresentation.presentation.presentation_submission ||
-        wrappedPresentation.decoded.presentation_submission ||
+      (wrappedPresentation.presentation.presentation_submission ??
+        wrappedPresentation.decoded.presentation_submission ??
         (typeof wrappedPresentation.original !== 'string' && wrappedPresentation.original.presentation_submission));
+    if (typeof submission === 'string') {
+      submission = JSON.parse(submission);
+    }
     if (!submission && opts?.presentationDefinitions) {
       console.log(`No submission_data in VPs and not provided. Will try to deduce, but it is better to create the submission data beforehand`);
       for (const definitionOpt of opts.presentationDefinitions) {
@@ -124,6 +127,9 @@ export const createPresentationSubmission = async (
         ? submission_data.descriptor_map.push(...submission.descriptor_map)
         : (submission_data.descriptor_map = [...submission.descriptor_map]);
     }
+  }
+  if (typeof submission_data === 'string') {
+    submission_data = JSON.parse(submission_data);
   }
   return submission_data;
 };

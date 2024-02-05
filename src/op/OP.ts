@@ -183,7 +183,7 @@ export class OP {
       throw Error('No response URI present');
     }
     const authResponseAsURI = encodeJsonAsURI(payload, { arraysWithIndex: ['presentation_submission', 'vp_token'] });
-    return post(responseUri, authResponseAsURI, { contentType: ContentType.FORM_URL_ENCODED })
+    return post(responseUri, authResponseAsURI, { contentType: ContentType.FORM_URL_ENCODED, exceptionOnHttpErrorStatus: true })
       .then((result: SIOPResonse<unknown>) => {
         void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_SENT_SUCCESS, { correlationId, subject: response });
         return result.origResponse;
