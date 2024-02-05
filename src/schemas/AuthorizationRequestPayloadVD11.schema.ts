@@ -294,6 +294,15 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
         "ldp_vp": {
           "$ref": "#/definitions/LdpObject"
         },
+        "di": {
+          "$ref": "#/definitions/DiObject"
+        },
+        "di_vc": {
+          "$ref": "#/definitions/DiObject"
+        },
+        "di_vp": {
+          "$ref": "#/definitions/DiObject"
+        },
         "vc+sd-jwt": {
           "$ref": "#/definitions/SdJwtObject"
         }
@@ -330,16 +339,38 @@ export const AuthorizationRequestPayloadVD11SchemaObj = {
       ],
       "additionalProperties": false
     },
-    "SdJwtObject": {
+    "DiObject": {
       "type": "object",
       "properties": {
-        "sd_jwt_alg_values": {
+        "proof_type": {
           "type": "array",
           "items": {
             "type": "string"
           }
         },
-        "kb_jwt_alg_values": {
+        "cryptosuite": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "proof_type",
+        "cryptosuite"
+      ],
+      "additionalProperties": false
+    },
+    "SdJwtObject": {
+      "type": "object",
+      "properties": {
+        "sd-jwt_alg_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kb-jwt_alg_values": {
           "type": "array",
           "items": {
             "type": "string"

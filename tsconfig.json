@@ -48,8 +48,8 @@
     "node_modules/**",
     "dist/**"
   ],
-  "ts-node": {
+ /* "ts-node": {
     "esm": true,
-  },
+  },*/
   "compileOnSave": false
 }
