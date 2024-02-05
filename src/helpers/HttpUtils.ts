@@ -90,7 +90,12 @@ const siopFetch = async <T>(
     (accept === 'application/json' || origResponse.headers['Content-Type'] === 'application/json') && textResponseBody.trim().startsWith('{');
   const responseBody = isJSONResponse ? JSON.parse(textResponseBody) : textResponseBody;
 
-  debug(`${success ? 'success' : 'error'} status: ${clonedResponse.status}, body:\r\n${JSON.stringify(responseBody)}`);
+  if (success || opts?.exceptionOnHttpErrorStatus) {
+    debug(`${success ? 'success' : 'error'} status: ${clonedResponse.status}, body:\r\n${JSON.stringify(responseBody)}`);
+  } else {
+    console.warn(`${success ? 'success' : 'error'} status: ${clonedResponse.status}, body:\r\n${JSON.stringify(responseBody)}`);
+  }
+
   if (!success && opts?.exceptionOnHttpErrorStatus) {
     const error = JSON.stringify(responseBody);
     throw new Error(error === '{}' ? '{"error": "not found"}' : error);
