@@ -120,15 +120,22 @@ export class AuthorizationRequest {
 
     const jwt = await this.requestObjectJwt();
     if (jwt) {
-      parseJWT(jwt);
+      const parsedJWT = parseJWT(jwt);
+      const payload = parsedJWT.payload;
+      const audience = getAudience(jwt);
       const resolver = getResolver(opts.verification.resolveOpts);
       const options: JWTVerifyOptions = {
         ...opts.verification?.resolveOpts?.jwtVerifyOpts,
         resolver,
-        audience: getAudience(jwt),
+        audience,
       };
 
-      verifiedJwt = await verifyDidJWT(jwt, resolver, options);
+      if (payload.client_id?.startsWith('http') && payload.iss.startsWith('http') && payload.iss === payload.client_id) {
+        console.error(`FIXME: The client_id and iss are not DIDs. We do not verify the signature in this case yet! ${payload.iss}`);
+        verifiedJwt = { payload, jwt, issuer: payload.iss };
+      } else {
+        verifiedJwt = await verifyDidJWT(jwt, resolver, options);
+      }
       if (!verifiedJwt || !verifiedJwt.payload) {
         throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
       }
