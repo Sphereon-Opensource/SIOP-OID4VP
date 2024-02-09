@@ -1,6 +1,6 @@
 {
   "name": "@sphereon/did-auth-siop",
-  "version": "0.6.0-unstable.7",
+  "version": "0.6.0-unstable.9",
   "source": "src/index.ts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

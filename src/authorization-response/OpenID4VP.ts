@@ -161,7 +161,9 @@ export const putPresentationSubmissionInLocation = async (
       presentationDefinitions: await authorizationRequest.getPresentationDefinitions(),
     }));
 
-  const location = resOpts.presentationExchange?.vpTokenLocation ?? (idTokenType ? VPTokenLocation.ID_TOKEN : VPTokenLocation.AUTHORIZATION_RESPONSE);
+  const location =
+    resOpts.presentationExchange?.vpTokenLocation ??
+    (idTokenType && version < SupportedVersion.SIOPv2_D11 ? VPTokenLocation.ID_TOKEN : VPTokenLocation.AUTHORIZATION_RESPONSE);
 
   switch (location) {
     case VPTokenLocation.TOKEN_RESPONSE: {
