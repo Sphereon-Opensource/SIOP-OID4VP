@@ -152,7 +152,8 @@ export class AuthorizationResponse {
 
     return {
       authorizationResponse: this,
-      verifyOpts,   presentationSubmission: responseOpts.presentationExchange.presentationSubmissi
+      verifyOpts,
+      presentationSubmission: responseOpts.presentationExchange?.presentationSubmission,
       nonce,
       state,
       correlationId: verifyOpts.correlationId,
