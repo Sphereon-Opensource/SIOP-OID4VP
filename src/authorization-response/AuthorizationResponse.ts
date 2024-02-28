@@ -139,8 +139,8 @@ export class AuthorizationResponse {
     const verifiedIdToken = await this.idToken?.verify(verifyOpts);
     const oid4vp = await verifyPresentations(this, verifyOpts);
 
-    const nonce = merged.nonce ?? verifiedIdToken.payload.nonce ?? oid4vp.nonce;
-    const state = merged.state ?? verifiedIdToken.payload.state;
+    const nonce = merged.nonce ?? verifiedIdToken?.payload.nonce ?? oid4vp.nonce;
+    const state = merged.state ?? verifiedIdToken?.payload.state;
 
     if (!state) {
       throw Error(`State is required`);
