@@ -145,7 +145,7 @@ export class AuthorizationResponse {
     const state = merged.state ?? verifiedIdToken?.payload.state;
 
     if (!state) {
-      throw Error(`State is required`);
+      throw Error(`State is required`const payload = await authorizationRequest.requestObject.getPayload());
     } else if (oid4vp.presentationDefinitions.length > 0 && !nonce) {
       throw Error('Nonce is required when using OID4VP');
     }

@@ -19,7 +19,7 @@ export const createResponsePayload = async (
 
   // If state was in request, it must be in response
   const state: string | undefined = await authorizationRequest.getMergedProperty('state');
-  const payload = await authorizationRequest.requestObject.getPayload();
+  const payload = await authorizationRequest.requestObject?.getPayload();
 
   const responsePayload: AuthorizationResponsePayload = {
     ...(responseOpts.accessToken && { access_token: responseOpts.accessToken }),
