@@ -155,6 +155,7 @@ export interface AuthorizationResponsePayload {
   refresh_token?: string;
   expires_in?: number;
   state?: string;
+  nonce?: string;
   id_token?: string;
   vp_token?: Array<W3CVerifiablePresentation | CompactSdJwtVc> | W3CVerifiablePresentation | CompactSdJwtVc;
   presentation_submission?: PresentationSubmission;
