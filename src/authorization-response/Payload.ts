@@ -25,7 +25,7 @@ export const createResponsePayload = async (
     ...(responseOpts.accessToken && { access_token: responseOpts.accessToken }),
     ...(responseOpts.tokenType && { token_type: responseOpts.tokenType }),
     ...(responseOpts.refreshToken && { refresh_token: responseOpts.refreshToken }),
-    ...(payload?.nonce && { nonce: payload.nonce}),
+    ...(payload?.nonce && { nonce: payload.nonce }),
     expires_in: responseOpts.expiresIn || 3600,
     state,
   };
