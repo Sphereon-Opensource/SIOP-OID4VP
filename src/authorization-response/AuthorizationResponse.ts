@@ -122,7 +122,7 @@ export class AuthorizationResponse {
         verificationCallback: verifyOpts.verification.presentationVerificationCallback,
         opts: {
           ...responseOpts.presentationExchange,
-          presentationSubmission: responseOpts.presentationExchange.presentationSubmission ?? authorizationResponsePayload.presentation_submission,
+          presentationSubmission: responseOpts.presentationExchange?.presentationSubmission ?? authorizationResponsePayload.presentation_submission,
           hasher: verifyOpts.hasher,
         },
       });
