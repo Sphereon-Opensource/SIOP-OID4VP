@@ -30,8 +30,8 @@
   "dependencies": {
     "@astronautlabs/jsonpath": "^1.1.2",
     "@sphereon/did-uni-client": "^0.6.1",
-    "@sphereon/pex": "^3.2.0",
-    "@sphereon/pex-models": "^2.2.0",
+    "@sphereon/pex": "^3.3.0",
+    "@sphereon/pex-models": "^2.2.2",
     "@sphereon/ssi-types": "0.18.1",
     "@sphereon/wellknown-dids-client": "^0.1.3",
     "cross-fetch": "^4.0.0",
