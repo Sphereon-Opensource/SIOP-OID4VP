@@ -237,14 +237,14 @@ export class RP {
       throw Error(`A response or redirect URI is required at this point`);
     } else {
       if (responseURIType === 'redirect_uri') {
-        if (this._createRequestOptions?.requestObject?.payload && !this._createRequestOptions.requestObject?.payload?.redirect_uri) {
+        if (this._createRequestOptions?.requestObject?.payload /*&& !this._createRequestOptions.requestObject?.payload?.redirect_uri*/) {
           this._createRequestOptions.requestObject.payload.redirect_uri = responseURI;
         }
         if (!referenceURI && !this._createRequestOptions.payload?.redirect_uri) {
           this._createRequestOptions.payload.redirect_uri = responseURI;
         }
       } else if (responseURIType === 'response_uri') {
-        if (this._createRequestOptions?.requestObject?.payload && !this._createRequestOptions.requestObject?.payload?.response_uri) {
+        if (this._createRequestOptions?.requestObject?.payload /*&& !this._createRequestOptions.requestObject?.payload?.response_uri*/) {
           this._createRequestOptions.requestObject.payload.response_uri = responseURI;
         }
         if (!referenceURI && !this._createRequestOptions.payload?.response_uri) {
