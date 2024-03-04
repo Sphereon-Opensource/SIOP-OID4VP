@@ -3,6 +3,11 @@
 The DID Auth SIOP typescript library is still in an beta state at this point. Please note that the interfaces might
 still change a bit as the software still is in active development.
 
+## 0.6.1 - 2024-03-04
+
+- Fixed:
+  - RP kept stale options to create the request object, resulting in recreation of the same request object over and over
+
 ## 0.6.0 - 2024-02-29
 - Added:
   - Initial support for SIOPv2 draft 11
