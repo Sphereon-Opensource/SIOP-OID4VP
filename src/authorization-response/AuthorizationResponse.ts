@@ -115,8 +115,6 @@ export class AuthorizationResponse {
 
     if (hasVpToken) {
       const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response, { hasher: verifyOpts.hasher });
-      const presentationSubmission =
-        responseOpts.presentationExchange?.presentationSubmission ?? authorizationResponsePayload.presentation_submission;
 
       await assertValidVerifiablePresentations({
         presentationDefinitions,
@@ -124,7 +122,6 @@ export class AuthorizationResponse {
         verificationCallback: verifyOpts.verification.presentationVerificationCallback,
         opts: {
           ...responseOpts.presentationExchange,
-          ...(presentationSubmission ? { presentationSubmission: presentationSubmission } : {}),
           hasher: verifyOpts.hasher,
         },
       });
