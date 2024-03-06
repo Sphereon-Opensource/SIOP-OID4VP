@@ -120,10 +120,7 @@ export class AuthorizationResponse {
         presentationDefinitions,
         presentations: wrappedPresentations,
         verificationCallback: verifyOpts.verification.presentationVerificationCallback,
-        opts: {
-          ...responseOpts.presentationExchange,
-          hasher: verifyOpts.hasher,
-        },
+        opts: { ...responseOpts.presentationExchange, hasher: verifyOpts.hasher },
       });
     }
 
