@@ -1409,6 +1409,9 @@ export const AuthorizationResponseOptsSchemaObj = {
         "jwt_vp": {
           "$ref": "#/definitions/JwtObject"
         },
+        "jwt_vp_json": {
+          "$ref": "#/definitions/JwtObject"
+        },
         "ldp": {
           "$ref": "#/definitions/LdpObject"
         },

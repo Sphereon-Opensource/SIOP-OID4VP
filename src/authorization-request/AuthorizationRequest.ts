@@ -12,6 +12,7 @@ import {
   RequestObjectJwt,
   RequestObjectPayload,
   RequestStateInfo,
+  ResponseType,
   ResponseURIType,
   RPRegistrationMetadataPayload,
   Schema,

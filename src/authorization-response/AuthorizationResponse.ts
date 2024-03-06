@@ -137,7 +137,7 @@ export class AuthorizationResponse {
     const verifiedIdToken = await this.idToken?.verify(verifyOpts);
     const oid4vp = await verifyPresentations(this, verifyOpts);
 
-    const nonce = merged.nonce ?? verifiedIdToken?.payload.nonce ?? oid4vp.nonce;
+    const nonce = merged.nonce ?? oid4vp.nonce ?? verifiedIdToken?.payload.nonce;
     const state = merged.state ?? verifiedIdToken?.payload.state;
 
     if (!state) {

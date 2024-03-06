@@ -1,7 +1,29 @@
 # Release Notes
 
-The DID Auth SIOP typescript library is still in an alpha state at this point. Please note that the interfaces might
+The DID Auth SIOP typescript library is still in an beta state at this point. Please note that the interfaces might
 still change a bit as the software still is in active development.
+
+## 0.6.2 - 2024-03-04
+
+- Fixed:
+  - RP kept stale options to create the request object, resulting in recreation of the same request object over and over
+
+## 0.6.0 - 2024-02-29
+- Added:
+  - Initial support for SIOPv2 draft 11
+  - Initial support for OID4VP draft 18
+  - SD-JWT support
+  - Partial support for http(s) client_ids instead of DIDs. No validation for keys in this case yet though!
+  - Convert presentation submissions that inadvertently come in from external OPs as a string instead of an object
+  - Allow id-token only handling
+  - Allow vp-token only handling
+  - EBSI support
+- Fixed:
+  - issue with determining whether a Presentation Definition reference has been used
+  - vp_token handling and nonce management was incorrect in certain cases (for instance when no id token is used)
+  - Make sure a presentation verification callback result throws an error if it does not verify
+  - Do not put VP token in the id token as default for spec versions above v10 if no explicit location is provided
+  - Several small fixes
 
 ## 0.4.2 - 2023-10-01
 

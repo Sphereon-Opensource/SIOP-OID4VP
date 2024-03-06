@@ -344,7 +344,12 @@ export class PresentationExchange {
         // So the behavior here is to bypass it if not present
         if (verifyPresentationCallback) {
           try {
-            await verifyPresentationCallback(vpw.original as W3CVerifiablePresentation, presentationSubmission);
+            const verificationResult = await verifyPresentationCallback(vpw.original as W3CVerifiablePresentation, presentationSubmission);
+            if (!verificationResult.verified) {
+              throw new Error(
+                SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID + verificationResult.reason ? `. ${verificationResult.reason}` : ''
+              );
+            }
           } catch (error: unknown) {
             throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID);
           }
