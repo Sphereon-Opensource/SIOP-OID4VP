@@ -204,7 +204,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs(), hasher });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequestPayload
+      parsedAuthReqURI.authorizationRequestPayload,
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});

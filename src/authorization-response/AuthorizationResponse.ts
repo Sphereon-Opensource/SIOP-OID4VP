@@ -45,7 +45,7 @@ export class AuthorizationResponse {
   static async fromRequestObject(
     requestObject: string,
     responseOpts: AuthorizationResponseOpts,
-    verifyOpts: VerifyAuthorizationRequestOpts
+    verifyOpts: VerifyAuthorizationRequestOpts,
   ): Promise<AuthorizationResponse> {
     assertValidVerifyAuthorizationRequestOpts(verifyOpts);
     await assertValidResponseOpts(responseOpts);
@@ -58,7 +58,7 @@ export class AuthorizationResponse {
 
   static async fromPayload(
     authorizationResponsePayload: AuthorizationResponsePayload,
-    responseOpts?: AuthorizationResponseOpts
+    responseOpts?: AuthorizationResponseOpts,
   ): Promise<AuthorizationResponse> {
     if (!authorizationResponsePayload) {
       throw new Error(SIOPErrors.NO_RESPONSE);
@@ -73,7 +73,7 @@ export class AuthorizationResponse {
   static async fromAuthorizationRequest(
     authorizationRequest: AuthorizationRequest,
     responseOpts: AuthorizationResponseOpts,
-    verifyOpts: VerifyAuthorizationRequestOpts
+    verifyOpts: VerifyAuthorizationRequestOpts,
   ): Promise<AuthorizationResponse> {
     await assertValidResponseOpts(responseOpts);
     if (!authorizationRequest) {
@@ -86,7 +86,7 @@ export class AuthorizationResponse {
   static async fromVerifiedAuthorizationRequest(
     verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
     responseOpts: AuthorizationResponseOpts,
-    verifyOpts: VerifyAuthorizationRequestOpts
+    verifyOpts: VerifyAuthorizationRequestOpts,
   ): Promise<AuthorizationResponse> {
     await assertValidResponseOpts(responseOpts);
     if (!verifiedAuthorizationRequest) {
@@ -98,7 +98,7 @@ export class AuthorizationResponse {
     // const merged = verifiedAuthorizationRequest.authorizationRequest.requestObject, verifiedAuthorizationRequest.requestObject);
     // const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(merged, await authorizationRequest.getSupportedVersion());
     const presentationDefinitions = JSON.parse(
-      JSON.stringify(verifiedAuthorizationRequest.presentationDefinitions)
+      JSON.stringify(verifiedAuthorizationRequest.presentationDefinitions),
     ) as PresentationDefinitionWithLocation[];
     const wantsIdToken = await authorizationRequest.containsResponseType(ResponseType.ID_TOKEN);
     const hasVpToken = await authorizationRequest.containsResponseType(ResponseType.VP_TOKEN);

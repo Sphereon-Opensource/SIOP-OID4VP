@@ -105,7 +105,7 @@ describe('create JWT from Request JWT should', () => {
   it('throw VERIFY_BAD_PARAMS when no verifyOpts is passed', async () => {
     expect.assertions(1);
     await expect(AuthorizationResponse.fromRequestObject(validButExpiredJWT, responseOpts, undefined as never)).rejects.toThrow(
-      SIOPErrors.VERIFY_BAD_PARAMS
+      SIOPErrors.VERIFY_BAD_PARAMS,
     );
   });
 
@@ -290,7 +290,7 @@ describe('create JWT from Request JWT should', () => {
       // console.log(JSON.stringify(await AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)));
       await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
 
   it('succeed when valid JWT with PD is passed in', async () => {
@@ -412,7 +412,7 @@ describe('create JWT from Request JWT should', () => {
       definition,
       presentation.verifiableCredential,
       presentationSignCallback,
-      {}
+      {},
     );
     const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,
@@ -588,7 +588,7 @@ describe('create JWT from Request JWT should', () => {
       definition,
       presentation.verifiableCredential,
       presentationSignCallback,
-      {}
+      {},
     );
     const responseOpts: AuthorizationResponseOpts = {
       checkLinkedDomain: CheckLinkedDomain.NEVER,

@@ -79,7 +79,7 @@ export async function verifyDidJWT(jwt: string, resolver: Resolvable, options: J
 export async function createDidJWT(
   payload: Partial<JWTPayload>,
   { issuer, signer, expiresIn, canonicalize }: JWTOptions,
-  header: Partial<JWTHeader>
+  header: Partial<JWTHeader>,
 ): Promise<string> {
   return createJWT(payload, { issuer, signer, expiresIn, canonicalize }, header);
 }
@@ -139,7 +139,7 @@ async function signDidJwtInternal(
   hexPrivateKey: string,
   alg: SigningAlgo,
   kid: string,
-  customJwtSigner?: Signer
+  customJwtSigner?: Signer,
 ): Promise<string> {
   const signer = determineSigner(alg, hexPrivateKey, customJwtSigner);
   const header = {
@@ -160,7 +160,7 @@ async function signDidJwtExternal(
   signatureUri: string,
   authZToken: string,
   alg: SigningAlgo,
-  kid?: string
+  kid?: string,
 ): Promise<string> {
   const body = {
     issuer: payload.iss && payload.iss.includes('did:') ? payload.iss : payload.sub,
@@ -180,7 +180,7 @@ async function signDidJwtSupplied(
   issuer: string,
   signer: Signer,
   alg: SigningAlgo,
-  kid: string
+  kid: string,
 ): Promise<string> {
   const header = {
     alg,

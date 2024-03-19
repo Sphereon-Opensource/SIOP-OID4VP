@@ -42,7 +42,7 @@ export const createPresentationDefinitionClaimsProperties = (opts: ClaimPayloadO
 
 export const createAuthorizationRequestPayload = async (
   opts: CreateAuthorizationRequestOpts,
-  requestObject?: RequestObject
+  requestObject?: RequestObject,
 ): Promise<AuthorizationRequestPayload> => {
   const payload = opts.payload;
   const state = payload?.state ?? undefined;
@@ -90,7 +90,7 @@ export const assertValidRPRegistrationMedataPayload = (regObj: RPRegistrationMet
 
 export const checkWellknownDIDFromRequest = async (
   authorizationRequestPayload: RequestObjectPayload,
-  opts: VerifyAuthorizationRequestOpts
+  opts: VerifyAuthorizationRequestOpts,
 ): Promise<void> => {
   if (authorizationRequestPayload.client_id.startsWith('did:')) {
     if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {

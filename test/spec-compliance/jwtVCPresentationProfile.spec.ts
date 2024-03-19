@@ -63,7 +63,7 @@ beforeEach(async () => {
         },
         subject_syntax_types_supported: ['did:ion'],
       },
-      PropertyTarget.REQUEST_OBJECT
+      PropertyTarget.REQUEST_OBJECT,
     )
     .withRedirectUri('https://example.com/siop-response', PropertyTarget.REQUEST_OBJECT)
     .withRequestBy(PassBy.REFERENCE, TestVectors.request_uri)
@@ -141,7 +141,7 @@ describe('RP using test vectors', () => {
     const authRequest = await createAuthRequest();
     const uri = await authRequest.uri();
     expect(uri.encodedUri).toEqual(
-      'openid-vc://?request_uri=https%3A%2F%2Fexample%2Fservice%2Fapi%2Fv1%2Fpresentation-request%2F649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9'
+      'openid-vc://?request_uri=https%3A%2F%2Fexample%2Fservice%2Fapi%2Fv1%2Fpresentation-request%2F649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9',
     );
   });
   it('should get presentation definition', async () => {
@@ -170,7 +170,7 @@ describe('RP using test vectors', () => {
           presentationVerificationCallback,
           wellknownDIDVerifyCallback: verifyCallback,
         },
-      })
+      }),
     ).toBeTruthy();
   });
 
@@ -197,7 +197,7 @@ describe('RP using test vectors', () => {
             revocationVerification: RevocationVerification.NEVER,
           },
         },
-      })
+      }),
     ).toBeTruthy();
 
     const authRequest = await createAuthRequest();
@@ -337,7 +337,7 @@ describe('OP using test vectors', () => {
         proofOptions: {
           type: IProofType.JwtProof2020,
         },
-      }
+      },
     );
     const response = await op.createAuthorizationResponse(result, {
       presentationExchange: {
@@ -616,6 +616,9 @@ class TestVectors {
   }
 
   public static mockDID(did: string, vm: string, publickKeyJwk: JsonWebKey) {
-    nock('https://dev.uniresolver.io').get(`/1.0/identifiers/${did}`).times(100).reply(200, TestVectors.didDocument(did, vm, publickKeyJwk));
+    nock('https://dev.uniresolver.io')
+      .get(`/1.0/identifiers/${did}`)
+      .times(100)
+      .reply(200, TestVectors.didDocument(did, vm, publickKeyJwk));
   }
 }

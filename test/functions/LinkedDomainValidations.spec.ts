@@ -314,7 +314,7 @@ describe('validateLinkedDomainWithDid', () => {
         checkLinkedDomain: CheckLinkedDomain.ALWAYS,
         resolveOpts: {},
         mode: VerificationMode.INTERNAL,
-      })
+      }),
     ).resolves.not.toThrow();
   });
   it('should succeed with ion did and CheckLinkedDomain.ALWAYS', async () => {
@@ -335,7 +335,7 @@ describe('validateLinkedDomainWithDid', () => {
         checkLinkedDomain: CheckLinkedDomain.ALWAYS,
         resolveOpts: {},
         mode: VerificationMode.INTERNAL,
-      })
+      }),
     ).resolves.not.toThrow();
   });
 
@@ -348,7 +348,7 @@ describe('validateLinkedDomainWithDid', () => {
         checkLinkedDomain: CheckLinkedDomain.ALWAYS,
         resolveOpts: {},
         mode: VerificationMode.INTERNAL,
-      })
+      }),
     ).rejects.toThrow();
   });
 
@@ -361,7 +361,7 @@ describe('validateLinkedDomainWithDid', () => {
         checkLinkedDomain: CheckLinkedDomain.IF_PRESENT,
         resolveOpts: {},
         mode: VerificationMode.INTERNAL,
-      })
+      }),
     ).rejects.toThrow();
   });
 });

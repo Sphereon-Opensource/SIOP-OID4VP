@@ -5,7 +5,7 @@ import { RevocationStatus, RevocationVerification, RevocationVerificationCallbac
 export const verifyRevocation = async (
   vpToken: WrappedVerifiablePresentation,
   revocationVerificationCallback: RevocationVerificationCallback,
-  revocationVerification: RevocationVerification
+  revocationVerification: RevocationVerification,
 ): Promise<void> => {
   if (!vpToken) {
     throw new Error(`VP token not provided`);
@@ -22,7 +22,7 @@ export const verifyRevocation = async (
     ) {
       const result = await revocationVerificationCallback(
         vc.original as W3CVerifiableCredential,
-        originalTypeToVerifiableCredentialTypeFormat(vc.format)
+        originalTypeToVerifiableCredentialTypeFormat(vc.format),
       );
       if (result.status === RevocationStatus.INVALID) {
         throw new Error(`Revocation invalid for vc. Error: ${result.error}`);

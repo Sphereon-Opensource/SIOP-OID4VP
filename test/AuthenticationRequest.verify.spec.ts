@@ -237,14 +237,14 @@ describe('verifyJWT should', () => {
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts is passed', async () => {
     expect.assertions(1);
     await expect(AuthorizationRequest.verify('an invalid JWT bypassing the undefined check', undefined as never)).rejects.toThrow(
-      SIOPErrors.VERIFY_BAD_PARAMS
+      SIOPErrors.VERIFY_BAD_PARAMS,
     );
   });
 
   it('throw VERIFY_BAD_PARAMETERS when no responseOpts.verification is passed', async () => {
     expect.assertions(1);
     await expect(AuthorizationRequest.verify('an invalid JWT bypassing the undefined check', {} as never)).rejects.toThrow(
-      SIOPErrors.VERIFY_BAD_PARAMS
+      SIOPErrors.VERIFY_BAD_PARAMS,
     );
   });
 
@@ -381,7 +381,7 @@ describe('verifyJWT should', () => {
       const verifyJWT = await AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts);
       expect(verifyJWT.jwt).toMatch(/^eyJhbGciOiJFUzI1NksiLCJraWQiOiJkaWQ6ZXRocjowe.*$/);
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
 });
 

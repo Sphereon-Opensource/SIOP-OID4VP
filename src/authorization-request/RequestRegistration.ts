@@ -28,7 +28,7 @@ export const assertValidRequestRegistrationOpts = (opts: ClientMetadataOpts) => 
 const createRequestRegistrationPayload = async (
   opts: ClientMetadataOpts,
   metadataPayload: RPRegistrationMetadataPayload,
-  version: SupportedVersion
+  version: SupportedVersion,
 ): Promise<RequestRegistrationPayloadProperties | RequestClientMetadataPayloadProperties> => {
   assertValidRequestRegistrationOpts(opts);
 
@@ -53,7 +53,7 @@ const createRequestRegistrationPayload = async (
 
 export const createRequestRegistration = async (
   clientMetadataOpts: ClientMetadataOpts,
-  createRequestOpts: CreateAuthorizationRequestOpts
+  createRequestOpts: CreateAuthorizationRequestOpts,
 ): Promise<{
   payload: RequestRegistrationPayloadProperties | RequestClientMetadataPayloadProperties;
   metadata: RPRegistrationMetadataPayload;

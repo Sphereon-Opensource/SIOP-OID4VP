@@ -13,7 +13,7 @@ export const getJson = async <T>(
     accept?: string;
     customHeaders?: HeadersInit;
     exceptionOnHttpErrorStatus?: boolean;
-  }
+  },
 ): Promise<SIOPResonse<T>> => {
   return await siopFetch(URL, undefined, { method: 'GET', ...opts });
 };
@@ -27,7 +27,7 @@ export const formPost = async <T>(
     accept?: string;
     customHeaders?: HeadersInit;
     exceptionOnHttpErrorStatus?: boolean;
-  }
+  },
 ): Promise<SIOPResonse<T>> => {
   return await post(url, body, opts?.contentType ? { ...opts } : { contentType: ContentType.FORM_URL_ENCODED, ...opts });
 };
@@ -41,7 +41,7 @@ export const post = async <T>(
     accept?: string;
     customHeaders?: HeadersInit;
     exceptionOnHttpErrorStatus?: boolean;
-  }
+  },
 ): Promise<SIOPResonse<T>> => {
   return await siopFetch(url, body, { method: 'POST', ...opts });
 };
@@ -56,7 +56,7 @@ const siopFetch = async <T>(
     accept?: string;
     customHeaders?: HeadersInit;
     exceptionOnHttpErrorStatus?: boolean;
-  }
+  },
 ): Promise<SIOPResonse<T>> => {
   if (!url || url.toLowerCase().startsWith('did:')) {
     throw Error(`Invalid URL supplied. Expected a http(s) URL. Recieved: ${url}`);

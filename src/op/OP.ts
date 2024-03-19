@@ -58,7 +58,7 @@ export class OP {
 
   public async verifyAuthorizationRequest(
     requestJwtOrUri: string | URI,
-    requestOpts?: { correlationId?: string; verification?: InternalVerification | ExternalVerification }
+    requestOpts?: { correlationId?: string; verification?: InternalVerification | ExternalVerification },
   ): Promise<VerifiedAuthorizationRequest> {
     const correlationId = requestOpts?.correlationId || uuidv4();
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri)
@@ -104,7 +104,7 @@ export class OP {
       signature?: InternalSignature | ExternalSignature | SuppliedSignature;
       verification?: InternalVerification | ExternalVerification;
       presentationExchange?: PresentationExchangeResponseOpts;
-    }
+    },
   ): Promise<AuthorizationResponseWithCorrelationId> {
     if (
       verifiedAuthorizationRequest.correlationId &&
@@ -112,7 +112,7 @@ export class OP {
       verifiedAuthorizationRequest.correlationId !== responseOpts.correlationId
     ) {
       throw new Error(
-        `Request correlation id ${verifiedAuthorizationRequest.correlationId} is different from option correlation id ${responseOpts.correlationId}`
+        `Request correlation id ${verifiedAuthorizationRequest.correlationId} is different from option correlation id ${responseOpts.correlationId}`,
       );
     }
     let version = responseOpts?.version;
@@ -122,7 +122,7 @@ export class OP {
     } else if (!version) {
       version = rpSupportedVersions.reduce(
         (previous, current) => (current.valueOf() > previous.valueOf() ? current : previous),
-        SupportedVersion.SIOPv2_ID1
+        SupportedVersion.SIOPv2_ID1,
       );
     }
     const correlationId = responseOpts?.correlationId ?? verifiedAuthorizationRequest.correlationId ?? uuidv4();
@@ -140,7 +140,7 @@ export class OP {
           version,
           correlationId,
         }),
-        verifiedAuthorizationRequest.verifyOpts
+        verifiedAuthorizationRequest.verifyOpts,
       );
       void this.emitEvent(AuthorizationEvents.ON_AUTH_RESPONSE_CREATE_SUCCESS, {
         correlationId,
@@ -269,7 +269,7 @@ export class OP {
       correlationId: string;
       subject: AuthorizationRequest | AuthorizationResponse | string | URI;
       error?: Error;
-    }
+    },
   ): Promise<void> {
     if (this._eventEmitter) {
       this._eventEmitter.emit(type, new AuthorizationEvent(payload));

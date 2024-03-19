@@ -31,7 +31,7 @@ export class IDToken {
   public static async fromVerifiedAuthorizationRequest(
     verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
     responseOpts: AuthorizationResponseOpts,
-    verifyOpts?: VerifyAuthorizationResponseOpts
+    verifyOpts?: VerifyAuthorizationResponseOpts,
   ) {
     const authorizationRequestPayload = verifiedAuthorizationRequest.authorizationRequestPayload;
     if (!authorizationRequestPayload) {
@@ -58,7 +58,7 @@ export class IDToken {
   public static async fromIDTokenPayload(
     idTokenPayload: IDTokenPayload,
     responseOpts: AuthorizationResponseOpts,
-    verifyOpts?: VerifyAuthorizationResponseOpts
+    verifyOpts?: VerifyAuthorizationResponseOpts,
   ) {
     if (!idTokenPayload) {
       throw new Error(SIOPErrors.NO_JWT);

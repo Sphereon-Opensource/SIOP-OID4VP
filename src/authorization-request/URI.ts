@@ -128,7 +128,7 @@ export class URI implements AuthorizationRequestURI {
         uriScheme: authorizationRequest.options.uriScheme,
       },
       authorizationRequest.payload,
-      authorizationRequest.requestObject
+      authorizationRequest.requestObject,
     );
   }
 
@@ -141,7 +141,7 @@ export class URI implements AuthorizationRequestURI {
   private static async fromAuthorizationRequestPayload(
     opts: { uriScheme?: string; passBy: PassBy; reference_uri?: string; version?: SupportedVersion },
     authorizationRequestPayload: AuthorizationRequestPayload,
-    requestObject?: RequestObject
+    requestObject?: RequestObject,
   ): Promise<URI> {
     if (!authorizationRequestPayload) {
       if (!requestObject || !(await requestObject.getPayload())) {
@@ -154,8 +154,8 @@ export class URI implements AuthorizationRequestURI {
     const requestObjectJwt = requestObject
       ? await requestObject.toJwt()
       : typeof authorizationRequestPayload === 'string'
-      ? authorizationRequestPayload
-      : authorizationRequestPayload.request;
+        ? authorizationRequestPayload
+        : authorizationRequestPayload.request;
     if (isJwt && (!requestObjectJwt || !requestObjectJwt.startsWith('ey'))) {
       throw Error(SIOPErrors.NO_JWT);
     }
@@ -242,7 +242,7 @@ export class URI implements AuthorizationRequestURI {
     const requestObjectJwt = await fetchByReferenceOrUseByValue(authorizationRequestPayload.request_uri, authorizationRequestPayload.request, true);
     const registrationMetadata: RPRegistrationMetadataPayload = await fetchByReferenceOrUseByValue(
       authorizationRequestPayload['client_metadata_uri'] ?? authorizationRequestPayload['registration_uri'],
-      authorizationRequestPayload['client_metadata'] ?? authorizationRequestPayload['registration']
+      authorizationRequestPayload['client_metadata'] ?? authorizationRequestPayload['registration'],
     );
     assertValidRPRegistrationMedataPayload(registrationMetadata);
     return { scheme, authorizationRequestPayload, requestObjectJwt, registrationMetadata };

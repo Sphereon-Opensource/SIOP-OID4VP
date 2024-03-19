@@ -127,14 +127,14 @@ export class RPBuilder {
         propertyValue: authorizationEndpoint,
         targets,
       },
-      false
+      false,
     );
     this._requestObjectPayload.authorization_endpoint = assignIfRequestObject(
       {
         propertyValue: authorizationEndpoint,
         targets,
       },
-      true
+      true,
     );
     return this;
   }
@@ -192,14 +192,14 @@ export class RPBuilder {
           propertyValue: clientMetadata,
           targets,
         },
-        false
+        false,
       );
       this._requestObjectPayload.registration = assignIfRequestObject(
         {
           propertyValue: clientMetadata,
           targets,
         },
-        true
+        true,
       );
     } else {
       this._authorizationRequestPayload.client_metadata = assignIfAuth(
@@ -207,14 +207,14 @@ export class RPBuilder {
           propertyValue: clientMetadata,
           targets,
         },
-        false
+        false,
       );
       this._requestObjectPayload.client_metadata = assignIfRequestObject(
         {
           propertyValue: clientMetadata,
           targets,
         },
-        true
+        true,
       );
     }
     this.clientMetadata = clientMetadata;
@@ -237,7 +237,7 @@ export class RPBuilder {
     signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
     did: string,
     kid: string,
-    alg: SigningAlgo
+    alg: SigningAlgo,
   ): RPBuilder {
     this.withSignature({ signature, did, kid, alg });
     return this;
@@ -270,28 +270,28 @@ export class RPBuilder {
           propertyValue: definition,
           targets,
         },
-        false
+        false,
       );
       this._authorizationRequestPayload.presentation_definition_uri = assignIfAuth(
         {
           propertyValue: definitionUri,
           targets,
         },
-        true
+        true,
       );
       this._requestObjectPayload.presentation_definition = assignIfRequestObject(
         {
           propertyValue: definition,
           targets,
         },
-        true
+        true,
       );
       this._requestObjectPayload.presentation_definition_uri = assignIfRequestObject(
         {
           propertyValue: definitionUri,
           targets,
         },
-        true
+        true,
       );
     }
     return this;

@@ -26,7 +26,7 @@ import {
 
 export const verifyPresentations = async (
   authorizationResponse: AuthorizationResponse,
-  verifyOpts: VerifyAuthorizationResponseOpts
+  verifyOpts: VerifyAuthorizationResponseOpts,
 ): Promise<VerifiedOpenID4VPSubmission> => {
   const presentations = await extractPresentationsFromAuthorizationResponse(authorizationResponse, { hasher: verifyOpts.hasher });
   const presentationDefinitions = verifyOpts.presentationDefinitions
@@ -76,7 +76,7 @@ export const verifyPresentations = async (
 
 export const extractPresentationsFromAuthorizationResponse = async (
   response: AuthorizationResponse,
-  opts?: { hasher?: Hasher }
+  opts?: { hasher?: Hasher },
 ): Promise<WrappedVerifiablePresentation[]> => {
   const wrappedVerifiablePresentations: WrappedVerifiablePresentation[] = [];
   if (response.payload.vp_token) {
@@ -90,7 +90,7 @@ export const extractPresentationsFromAuthorizationResponse = async (
 
 export const createPresentationSubmission = async (
   verifiablePresentations: W3CVerifiablePresentation[],
-  opts?: { presentationDefinitions: (PresentationDefinitionWithLocation | IPresentationDefinition)[] }
+  opts?: { presentationDefinitions: (PresentationDefinitionWithLocation | IPresentationDefinition)[] },
 ): Promise<PresentationSubmission> => {
   let submission_data: PresentationSubmission;
   for (const verifiablePresentation of verifiablePresentations) {
@@ -138,7 +138,7 @@ export const putPresentationSubmissionInLocation = async (
   authorizationRequest: AuthorizationRequest,
   responsePayload: AuthorizationResponsePayload,
   resOpts: AuthorizationResponseOpts,
-  idTokenPayload?: IDTokenPayload
+  idTokenPayload?: IDTokenPayload,
 ): Promise<void> => {
   const version = await authorizationRequest.getSupportedVersion();
   const idTokenType = await authorizationRequest.containsResponseType(ResponseType.ID_TOKEN);
@@ -197,7 +197,7 @@ export const putPresentationSubmissionInLocation = async (
       if (responsePayload.presentation_submission) {
         if (submissionData !== responsePayload.presentation_submission) {
           throw Error(
-            'Different submission data was provided as an option, but exising submission data was already present in the authorization response'
+            'Different submission data was provided as an option, but exising submission data was already present in the authorization response',
           );
         }
       } else {
@@ -250,7 +250,7 @@ export const assertValidVerifiablePresentations = async (args: {
       args.presentationDefinitions,
       presentationsWithFormat,
       args.verificationCallback,
-      args.opts
+      args.opts,
     );
   }
 };

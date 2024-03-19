@@ -78,7 +78,7 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
     type: 'nonce' | 'state' | 'correlationId',
     value: string,
     mapping: Record<string, T>,
-    errorOnNotFound?: boolean
+    errorOnNotFound?: boolean,
   ): Promise<T> {
     const correlationId = await this.getCorrelationIdImpl(type, value, errorOnNotFound);
     const result = mapping[correlationId] as T;
@@ -137,7 +137,7 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
   private async getCorrelationIdImpl(
     type: 'nonce' | 'state' | 'correlationId',
     value: string,
-    errorOnNotFound?: boolean
+    errorOnNotFound?: boolean,
   ): Promise<string | undefined> {
     if (!value || !type) {
       throw Error('No type or value provided');
@@ -158,7 +158,7 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
     event: AuthorizationEvent<AuthorizationRequest | AuthorizationResponse>,
     key: string,
     value: string | undefined,
-    allowExisting: boolean
+    allowExisting: boolean,
   ) {
     const hash = await hashcodeForValue(event, key);
     const existing = mapping[hash];
@@ -179,7 +179,7 @@ export class InMemoryRPSessionManager implements IRPSessionManager {
   private async updateState(
     type: 'request' | 'response',
     event: AuthorizationEvent<AuthorizationRequest | AuthorizationResponse>,
-    status: AuthorizationRequestStateStatus | AuthorizationResponseStateStatus
+    status: AuthorizationRequestStateStatus | AuthorizationResponseStateStatus,
   ): Promise<void> {
     if (!event) {
       throw new Error('event not present');

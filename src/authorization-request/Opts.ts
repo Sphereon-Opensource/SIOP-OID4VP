@@ -28,7 +28,7 @@ export const mergeVerificationOpts = (
   requestOpts: {
     correlationId: string;
     verification?: InternalVerification | ExternalVerification;
-  }
+  },
 ) => {
   const resolver = requestOpts.verification?.resolveOpts?.resolver ?? classOpts.verification?.resolveOpts?.resolver;
   const wellknownDIDVerifyCallback = requestOpts.verification?.wellknownDIDVerifyCallback ?? classOpts.verification?.wellknownDIDVerifyCallback;

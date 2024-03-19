@@ -10,7 +10,7 @@ import { AuthorizationResponseOpts } from './types';
 export const createResponsePayload = async (
   authorizationRequest: AuthorizationRequest,
   responseOpts: AuthorizationResponseOpts,
-  idTokenPayload?: IDTokenPayload
+  idTokenPayload?: IDTokenPayload,
 ): Promise<AuthorizationResponsePayload | undefined> => {
   await assertValidResponseOpts(responseOpts);
   if (!authorizationRequest) {
@@ -44,7 +44,7 @@ export const createResponsePayload = async (
  */
 export const mergeOAuth2AndOpenIdInRequestPayload = async (
   payload: AuthorizationRequestPayload,
-  requestObject?: RequestObject
+  requestObject?: RequestObject,
 ): Promise<AuthorizationRequestPayload> => {
   const payloadCopy = JSON.parse(JSON.stringify(payload));
 

@@ -53,7 +53,7 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
   if (opts?.builder?.resolvers.size && opts.builder?.clientMetadata) {
     opts.builder.clientMetadata.subject_syntax_types_supported = mergeAllDidMethods(
       opts.builder.clientMetadata.subject_syntax_types_supported,
-      opts.builder.resolvers
+      opts.builder.resolvers,
     );
   }
   let resolver: Resolvable;

@@ -18,7 +18,7 @@ export class RequestObject {
   private constructor(
     opts?: CreateAuthorizationRequestOpts | RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1>,
     payload?: RequestObjectPayload,
-    jwt?: string
+    jwt?: string,
   ) {
     this.opts = opts ? RequestObject.mergeOAuth2AndOpenIdProperties(opts) : undefined;
     this.payload = payload;
@@ -119,7 +119,7 @@ export class RequestObject {
   }
 
   private static mergeOAuth2AndOpenIdProperties(
-    opts: CreateAuthorizationRequestOpts | RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1>
+    opts: CreateAuthorizationRequestOpts | RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1>,
   ): RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1> {
     if (!opts) {
       throw Error(SIOPErrors.BAD_PARAMS);

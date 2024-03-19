@@ -123,7 +123,7 @@ export class OPBuilder {
     signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
     did: string,
     kid: string,
-    alg: SigningAlgo
+    alg: SigningAlgo,
   ): OPBuilder {
     this.withSignature({ signature, did, kid, alg });
     return this;

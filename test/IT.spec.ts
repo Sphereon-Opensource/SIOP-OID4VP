@@ -239,7 +239,7 @@ describe('RP and OP interaction should', () => {
       expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
       expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
 
   it('succeed when calling optional steps in the full flow', async () => {
@@ -435,7 +435,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthReqWithJWT.signer).toBeDefined();
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     await expect(op.createAuthorizationResponse(verifiedAuthReqWithJWT)).rejects.toThrow(
-      Error('authentication request expects a verifiable presentation in the response')
+      Error('authentication request expects a verifiable presentation in the response'),
     );
 
     expect(verifiedAuthReqWithJWT.payload['registration'].client_name).toEqual(VERIFIER_NAME_FOR_CLIENT);
@@ -538,7 +538,7 @@ describe('RP and OP interaction should', () => {
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-        parsedAuthReqURI.authorizationRequestPayload
+        parsedAuthReqURI.authorizationRequestPayload,
       );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
       const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
@@ -666,7 +666,7 @@ describe('RP and OP interaction should', () => {
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-        parsedAuthReqURI.authorizationRequestPayload
+        parsedAuthReqURI.authorizationRequestPayload,
       );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
       const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
@@ -703,10 +703,10 @@ describe('RP and OP interaction should', () => {
               revocationVerificationCallback: (_credential, _type) => Promise.resolve({ status: RevocationStatus.VALID }),
             },
           },
-        })
+        }),
       ).rejects.toThrow(new Error(WDCErrors.PROPERTY_SERVICE_NOT_PRESENT));
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
 
   it('succeed when calling with CheckLinkedDomain.ALWAYS', async () => {
@@ -811,7 +811,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequestPayload
+      parsedAuthReqURI.authorizationRequestPayload,
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
@@ -947,7 +947,7 @@ describe('RP and OP interaction should', () => {
       expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
       const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
       const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-        parsedAuthReqURI.authorizationRequestPayload
+        parsedAuthReqURI.authorizationRequestPayload,
       );
       await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
       const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
@@ -975,7 +975,7 @@ describe('RP and OP interaction should', () => {
       expect(verifiedAuthResponseWithJWT.idToken.jwt).toBeDefined();
       expect(verifiedAuthResponseWithJWT.idToken.payload.nonce).toMatch('qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg');
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
 
   it('succeed when calling with RevocationVerification.ALWAYS with ldp_vp', async () => {
@@ -1090,7 +1090,7 @@ describe('RP and OP interaction should', () => {
 
     const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequestPayload
+      parsedAuthReqURI.authorizationRequestPayload,
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
@@ -1198,8 +1198,8 @@ describe('RP and OP interaction should', () => {
         async () => {
           return { status: RevocationStatus.VALID };
         },
-        RevocationVerification.ALWAYS
-      )
+        RevocationVerification.ALWAYS,
+      ),
     ).resolves.not.toThrow();
   });
 
@@ -1280,8 +1280,8 @@ describe('RP and OP interaction should', () => {
         async () => {
           return { status: RevocationStatus.VALID };
         },
-        RevocationVerification.ALWAYS
-      )
+        RevocationVerification.ALWAYS,
+      ),
     ).resolves.not.toThrow();
   });
 
@@ -1383,7 +1383,7 @@ describe('RP and OP interaction should', () => {
     expect(verifiedAuthReqWithJWT.issuer).toMatch(rpMockEntity.did);
     const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequestPayload
+      parsedAuthReqURI.authorizationRequestPayload,
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});
@@ -1507,7 +1507,7 @@ describe('RP and OP interaction should', () => {
     const verifiedAuthReqWithJWT = await op.verifyAuthorizationRequest(parsedAuthReqURI.requestObjectJwt);
     const pex = new PresentationExchange({ allDIDs: [HOLDER_DID], allVerifiableCredentials: getVCs() });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      parsedAuthReqURI.authorizationRequestPayload
+      parsedAuthReqURI.authorizationRequestPayload,
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, getVCs(), presentationSignCallback, {});

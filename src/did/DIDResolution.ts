@@ -14,7 +14,7 @@ export function getResolver(opts: ResolveOpts): Resolvable {
       throw Error(`No subject syntax types nor did methods configured for DID resolution, but fallback to universal resolver has been disabled`);
     }
     console.log(
-      `Falling back to universal resolver as no resolve opts have been provided, or no subject syntax types supported are provided. It is wise to fix this`
+      `Falling back to universal resolver as no resolve opts have been provided, or no subject syntax types supported are provided. It is wise to fix this`,
     );
     return new UniResolver();
   }
@@ -37,7 +37,7 @@ export function getResolver(opts: ResolveOpts): Resolvable {
       throw Error(`No subject syntax types nor did methods configured for DID resolution, but fallback to universal resolver has been disabled`);
     }
     console.log(
-      `Falling back to universal resolver as no resolve opts have been provided, or no subject syntax types supported are provided. It is wise to fix this`
+      `Falling back to universal resolver as no resolve opts have been provided, or no subject syntax types supported are provided. It is wise to fix this`,
     );
     return new UniResolver();
   }
@@ -57,7 +57,7 @@ export function getResolver(opts: ResolveOpts): Resolvable {
 export function getResolverUnion(
   customResolver: Resolvable,
   subjectSyntaxTypesSupported: string[] | string,
-  resolverMap: Map<string, Resolvable>
+  resolverMap: Map<string, Resolvable>,
 ): Resolvable {
   if (customResolver) {
     return customResolver;

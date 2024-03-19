@@ -66,7 +66,7 @@ describe('RP OPBuilder should', () => {
 
         .withInternalSignature('myprivatekye', 'did:example:123', 'did:example:123#key', SigningAlgo.ES256K)
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
-        .build()
+        .build(),
     ).toBeInstanceOf(RP);
   });
 });
@@ -284,7 +284,7 @@ describe('RP should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY + ' 2022-09-29 01',
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL + ' 2022-09-29 01',
         },
-        alltargets
+        alltargets,
       )
       .addDidMethod('did:ethr')
       .withSupportedVersions([SupportedVersion.SIOPv2_D11])

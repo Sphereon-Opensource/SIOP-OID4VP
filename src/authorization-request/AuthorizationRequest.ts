@@ -163,7 +163,7 @@ export class AuthorizationRequest {
     if (mergedPayload[registrationPropertyKey] || mergedPayload[`${registrationPropertyKey}_uri`]) {
       registrationMetadataPayload = await fetchByReferenceOrUseByValue(
         mergedPayload[`${registrationPropertyKey}_uri`],
-        mergedPayload[registrationPropertyKey]
+        mergedPayload[registrationPropertyKey],
       );
       assertValidRPRegistrationMedataPayload(registrationMetadataPayload);
       // TODO: We need to do something with the metadata probably

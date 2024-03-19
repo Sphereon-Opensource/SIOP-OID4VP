@@ -228,8 +228,8 @@ describe('presentation exchange manager tests', () => {
           type: ['VerifiablePresentation', 'PresentationSubmission'],
           verifiableCredential: vcs,
           presentation_submission,
-        } as W3CVerifiablePresentation)
-      )
+        } as W3CVerifiablePresentation),
+      ),
     ).rejects.toThrow(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
   });
 
@@ -279,8 +279,8 @@ describe('presentation exchange manager tests', () => {
           type: ['VerifiablePresentation', 'PresentationSubmission'],
           presentation_submission,
           verifiableCredential: vcs,
-        } as W3CVerifiablePresentation)
-      )
+        } as W3CVerifiablePresentation),
+      ),
     ).rejects.toThrow(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
   });
 
@@ -289,7 +289,7 @@ describe('presentation exchange manager tests', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (payload.claims.vp_token as any).presentation_definition_uri = EXAMPLE_PD_URL;
     await expect(PresentationExchange.findValidPresentationDefinitions(payload)).rejects.toThrow(
-      SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE
+      SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_BY_REF_AND_VALUE_NON_EXCLUSIVE,
     );
   });
 
@@ -304,7 +304,7 @@ describe('presentation exchange manager tests', () => {
         type: ['VerifiablePresentation', 'PresentationSubmission'],
         presentation_submission,
         verifiableCredential: vcs,
-      } as W3CVerifiablePresentation)
+      } as W3CVerifiablePresentation),
     );
     expect(result.errors.length).toBe(0);
     expect(result.value.definition_id).toBe('Insurance Plans');
@@ -322,7 +322,7 @@ describe('presentation exchange manager tests', () => {
         type: ['VerifiablePresentation', 'PresentationSubmission'],
         presentation_submission,
         verifiableCredential: vcs,
-      } as W3CVerifiablePresentation)
+      } as W3CVerifiablePresentation),
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const presentationSignCallback: PresentationSignCallback = async (_args) => ({
@@ -416,7 +416,7 @@ describe('presentation exchange manager tests', () => {
         pd,
         [CredentialMapper.toWrappedVerifiablePresentation(verifiablePresentationResult.verifiablePresentation)],
         undefined,
-        {}
+        {},
       );
     } catch (e) {
       console.log(e);

@@ -75,7 +75,7 @@ describe('EBSI SIOPv2 should', () => {
     async () => {
       await testWithOp();
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
 
   async function getAuthRequestURL({ nonce }: { nonce: string }): Promise<string> {

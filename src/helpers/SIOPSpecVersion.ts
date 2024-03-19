@@ -74,7 +74,7 @@ export const authorizationRequestVersionDiscovery = (authorizationRequest: Autho
 
 export const checkSIOPSpecVersionSupported = async (
   payload: AuthorizationRequestPayload,
-  supportedVersions: SupportedVersion[]
+  supportedVersions: SupportedVersion[],
 ): Promise<SupportedVersion[]> => {
   const versions: SupportedVersion[] = authorizationRequestVersionDiscovery(payload);
   if (!supportedVersions || supportedVersions.length === 0) {

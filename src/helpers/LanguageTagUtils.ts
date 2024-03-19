@@ -51,7 +51,7 @@ export class LanguageTagUtils {
           value as string,
           languageTagSeparatorIndexInKey,
           requiredFieldNamesMapping,
-          discoveredLanguageTaggedFields
+          discoveredLanguageTaggedFields,
         );
       }
     });
@@ -64,7 +64,7 @@ export class LanguageTagUtils {
     value: string,
     languageTagSeparatorIndexInKey: number,
     languageTagEnabledFieldsNamesMapping: Map<string, string>,
-    languageTaggedFields: Map<string, string>
+    languageTaggedFields: Map<string, string>,
   ): void {
     const fieldName = this.getFieldName(key, languageTagSeparatorIndexInKey);
 

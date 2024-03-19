@@ -43,7 +43,8 @@ function verifySubjectSyntaxes(subjectSyntaxTypesSupported: string[]): boolean {
       if (
         subjectSyntaxTypesSupported.length ===
         subjectSyntaxTypesSupported.filter(
-          (sst) => sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf()) || sst === SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT.valueOf()
+          (sst) =>
+            sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf()) || sst === SubjectSyntaxTypesSupportedValues.JWK_THUMBPRINT.valueOf(),
         ).length
       ) {
         return true;

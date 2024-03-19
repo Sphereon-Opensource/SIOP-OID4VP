@@ -57,7 +57,7 @@ export const generateDid = async (opts?: { seed?: Uint8Array }) => {
         return opts?.seed ?? '913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a88d9d1e5';
       },
     },
-    { accept: 'application/did+json' }
+    { accept: 'application/did+json' },
   );
 
   return { keys, didDocument };
@@ -96,7 +96,7 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
 
     const pex = new PresentationExchange({ allDIDs: [didStr], allVerifiableCredentials: [OPENBADGE_JWT_VC] });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      verifiedAuthRequest.authorizationRequestPayload
+      verifiedAuthRequest.authorizationRequestPayload,
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, [OPENBADGE_JWT_VC], presentationSignCalback, {
@@ -149,7 +149,7 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
 
     const pex = new PresentationExchange({ allDIDs: [didStr], allVerifiableCredentials: [OPENBADGE_JWT_VC] });
     const pd: PresentationDefinitionWithLocation[] = await PresentationExchange.findValidPresentationDefinitions(
-      verifiedAuthRequest.authorizationRequestPayload
+      verifiedAuthRequest.authorizationRequestPayload,
     );
     await pex.selectVerifiableCredentialsForSubmission(pd[0].definition);
     const verifiablePresentationResult = await pex.createVerifiablePresentation(pd[0].definition, [OPENBADGE_JWT_VC], presentationSignCalback, {
@@ -167,7 +167,7 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
         },
         signature: { hexPrivateKey: '913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a88d9d1e5', did: didStr, kid, alg: SigningAlgo.EDDSA },
       },
-      { correlationId, verification: { mode: VerificationMode.INTERNAL, resolveOpts: {} }, nonce, state }
+      { correlationId, verification: { mode: VerificationMode.INTERNAL, resolveOpts: {} }, nonce, state },
     );
 
     expect(authResponse).toBeDefined();
@@ -182,14 +182,14 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
     async () => {
       await testWithPayloads('OpenBadgeCredential');
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
   it(
     'succeed in a full flow with the client using OpenID4VCI version 11 and jwt_vc_json',
     async () => {
       await testWithOp('OpenBadgeCredential');
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
 });
 

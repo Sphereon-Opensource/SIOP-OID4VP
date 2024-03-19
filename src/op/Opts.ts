@@ -16,7 +16,7 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
   if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subject_syntax_types_supported) {
     opts.builder.responseRegistration.subject_syntax_types_supported = mergeAllDidMethods(
       opts.builder.responseRegistration.subject_syntax_types_supported,
-      opts.builder.resolvers
+      opts.builder.resolvers,
     );
   }
 
@@ -33,8 +33,8 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
       ...(responseOpts?.version
         ? { version: responseOpts.version }
         : Array.isArray(opts.builder.supportedVersions) && opts.builder.supportedVersions.length > 0
-        ? { version: opts.builder.supportedVersions[0] }
-        : {}),
+          ? { version: opts.builder.supportedVersions[0] }
+          : {}),
     };
 
     if (!responseOpts.registration.passBy) {
@@ -43,7 +43,7 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
     const languageTagEnabledFieldsNames = ['clientName', 'clientPurpose'];
     const languageTaggedFields: Map<string, string> = LanguageTagUtils.getLanguageTaggedProperties(
       opts.builder.responseRegistration,
-      languageTagEnabledFieldsNames
+      languageTagEnabledFieldsNames,
     );
 
     languageTaggedFields.forEach((value: string, key: string) => {
@@ -72,7 +72,7 @@ export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
   if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration) {
     opts.builder.responseRegistration.subject_syntax_types_supported = mergeAllDidMethods(
       opts.builder.responseRegistration.subject_syntax_types_supported,
-      opts.builder.resolvers
+      opts.builder.resolvers,
     );
   }
   let resolver: Resolvable;
@@ -80,7 +80,7 @@ export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
     resolver = getResolverUnion(
       opts.builder.customResolver,
       opts.builder.responseRegistration.subject_syntax_types_supported,
-      opts.builder.resolvers
+      opts.builder.resolvers,
     );
   }
   return opts.builder

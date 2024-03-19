@@ -91,7 +91,7 @@ export type PresentationVerificationResult = { verified: boolean; reason?: strin
 
 export type PresentationVerificationCallback = (
   args: W3CVerifiablePresentation | CompactSdJwtVc,
-  presentationSubmission: PresentationSubmission
+  presentationSubmission: PresentationSubmission,
 ) => Promise<PresentationVerificationResult>;
 
 export type PresentationSignCallback = (args: PresentationSignCallBackParams) => Promise<W3CVerifiablePresentation | CompactSdJwtVc>;

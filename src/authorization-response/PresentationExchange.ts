@@ -54,7 +54,7 @@ export class PresentationExchange {
     selectedCredentials: OriginalVerifiableCredential[],
     presentationSignCallback: PresentationSignCallback,
     // options2?: { nonce?: string; domain?: string, proofType?: IProofType, verificationMethod?: string, signatureKeyEncoding?: KeyEncoding },
-    options?: VerifiablePresentationFromOpts
+    options?: VerifiablePresentationFromOpts,
   ): Promise<VerifiablePresentationResult> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
@@ -97,7 +97,7 @@ export class PresentationExchange {
       holderDIDs?: string[];
       restrictToFormats?: Format;
       restrictToDIDMethods?: string[];
-    }
+    },
   ): Promise<SelectResults> {
     if (!presentationDefinition) {
       throw new Error(SIOPErrors.REQUEST_CLAIMS_PRESENTATION_DEFINITION_NOT_VALID);
@@ -132,7 +132,7 @@ export class PresentationExchange {
       restrictToDIDMethods?: string[];
       presentationSubmission?: PresentationSubmission;
       hasher?: Hasher;
-    }
+    },
   ): Promise<EvaluationResults> {
     const wvp: WrappedVerifiablePresentation =
       typeof verifiablePresentation === 'object' && 'original' in verifiablePresentation
@@ -173,14 +173,14 @@ export class PresentationExchange {
    */
   public static async findValidPresentationDefinitions(
     authorizationRequestPayload: AuthorizationRequestPayload,
-    version?: SupportedVersion
+    version?: SupportedVersion,
   ): Promise<PresentationDefinitionWithLocation[]> {
     const allDefinitions: PresentationDefinitionWithLocation[] = [];
 
     async function extractDefinitionFromVPToken() {
       const vpTokens: PresentationDefinitionV1[] | PresentationDefinitionV2[] = extractDataFromPath(
         authorizationRequestPayload,
-        '$..vp_token.presentation_definition'
+        '$..vp_token.presentation_definition',
       ).map((d) => d.value);
       const vpTokenRefs = extractDataFromPath(authorizationRequestPayload, '$..vp_token.presentation_definition_uri');
       if (vpTokens && vpTokens.length && vpTokenRefs && vpTokenRefs.length) {
@@ -190,7 +190,7 @@ export class PresentationExchange {
         vpTokens.forEach((vpToken: PresentationDefinitionV1 | PresentationDefinitionV2) => {
           if (allDefinitions.find((value) => value.definition.id === vpToken.id)) {
             console.log(
-              `Warning. We encountered presentation definition with id ${vpToken.id}, more then once whilst processing! Make sure your payload is valid!`
+              `Warning. We encountered presentation definition with id ${vpToken.id}, more then once whilst processing! Make sure your payload is valid!`,
             );
             return;
           }
@@ -208,7 +208,7 @@ export class PresentationExchange {
             | PresentationDefinitionV2;
           if (allDefinitions.find((value) => value.definition.id === pd.id)) {
             console.log(
-              `Warning. We encountered presentation definition with id ${pd.id}, more then once whilst processing! Make sure your payload is valid!`
+              `Warning. We encountered presentation definition with id ${pd.id}, more then once whilst processing! Make sure your payload is valid!`,
             );
             return;
           }
@@ -221,7 +221,7 @@ export class PresentationExchange {
     function addSingleToplevelPDToPDs(definition: IPresentationDefinition, version?: SupportedVersion): void {
       if (allDefinitions.find((value) => value.definition.id === definition.id)) {
         console.log(
-          `Warning. We encountered presentation definition with id ${definition.id}, more then once whilst processing! Make sure your payload is valid!`
+          `Warning. We encountered presentation definition with id ${definition.id}, more then once whilst processing! Make sure your payload is valid!`,
         );
         return;
       }
@@ -276,7 +276,7 @@ export class PresentationExchange {
   public static assertValidPresentationDefinitionWithLocations(definitionsWithLocations: PresentationDefinitionWithLocation[]) {
     if (definitionsWithLocations && definitionsWithLocations.length > 0) {
       definitionsWithLocations.forEach((definitionWithLocation) =>
-        PresentationExchange.assertValidPresentationDefinition(definitionWithLocation.definition)
+        PresentationExchange.assertValidPresentationDefinition(definitionWithLocation.definition),
       );
     }
   }
@@ -298,15 +298,15 @@ export class PresentationExchange {
       restrictToDIDMethods?: string[];
       presentationSubmission?: PresentationSubmission;
       hasher?: Hasher;
-    }
+    },
   ) {
     if (!definitions || !vpPayloads || !definitions.length || definitions.length !== vpPayloads.length) {
       throw new Error(SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD);
     }
     await Promise.all(
       definitions.map(
-        async (pd) => await PresentationExchange.validatePresentationsAgainstDefinition(pd.definition, vpPayloads, verifyPresentationCallback, opts)
-      )
+        async (pd) => await PresentationExchange.validatePresentationsAgainstDefinition(pd.definition, vpPayloads, verifyPresentationCallback, opts),
+      ),
     );
   }
 
@@ -320,7 +320,7 @@ export class PresentationExchange {
       restrictToDIDMethods?: string[];
       presentationSubmission?: PresentationSubmission;
       hasher?: Hasher;
-    }
+    },
   ) {
     const pex = new PEX({ hasher: opts?.hasher });
 
@@ -347,7 +347,7 @@ export class PresentationExchange {
             const verificationResult = await verifyPresentationCallback(vpw.original as W3CVerifiablePresentation, presentationSubmission);
             if (!verificationResult.verified) {
               throw new Error(
-                SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID + verificationResult.reason ? `. ${verificationResult.reason}` : ''
+                SIOPErrors.VERIFIABLE_PRESENTATION_SIGNATURE_NOT_VALID + verificationResult.reason ? `. ${verificationResult.reason}` : '',
               );
             }
           } catch (error: unknown) {

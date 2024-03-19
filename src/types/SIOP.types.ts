@@ -726,11 +726,11 @@ export const isRequestOpts = (object: CreateAuthorizationRequestOpts | Authoriza
   'requestBy' in object;
 
 export const isResponseOpts = (
-  object: RequestObjectOpts<RequestCommonPayload> | AuthorizationResponseOpts
+  object: RequestObjectOpts<RequestCommonPayload> | AuthorizationResponseOpts,
 ): object is RequestObjectOpts<RequestCommonPayload> => 'did' in object;
 
 export const isRequestPayload = (
-  object: AuthorizationRequestPayload | RequestObjectPayload | AuthorizationResponsePayload | IDTokenPayload
+  object: AuthorizationRequestPayload | RequestObjectPayload | AuthorizationResponsePayload | IDTokenPayload,
 ): object is AuthorizationRequestPayload => 'response_mode' in object && 'response_type' in object;
 
 export const isResponsePayload = (object: RequestObjectPayload | IDTokenPayload): object is IDTokenPayload => 'iss' in object && 'aud' in object;
@@ -755,7 +755,7 @@ export interface IRevocationVerificationStatus {
 
 export type RevocationVerificationCallback = (
   vc: W3CVerifiableCredential,
-  type: VerifiableCredentialTypeFormat
+  type: VerifiableCredentialTypeFormat,
 ) => Promise<IRevocationVerificationStatus>;
 
 export enum RevocationVerification {

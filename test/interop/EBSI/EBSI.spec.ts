@@ -64,6 +64,6 @@ describe('EBSI', () => {
       expect(verifiedRequest.issuer).toMatch('https://conformance-test.ebsi.eu/conformance/v3/auth-mock');
       expect(verifiedRequest.jwt).toBeDefined();
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
 });

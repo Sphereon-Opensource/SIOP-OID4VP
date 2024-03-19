@@ -143,7 +143,7 @@ export class RP {
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
       presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
-    }
+    },
   ): Promise<VerifiedAuthorizationResponse> {
     const state = opts?.state || this.verifyResponseOptions.state;
     let correlationId: string | undefined = opts?.correlationId || state;
@@ -305,7 +305,7 @@ export class RP {
       audience?: string;
       checkLinkedDomain?: CheckLinkedDomain;
       presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
-    }
+    },
   ): Promise<VerifyAuthorizationResponseOpts> {
     let correlationId = opts?.correlationId ?? this._verifyResponseOptions.correlationId;
     let state = opts?.state ?? this._verifyResponseOptions.state;
@@ -354,7 +354,7 @@ export class RP {
 
   private async emitEvent(
     type: AuthorizationEvents,
-    payload: { correlationId: string; subject?: AuthorizationRequest | AuthorizationResponse | AuthorizationResponsePayload; error?: Error }
+    payload: { correlationId: string; subject?: AuthorizationRequest | AuthorizationResponse | AuthorizationResponsePayload; error?: Error },
   ): Promise<void> {
     if (this._eventEmitter) {
       try {

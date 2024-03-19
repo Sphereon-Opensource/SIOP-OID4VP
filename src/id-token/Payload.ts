@@ -14,7 +14,7 @@ import {
 
 export const createIDTokenPayload = async (
   verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
-  responseOpts: AuthorizationResponseOpts
+  responseOpts: AuthorizationResponseOpts,
 ): Promise<IDTokenPayload> => {
   await assertValidResponseOpts(responseOpts);
   const authorizationRequestPayload = await verifiedAuthorizationRequest.authorizationRequest.mergedPayloads();
@@ -26,7 +26,7 @@ export const createIDTokenPayload = async (
 
   const supportedDidMethods =
     verifiedAuthorizationRequest.registrationMetadataPayload?.subject_syntax_types_supported?.filter((sst) =>
-      sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf())
+      sst.includes(SubjectSyntaxTypesSupportedValues.DID.valueOf()),
     ) ?? [];
   const state = payload.state;
   const nonce = payload.nonce;
@@ -35,7 +35,7 @@ export const createIDTokenPayload = async (
   const rpSupportedVersions = authorizationRequestVersionDiscovery(payload);
   const maxRPVersion = rpSupportedVersions.reduce(
     (previous, current) => (current.valueOf() > previous.valueOf() ? current : previous),
-    SupportedVersion.SIOPv2_D12_OID4VP_D18
+    SupportedVersion.SIOPv2_D12_OID4VP_D18,
   );
   if (responseOpts.version && rpSupportedVersions.length > 0 && !rpSupportedVersions.includes(responseOpts.version)) {
     throw Error(`RP does not support spec version ${responseOpts.version}, supported versions: ${rpSupportedVersions.toString()}`);

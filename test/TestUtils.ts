@@ -113,7 +113,7 @@ export const mockedKeyAndDid = async (): Promise<{
 };
 
 const mockedEntityAuthNToken = async (
-  enterpiseName?: string
+  enterpiseName?: string,
 ): Promise<{
   jwt: string;
   jwk: JWK;

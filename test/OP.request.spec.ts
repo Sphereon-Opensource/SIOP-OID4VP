@@ -64,7 +64,7 @@ describe('OP OPBuilder should', () => {
         .withInternalSignature('myprivatekey', 'did:example:123', 'did:example:123#key', SigningAlgo.ES256K)
         .withExpiresIn(1000)
         .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
-        .build()
+        .build(),
     ).toBeInstanceOf(OP);
   });
 });
@@ -191,7 +191,7 @@ describe('OP should', () => {
       });
       expect(verifiedRequest.jwt).toBeDefined();
     },
-    UNIT_TEST_TIMEOUT
+    UNIT_TEST_TIMEOUT,
   );
 
   it('succeed from builder when all params are set', async () => {
