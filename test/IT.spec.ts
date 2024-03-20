@@ -28,7 +28,7 @@ import {
   VPTokenLocation,
 } from '../src';
 import { checkSIOPSpecVersionSupported } from '../src/helpers/SIOPSpecVersion';
-import { InMemoryRPSessionManager } from '../src/rp/InMemoryRPSessionManager';
+import { InMemoryRPSessionManager } from '../src';
 
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {

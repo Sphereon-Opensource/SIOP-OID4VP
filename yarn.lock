@@ -2628,6 +2628,14 @@
     "@sd-jwt/decode" "^0.2.0"
     jwt-decode "^3.1.2"
 
+"@sphereon/ssi-types@0.21.0":
+  version "0.21.0"
+  resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.21.0.tgz#2ff0e9e0dc3881aa5014af2eb2c69856dbe07cb9"
+  integrity sha512-gYZVib6KkJ1+SF06ajvjgafrIalKLKuR1afdyigq3tFzWxPJ2mWUEl56EtqPsx0keW0AHfMaQAFebRE4fyDskg==
+  dependencies:
+    "@sd-jwt/decode" "^0.6.1"
+    jwt-decode "^3.1.2"
+
 "@sphereon/ssi-types@^0.9.0":
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/@sphereon/ssi-types/-/ssi-types-0.9.0.tgz#d140eb6abd77381926d0da7ac51b3c4b96a31b4b"
