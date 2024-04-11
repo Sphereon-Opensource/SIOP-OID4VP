@@ -67,7 +67,11 @@ export class AuthorizationResponse {
       await assertValidResponseOpts(responseOpts);
     }
     const idToken = authorizationResponsePayload.id_token ? await IDToken.fromIDToken(authorizationResponsePayload.id_token) : undefined;
-    return new AuthorizationResponse({ authorizationResponsePayload, idToken, responseOpts });
+    return new AuthorizationResponse({
+      authorizationResponsePayload,
+      idToken,
+      responseOpts,
+    });
   }
 
   static async fromAuthorizationRequest(
@@ -114,13 +118,18 @@ export class AuthorizationResponse {
     });
 
     if (hasVpToken) {
-      const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response, { hasher: verifyOpts.hasher });
+      const wrappedPresentations = await extractPresentationsFromAuthorizationResponse(response, {
+        hasher: verifyOpts.hasher,
+      });
 
       await assertValidVerifiablePresentations({
         presentationDefinitions,
         presentations: wrappedPresentations,
         verificationCallback: verifyOpts.verification.presentationVerificationCallback,
-        opts: { ...responseOpts.presentationExchange, hasher: verifyOpts.hasher },
+        opts: {
+          ...responseOpts.presentationExchange,
+          hasher: verifyOpts.hasher,
+        },
       });
     }
 
@@ -129,7 +138,10 @@ export class AuthorizationResponse {
 
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthorizationResponse> {
     // Merge payloads checks for inconsistencies in properties which are present in both the auth request and request object
-    const merged = await this.mergedPayloads({ consistencyCheck: true, hasher: verifyOpts.hasher });
+    const merged = await this.mergedPayloads({
+      consistencyCheck: true,
+      hasher: verifyOpts.hasher,
+    });
     if (verifyOpts.state && merged.state !== verifyOpts.state) {
       throw Error(SIOPErrors.BAD_STATE);
     }
@@ -137,19 +149,30 @@ export class AuthorizationResponse {
     const verifiedIdToken = await this.idToken?.verify(verifyOpts);
     const oid4vp = await verifyPresentations(this, verifyOpts);
 
-    const nonce = merged.nonce ?? oid4vp.nonce ?? verifiedIdToken?.payload.nonce;
-    const state = merged.state ?? verifiedIdToken?.payload.state;
+    // Gather all nonces
+    const allNonces = new Set<string>();
+    if (oid4vp) allNonces.add(oid4vp.nonce);
+    if (verifiedIdToken) allNonces.add(verifiedIdToken.payload.nonce);
+    if (merged.nonce) allNonces.add(merged.nonce);
 
+    const firstNonce = Array.from(allNonces)[0];
+    if (allNonces.size !== 1 || typeof firstNonce !== 'string') {
+      console.log(allNonces, firstNonce, merged.nonce, verifiedIdToken.payload.nonce, oid4vp.nonce);
+      throw new Error('both id token and VPs in vp token if present must have a nonce, and all nonces must be the same');
+    }
+    if (verifyOpts.nonce && firstNonce !== verifyOpts.nonce) {
+      throw Error(SIOPErrors.BAD_NONCE);
+    }
+
+    const state = merged.state ?? verifiedIdToken?.payload.state;
     if (!state) {
-      throw Error(`State is required`);
-    } else if (oid4vp.presentationDefinitions.length > 0 && !nonce) {
-      throw Error('Nonce is required when using OID4VP');
+      throw Error('State is required');
     }
 
     return {
       authorizationResponse: this,
       verifyOpts,
-      nonce,
+      nonce: firstNonce,
       state,
       correlationId: verifyOpts.correlationId,
       ...(this.idToken && { idToken: verifiedIdToken }),

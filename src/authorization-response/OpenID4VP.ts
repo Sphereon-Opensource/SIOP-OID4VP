@@ -1,6 +1,14 @@
 import { IPresentationDefinition, PEX } from '@sphereon/pex';
 import { Format } from '@sphereon/pex-models';
-import { CredentialMapper, Hasher, PresentationSubmission, W3CVerifiablePresentation, WrappedVerifiablePresentation } from '@sphereon/ssi-types';
+import {
+  CredentialMapper,
+  Hasher,
+  IVerifiablePresentation,
+  PresentationSubmission,
+  W3CVerifiablePresentation,
+  WrappedVerifiablePresentation,
+} from '@sphereon/ssi-types';
+import { decodeJWT } from 'did-jwt';
 
 import { AuthorizationRequest } from '../authorization-request';
 import { verifyRevocation } from '../helpers';
@@ -24,10 +32,40 @@ import {
   VPTokenLocation,
 } from './types';
 
+function extractNonceFromWrappedVerifiablePresentation(wrappedVp: WrappedVerifiablePresentation): string | undefined {
+  // SD-JWT uses kb-jwt for the nonce
+  if (CredentialMapper.isWrappedSdJwtVerifiablePresentation(wrappedVp)) {
+    // TODO: replace this once `kbJwt.payload` is available on the decoded sd-jwt (pr in ssi-sdk)
+    // If it doesn't end with ~, it contains a kbJwt
+    if (!wrappedVp.presentation.compactSdJwtVc.endsWith('~')) {
+      const kbJwt = wrappedVp.presentation.compactSdJwtVc.split('~').pop();
+      const { payload } = decodeJWT(kbJwt);
+      return payload.nonce;
+    }
+
+    // No kb-jwt means no nonce (error will be handled later)
+    return undefined;
+  }
+
+  if (wrappedVp.format === 'jwt_vp') {
+    return wrappedVp.decoded.nonce;
+  }
+
+  // For LDP-VP a challenge is also fine
+  if (wrappedVp.format === 'ldp_vp') {
+    const w3cPresentation = wrappedVp.decoded as IVerifiablePresentation;
+    const proof = Array.isArray(w3cPresentation.proof) ? w3cPresentation.proof[0] : w3cPresentation.proof;
+
+    return proof.nonce ?? proof.challenge;
+  }
+
+  return undefined;
+}
+
 export const verifyPresentations = async (
   authorizationResponse: AuthorizationResponse,
   verifyOpts: VerifyAuthorizationResponseOpts,
-): Promise<VerifiedOpenID4VPSubmission> => {
+): Promise<VerifiedOpenID4VPSubmission | null> => {
   const presentations = await extractPresentationsFromAuthorizationResponse(authorizationResponse, { hasher: verifyOpts.hasher });
   const presentationDefinitions = verifyOpts.presentationDefinitions
     ? Array.isArray(verifyOpts.presentationDefinitions)
@@ -53,12 +91,22 @@ export const verifyPresentations = async (
     },
   });
 
-  const nonces: Set<string> = new Set(presentations.map((presentation) => presentation.decoded.nonce));
+  // If there are no presentations, and the `assertValidVerifiablePresentations` did not fail
+  // it means there's no oid4vp response and also not requested
+  if (presentations.length === 0) {
+    return null;
+  }
+
+  const nonces = new Set(presentations.map(extractNonceFromWrappedVerifiablePresentation));
   if (presentations.length > 0 && nonces.size !== 1) {
     throw Error(`${nonces.size} nonce values found for ${presentations.length}. Should be 1`);
   }
 
-  const nonce = nonces[0];
+  // Nonce may be undefined
+  const nonce = Array.from(nonces)[0];
+  if (typeof nonce !== 'string') {
+    throw new Error('Expected all presentations to contain a nonce value');
+  }
 
   const revocationVerification = verifyOpts.verification?.revocationOpts
     ? verifyOpts.verification.revocationOpts.revocationVerification
