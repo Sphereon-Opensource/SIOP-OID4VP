@@ -157,7 +157,6 @@ export class AuthorizationResponse {
 
     const firstNonce = Array.from(allNonces)[0];
     if (allNonces.size !== 1 || typeof firstNonce !== 'string') {
-      console.log(allNonces, firstNonce, merged.nonce, verifiedIdToken.payload.nonce, oid4vp.nonce);
       throw new Error('both id token and VPs in vp token if present must have a nonce, and all nonces must be the same');
     }
     if (verifyOpts.nonce && firstNonce !== verifyOpts.nonce) {
