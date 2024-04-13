@@ -324,9 +324,9 @@ export class PresentationExchange {
   ) {
     const pex = new PEX({ hasher: opts?.hasher });
 
-    function filterOutCorrectPresentation() {
+    async function filterOutCorrectPresentation() {
       //TODO: add support for multiple VPs here
-      return vpPayloads.filter(async (vpw: WrappedVerifiablePresentation) => {
+      const matchingVps = vpPayloads.map(async (vpw: WrappedVerifiablePresentation): Promise<WrappedVerifiablePresentation | undefined> => {
         const presentationSubmission =
           opts?.presentationSubmission ??
           (CredentialMapper.isWrappedW3CVerifiablePresentation(vpw) ? vpw.presentation.presentation_submission : undefined);
@@ -364,11 +364,20 @@ export class PresentationExchange {
         if (!presentation || !submission) {
           throw new Error(SIOPErrors.NO_PRESENTATION_SUBMISSION);
         }
-        return submission && submission.definition_id === definition.id;
+
+        // No match
+        if (submission.definition_id !== definition.id) {
+          return undefined;
+        }
+
+        return vpw;
       });
+
+      // Wait for all results to finish and filter out undefined (no match) values
+      return (await Promise.all(matchingVps)).filter((vp) => vp !== undefined);
     }
 
-    const checkedPresentations: WrappedVerifiablePresentation[] = filterOutCorrectPresentation();
+    const checkedPresentations = await filterOutCorrectPresentation();
 
     if (checkedPresentations.length !== 1) {
       throw new Error(`${SIOPErrors.COULD_NOT_FIND_VCS_MATCHING_PD}`);
