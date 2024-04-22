@@ -30,6 +30,7 @@ export interface VerifiedJWT {
   issuer: string; //The issuer (did) of the JWT
   signer?: VerificationMethod; // The matching verification method from the DID that was used to sign
   jwt: string; // The JWT
+  jwk?: string;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { AuthorizationRequestPayloadVD11Schema, AuthorizationRequestPayloadVID1Schema } from '../schemas';
-import { AuthorizationRequestPayloadVD12OID4VPD18Schema } from '../schemas/validation/schemaValidation';
+import { AuthorizationRequestPayloadVD13OID4VPD20Schema } from '../schemas/validation/schemaValidation';
 import { AuthorizationRequestPayload, ResponseMode, SupportedVersion } from '../types';
 import errors from '../types/Errors';
 
@@ -34,15 +34,15 @@ export const authorizationRequestVersionDiscovery = (authorizationRequest: Autho
   const versions = [];
   const authorizationRequestCopy: AuthorizationRequestPayload = JSON.parse(JSON.stringify(authorizationRequest));
   // todo: We could use v11 validation for v12 for now, as we do not differentiate in the schema at this point\
-  const vd12Validation = AuthorizationRequestPayloadVD12OID4VPD18Schema(authorizationRequestCopy);
-  if (vd12Validation) {
+  const vd13Validation = AuthorizationRequestPayloadVD13OID4VPD20Schema(authorizationRequestCopy);
+  if (vd13Validation) {
     if (
       !authorizationRequestCopy.registration_uri &&
       !authorizationRequestCopy.registration &&
       !(authorizationRequestCopy.claims && 'vp_token' in authorizationRequestCopy.claims) &&
       authorizationRequestCopy.response_mode !== ResponseMode.POST // Post has been replaced by direct post
     ) {
-      versions.push(SupportedVersion.SIOPv2_D12_OID4VP_D18);
+      versions.push(SupportedVersion.SIOPv2_D13_OID4VP_D20);
     }
   }
   const vd11Validation = AuthorizationRequestPayloadVD11Schema(authorizationRequestCopy);

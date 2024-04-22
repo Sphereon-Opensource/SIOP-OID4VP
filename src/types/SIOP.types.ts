@@ -77,7 +77,7 @@ export interface AuthorizationRequestPayloadVD11
   presentation_definition_uri?: string;
 }
 
-export interface AuthorizationRequestPayloadVD12OID4VPD18
+export interface AuthorizationRequestPayloadVD13OID4VPD20
   extends AuthorizationRequestCommonPayload,
     RequestClientMetadataPayloadProperties,
     RequestIdTokenPayloadProperties {
@@ -88,13 +88,13 @@ export interface AuthorizationRequestPayloadVD12OID4VPD18
   response_uri?: string; // New since OID4VP18 OPTIONAL. The Response URI to which the Wallet MUST send the Authorization Response using an HTTPS POST request as defined by the Response Mode direct_post. The Response URI receives all Authorization Response parameters as defined by the respective Response Type. When the response_uri parameter is present, the redirect_uri Authorization Request parameter MUST NOT be present. If the redirect_uri Authorization Request parameter is present when the Response Mode is direct_post, the Wallet MUST return an invalid_request Authorization Response error.
 }
 
-export type ClientIdScheme = 'pre-registered' | 'redirect_uri' | 'entity_id' | 'did';
+export type ClientIdScheme = 'pre-registered' | 'redirect_uri' | 'entity_id' | 'did' | 'verifier_attestation' | 'x509_san_dns' | 'x509_san_uri';
 
 // https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
 export type AuthorizationRequestPayload =
   | AuthorizationRequestPayloadVID1
   | AuthorizationRequestPayloadVD11
-  | AuthorizationRequestPayloadVD12OID4VPD18;
+  | AuthorizationRequestPayloadVD13OID4VPD20;
 
 export type JWTVcPresentationProfileAuthenticationRequestPayload = RequestIdTokenPayloadProperties;
 
@@ -772,7 +772,7 @@ export interface RevocationOpts {
 export enum SupportedVersion {
   SIOPv2_ID1 = 70,
   SIOPv2_D11 = 110,
-  SIOPv2_D12_OID4VP_D18 = 180,
+  SIOPv2_D13_OID4VP_D20 = 180,
   JWT_VC_PRESENTATION_PROFILE_v1 = 71,
 }
 
