@@ -1,4 +1,7 @@
 import { JWTVerifyOptions } from 'did-jwt';
+import { decodeJWT } from 'did-jwt';
+import { JWTDecoded } from 'did-jwt/lib/JWT';
+import forge from 'node-forge';
 
 import { PresentationDefinitionWithLocation } from '../authorization-response';
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
@@ -186,10 +189,14 @@ export class AuthorizationRequest {
       throw new Error(`${SIOPErrors.INVALID_REQUEST}, redirect_uri or response_uri is needed`);
     }
 
+    if (mergedPayload.client_id_scheme === 'verifier_attestation') {
+      verifiedJwt = await AuthorizationRequest.verifyAttestationJWT(jwt, mergedPayload.client_id);
+    } else if (mergedPayload.client_id_scheme === 'x509_san_dns') {
+      await this.checkX509SanDNSScheme(jwt, mergedPayload.client_id);
+    } else if (mergedPayload.client_id_scheme === 'x509_san_uri') {
+      throw new Error(SIOPErrors.VERIFICATION_X509_SAN_URI_SCHEME_NOT_IMPLEMENTED_ERROR);
+    }
     await checkWellknownDIDFromRequest(mergedPayload, opts);
-
-    // TODO: we need to verify somewhere that if response_mode is direct_post, that the response_uri may be present,
-    // BUT not both redirect_uri and response_uri. What is the best place to do this?
 
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(mergedPayload, await this.getSupportedVersion());
     return {
@@ -246,6 +253,97 @@ export class AuthorizationRequest {
       nonce: requestObject.nonce ?? this.payload.nonce,
       state: this.payload.state,
     };
+  }
+
+  /**
+   * Verifies a JWT according to the 'verifier_attestation' client_id_scheme, where the JWT must be
+   * signed with a private key corresponding to the public key specified within the JWT itself. This method
+   * ensures that the JWT's 'sub' claim matches the provided clientId, and it extracts and validates the
+   * public key from the JWT's 'cnf' (confirmation) claim, which must contain a JWK.
+   *
+   * An example of such request would be:
+   * GET /authorize?
+   *   response_type=vp_token
+   *   &client_id=https%3A%2F%2Fverifier.example.org
+   *   &client_id_scheme=verifier_attestation
+   *   &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+   *   &presentation_definition=...
+   *   &nonce=n-0S6_WzA2Mj
+   *   &jwt=eyJ...abc
+   *
+   * @param jwt The JSON Web Token string to be verified. It is expected that this JWT is formatted correctly
+   *            and includes a 'cnf' claim with a JWK representing the public key used for signing the JWT.
+   * @param clientId The client identifier expected to match the 'sub' claim in the JWT. This is used to
+   *                 validate that the JWT is intended for the correct recipient/client.
+   */
+  private static async verifyAttestationJWT(jwt: string, clientId: string): Promise<VerifiedJWT> {
+    if (!jwt) {
+      throw new Error(SIOPErrors.NO_JWT);
+    }
+    const payload = decodeJWT(jwt);
+    AuthorizationRequest.checkPayloadClaims(payload, ['iss', 'sub', 'exp', 'cnf']);
+    const sub = payload['sub'];
+    const cnf = payload['cnf'];
+
+    if (sub !== clientId || !cnf || typeof cnf !== 'object' || !cnf['jwk'] || typeof cnf['jwk'] !== 'object') {
+      throw new Error(SIOPErrors.VERIFICATION_VERIFIER_ATTESTATION_SCHEME_ERROR);
+    }
+
+    return {
+      jwt,
+      payload: payload.payload,
+      issuer: payload['iss'],
+      jwk: cnf['jwk'],
+    };
+  }
+
+  /**
+   * verifying JWTs against X.509 certificates focusing on DNS SAN compliance, which is crucial for environments where certificate-based security is pivotal.
+   *
+   * An example of such request would be:
+   * GET /authorize?
+   *   response_type=vp_token
+   *   &client_id=client.example.org
+   *   &client_id_scheme=x509_san_dns
+   *   &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+   *   &presentation_definition=...
+   *   &nonce=n-0S6_WzA2Mj
+   *
+   * @param jwt The encoded JWT from which the certificate needs to be extracted.
+   * @param clientId The DNS name to match against the certificate's SANs.
+   */
+  private async checkX509SanDNSScheme(jwt: string, clientId: string): Promise<void> {
+    const jwtDecoded: JWTDecoded = decodeJWT(jwt);
+    const x5c = jwtDecoded.header['x5c'];
+
+    if (x5c == null || !Array.isArray(x5c) || x5c.length === 0) {
+      throw new Error(SIOPErrors.VERIFICATION_X509_SAN_DNS_SCHEME_ERROR);
+    }
+
+    const certificate = x5c[0];
+    if (!certificate) {
+      throw new Error(SIOPErrors.VERIFICATION_X509_SAN_DNS_SCHEME_NO_CERTIFICATE_ERROR);
+    }
+
+    const der = forge.util.decode64(certificate);
+    const asn1 = forge.asn1.fromDer(der);
+    const cert = forge.pki.certificateFromAsn1(asn1);
+
+    const subjectAltNames = cert.getExtension('subjectAltName');
+    if (!subjectAltNames || !Array.isArray(subjectAltNames['altNames'])) {
+      throw new Error(SIOPErrors.VERIFICATION_X509_SAN_DNS_ALT_NAMES_ERROR);
+    }
+    if (!subjectAltNames || !subjectAltNames['altNames'].some((name: any) => name.value === clientId)) {
+      throw new Error(SIOPErrors.VERIFICATION_X509_SAN_DNS_SCHEME_DNS_NAME_MATCH);
+    }
+  }
+
+  private static checkPayloadClaims(payload: JWTDecoded, requiredClaims: string[]): void {
+    requiredClaims.forEach((claim) => {
+      if (payload[claim] === undefined) {
+        throw new Error(`Payload is missing ${claim}`);
+      }
+    });
   }
 
   public async containsResponseType(singleType: ResponseType | string): Promise<boolean> {

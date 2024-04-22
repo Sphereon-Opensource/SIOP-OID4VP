@@ -227,7 +227,7 @@ describe('Mattr OID4VP v18 credential offer', () => {
 
     console.log(JSON.stringify(verification));
     expect(verification).toBeDefined();
-    expect(verification.versions).toEqual([SupportedVersion.SIOPv2_D12_OID4VP_D18]);
+    expect(verification.versions).toEqual([SupportedVersion.SIOPv2_D13_OID4VP_D20]);
 
     /**
      * pd value: {"id":"dae5d9b6-8145-4297-99b2-b8fcc5abb5ad","input_descriptors":[{"id":"OpenBadgeCredential","format":{"jwt_vc_json":{"alg":["EdDSA"]},"jwt_vc":{"alg":["EdDSA"]}},"constraints":{"fields":[{"path":["$.vc.type"],"filter":{"type":"array","items":{"type":"string"},"contains":{"const":"OpenBadgeCredential"}}}]}}]}

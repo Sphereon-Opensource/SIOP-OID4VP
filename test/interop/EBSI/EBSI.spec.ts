@@ -51,7 +51,7 @@ describe('EBSI', () => {
       wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
     correlationId: '1234',
-    supportedVersions: [SupportedVersion.SIOPv2_D12_OID4VP_D18],
+    supportedVersions: [SupportedVersion.SIOPv2_D13_OID4VP_D20],
   };
   it(
     'succeed from request opts when all params are set',

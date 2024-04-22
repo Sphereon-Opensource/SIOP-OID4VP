@@ -1,9 +1,9 @@
-export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
-  "$id": "AuthorizationRequestPayloadVD12OID4VPD18Schema",
+export const AuthorizationRequestPayloadVD13OID4VPD20SchemaObj = {
+  "$id": "AuthorizationRequestPayloadVD13OID4VPD20Schema",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$ref": "#/definitions/AuthorizationRequestPayloadVD12OID4VPD18",
+  "$ref": "#/definitions/AuthorizationRequestPayloadVD13OID4VPD20",
   "definitions": {
-    "AuthorizationRequestPayloadVD12OID4VPD18": {
+    "AuthorizationRequestPayloadVD13OID4VPD20": {
       "type": "object",
       "properties": {
         "id_token_type": {
@@ -1052,7 +1052,10 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
         "pre-registered",
         "redirect_uri",
         "entity_id",
-        "did"
+        "did",
+        "verifier_attestation",
+        "x509_san_dns",
+        "x509_san_uri"
       ]
     }
   }

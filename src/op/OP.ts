@@ -245,7 +245,7 @@ export class OP {
       registration: { ...this._createResponseOptions?.registration, issuer },
       responseURI,
       responseURIType:
-        this._createResponseOptions.responseURIType ?? (version < SupportedVersion.SIOPv2_D12_OID4VP_D18 && responseURI ? 'redirect_uri' : undefined),
+        this._createResponseOptions.responseURIType ?? (version < SupportedVersion.SIOPv2_D13_OID4VP_D20 && responseURI ? 'redirect_uri' : undefined),
     };
   }
 
