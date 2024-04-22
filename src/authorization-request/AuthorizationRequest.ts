@@ -194,7 +194,7 @@ export class AuthorizationRequest {
     } else if (mergedPayload.client_id_scheme === 'x509_san_dns') {
       await this.checkX509SanDNSScheme(jwt, mergedPayload.client_id);
     } else if (mergedPayload.client_id_scheme === 'x509_san_uri') {
-      throw new Error(SIOPErrors.VERIFICATION_X509_SAN_URI_SCHEME_NOT_IMPLEMENTED_ERROR)
+      throw new Error(SIOPErrors.VERIFICATION_X509_SAN_URI_SCHEME_NOT_IMPLEMENTED_ERROR);
     }
     await checkWellknownDIDFromRequest(mergedPayload, opts);
 
