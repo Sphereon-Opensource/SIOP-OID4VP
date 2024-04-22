@@ -261,6 +261,16 @@ export class AuthorizationRequest {
    * ensures that the JWT's 'sub' claim matches the provided clientId, and it extracts and validates the
    * public key from the JWT's 'cnf' (confirmation) claim, which must contain a JWK.
    *
+   * An example of such request would be:
+   * GET /authorize?
+   *   response_type=vp_token
+   *   &client_id=https%3A%2F%2Fverifier.example.org
+   *   &client_id_scheme=verifier_attestation
+   *   &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+   *   &presentation_definition=...
+   *   &nonce=n-0S6_WzA2Mj
+   *   &jwt=eyJ...abc
+   *
    * @param jwt The JSON Web Token string to be verified. It is expected that this JWT is formatted correctly
    *            and includes a 'cnf' claim with a JWK representing the public key used for signing the JWT.
    * @param clientId The client identifier expected to match the 'sub' claim in the JWT. This is used to
@@ -271,6 +281,7 @@ export class AuthorizationRequest {
       throw new Error(SIOPErrors.NO_JWT);
     }
     const payload = decodeJWT(jwt);
+    AuthorizationRequest.checkPayloadClaims(payload, ['iss', 'sub', 'exp', 'cnf']);
     const sub = payload['sub'];
     const cnf = payload['cnf'];
 
@@ -288,6 +299,16 @@ export class AuthorizationRequest {
 
   /**
    * verifying JWTs against X.509 certificates focusing on DNS SAN compliance, which is crucial for environments where certificate-based security is pivotal.
+   *
+   * An example of such request would be:
+   * GET /authorize?
+   *   response_type=vp_token
+   *   &client_id=client.example.org
+   *   &client_id_scheme=x509_san_dns
+   *   &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb
+   *   &presentation_definition=...
+   *   &nonce=n-0S6_WzA2Mj
+   *
    * @param jwt The encoded JWT from which the certificate needs to be extracted.
    * @param clientId The DNS name to match against the certificate's SANs.
    */
@@ -315,6 +336,14 @@ export class AuthorizationRequest {
     if (!subjectAltNames || !subjectAltNames['altNames'].some((name: any) => name.value === clientId)) {
       throw new Error(SIOPErrors.VERIFICATION_X509_SAN_DNS_SCHEME_DNS_NAME_MATCH);
     }
+  }
+
+  private static checkPayloadClaims(payload: JWTDecoded, requiredClaims: string[]): void {
+    requiredClaims.forEach((claim) => {
+      if (payload[claim] === undefined) {
+        throw new Error(`Payload is missing ${claim}`);
+      }
+    });
   }
 
   public async containsResponseType(singleType: ResponseType | string): Promise<boolean> {

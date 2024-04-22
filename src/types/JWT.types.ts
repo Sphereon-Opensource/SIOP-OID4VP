@@ -19,7 +19,7 @@ export interface JWTPayload {
   exp?: number;
   rexp?: number;
   jti?: string;
-
+  cnf?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
