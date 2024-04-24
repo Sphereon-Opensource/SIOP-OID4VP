@@ -645,12 +645,12 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
       "type": "object",
       "properties": {
         "const": {
-          "$ref": "#/definitions/OneOfNumberString"
+          "$ref": "#/definitions/OneOfNumberStringBoolean"
         },
         "enum": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/OneOfNumberString"
+            "$ref": "#/definitions/OneOfNumberStringBoolean"
           }
         },
         "exclusiveMinimum": {
@@ -688,6 +688,13 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
         "type"
       ],
       "additionalProperties": false
+    },
+    "OneOfNumberStringBoolean": {
+      "type": [
+        "boolean",
+        "number",
+        "string"
+      ]
     },
     "OneOfNumberString": {
       "type": [
@@ -844,6 +851,9 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
         },
         "name": {
           "type": "string"
+        },
+        "optional": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -855,12 +865,12 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
       "type": "object",
       "properties": {
         "const": {
-          "$ref": "#/definitions/OneOfNumberString"
+          "$ref": "#/definitions/OneOfNumberStringBoolean"
         },
         "enum": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/OneOfNumberString"
+            "$ref": "#/definitions/OneOfNumberStringBoolean"
           }
         },
         "exclusiveMinimum": {
@@ -921,12 +931,12 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
       "type": "object",
       "properties": {
         "const": {
-          "$ref": "#/definitions/OneOfNumberString"
+          "$ref": "#/definitions/OneOfNumberStringBoolean"
         },
         "enum": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/OneOfNumberString"
+            "$ref": "#/definitions/OneOfNumberStringBoolean"
           }
         },
         "exclusiveMinimum": {
@@ -984,12 +994,12 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
       "type": "object",
       "properties": {
         "const": {
-          "$ref": "#/definitions/OneOfNumberString"
+          "$ref": "#/definitions/OneOfNumberStringBoolean"
         },
         "enum": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/OneOfNumberString"
+            "$ref": "#/definitions/OneOfNumberStringBoolean"
           }
         },
         "exclusiveMinimum": {
