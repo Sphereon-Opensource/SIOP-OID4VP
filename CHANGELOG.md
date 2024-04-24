@@ -3,6 +3,14 @@
 The DID Auth SIOP typescript library is still in an beta state at this point. Please note that the interfaces might
 still change a bit as the software still is in active development.
 
+## 0.6.4 - 2024-04-24
+- Fixed:
+  - Success event was emitted even though presentation verification callback failed
+  - Always verify nonces, extract them from VP
+- Updated:
+    - Update to latest @sphereon/ssi-types
+
+
 ## 0.6.3 - 2024-03-20
 - Updated:
   - Update to latest @sphereon/ssi-types, including the latest @sd-jwt packages
