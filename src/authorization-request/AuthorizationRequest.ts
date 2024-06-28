@@ -1,13 +1,12 @@
-import { JWTVerifyOptions } from 'did-jwt';
-
 import { PresentationDefinitionWithLocation } from '../authorization-response';
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
-import { getAudience, getResolver, parseJWT, verifyDidJWT } from '../did';
 import { fetchByReferenceOrUseByValue, removeNullUndefined } from '../helpers';
 import { authorizationRequestVersionDiscovery } from '../helpers/SIOPSpecVersion';
+import { parseJWT } from '../helpers/jwtUtils';
 import { RequestObject } from '../request-object';
 import {
   AuthorizationRequestPayload,
+  getJwtVerifierWithContext,
   PassBy,
   RequestObjectJwt,
   RequestObjectPayload,
@@ -19,11 +18,10 @@ import {
   SIOPErrors,
   SupportedVersion,
   VerifiedAuthorizationRequest,
-  VerifiedJWT,
 } from '../types';
 
 import { assertValidAuthorizationRequestOpts, assertValidVerifyAuthorizationRequestOpts } from './Opts';
-import { assertValidRPRegistrationMedataPayload, checkWellknownDIDFromRequest, createAuthorizationRequestPayload } from './Payload';
+import { assertValidRPRegistrationMedataPayload, createAuthorizationRequestPayload } from './Payload';
 import { URI } from './URI';
 import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
@@ -117,30 +115,25 @@ export class AuthorizationRequest {
     assertValidVerifyAuthorizationRequestOpts(opts);
 
     let requestObjectPayload: RequestObjectPayload;
-    let verifiedJwt: VerifiedJWT;
 
     const jwt = await this.requestObjectJwt();
-    if (jwt) {
-      const parsedJWT = parseJWT(jwt);
-      const payload = parsedJWT.payload;
-      const audience = getAudience(jwt);
-      const resolver = getResolver(opts.verification.resolveOpts);
-      const options: JWTVerifyOptions = {
-        ...opts.verification?.resolveOpts?.jwtVerifyOpts,
-        resolver,
-        audience,
-      };
+    const parsedJwt = jwt ? parseJWT(jwt) : undefined;
 
-      if (payload.client_id?.startsWith('http') && payload.iss.startsWith('http') && payload.iss === payload.client_id) {
-        console.error(`FIXME: The client_id and iss are not DIDs. We do not verify the signature in this case yet! ${payload.iss}`);
-        verifiedJwt = { payload, jwt, issuer: payload.iss };
+    if (parsedJwt) {
+      requestObjectPayload = parsedJwt.payload as RequestObjectPayload;
+
+      if (
+        requestObjectPayload.client_id?.startsWith('http') &&
+        requestObjectPayload.iss.startsWith('http') &&
+        requestObjectPayload.iss === requestObjectPayload.client_id
+      ) {
+        console.error(`FIXME: The client_id and iss are not DIDs. We do not verify the signature in this case yet! ${requestObjectPayload.iss}`);
       } else {
-        verifiedJwt = await verifyDidJWT(jwt, resolver, options);
+        const jwtVerifier = getJwtVerifierWithContext(parsedJwt, 'request-object');
+        const result = await opts.verifyJwtCallback(jwtVerifier, { ...parsedJwt, raw: jwt });
+
+        if (!result) throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
       }
-      if (!verifiedJwt || !verifiedJwt.payload) {
-        throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
-      }
-      requestObjectPayload = verifiedJwt.payload as RequestObjectPayload;
 
       if (this.hasRequestObject() && !this.payload.request_uri) {
         // Put back the request object as that won't be present yet
@@ -186,14 +179,14 @@ export class AuthorizationRequest {
       throw new Error(`${SIOPErrors.INVALID_REQUEST}, redirect_uri or response_uri is needed`);
     }
 
-    await checkWellknownDIDFromRequest(mergedPayload, opts);
-
     // TODO: we need to verify somewhere that if response_mode is direct_post, that the response_uri may be present,
     // BUT not both redirect_uri and response_uri. What is the best place to do this?
 
     const presentationDefinitions = await PresentationExchange.findValidPresentationDefinitions(mergedPayload, await this.getSupportedVersion());
     return {
-      ...verifiedJwt,
+      jwt,
+      payload: parsedJwt?.payload,
+      issuer: parsedJwt?.payload.iss,
       responseURIType,
       responseURI,
       clientIdScheme: mergedPayload.client_id_scheme,

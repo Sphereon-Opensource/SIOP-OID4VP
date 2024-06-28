@@ -31,7 +31,8 @@ export const createResponsePayload = async (
   // vp tokens
   await putPresentationSubmissionInLocation(authorizationRequest, responsePayload, responseOpts, idTokenPayload);
   if (idTokenPayload) {
-    responsePayload.id_token = await IDToken.fromIDTokenPayload(idTokenPayload, responseOpts).then((id) => id.jwt());
+    const idToken = await IDToken.fromIDTokenPayload(idTokenPayload, responseOpts);
+    responsePayload.id_token = await idToken.jwt(responseOpts.jwtIssuer);
   }
 
   return responsePayload;

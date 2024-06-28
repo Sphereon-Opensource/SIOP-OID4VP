@@ -15,11 +15,11 @@ import {
 import { mergeVerificationOpts } from '../authorization-request/Opts';
 import { AuthorizationResponse, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getNonce, getState } from '../helpers';
+import { JwtIssuer } from '../types';
 import {
   AuthorizationEvent,
   AuthorizationEvents,
   AuthorizationResponsePayload,
-  CheckLinkedDomain,
   ExternalVerification,
   InternalVerification,
   PassBy,
@@ -68,6 +68,7 @@ export class RP {
     correlationId: string;
     nonce: string | RequestPropertyWithTargets<string>;
     state: string | RequestPropertyWithTargets<string>;
+    jwtIssuer?: JwtIssuer;
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
     version?: SupportedVersion;
     requestByReferenceURI?: string;
@@ -96,6 +97,7 @@ export class RP {
     correlationId: string;
     nonce: string | RequestPropertyWithTargets<string>;
     state: string | RequestPropertyWithTargets<string>;
+    jwtIssuer?: JwtIssuer;
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
     version?: SupportedVersion;
     requestByReferenceURI?: string;
@@ -199,6 +201,7 @@ export class RP {
     correlationId: string;
     nonce: string | RequestPropertyWithTargets<string>;
     state: string | RequestPropertyWithTargets<string>;
+    jwtIssuer?: JwtIssuer;
     claims?: ClaimPayloadCommonOpts | RequestPropertyWithTargets<ClaimPayloadCommonOpts>;
     version?: SupportedVersion;
     requestByReferenceURI?: string;
@@ -254,6 +257,8 @@ export class RP {
     }
 
     const newOpts = { ...this._createRequestOptions, version };
+    newOpts.requestObject = { ...newOpts.requestObject, jwtIssuer: opts.jwtIssuer };
+
     newOpts.requestObject.payload = newOpts.requestObject.payload ?? ({} as RequestObjectPayloadOpts<ClaimPayloadCommonOpts>);
     newOpts.payload = newOpts.payload ?? {};
     if (referenceURI) {
@@ -303,7 +308,6 @@ export class RP {
       nonce?: string;
       verification?: InternalVerification | ExternalVerification;
       audience?: string;
-      checkLinkedDomain?: CheckLinkedDomain;
       presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
     },
   ): Promise<VerifyAuthorizationResponseOpts> {
@@ -336,15 +340,13 @@ export class RP {
         state = state ?? reqState;
       }
     }
+
     return {
       ...this._verifyResponseOptions,
+      verifyJwtCallback: this._verifyResponseOptions.verifyJwtCallback,
       ...opts,
       correlationId,
-      audience:
-        opts?.audience ??
-        this._verifyResponseOptions.audience ??
-        this._verifyResponseOptions.verification.resolveOpts.jwtVerifyOpts.audience ??
-        this._createRequestOptions.payload.client_id,
+      audience: opts?.audience ?? this._verifyResponseOptions.audience ?? this._createRequestOptions.payload.client_id,
       state,
       nonce,
       verification: mergeVerificationOpts(this._verifyResponseOptions, opts),

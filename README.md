@@ -52,14 +52,10 @@ expect to keep that to a minimum though. Version 0.3.X has changed the external 
 
 This library supports:
 
-- [Decentralized Identifiers (DID)](https://www.w3.org/TR/did-core/) method neutral: Resolve DIDs using
-  DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and
-  Sphereon's [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client)
-- Verify and Create/sign Json Web Tokens (JWTs) as used in OpenID Connect using Decentralized Identifiers (DIDs) or JSON Web Keys (JWK)
+- Generic methods to verify and create/sign Json Web Tokens (JWTs) as used in OpenID Connect, with adapter for Decentralized Identifiers (DIDs), JSON Web Keys (JWK), x509 certificates
 - OP class to create Authorization Requests and verify Authorization Responses
 - RP class to verify Authorization Requests and create Authorization Responses
 - Verifiable Presentation and Presentation Exchange support on the RP and OP sides, according to the OpenID for Verifiable Presentations (OID4VP) and Presentation Exchange specifications
-- [Well-known DID Configuration](https://identity.foundation/.well-known/resources/did-configuration/) support to bind domain names to DIDs.
 - SIOPv2 specification version discovery with support for the latest [development version (draft 11)](https://openid.net/specs/openid-connect-self-issued-v2-1_0.html), [Implementers Draft 1](https://openid.net/specs/openid-connect-self-issued-v2-1_0-ID1.html) and the [JWT VC Presentation Interop Profile](https://identity.foundation/jwt-vc-presentation-profile/)
 
 ## Steps involved
@@ -263,45 +259,65 @@ You could also use the actual example keys and DIDs, as they are valid Ethr Rops
 
 ### Relying Party and SIOP should have keys and DIDs
 
-Since the library uses DIDs for both the RP and the OP, we expect these
-DIDs to be present on both sides, and the respective parties should have access to their private key(s). How DIDs are
-created is out of scope of this library, but we provide a [ethereum DID example](ethr-dids-testnet.md)
-and [manual eosio DID walk-through](eosio-dids-testnet.md) if you want to test it yourself without having DIDs.
+This library does not provide methods for signing and verifying tokens and authorization requests. Verification and Signing functionality must be externally provided.
 
 ### Setting up the Relying Party (RP)
 
 The Relying Party, typically a web app, but can also be something else, like a mobile app.
+The consumer of this library must provide means for creating and verifying JWT to the RP class instance.
+This library provides adapters for creating and verifying did, jwk, and x5c protected JWT`s.
 
-We will use an example private key and DID on the Ethereum Ropsten testnet network. Both the actual JWT request and the
+Both the actual JWT request and the
 registration metadata will be sent as part of the Auth Request since we pass them by value instead of by reference where
 we would have to host the data at the reference URL. The redirect URL means that the OP will need to deliver the
-auth response at the URL specified by the RP. Lastly we have enabled the 'ethr' DID method on the RP side for
-doing Auth Response checks with Ethereum DIDs in them. Please note that you can add multiple DID methods, and
-they have no influence on the DIDs being used to sign, the internal withSignature. We also populated the RP with
-a `PresentationDefinition` claim, meaning we expect the OP to send in a Verifiable Presentation that matches our
-definition. You can pass where you expect this presentation_definition to end up via the required `location` property.
+auth response at the URL specified by the RP.  We also populated the RP with a `PresentationDefinition` claim,
+meaning we expect the OP to send in a Verifiable Presentation that matches our definition.
+You can pass where you expect this presentation_definition to end up via the required `location` property.
 This is either a top-level vp_token or it becomes part of the id_token.
 
 ````typescript
 
 // The relying party (web) private key and DID and DID key (public key)
-import { SigningAlgo } from '@sphereon/did-auth-siop';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
-const rpKeys = {
-  hexPrivateKey: 'a1458fac9ea502099f40be363ad3144d6d509aa5aa3d17158a9e6c3b67eb0397',
-  did: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98',
-  didKey: 'did:ethr:ropsten:0x028360fb95417724cb7dd2ff217b15d6f17fc45e0ffc1b3dce6c2b8dd1e704fa98#controller',
-  alg: SigningAlgo.ES256K
+
+function verifyJwtCallback(): VerifyJwtCallback {
+  return async (jwtVerifier, jwt) => {
+    if (jwtVerifier.method === 'did') {
+      // verify didJwt's
+    } else if (jwtVerifier.method === 'x5c') {
+      // verify x5c certificate protected jwt's
+    } else if (jwtVerifier.method === 'jwk') {
+      // verify jwk certificate protected jwt's
+    } else if (jwtVerifier.method === 'custom') {
+      // Only called if based on the jwt the verification method could not been determined 
+      throw new Error(`Could not determine jwt verification method`)
+    }
+  }
 }
+
+function createJwtCallback(): CreateJwtCallback {
+  return async (jwtIssuer, jwt) => {
+    if (jwtVerifier.method === 'did') {
+      // create didJwt
+    } else if (jwtVerifier.method === 'x5c') {
+      // create x5c certificate protected jwt
+    } else if (jwtVerifier.method === 'jwk') {
+      // create a jwk certificate protected jwt
+    } else if (jwtVerifier.method === 'custom') {
+      // Only called if no or a Custom jwtIssuer was passed to the respective methods
+      throw new Error(`Could not determine jwt verification method`)
+    }
+  }
+}
+
 const rp = RP.builder()
   .redirect(EXAMPLE_REDIRECT_URL)
   .requestBy(PassBy.VALUE)
   .withPresentationVerification(presentationVerificationCallback)
-  .addVerifyCallback(verifyCallback)
+  .withCreateJwtCallback(createJwtCallback)
+  .withVerifyJwtCallback(verifyJwtCallback)
   .withRevocationVerification(RevocationVerification.NEVER)
-  .withInternalSignature(rpKeys.hexPrivateKey, rpKeys.did, rpKeys.didKey, rpKeys.alg)
-  .addDidMethod("ethr")
   .withClientMetadata({
     idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
     requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -332,27 +348,15 @@ const rp = RP.builder()
 ### OpenID Provider (OP)
 
 The OP, typically a useragent together with a mobile phone in a cross device flow is accessing a protected resource at the RP, or needs to sent
-in Verifiable Presentations. In the example below we are expressing that the OP supports the 'ethr' didMethod, we are
-passing the signing information, which will never leave the OP's computer and we are configuring to send the JWT as part
-of the payload (by value).
+in Verifiable Presentations. The consumer of the library must provide means for creating and verifying JWT to the OP class instance.
+This library provides adapters for creating and verifying did, jwk, and x5c protected JWT`s.
 
 ````typescript
-// The OpenID Provider (client) private key and DID and DID key (public key)
-import { SigningAlgo } from '@sphereon/did-auth-siop';
-
-const opKeys = {
-  hexPrivateKey: '88a62d50de38dc22f5b4e7cc80d68a0f421ea489dda0e3bd5c165f08ce46e666',
-  did: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75',
-  didKey: 'did:ethr:ropsten:0x03f8b96c88063da2b7f5cc90513560a7ec38b92616fff9c95ae95f46cc692a7c75#controller',
-  alg: SigningAlgo.alg
-}
-
 const op = OP.builder()
   .withExpiresIn(6000)
   .addDidMethod("ethr")
-  .addVerifyCallback(verifyCallback)
-  .addIssuer(ResponseIss.SELF_ISSUED_V2)
-  .withInternalSignature(opKeys.hexPrivateKey, opKeys.did, opKeys.didKey, opKeys.alg)
+  .withCreateJwtCallback(createJwtCallback)
+  .withVerifyJwtCallback(verifyJwtCallback)
   .withClientMetadata({
     authorizationEndpoint: 'www.myauthorizationendpoint.com',
     idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -382,12 +386,18 @@ return them in the object that is returned from the method.
 Next to the nonce we could also pass in claim options, for instance to specify a Presentation Definition. We have
 already configured the RP itself to have a Presentation Definition, so we can omit it in the request creation, as the RP
 class will take care of that on every Auth Request creation.
+When creating signed objects on the OP and RP side, a jwtIssuer can be specified.
+These adapters provide information about how the jwt will be signed later and metadata to set certain fields in the JWT,
+This means that the JWT only needs to be signed and not necessarily modified by the consumer of this library.
+If the jwtIssuer is omitted the createJwtCallback will be called with method 'custom' indicating that it's up to the consumer
+to populate required fields before the JWT is signed.
 
 ````typescript
 const authRequest = await rp.createAuthorizationRequest({
   correlationId: '1',
   nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
   state: 'b32f0087fc9816eb813fd11f',
+  jwtIssuer: { method: 'did', didUrl: '...', alg: SigningAlgo.EDDSA }
 });
 
 console.log(`nonce: ${authRequest.requestOpts.nonce}, state: ${authRequest.requestOpts.state}`);
@@ -433,18 +443,17 @@ console.log(parsedReqURI.jwt);
 
 The Auth Request from the RP in the form of a URI or JWT string needs to be verified by the OP. The
 verifyAuthorizationRequest method of the OP class takes care of this. As input it expects either the URI or the JWT
-string together with optional verify options. IF a JWT is supplied it will use the JWT directly, if a URI is provided it
-will internally parse the URI and extract/resolve the jwt. The options can contain an optional nonce, which means the
+string. IF a JWT is supplied it will use the JWT directly, if a URI is provided it
+will internally parse the URI and extract/resolve the JWT before passing it to the provided verifyJwtCallback.
+The jwtVerifier in the verifyJwtCallback is augmented with metadata to simplify jwt verification for each adapter.
+The options can contain an optional nonce, which means the
 request will be checked against the supplied nonce, otherwise the supplied nonce is only checked for presence. Normally
 the OP doesn't know the nonce beforehand, so this option can be left out.
 
-The verified Auth Request object returned again contains the Auth Request payload, the DID
-resolution result, including DID document of the RP, the issuer (DID of RP) and the signer (the DID verification method
-that signed). The verification method will throw an error if something is of with the JWT, or if the JWT has not been
-signed by the DID of the RP.
-
+The verified Auth Request object returned again contains the Auth Request payload, and the issuer.
 
 ---
+
 **NOTE**
 
 In the below example we directly access requestURI.encodedUri, in a real world scenario the RP and OP don't have access
@@ -944,69 +953,6 @@ createJWTFromRequestJWT('ey....', responseOpts, verifyOpts).then(resp => {
 });
 ````
 
-### verifyJWT
-
-Verifies the OPs Auth Response JWT on the RP side as received from the OP/client. Throws an error if the token
-is invalid, otherwise returns the Verified JWT
-
-#### Data Interface
-
-````typescript
-export interface VerifiedAuthorizationResponseWithJWT extends VerifiedJWT {
-    payload: AuthorizationResponsePayload;      // The unsigned Auth Response payload
-    verifyOpts: VerifyAuthorizationResponseOpts;// The Auth Request payload
-}
-
-export interface AuthorizationResponsePayload extends JWTPayload {
-    iss: ResponseIss.SELF_ISSUED_V2 | string;   // The SIOP V2 spec mentions this is required, but current implementations use the kid/did here
-    sub: string;                                // did (or thumbprint of sub_jwk key when type is jkt)
-    sub_jwk?: JWK;                               // Sub Json webkey
-    aud: string;                                // redirect_uri from request
-    exp: number;                                // Expiration time
-    iat: number;                                // Issued at time
-    state: string;                              // State value
-    nonce: string;                              // Nonce
-    did: string;                                // DID of the OP
-    registration?: DiscoveryMetadataPayload;    // Registration metadata
-    registration_uri?: string;                  // Registration URI if metadata is hosted by the OP
-    verifiable_presentations?: VerifiablePresentationPayload[]; // Verifiable Presentations as part of the id token
-    vp_token?: VerifiablePresentationPayload;   // Verifiable Presentation (the vp_token)
-}
-
-export interface VerifiedJWT {
-    payload: Partial<JWTPayload>; // The JWT payload
-    didResolutionResult: DIDResolutionResult;    // DID resolution result including DID document
-    issuer: string;                              // The issuer (did) of the JWT
-    signer: VerificationMethod;                  // The matching verification method from the DID that was used to sign
-    jwt: string;                                 // The JWT
-}
-
-export interface JWTPayload { // A default JWT Payload
-    iss?: string
-    sub?: string
-    aud?: string | string[]
-    iat?: number
-    nbf?: number
-    type?: string;
-    exp?: number
-    rexp?: number
-    jti?: string;
-    [x: string]: any
-}
-
-export interface VerifyAuthorizationResponseOpts {
-    verification: InternalVerification | ExternalVerification;  // To use internal verification or external hosted verification
-    nonce?: string;                                             // To verify the response against the supplied nonce
-    state?: string;                                             // To verify the response against the supplied state
-    audience: string;                                           // The audience/redirect_uri
-    claims?: ClaimOpts;                                         // The claims, typically the same values used during request creation
-    verifyCallback?: VerifyCallback;                            // Callback function to verify the domain linkage credential 
-    presentationVerificationCallback?: PresentationVerificationCallback; // Callback function to verify the verifiable presentations
-}
-
-static async verifyJWT(jwt:string, verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedAuthorizationResponseWithJWT>
-````
-
 #### Usage
 
 ````typescript
@@ -1028,209 +974,6 @@ verifyJWT('ey......', verifyOpts).then(jwt => {
     // output: nonce: 5c1d29c1-cf7d-4e14-9305-9db46d8c1916
 })
 ````
-
-## DID resolution
-
-### Description
-
-Resolves the DID to a DID document using the DID method provided in didUrl and using
-DIFs [did-resolver](https://github.com/decentralized-identity/did-resolver) and
-Sphereons [Universal registrar and resolver client](https://github.com/Sphereon-Opensource/did-uni-client).
-
-This process allows retrieving public keys and verificationMethod material, as well as services provided by a DID
-controller. Can be used in both the webapp and mobile applications. Uses the did-uni-client, but could use other DIF
-did-resolver drivers as well. The benefit of the uni client is that it can resolve many DID methods. Since the
-resolution itself is provided by the mentioned external dependencies above, we suffice with a usage example.
-
-#### Usage
-
-```typescript
-import {Resolver} from 'did-resolver'
-import {getResolver as getUniResolver} from '@sphereon/did-uni-client'
-
-const resolver = new Resolver(getUniResolver({
-  subjectSyntaxTypesSupported: ['did:ethr:']
-}));
-
-resolver.resolve('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda').then(doc => console.log)
-```
-
-The DidResolution file exposes 2 functions that help with the resolution as well:
-
-```typescript
-import {getResolver, resolveDidDocument} from './helpers/DIDResolution';
-
-// combines 2 uni resolvers for ethr and eosio together with the myCustomResolver and return that as a single resolver
-const myCustomResolver = new MyCustomResolver();
-getResolver({
-  subjectSyntaxTypesSupported: ['did:ethr:', 'did:eosio:'], resolver: myCustomResolver});
-
-// Returns a DID document for the specified DID, using the universal resolver client for the ehtr DID method
-await resolveDidDocument('did:ethr:0x998D43DA5d9d78500898346baf2d9B1E39Eb0Dda', {subjectSyntaxTypesSupported: ['did:ethr:', 'did:eosio:']});
-```
-
-## JWT and DID creation and verification
-
-Please note that this chapter is about low level JWT functions, which normally aren't used by end users of this library.
-Typically, you use the AuthorizationRequest and Response classes (low-level) or the OP and RP classes (high-level).
-
-### Create JWT
-
-Creates a signed JWT given a DID which becomes the issuer, a signer function, and a payload over which the withSignature is
-created.
-
-#### Data Interface
-
-```typescript
-export interface JWTPayload { // This is a standard JWT payload described on for instance https://jwt.io
-    iss?: string
-    sub?: string
-    aud?: string | string[]
-    iat?: number
-    nbf?: number
-    exp?: number
-    rexp?: number
-    jti?: string;
-
-    [x: string]: any
-}
-
-export interface JWTHeader { // This is a standard JWT header
-    typ: 'JWT'
-    alg: string             // The JWT signing algorithm to use. Supports: [ES256K, ES256K-R, Ed25519, EdDSA], Defaults to: ES256K
-    [x: string]: any
-}
-
-export interface JWTOptions {
-    issuer: string          // The DID of the issuer (signer) of JWT
-    signer: Signer          // A signer function, eg: `ES256KSigner` or `EdDSASigner`
-    expiresIn?: number      // optional expiration time
-    canonicalize?: boolean  // optional flag to canonicalize header and payload before signing
-}
-```
-
-#### Usage
-
-````typescript
-const signer = ES256KSigner(process.env.PRIVATE_KEY);
-createDidJWT({requested: ['name', 'phone']}, {issuer: 'did:eosio:example', signer}).then(jwt => console.log)
-````
-
-### Verify JWT
-
-Verifies the given JWT. If the JWT is valid, the promise returns an object including the JWT, the payload of the JWT,
-and the DID Document of the issuer of the JWT, using the resolver mentioned earlier. The checks performed include,
-general JWT decoding, DID resolution, Proof purposes
-
-proof purposes allows restriction of verification methods to the ones specifically listed, otherwise the '
-authentication' verification method of the resolved DID document will be used
-
-#### Data Interface
-
-Verify options:
-
-```typescript
-export interface JWTVerifyOptions {
-    audience?: string                            // DID of the recipient of the JWT
-    callbackUrl?: string                         // callback url in JWT
-    skewTime?: number                            // Allow to skey time in the expiration check with this amount
-    proofPurpose?: ProofPurposeTypes             // Restrict to this proof purpose type in the DID resolution
-}
-```
-
-Response:
-
-```typescript
-export interface JWTVerified {
-    payload: Partial<JWTPayload>                // Standard partial JWT payload, see above
-    didResolutionResult: DIDResolutionResult    // The DID resolution
-    issuer?: string                             // The DID that issued the JWT
-    signer?: VerificationMethod                 // The verification method that issued the JWT
-    jwt: string                                 // The JWT itself
-}
-
-export interface VerificationMethod {
-    id: string                      // The id of the key
-    type: string                    // authentication, assertionMethod etc (see DID spec)
-    controller: string              // The controller of the Verification method
-    publicKeyBase58?: string        // Public key in base58 if any
-    publicKeyJwk?: JsonWebKey       // Public key in JWK if any
-    publicKeyHex?: string           // Public key in hex if any
-    blockchainAccountId?: string    // optional blockchain account id associated with the DID
-    ethereumAddress?: string        // deprecated
-}
-```
-
-#### Usage
-
-```typescript
-verifyDidJWT(jwt, resolver, {audience: '6B2bRWU3F7j3REx3vkJ..'}).then(verifiedJWT => {
-    const did = verifiedJWT.issuer;                          // DID of signer
-    const payload = verifiedJWT.payload;                     // The JHT payload
-    const doc = verifiedJWT.didResolutionResult.didDocument; // DID Document of signer
-    const jwt = verifiedJWT.jwt;                             // JWS in string format 
-    const signerKeyId = verifiedJWT.signer.id;               // ID of key in DID document that signed JWT
-...
-});
-```
-
-### Verify Linked Domain with DID
-
-Verifies whether a domain linkage credential is valid
-
-#### Data Interface
-
-Verify callback:
-
-```typescript
-export declare type VerifyCallback = (args: IVerifyCallbackArgs) => Promise<IVerifyCredentialResult>; // The callback function to verify the Domain Linkage Credential
-```
-
-```typescript
-export interface IVerifyCallbackArgs {
-    credential: DomainLinkageCredential; // The domain linkage credential to be verified
-    proofFormat?: ProofFormatTypesEnum; // Whether it is a JWT or JsonLD credential
-}
-```
-
-```typescript
-export interface IVerifyCredentialResult {
-    verified: boolean; // The result of the domain linkage credential verification
-}
-```
-
-```typescript
-export enum CheckLinkedDomain {
-  NEVER = 'never', // We don't want to verify Linked domains
-  IF_PRESENT = 'if_present', // If present, did-auth-siop will check the linked domain, if exist and not valid, throws an exception
-  ALWAYS = 'always', // We'll always check the linked domains, if not exist or not valid, throws an exception
-}
-```
-
-#### Usage 
-
-```typescript
-const verifyCallback = async (args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => {
-  const keyPair = await Ed25519VerificationKey2020.from(VC_KEY_PAIR);
-  const suite = new Ed25519Signature2020({ key: keyPair });
-  suite.verificationMethod = keyPair.id;
-  return await vc.verifyCredential({ credential: args.credential, suite, documentLoader: new DocumentLoader().getLoader() });
-};
-```
-
-```typescript
-const rp = RP.builder()
-      .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
-      .addVerifyCallback((args: IVerifyCallbackArgs) => verifyCallback(args))
-      ...
-```
-
-```typescript
-const op = OP.builder()
-      .withCheckLinkedDomain(CheckLinkedDomain.ALWAYS)
-      .addVerifyCallback((args: IVerifyCallbackArgs) => verifyCallback(args))
-      ...
-```
 
 ### Verify Revocation
 
@@ -1342,12 +1085,6 @@ const rp = RP.builder()
 Services and objects:
 
 [![](./docs/services-class-diagram.svg)](https://mermaid-js.github.io/mermaid-live-editor/edit#eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5cbmNsYXNzIFJQIHtcbiAgICA8PHNlcnZpY2U-PlxuICAgIGNyZWF0ZUF1dGhlbnRpY2F0aW9uUmVxdWVzdChvcHRzPykgUHJvbWlzZShBdXRoZW50aWNhdGlvblJlcXVlc3RVUkkpXG4gICAgdmVyaWZ5QXV0aGVudGljYXRpb25SZXNwb25zZUp3dChqd3Q6IHN0cmluZywgb3B0cz8pIFByb21pc2UoVmVyaWZpZWRBdXRoZW50aWNhdGlvblJlc3BvbnNlV2l0aEpXVClcbn1cblJQIC0tPiBBdXRoZW50aWNhdGlvblJlcXVlc3RVUklcblJQIC0tPiBWZXJpZmllZEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VXaXRoSldUXG5SUCAtLT4gQXV0aGVudGljYXRpb25SZXF1ZXN0XG5SUCAtLT4gQXV0aGVudGljYXRpb25SZXNwb25zZVxuXG5jbGFzcyBPUCB7XG4gICAgPDxzZXJ2aWNlPj5cbiAgICBjcmVhdGVBdXRoZW50aWNhdGlvblJlc3BvbnNlKGp3dE9yVXJpOiBzdHJpbmcsIG9wdHM_KSBQcm9taXNlKEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VXaXRoSldUKVxuICAgIHZlcmlmeUF1dGhlbnRpY2F0aW9uUmVxdWVzdChqd3Q6IHN0cmluZywgb3B0cz8pIFByb21pc2UoVmVyaWZpZWRBdXRoZW50aWNhdGlvblJlcXVlc3RXaXRoSldUKVxufVxuT1AgLS0-IEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VXaXRoSldUXG5PUCAtLT4gVmVyaWZpZWRBdXRoZW50aWNhdGlvblJlcXVlc3RXaXRoSldUXG5PUCAtLT4gQXV0aGVudGljYXRpb25SZXF1ZXN0XG5PUCAtLT4gQXV0aGVudGljYXRpb25SZXNwb25zZVxuXG5cbmNsYXNzIEF1dGhlbnRpY2F0aW9uUmVxdWVzdE9wdHMge1xuICA8PGludGVyZmFjZT4-XG4gIHJlZGlyZWN0VXJpOiBzdHJpbmc7XG4gIHJlcXVlc3RCeTogT2JqZWN0Qnk7XG4gIHNpZ25hdHVyZVR5cGU6IEludGVybmFsU2lnbmF0dXJlIHwgRXh0ZXJuYWxTaWduYXR1cmUgfCBOb1NpZ25hdHVyZTtcbiAgcmVzcG9uc2VNb2RlPzogUmVzcG9uc2VNb2RlO1xuICBjbGFpbXM_OiBPaWRjQ2xhaW07XG4gIHJlZ2lzdHJhdGlvbjogUmVxdWVzdFJlZ2lzdHJhdGlvbk9wdHM7XG4gIG5vbmNlPzogc3RyaW5nO1xuICBzdGF0ZT86IHN0cmluZztcbn1cbkF1dGhlbnRpY2F0aW9uUmVxdWVzdE9wdHMgLS0-IFJlc3BvbnNlTW9kZVxuQXV0aGVudGljYXRpb25SZXF1ZXN0T3B0cyAtLT4gUlBSZWdpc3RyYXRpb25NZXRhZGF0YU9wdHNcblxuXG5cbmNsYXNzIFJQUmVnaXN0cmF0aW9uTWV0YWRhdGFPcHRzIHtcbiAgPDxpbnRlcmZhY2U-PlxuICBzdWJqZWN0SWRlbnRpZmllcnNTdXBwb3J0ZWQ6IFN1YmplY3RJZGVudGlmaWVyVHlwZVtdIHwgU3ViamVjdElkZW50aWZpZXJUeXBlO1xuICBkaWRNZXRob2RzU3VwcG9ydGVkPzogc3RyaW5nW10gfCBzdHJpbmc7XG4gIGNyZWRlbnRpYWxGb3JtYXRzU3VwcG9ydGVkOiBDcmVkZW50aWFsRm9ybWF0W10gfCBDcmVkZW50aWFsRm9ybWF0O1xufVxuXG5jbGFzcyBSZXF1ZXN0UmVnaXN0cmF0aW9uT3B0cyB7XG4gIDw8aW50ZXJmYWNlPj5cbiAgcmVnaXN0cmF0aW9uQnk6IFJlZ2lzdHJhdGlvblR5cGU7XG59XG5SZXF1ZXN0UmVnaXN0cmF0aW9uT3B0cyAtLXw-IFJQUmVnaXN0cmF0aW9uTWV0YWRhdGFPcHRzXG5cblxuY2xhc3MgVmVyaWZ5QXV0aGVudGljYXRpb25SZXF1ZXN0T3B0cyB7XG4gIDw8aW50ZXJmYWNlPj5cbiAgdmVyaWZpY2F0aW9uOiBJbnRlcm5hbFZlcmlmaWNhdGlvbiB8IEV4dGVybmFsVmVyaWZpY2F0aW9uO1xuICBub25jZT86IHN0cmluZztcbn1cblxuY2xhc3MgQXV0aGVudGljYXRpb25SZXF1ZXN0IHtcbiAgICA8PHNlcnZpY2U-PlxuICAgIGNyZWF0ZVVSSShvcHRzOiBBdXRoZW50aWNhdGlvblJlcXVlc3RPcHRzKSBQcm9taXNlKEF1dGhlbnRpY2F0aW9uUmVxdWVzdFVSSSlcbiAgICBjcmVhdGVKV1Qob3B0czogQXV0aGVudGljYXRpb25SZXF1ZXN0T3B0cykgUHJvbWlzZShBdXRoZW50aWNhdGlvblJlcXVlc3RXaXRoSldUKTtcbiAgICB2ZXJpZnlKV1Qoand0OiBzdHJpbmcsIG9wdHM6IFZlcmlmeUF1dGhlbnRpY2F0aW9uUmVxdWVzdE9wdHMpIFByb21pc2UoVmVyaWZpZWRBdXRoZW50aWNhdGlvblJlcXVlc3RXaXRoSldUKVxufVxuQXV0aGVudGljYXRpb25SZXF1ZXN0IDwtLSBBdXRoZW50aWNhdGlvblJlcXVlc3RPcHRzXG5BdXRoZW50aWNhdGlvblJlcXVlc3QgPC0tIFZlcmlmeUF1dGhlbnRpY2F0aW9uUmVxdWVzdE9wdHNcbkF1dGhlbnRpY2F0aW9uUmVxdWVzdCAtLT4gQXV0aGVudGljYXRpb25SZXF1ZXN0VVJJXG5BdXRoZW50aWNhdGlvblJlcXVlc3QgLS0-IEF1dGhlbnRpY2F0aW9uUmVxdWVzdFdpdGhKV1RcbkF1dGhlbnRpY2F0aW9uUmVxdWVzdCAtLT4gVmVyaWZpZWRBdXRoZW50aWNhdGlvblJlcXVlc3RXaXRoSldUXG5cbmNsYXNzIEF1dGhlbnRpY2F0aW9uUmVzcG9uc2Uge1xuICA8PGludGVyZmFjZT4-XG4gIGNyZWF0ZUpXVEZyb21SZXF1ZXN0SldUKGp3dDogc3RyaW5nLCByZXNwb25zZU9wdHM6IEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VPcHRzLCB2ZXJpZnlPcHRzOiBWZXJpZnlBdXRoZW50aWNhdGlvblJlcXVlc3RPcHRzKSBQcm9taXNlKEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VXaXRoSldUKVxuICB2ZXJpZnlKV1Qoand0OiBzdHJpbmcsIHZlcmlmeU9wdHM6IFZlcmlmeUF1dGhlbnRpY2F0aW9uUmVzcG9uc2VPcHRzKSBQcm9taXNlKFZlcmlmaWVkQXV0aGVudGljYXRpb25SZXNwb25zZVdpdGhKV1QpXG59XG5BdXRoZW50aWNhdGlvblJlc3BvbnNlIDwtLSBBdXRoZW50aWNhdGlvblJlc3BvbnNlT3B0c1xuQXV0aGVudGljYXRpb25SZXNwb25zZSA8LS0gVmVyaWZ5QXV0aGVudGljYXRpb25SZXF1ZXN0T3B0c1xuQXV0aGVudGljYXRpb25SZXNwb25zZSAtLT4gQXV0aGVudGljYXRpb25SZXNwb25zZVdpdGhKV1RcbkF1dGhlbnRpY2F0aW9uUmVzcG9uc2UgPC0tIFZlcmlmeUF1dGhlbnRpY2F0aW9uUmVzcG9uc2VPcHRzXG5BdXRoZW50aWNhdGlvblJlc3BvbnNlIC0tPiBWZXJpZmllZEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VXaXRoSldUXG5cbmNsYXNzIEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VPcHRzIHtcbiAgPDxpbnRlcmZhY2U-PlxuICBzaWduYXR1cmVUeXBlOiBJbnRlcm5hbFNpZ25hdHVyZSB8IEV4dGVybmFsU2lnbmF0dXJlO1xuICBub25jZT86IHN0cmluZztcbiAgc3RhdGU_OiBzdHJpbmc7XG4gIHJlZ2lzdHJhdGlvbjogUmVzcG9uc2VSZWdpc3RyYXRpb25PcHRzO1xuICByZXNwb25zZU1vZGU_OiBSZXNwb25zZU1vZGU7XG4gIGRpZDogc3RyaW5nO1xuICB2cD86IFZlcmlmaWFibGVQcmVzZW50YXRpb247XG4gIGV4cGlyZXNJbj86IG51bWJlcjtcbn1cbkF1dGhlbnRpY2F0aW9uUmVzcG9uc2VPcHRzIC0tPiBSZXNwb25zZU1vZGVcblxuY2xhc3MgQXV0aGVudGljYXRpb25SZXNwb25zZVdpdGhKV1Qge1xuICA8PGludGVyZmFjZT4-XG4gIGp3dDogc3RyaW5nO1xuICBub25jZTogc3RyaW5nO1xuICBzdGF0ZTogc3RyaW5nO1xuICBwYXlsb2FkOiBBdXRoZW50aWNhdGlvblJlc3BvbnNlUGF5bG9hZDtcbiAgdmVyaWZ5T3B0cz86IFZlcmlmeUF1dGhlbnRpY2F0aW9uUmVxdWVzdE9wdHM7XG4gIHJlc3BvbnNlT3B0czogQXV0aGVudGljYXRpb25SZXNwb25zZU9wdHM7XG59XG5BdXRoZW50aWNhdGlvblJlc3BvbnNlV2l0aEpXVCAtLT4gQXV0aGVudGljYXRpb25SZXNwb25zZVBheWxvYWRcbkF1dGhlbnRpY2F0aW9uUmVzcG9uc2VXaXRoSldUIC0tPiBWZXJpZnlBdXRoZW50aWNhdGlvblJlcXVlc3RPcHRzXG5BdXRoZW50aWNhdGlvblJlc3BvbnNlV2l0aEpXVCAtLT4gQXV0aGVudGljYXRpb25SZXNwb25zZU9wdHNcblxuXG5jbGFzcyBWZXJpZnlBdXRoZW50aWNhdGlvblJlc3BvbnNlT3B0cyB7XG4gIDw8aW50ZXJmYWNlPj5cbiAgdmVyaWZpY2F0aW9uOiBJbnRlcm5hbFZlcmlmaWNhdGlvbiB8IEV4dGVybmFsVmVyaWZpY2F0aW9uO1xuICBub25jZT86IHN0cmluZztcbiAgc3RhdGU_OiBzdHJpbmc7XG4gIGF1ZGllbmNlOiBzdHJpbmc7XG59XG5cbmNsYXNzIFJlc3BvbnNlTW9kZSB7XG4gICAgPDxlbnVtPj5cbn1cblxuIGNsYXNzIFVyaVJlc3BvbnNlIHtcbiAgICA8PGludGVyZmFjZT4-XG4gICAgcmVzcG9uc2VNb2RlPzogUmVzcG9uc2VNb2RlO1xuICAgIGJvZHlFbmNvZGVkPzogc3RyaW5nO1xufVxuVXJpUmVzcG9uc2UgLS0-IFJlc3BvbnNlTW9kZVxuVXJpUmVzcG9uc2UgPHwtLSBTSU9QVVJJXG5cbmNsYXNzIFNJT1BVUkkge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICBlbmNvZGVkVXJpOiBzdHJpbmc7XG4gICAgZW5jb2RpbmdGb3JtYXQ6IFVybEVuY29kaW5nRm9ybWF0O1xufVxuU0lPUFVSSSAtLT4gVXJsRW5jb2RpbmdGb3JtYXRcblNJT1BVUkkgPHwtLSBBdXRoZW50aWNhdGlvblJlcXVlc3RVUklcblxuY2xhc3MgQXV0aGVudGljYXRpb25SZXF1ZXN0VVJJIHtcbiAgPDxpbnRlcmZhY2U-PlxuICBqd3Q_OiBzdHJpbmc7IFxuICByZXF1ZXN0T3B0czogQXV0aGVudGljYXRpb25SZXF1ZXN0T3B0cztcbiAgcmVxdWVzdFBheWxvYWQ6IEF1dGhlbnRpY2F0aW9uUmVxdWVzdFBheWxvYWQ7XG59XG5BdXRoZW50aWNhdGlvblJlcXVlc3RVUkkgLS0-IEF1dGhlbnRpY2F0aW9uUmVxdWVzdFBheWxvYWRcblxuY2xhc3MgVXJsRW5jb2RpbmdGb3JtYXQge1xuICAgIDw8ZW51bT4-XG59XG5cbmNsYXNzIFJlc3BvbnNlTW9kZSB7XG4gIDw8ZW51bT4-XG59XG5cbmNsYXNzIEF1dGhlbnRpY2F0aW9uUmVxdWVzdFBheWxvYWQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICBzY29wZTogU2NvcGU7XG4gICAgcmVzcG9uc2VfdHlwZTogUmVzcG9uc2VUeXBlO1xuICAgIGNsaWVudF9pZDogc3RyaW5nO1xuICAgIHJlZGlyZWN0X3VyaTogc3RyaW5nO1xuICAgIHJlc3BvbnNlX21vZGU6IFJlc3BvbnNlTW9kZTtcbiAgICByZXF1ZXN0OiBzdHJpbmc7XG4gICAgcmVxdWVzdF91cmk6IHN0cmluZztcbiAgICBzdGF0ZT86IHN0cmluZztcbiAgICBub25jZTogc3RyaW5nO1xuICAgIGRpZF9kb2M_OiBESUREb2N1bWVudDtcbiAgICBjbGFpbXM_OiBSZXF1ZXN0Q2xhaW1zO1xufVxuQXV0aGVudGljYXRpb25SZXF1ZXN0UGF5bG9hZCAtLXw-IEpXVFBheWxvYWRcblxuY2xhc3MgIEpXVFBheWxvYWQge1xuICBpc3M_OiBzdHJpbmdcbiAgc3ViPzogc3RyaW5nXG4gIGF1ZD86IHN0cmluZyB8IHN0cmluZ1tdXG4gIGlhdD86IG51bWJlclxuICBuYmY_OiBudW1iZXJcbiAgZXhwPzogbnVtYmVyXG4gIHJleHA_OiBudW1iZXJcbiAgW3g6IHN0cmluZ106IGFueVxufVxuXG5cbmNsYXNzIFZlcmlmaWVkQXV0aGVudGljYXRpb25SZXF1ZXN0V2l0aEpXVCB7XG4gIDw8aW50ZXJmYWNlPj5cbiAgcGF5bG9hZDogQXV0aGVudGljYXRpb25SZXF1ZXN0UGF5bG9hZDsgXG4gIHZlcmlmeU9wdHM6IFZlcmlmeUF1dGhlbnRpY2F0aW9uUmVxdWVzdE9wdHM7IFxufVxuVmVyaWZpZWRKV1QgPHwtLSBWZXJpZmllZEF1dGhlbnRpY2F0aW9uUmVxdWVzdFdpdGhKV1RcblZlcmlmaWVkQXV0aGVudGljYXRpb25SZXF1ZXN0V2l0aEpXVCAtLT4gVmVyaWZ5QXV0aGVudGljYXRpb25SZXF1ZXN0T3B0c1xuVmVyaWZpZWRBdXRoZW50aWNhdGlvblJlcXVlc3RXaXRoSldUIC0tPiBBdXRoZW50aWNhdGlvblJlcXVlc3RQYXlsb2FkXG5cbmNsYXNzIFZlcmlmaWVkQXV0aGVudGljYXRpb25SZXNwb25zZVdpdGhKV1Qge1xuICA8PGludGVyZmFjZT4-XG4gIHBheWxvYWQ6IEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VQYXlsb2FkO1xuICB2ZXJpZnlPcHRzOiBWZXJpZnlBdXRoZW50aWNhdGlvblJlc3BvbnNlT3B0cztcbn1cblZlcmlmaWVkQXV0aGVudGljYXRpb25SZXNwb25zZVdpdGhKV1QgLS0-IEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VQYXlsb2FkXG5WZXJpZmllZEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VXaXRoSldUIC0tPiBWZXJpZnlBdXRoZW50aWNhdGlvblJlc3BvbnNlT3B0c1xuVmVyaWZpZWRKV1QgPHwtLSBWZXJpZmllZEF1dGhlbnRpY2F0aW9uUmVzcG9uc2VXaXRoSldUXG5cbmNsYXNzIFZlcmlmaWVkSldUIHtcbiAgPDxpbnRlcmZhY2U-PlxuICBwYXlsb2FkOiBQYXJ0aWFsPEpXVFBheWxvYWQ-O1xuICBkaWRSZXNvbHV0aW9uUmVzdWx0OiBESURSZXNvbHV0aW9uUmVzdWx0O1xuICBpc3N1ZXI6IHN0cmluZztcbiAgc2lnbmVyOiBWZXJpZmljYXRpb25NZXRob2Q7XG4gIGp3dDogc3RyaW5nO1xufVxuXG5cbiIsIm1lcm1haWQiOiJ7XG4gIFwidGhlbWVcIjogXCJkYXJrXCJcbn0iLCJ1cGRhdGVFZGl0b3IiOmZhbHNlLCJhdXRvU3luYyI6ZmFsc2UsInVwZGF0ZURpYWdyYW0iOmZhbHNlfQ)
-
-DID JWTs:
-
-[![](https://mermaid.ink/img/eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5jbGFzcyBEaWRSZXNvbHV0aW9uT3B0aW9ucyB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIGFjY2VwdD86IHN0cmluZ1xufVxuY2xhc3MgUmVzb2x2YWJsZSB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIHJlc29sdmUoZGlkVXJsOiBzdHJpbmcsIG9wdGlvbnM6IERpZFJlc29sdXRpb25PcHRpb25zKSBQcm9taXNlKERpZFJlc29sdXRpb25SZXN1bHQpXG59XG5EaWRSZXNvbHV0aW9uT3B0aW9ucyA8LS0gUmVzb2x2YWJsZVxuRElEUmVzb2x1dGlvblJlc3VsdCA8LS0gUmVzb2x2YWJsZVxuXG5jbGFzcyAgRElEUmVzb2x1dGlvblJlc3VsdCB7XG4gIGRpZFJlc29sdXRpb25NZXRhZGF0YTogRElEUmVzb2x1dGlvbk1ldGFkYXRhXG4gIGRpZERvY3VtZW50OiBESUREb2N1bWVudCB8IG51bGxcbiAgZGlkRG9jdW1lbnRNZXRhZGF0YTogRElERG9jdW1lbnRNZXRhZGF0YVxufVxuRElERG9jdW1lbnRNZXRhZGF0YSA8LS0gRElEUmVzb2x1dGlvblJlc3VsdFxuRElERG9jdW1lbnQgPC0tIERJRFJlc29sdXRpb25SZXN1bHRcblxuY2xhc3MgRElERG9jdW1lbnRNZXRhZGF0YSB7XG4gIGNyZWF0ZWQ_OiBzdHJpbmdcbiAgdXBkYXRlZD86IHN0cmluZ1xuICBkZWFjdGl2YXRlZD86IGJvb2xlYW5cbiAgdmVyc2lvbklkPzogc3RyaW5nXG4gIG5leHRVcGRhdGU_OiBzdHJpbmdcbiAgbmV4dFZlcnNpb25JZD86IHN0cmluZ1xuICBlcXVpdmFsZW50SWQ_OiBzdHJpbmdcbiAgY2Fub25pY2FsSWQ_OiBzdHJpbmdcbn1cblxuY2xhc3MgRElERG9jdW1lbnQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICAnQGNvbnRleHQnPzogJ2h0dHBzOi8vd3d3LnczLm9yZy9ucy9kaWQvdjEnIHwgc3RyaW5nIHwgc3RyaW5nW11cbiAgICBpZDogc3RyaW5nXG4gICAgYWxzb0tub3duQXM_OiBzdHJpbmdbXVxuICAgIGNvbnRyb2xsZXI_OiBzdHJpbmcgfCBzdHJpbmdbXVxuICAgIHZlcmlmaWNhdGlvbk1ldGhvZD86IFZlcmlmaWNhdGlvbk1ldGhvZFtdXG4gICAgYXV0aGVudGljYXRpb24_OiAoc3RyaW5nIHwgVmVyaWZpY2F0aW9uTWV0aG9kKVtdXG4gICAgYXNzZXJ0aW9uTWV0aG9kPzogKHN0cmluZyB8IFZlcmlmaWNhdGlvbk1ldGhvZClbXVxuICAgIGtleUFncmVlbWVudD86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5SW52b2NhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5RGVsZWdhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBzZXJ2aWNlPzogU2VydmljZUVuZHBvaW50W11cbn1cblZlcmlmaWNhdGlvbk1ldGhvZCA8LS0gRElERG9jdW1lbnRcblxuY2xhc3MgVmVyaWZpY2F0aW9uTWV0aG9kIHtcbiAgICA8PGludGVyZmFjZT4-XG4gICAgaWQ6IHN0cmluZ1xuICAgIHR5cGU6IHN0cmluZ1xuICAgIGNvbnRyb2xsZXI6IHN0cmluZ1xuICAgIHB1YmxpY0tleUJhc2U1OD86IHN0cmluZ1xuICAgIHB1YmxpY0tleUp3az86IEpzb25XZWJLZXlcbiAgICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgICBibG9ja2NoYWluQWNjb3VudElkPzogc3RyaW5nXG4gICAgZXRoZXJldW1BZGRyZXNzPzogc3RyaW5nXG59XG5cbmNsYXNzIEpXVFBheWxvYWQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICBpc3M6IHN0cmluZ1xuICAgIHN1Yj86IHN0cmluZ1xuICAgIGF1ZD86IHN0cmluZyB8IHN0cmluZ1tdXG4gICAgaWF0PzogbnVtYmVyXG4gICAgbmJmPzogbnVtYmVyXG4gICAgZXhwPzogbnVtYmVyXG4gICAgcmV4cD86IG51bWJlclxufVxuY2xhc3MgSldUSGVhZGVyIHsgLy8gVGhpcyBpcyBhIHN0YW5kYXJkIEpXVCBoZWFkZXJcbiAgICB0eXA6ICdKV1QnXG4gICAgYWxnOiBzdHJpbmcgICAvLyBUaGUgSldUIHNpZ25pbmcgYWxnb3JpdGhtIHRvIHVzZS4gU3VwcG9ydHM6IFtFUzI1NkssIEVTMjU2Sy1SLCBFZDI1NTE5LCBFZERTQV0sIERlZmF1bHRzIHRvOiBFUzI1NktcbiAgICBbeDogc3RyaW5nXTogYW55XG59XG5cbmNsYXNzIFZlcmlmaWNhdGlvbk1ldGhvZCB7XG4gIGlkOiBzdHJpbmdcbiAgdHlwZTogc3RyaW5nXG4gIGNvbnRyb2xsZXI6IHN0cmluZ1xuICBwdWJsaWNLZXlCYXNlNTg_OiBzdHJpbmdcbiAgcHVibGljS2V5SndrPzogSnNvbldlYktleVxuICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgYmxvY2tjaGFpbkFjY291bnRJZD86IHN0cmluZ1xuICBldGhlcmV1bUFkZHJlc3M_OiBzdHJpbmdcbn1cblxuSnNvbldlYktleSA8fC0tIFZlcmlmaWNhdGlvbk1ldGhvZFxuY2xhc3MgSnNvbldlYktleSB7XG4gIGFsZz86IHN0cmluZ1xuICBjcnY_OiBzdHJpbmdcbiAgZT86IHN0cmluZ1xuICBleHQ_OiBib29sZWFuXG4gIGtleV9vcHM_OiBzdHJpbmdbXVxuICBraWQ_OiBzdHJpbmdcbiAga3R5OiBzdHJpbmdcbiAgbj86IHN0cmluZ1xuICB1c2U_OiBzdHJpbmdcbiAgeD86IHN0cmluZ1xuICB5Pzogc3RyaW5nXG59XG5cblxuY2xhc3MgRGlkSldUIHtcbiAgICA8PHNlcnZpY2U-PlxuICAgIGNyZWF0ZURpZEpXVChwYXlsb2FkOiBKV1RQYXlsb2FkLCBvcHRpb25zOiBKV1RPcHRpb25zLCBoZWFkZXI6IEpXVEpIZWFkZXIpIFByb21pc2Uoc3RyaW5nKVxuICAgIHZlcmlmeURpZEpXVChqd3Q6IHN0cmluZywgcmVzb2x2ZXI6IFJlc29sdmFibGUpIFByb21pc2UoYm9vbGVhbilcbn1cbkpXVFBheWxvYWQgPC0tIERpZEpXVFxuSldUT3B0aW9ucyA8LS0gRGlkSldUXG5KV1RIZWFkZXIgPC0tIERpZEpXVFxuUmVzb2x2YWJsZSA8LS0gRGlkSldUXG4iLCJtZXJtYWlkIjp7InRoZW1lIjoiZGVmYXVsdCJ9LCJ1cGRhdGVFZGl0b3IiOmZhbHNlLCJhdXRvU3luYyI6ZmFsc2UsInVwZGF0ZURpYWdyYW0iOmZhbHNlfQ)](https://mermaid-js.github.io/mermaid-live-editor/edit##eyJjb2RlIjoiY2xhc3NEaWFncmFtXG5jbGFzcyBEaWRSZXNvbHV0aW9uT3B0aW9ucyB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIGFjY2VwdD86IHN0cmluZ1xufVxuY2xhc3MgUmVzb2x2YWJsZSB7XG4gICAgPDxpbnRlcmZhY2U-PlxuICAgIHJlc29sdmUoZGlkVXJsOiBzdHJpbmcsIG9wdGlvbnM6IERpZFJlc29sdXRpb25PcHRpb25zKSBQcm9taXNlKERpZFJlc29sdXRpb25SZXN1bHQpXG59XG5EaWRSZXNvbHV0aW9uT3B0aW9ucyA8LS0gUmVzb2x2YWJsZVxuRElEUmVzb2x1dGlvblJlc3VsdCA8LS0gUmVzb2x2YWJsZVxuXG5jbGFzcyAgRElEUmVzb2x1dGlvblJlc3VsdCB7XG4gIGRpZFJlc29sdXRpb25NZXRhZGF0YTogRElEUmVzb2x1dGlvbk1ldGFkYXRhXG4gIGRpZERvY3VtZW50OiBESUREb2N1bWVudCB8IG51bGxcbiAgZGlkRG9jdW1lbnRNZXRhZGF0YTogRElERG9jdW1lbnRNZXRhZGF0YVxufVxuRElERG9jdW1lbnRNZXRhZGF0YSA8LS0gRElEUmVzb2x1dGlvblJlc3VsdFxuRElERG9jdW1lbnQgPC0tIERJRFJlc29sdXRpb25SZXN1bHRcblxuY2xhc3MgRElERG9jdW1lbnRNZXRhZGF0YSB7XG4gIGNyZWF0ZWQ_OiBzdHJpbmdcbiAgdXBkYXRlZD86IHN0cmluZ1xuICBkZWFjdGl2YXRlZD86IGJvb2xlYW5cbiAgdmVyc2lvbklkPzogc3RyaW5nXG4gIG5leHRVcGRhdGU_OiBzdHJpbmdcbiAgbmV4dFZlcnNpb25JZD86IHN0cmluZ1xuICBlcXVpdmFsZW50SWQ_OiBzdHJpbmdcbiAgY2Fub25pY2FsSWQ_OiBzdHJpbmdcbn1cblxuY2xhc3MgRElERG9jdW1lbnQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICAnQGNvbnRleHQnPzogJ2h0dHBzOi8vd3d3LnczLm9yZy9ucy9kaWQvdjEnIHwgc3RyaW5nIHwgc3RyaW5nW11cbiAgICBpZDogc3RyaW5nXG4gICAgYWxzb0tub3duQXM_OiBzdHJpbmdbXVxuICAgIGNvbnRyb2xsZXI_OiBzdHJpbmcgfCBzdHJpbmdbXVxuICAgIHZlcmlmaWNhdGlvbk1ldGhvZD86IFZlcmlmaWNhdGlvbk1ldGhvZFtdXG4gICAgYXV0aGVudGljYXRpb24_OiAoc3RyaW5nIHwgVmVyaWZpY2F0aW9uTWV0aG9kKVtdXG4gICAgYXNzZXJ0aW9uTWV0aG9kPzogKHN0cmluZyB8IFZlcmlmaWNhdGlvbk1ldGhvZClbXVxuICAgIGtleUFncmVlbWVudD86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5SW52b2NhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBjYXBhYmlsaXR5RGVsZWdhdGlvbj86IChzdHJpbmcgfCBWZXJpZmljYXRpb25NZXRob2QpW11cbiAgICBzZXJ2aWNlPzogU2VydmljZUVuZHBvaW50W11cbn1cblZlcmlmaWNhdGlvbk1ldGhvZCA8LS0gRElERG9jdW1lbnRcblxuY2xhc3MgVmVyaWZpY2F0aW9uTWV0aG9kIHtcbiAgICA8PGludGVyZmFjZT4-XG4gICAgaWQ6IHN0cmluZ1xuICAgIHR5cGU6IHN0cmluZ1xuICAgIGNvbnRyb2xsZXI6IHN0cmluZ1xuICAgIHB1YmxpY0tleUJhc2U1OD86IHN0cmluZ1xuICAgIHB1YmxpY0tleUp3az86IEpzb25XZWJLZXlcbiAgICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgICBibG9ja2NoYWluQWNjb3VudElkPzogc3RyaW5nXG4gICAgZXRoZXJldW1BZGRyZXNzPzogc3RyaW5nXG59XG5cbmNsYXNzIEpXVFBheWxvYWQge1xuICAgIDw8aW50ZXJmYWNlPj5cbiAgICBpc3M6IHN0cmluZ1xuICAgIHN1Yj86IHN0cmluZ1xuICAgIGF1ZD86IHN0cmluZyB8IHN0cmluZ1tdXG4gICAgaWF0PzogbnVtYmVyXG4gICAgbmJmPzogbnVtYmVyXG4gICAgZXhwPzogbnVtYmVyXG4gICAgcmV4cD86IG51bWJlclxufVxuY2xhc3MgSldUSGVhZGVyIHsgLy8gVGhpcyBpcyBhIHN0YW5kYXJkIEpXVCBoZWFkZXJcbiAgICB0eXA6ICdKV1QnXG4gICAgYWxnOiBzdHJpbmcgICAvLyBUaGUgSldUIHNpZ25pbmcgYWxnb3JpdGhtIHRvIHVzZS4gU3VwcG9ydHM6IFtFUzI1NkssIEVTMjU2Sy1SLCBFZDI1NTE5LCBFZERTQV0sIERlZmF1bHRzIHRvOiBFUzI1NktcbiAgICBbeDogc3RyaW5nXTogYW55XG59XG5cbmNsYXNzIFZlcmlmaWNhdGlvbk1ldGhvZCB7XG4gIGlkOiBzdHJpbmdcbiAgdHlwZTogc3RyaW5nXG4gIGNvbnRyb2xsZXI6IHN0cmluZ1xuICBwdWJsaWNLZXlCYXNlNTg_OiBzdHJpbmdcbiAgcHVibGljS2V5SndrPzogSnNvbldlYktleVxuICBwdWJsaWNLZXlIZXg_OiBzdHJpbmdcbiAgYmxvY2tjaGFpbkFjY291bnRJZD86IHN0cmluZ1xuICBldGhlcmV1bUFkZHJlc3M_OiBzdHJpbmdcbn1cblxuSnNvbldlYktleSA8fC0tIFZlcmlmaWNhdGlvbk1ldGhvZFxuY2xhc3MgSnNvbldlYktleSB7XG4gIGFsZz86IHN0cmluZ1xuICBjcnY_OiBzdHJpbmdcbiAgZT86IHN0cmluZ1xuICBleHQ_OiBib29sZWFuXG4gIGtleV9vcHM_OiBzdHJpbmdbXVxuICBraWQ_OiBzdHJpbmdcbiAga3R5OiBzdHJpbmdcbiAgbj86IHN0cmluZ1xuICB1c2U_OiBzdHJpbmdcbiAgeD86IHN0cmluZ1xuICB5Pzogc3RyaW5nXG59XG5cblxuY2xhc3MgRGlkSldUIHtcbiAgICA8PHNlcnZpY2U-PlxuICAgIGNyZWF0ZURpZEpXVChwYXlsb2FkOiBKV1RQYXlsb2FkLCBvcHRpb25zOiBKV1RPcHRpb25zLCBoZWFkZXI6IEpXVEpIZWFkZXIpIFByb21pc2Uoc3RyaW5nKVxuICAgIHZlcmlmeURpZEpXVChqd3Q6IHN0cmluZywgcmVzb2x2ZXI6IFJlc29sdmFibGUpIFByb21pc2UoYm9vbGVhbilcbn1cbkpXVFBheWxvYWQgPC0tIERpZEpXVFxuSldUT3B0aW9ucyA8LS0gRGlkSldUXG5KV1RIZWFkZXIgPC0tIERpZEpXVFxuUmVzb2x2YWJsZSA8LS0gRGlkSldUXG4iLCJtZXJtYWlkIjoie1xuICBcInRoZW1lXCI6IFwiZGVmYXVsdFwiXG59IiwidXBkYXRlRWRpdG9yIjpmYWxzZSwiYXV0b1N5bmMiOmZhbHNlLCJ1cGRhdGVEaWFncmFtIjp0cnVlfQ)
-
-
 
 ## Acknowledgements
 

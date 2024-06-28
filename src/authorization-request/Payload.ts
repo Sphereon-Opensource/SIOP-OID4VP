@@ -1,24 +1,21 @@
 import { PEX } from '@sphereon/pex';
 
-import { validateLinkedDomainWithDid } from '../did';
 import { getNonce, removeNullUndefined } from '../helpers';
 import { RequestObject } from '../request-object';
 import { isTarget, isTargetOrNoTargets } from '../rp/Opts';
 import { RPRegistrationMetadataPayloadSchema } from '../schemas';
 import {
   AuthorizationRequestPayload,
-  CheckLinkedDomain,
   ClaimPayloadVID1,
   ClientMetadataOpts,
   PassBy,
-  RequestObjectPayload,
   RPRegistrationMetadataPayload,
   SIOPErrors,
   SupportedVersion,
 } from '../types';
 
 import { createRequestRegistration } from './RequestRegistration';
-import { ClaimPayloadOptsVID1, CreateAuthorizationRequestOpts, PropertyTarget, VerifyAuthorizationRequestOpts } from './types';
+import { ClaimPayloadOptsVID1, CreateAuthorizationRequestOpts, PropertyTarget } from './types';
 
 export const createPresentationDefinitionClaimsProperties = (opts: ClaimPayloadOptsVID1): ClaimPayloadVID1 => {
   if (!opts || !opts.vp_token || (!opts.vp_token.presentation_definition && !opts.vp_token.presentation_definition_uri)) {
@@ -85,18 +82,5 @@ export const assertValidRPRegistrationMedataPayload = (regObj: RPRegistrationMet
   }
   if (regObj?.subject_syntax_types_supported && regObj.subject_syntax_types_supported.length == 0) {
     throw new Error(`${SIOPErrors.VERIFY_BAD_PARAMS}`);
-  }
-};
-
-export const checkWellknownDIDFromRequest = async (
-  authorizationRequestPayload: RequestObjectPayload,
-  opts: VerifyAuthorizationRequestOpts,
-): Promise<void> => {
-  if (authorizationRequestPayload.client_id.startsWith('did:')) {
-    if (opts.verification.checkLinkedDomain && opts.verification.checkLinkedDomain != CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verification);
-    } else if (!opts.verification.checkLinkedDomain && opts.verification.wellknownDIDVerifyCallback) {
-      await validateLinkedDomainWithDid(authorizationRequestPayload.client_id, opts.verification);
-    }
   }
 };

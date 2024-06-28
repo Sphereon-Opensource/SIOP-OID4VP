@@ -1,6 +1,5 @@
 import { PresentationSignCallBackParams } from '@sphereon/pex';
 import { IProofType } from '@sphereon/ssi-types';
-import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import * as jose from 'jose';
 import { KeyLike } from 'jose';
 import nock from 'nock';
@@ -9,7 +8,6 @@ import * as u8a from 'uint8arrays';
 import {
   AuthorizationRequest,
   AuthorizationResponse,
-  CheckLinkedDomain,
   IDToken,
   OP,
   PassBy,
@@ -27,6 +25,8 @@ import {
   VerificationMode,
   VPTokenLocation,
 } from '../../src';
+import { getVerifyJwtCallback, internalSignature } from '../DidJwtTestUtils';
+import { getResolver } from '../ResolverTestUtils';
 
 let rp: RP;
 let op: OP;
@@ -34,6 +34,17 @@ let op: OP;
 afterEach(() => {
   nock.cleanAll();
 });
+
+const presentationVerificationCallback: PresentationVerificationCallback = async () => ({ verified: true });
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const presentationSignCallback: PresentationSignCallback = async (_args: PresentationSignCallBackParams) =>
+  TestVectors.authorizationResponsePayload.vp_token;
+
+const verifyJwtCallback = getVerifyJwtCallback(getResolver('ion'), {
+  policies: { exp: false, iat: false, aud: false, nbf: false },
+  checkLinkedDomain: 'if_present',
+});
+
 beforeEach(async () => {
   await TestVectors.init();
 
@@ -67,25 +78,17 @@ beforeEach(async () => {
     )
     .withRedirectUri('https://example.com/siop-response', PropertyTarget.REQUEST_OBJECT)
     .withRequestBy(PassBy.REFERENCE, TestVectors.request_uri)
-    .addDidMethod('ion')
-    .withInternalSignature(TestVectors.verifierHexPrivateKey, TestVectors.verifierDID, TestVectors.verifierKID, SigningAlgo.EDDSA)
+    .withCreateJwtCallback(internalSignature(TestVectors.verifierHexPrivateKey, TestVectors.verifierDID, TestVectors.verifierKID, SigningAlgo.EDDSA))
+    .withVerifyJwtCallback(verifyJwtCallback)
     .build();
 
   op = OP.builder()
-    .addDidMethod('ion')
-    .withInternalSignature(TestVectors.holderHexPrivateKey, TestVectors.holderDID, TestVectors.holderKID, SigningAlgo.EDDSA)
-    .withCheckLinkedDomain(CheckLinkedDomain.IF_PRESENT)
+    .withCreateJwtCallback(internalSignature(TestVectors.holderHexPrivateKey, TestVectors.holderDID, TestVectors.holderKID, SigningAlgo.EDDSA))
+    .withVerifyJwtCallback(verifyJwtCallback)
     .addSupportedVersion(SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1)
     .build();
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const verifyCallback: VerifyCallback = async (_args) => ({ verified: true });
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const presentationVerificationCallback: PresentationVerificationCallback = async (_args) => ({ verified: true });
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const presentationSignCallback: PresentationSignCallback = async (_args: PresentationSignCallBackParams) =>
-  TestVectors.authorizationResponsePayload.vp_token;
 describe('RP using test vectors', () => {
   it('should create matching auth request and URI', async () => {
     const authRequest = await createAuthRequest();
@@ -160,15 +163,10 @@ describe('RP using test vectors', () => {
         correlationId: '1234',
         audience:
           'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0',
+        verifyJwtCallback: verifyJwtCallback,
         verification: {
           mode: VerificationMode.INTERNAL,
-          resolveOpts: {
-            // disable the JWT verifications, as the test vectors are expired
-            jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
-          },
-          checkLinkedDomain: CheckLinkedDomain.IF_PRESENT,
           presentationVerificationCallback,
-          wellknownDIDVerifyCallback: verifyCallback,
         },
       }),
     ).toBeTruthy();
@@ -181,18 +179,13 @@ describe('RP using test vectors', () => {
     expect(await authorizationResponse.idToken.payload()).toEqual(TestVectors.idTokenPayload);
     expect(
       await authorizationResponse.idToken.verify({
+        verifyJwtCallback: verifyJwtCallback,
         correlationId: '1234',
         audience:
           'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0',
         verification: {
           mode: VerificationMode.INTERNAL,
-          resolveOpts: {
-            // disable the JWT verifications, as the test vectors are expired
-            jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
-          },
-          checkLinkedDomain: CheckLinkedDomain.NEVER,
           presentationVerificationCallback,
-          wellknownDIDVerifyCallback: verifyCallback,
           revocationOpts: {
             revocationVerification: RevocationVerification.NEVER,
           },
@@ -205,17 +198,12 @@ describe('RP using test vectors', () => {
 
     const verified = await authorizationResponse.verify({
       correlationId: '1234',
+      verifyJwtCallback: verifyJwtCallback,
       audience:
         'did:ion:EiBWe9RtHT7VZ-Juff8OnnJAyFJtCokcYHx1CQkFtpl7pw:eyJkZWx0YSI6eyJwYXRjaGVzIjpbeyJhY3Rpb24iOiJyZXBsYWNlIiwiZG9jdW1lbnQiOnsicHVibGljS2V5cyI6W3siaWQiOiJrZXktMSIsInB1YmxpY0tleUp3ayI6eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IkNfT1VKeEg2aUljQzZYZE5oN0ptQy1USFhBVmFYbnZ1OU9FRVo4dHE5TkkiLCJraWQiOiJrZXktMSJ9LCJwdXJwb3NlcyI6WyJhdXRoZW50aWNhdGlvbiJdLCJ0eXBlIjoiSnNvbldlYktleTIwMjAifV19fV0sInVwZGF0ZUNvbW1pdG1lbnQiOiJFaUNYTkJqSWZMVGZOV0NHMFQ2M2VaYmJEZFZoSmJUTjgtSmZlaUx4dW1oZW53In0sInN1ZmZpeERhdGEiOnsiZGVsdGFIYXNoIjoiRWlCZVZ5RXBDb0NPeXJ6VDhDSHlvQW1acU1CT1o0VTZqcm1sdUt1SjlxS0pkZyIsInJlY292ZXJ5Q29tbWl0bWVudCI6IkVpQnhkcHlyamlVSFZ1akNRWTBKMkhBUFFYZnNwWFBKYWluV21mV3RNcFhneFEifX0',
       verification: {
         mode: VerificationMode.INTERNAL,
-        resolveOpts: {
-          // disable the JWT verifications, as the test vectors are expired
-          jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
-        },
-        checkLinkedDomain: CheckLinkedDomain.NEVER,
         presentationVerificationCallback,
-        wellknownDIDVerifyCallback: verifyCallback,
         revocationOpts: {
           revocationVerification: RevocationVerification.NEVER,
         },
@@ -223,7 +211,6 @@ describe('RP using test vectors', () => {
       presentationDefinitions,
     });
     expect(verified).toBeDefined();
-    // console.log(verified);
   });
 });
 
@@ -234,15 +221,11 @@ describe('OP using test vectors', () => {
     const result = await op.verifyAuthorizationRequest(TestVectors.auth_request, {
       verification: {
         mode: VerificationMode.INTERNAL,
-        resolveOpts: {
-          // disable the JWT verifications, as the test vectors are expired
-          jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
-        },
       },
     });
     expect(result).toBeDefined();
-    console.log(JSON.stringify(result, null, 2));
   });
+
   it('should use test vector auth response', async () => {
     const authorizationResponse = await AuthorizationResponse.fromPayload(TestVectors.authorizationResponsePayload);
 
@@ -283,16 +266,7 @@ describe('OP using test vectors', () => {
         revocationOpts: {
           revocationVerification: RevocationVerification.NEVER,
         },
-        resolveOpts: {
-          jwtVerifyOpts: {
-            policies: {
-              // disable expiration check
-              exp: false,
-            },
-          },
-        },
         presentationVerificationCallback,
-        wellknownDIDVerifyCallback: verifyCallback,
       },
       presentationDefinitions: [
         {
@@ -317,10 +291,6 @@ describe('OP using test vectors', () => {
     const result = await op.verifyAuthorizationRequest(TestVectors.auth_request, {
       verification: {
         mode: VerificationMode.INTERNAL,
-        resolveOpts: {
-          // disable the JWT verifications, as the test vectors are expired
-          jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
-        },
       },
     });
     const presentationExchange = new PresentationExchange({
@@ -339,7 +309,7 @@ describe('OP using test vectors', () => {
         },
       },
     );
-    const response = await op.createAuthorizationResponse(result, {
+    await op.createAuthorizationResponse(result, {
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         presentationSubmission: TestVectors.presentation_submission,
@@ -347,13 +317,8 @@ describe('OP using test vectors', () => {
       },
       verification: {
         mode: VerificationMode.INTERNAL,
-        resolveOpts: {
-          // disable the JWT verifications, as the test vectors are expired
-          jwtVerifyOpts: { policies: { exp: false, iat: false, aud: false, nbf: false } },
-        },
       },
     });
-    console.log(JSON.stringify(response, null, 2));
   });
 });
 
@@ -362,6 +327,7 @@ async function createAuthRequest(): Promise<AuthorizationRequest> {
     correlationId: '1234',
     nonce: { propertyValue: '40252afc-6a82-4a2e-905f-e41f122ef575', targets: PropertyTarget.REQUEST_OBJECT },
     state: { propertyValue: '649d8c3c-f5ac-41bd-9c19-5804ea1b8fe9', targets: PropertyTarget.REQUEST_OBJECT },
+    jwtIssuer: { method: 'did', alg: SigningAlgo.EDDSA, didUrl: TestVectors.verifierKID },
     claims: {
       propertyValue: {
         vp_token: {

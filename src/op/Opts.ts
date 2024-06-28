@@ -1,8 +1,5 @@
-import { Resolvable } from 'did-resolver';
-
 import { VerifyAuthorizationRequestOpts } from '../authorization-request';
 import { AuthorizationResponseOpts } from '../authorization-response';
-import { getResolverUnion, mergeAllDidMethods } from '../did';
 import { LanguageTagUtils } from '../helpers';
 import { AuthorizationResponseOptsSchema } from '../schemas';
 import { InternalVerification, PassBy, ResponseRegistrationOpts, VerificationMode } from '../types';
@@ -13,13 +10,6 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
   builder?: OPBuilder;
   responseOpts?: AuthorizationResponseOpts;
 }): AuthorizationResponseOpts => {
-  if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration?.subject_syntax_types_supported) {
-    opts.builder.responseRegistration.subject_syntax_types_supported = mergeAllDidMethods(
-      opts.builder.responseRegistration.subject_syntax_types_supported,
-      opts.builder.resolvers,
-    );
-  }
-
   let responseOpts: AuthorizationResponseOpts;
   if (opts.builder) {
     responseOpts = {
@@ -28,7 +18,8 @@ export const createResponseOptsFromBuilderOrExistingOpts = (opts: {
         ...(opts.builder.responseRegistration as ResponseRegistrationOpts),
       },
       expiresIn: opts.builder.expiresIn,
-      signature: opts.builder.signature,
+      jwtIssuer: responseOpts?.jwtIssuer,
+      createJwtCallback: opts.builder.createJwtCallback,
       responseMode: opts.builder.responseMode,
       ...(responseOpts?.version
         ? { version: responseOpts.version }
@@ -69,31 +60,12 @@ export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
   builder?: OPBuilder;
   verifyOpts?: VerifyAuthorizationRequestOpts;
 }): VerifyAuthorizationRequestOpts => {
-  if (opts?.builder?.resolvers.size && opts.builder?.responseRegistration) {
-    opts.builder.responseRegistration.subject_syntax_types_supported = mergeAllDidMethods(
-      opts.builder.responseRegistration.subject_syntax_types_supported,
-      opts.builder.resolvers,
-    );
-  }
-  let resolver: Resolvable;
-  if (opts.builder) {
-    resolver = getResolverUnion(
-      opts.builder.customResolver,
-      opts.builder.responseRegistration.subject_syntax_types_supported,
-      opts.builder.resolvers,
-    );
-  }
   return opts.builder
     ? {
+        verifyJwtCallback: opts.builder.verifyJwtCallback,
         hasher: opts.builder.hasher,
         verification: {
           mode: VerificationMode.INTERNAL,
-          checkLinkedDomain: opts.builder.checkLinkedDomain,
-          wellknownDIDVerifyCallback: opts.builder.wellknownDIDVerifyCallback,
-          resolveOpts: {
-            subjectSyntaxTypesSupported: opts.builder.responseRegistration.subject_syntax_types_supported,
-            resolver: resolver,
-          },
         } as InternalVerification,
         supportedVersions: opts.builder.supportedVersions,
         correlationId: undefined,

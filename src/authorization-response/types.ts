@@ -3,19 +3,16 @@ import { Format } from '@sphereon/pex-models';
 import { CompactSdJwtVc, Hasher, PresentationSubmission, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 
 import {
-  CheckLinkedDomain,
-  ExternalSignature,
   ExternalVerification,
-  InternalSignature,
   InternalVerification,
-  NoSignature,
   ResponseMode,
   ResponseRegistrationOpts,
   ResponseURIType,
-  SuppliedSignature,
   SupportedVersion,
   VerifiablePresentationWithFormat,
 } from '../types';
+import { CreateJwtCallback, JwtIssuer } from '../types/JwtIssuer';
+import { VerifyJwtCallback } from '../types/JwtVerifier';
 
 import { AuthorizationResponse } from './AuthorizationResponse';
 
@@ -24,12 +21,10 @@ export interface AuthorizationResponseOpts {
   responseURI?: string; // This is either the redirect URI or response URI. See also responseURIType. response URI is used when response_mode is `direct_post`
   responseURIType?: ResponseURIType;
   registration?: ResponseRegistrationOpts;
-  checkLinkedDomain?: CheckLinkedDomain;
-
   version?: SupportedVersion;
   audience?: string;
-
-  signature?: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
+  createJwtCallback: CreateJwtCallback;
+  jwtIssuer?: JwtIssuer;
   responseMode?: ResponseMode;
   // did: string;
   expiresIn?: number;
@@ -99,6 +94,7 @@ export type PresentationSignCallback = (args: PresentationSignCallBackParams) =>
 export interface VerifyAuthorizationResponseOpts {
   correlationId: string;
   verification: InternalVerification | ExternalVerification;
+  verifyJwtCallback: VerifyJwtCallback;
   hasher?: Hasher;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // To verify the response against the supplied nonce

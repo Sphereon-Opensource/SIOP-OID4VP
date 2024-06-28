@@ -1,10 +1,9 @@
-import { decodeJWT } from 'did-jwt';
+import { jwtDecode, JwtPayload } from 'jwt-decode';
 
 import { ClaimPayloadCommonOpts, ClaimPayloadOptsVID1, CreateAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidAuthorizationRequestOpts } from '../authorization-request/Opts';
-import { signRequestObjectPayload } from '../did';
 import { fetchByReferenceOrUseByValue, removeNullUndefined } from '../helpers';
-import { AuthorizationRequestPayload, RequestObjectJwt, RequestObjectPayload, SIOPErrors } from '../types';
+import { AuthorizationRequestPayload, JwtIssuer, JwtIssuerWithContext, RequestObjectJwt, RequestObjectPayload, SIOPErrors } from '../types';
 
 import { assertValidRequestObjectOpts } from './Opts';
 import { assertValidRequestObjectPayload, createRequestObjectPayload } from './Payload';
@@ -12,7 +11,7 @@ import { RequestObjectOpts } from './types';
 
 export class RequestObject {
   private payload: RequestObjectPayload;
-  private jwt: RequestObjectJwt;
+  private jwt?: RequestObjectJwt;
   private readonly opts: RequestObjectOpts<ClaimPayloadCommonOpts | ClaimPayloadOptsVID1>;
 
   private constructor(
@@ -40,11 +39,12 @@ export class RequestObject {
    */
   public static async fromOpts(authorizationRequestOpts: CreateAuthorizationRequestOpts) {
     assertValidAuthorizationRequestOpts(authorizationRequestOpts);
-    const signature = authorizationRequestOpts.requestObject.signature; // We copy the signature separately as it can contain a function, which would be removed in the merge function below
+    const createJwtCallback = authorizationRequestOpts.requestObject.createJwtCallback; // We copy the signature separately as it can contain a function, which would be removed in the merge function below
+    const jwtIssuer = authorizationRequestOpts.requestObject.jwtIssuer; // We copy the signature separately as it can contain a function, which would be removed in the merge function below
     const requestObjectOpts = RequestObject.mergeOAuth2AndOpenIdProperties(authorizationRequestOpts);
     const mergedOpts = {
       ...authorizationRequestOpts,
-      requestObject: { ...authorizationRequestOpts.requestObject, ...requestObjectOpts, signature },
+      requestObject: { ...authorizationRequestOpts.requestObject, ...requestObjectOpts, createJwtCallback, jwtIssuer },
     };
     return new RequestObject(mergedOpts, await createRequestObjectPayload(mergedOpts));
   }
@@ -76,7 +76,38 @@ export class RequestObject {
       }
       assertValidRequestObjectPayload(this.payload);
 
-      this.jwt = await signRequestObjectPayload(this.payload, this.opts);
+      const jwtIssuer: JwtIssuerWithContext = this.opts.jwtIssuer
+        ? { ...this.opts.jwtIssuer, type: 'request-object' }
+        : { method: 'custom', type: 'request-object' };
+
+      if (jwtIssuer.method === 'custom') {
+        this.jwt = await this.opts.createJwtCallback(jwtIssuer, { header: {}, payload: this.payload });
+      } else if (jwtIssuer.method === 'did') {
+        const did = jwtIssuer.didUrl.split('#')[0];
+        this.payload.iss = this.payload.iss ?? did;
+        this.payload.sub = this.payload.sub ?? did;
+        this.payload.client_id = this.payload.client_id ?? did;
+
+        const header = { kid: jwtIssuer.didUrl, alg: jwtIssuer.alg, typ: 'JWT' };
+        this.jwt = await this.opts.createJwtCallback(jwtIssuer, { header, payload: this.payload });
+      } else if (jwtIssuer.method === 'x5c') {
+        this.payload.iss = jwtIssuer.issuer;
+        this.payload.client_id = jwtIssuer.issuer;
+        this.payload.redirect_uri = jwtIssuer.issuer;
+        this.payload.client_id_scheme = jwtIssuer.clientIdScheme;
+
+        const header = { x5c: jwtIssuer.chain, typ: 'JWT' };
+        this.jwt = await this.opts.createJwtCallback(jwtIssuer, { header, payload: this.payload });
+      } else if (jwtIssuer.method === 'jwk') {
+        if (!this.payload.client_id) {
+          throw new Error('Plaese provide a client_id for the RP');
+        }
+
+        const header = { jwk: jwtIssuer.jwk, typ: 'JWT', alg: jwtIssuer.jwk.alg as string };
+        this.jwt = await this.opts.createJwtCallback(jwtIssuer, { header, payload: this.payload });
+      } else {
+        throw new Error(`JwtIssuer method '${(jwtIssuer as JwtIssuer).method}' not implemented`);
+      }
     }
     return this.jwt;
   }
@@ -86,7 +117,7 @@ export class RequestObject {
       if (!this.jwt) {
         return undefined;
       }
-      this.payload = removeNullUndefined(decodeJWT(this.jwt).payload) as RequestObjectPayload;
+      this.payload = removeNullUndefined(jwtDecode<JwtPayload>(this.jwt, { header: false })) as RequestObjectPayload;
       this.removeRequestProperties();
       if (this.payload.registration_uri) {
         delete this.payload.registration;
@@ -126,9 +157,13 @@ export class RequestObject {
     }
     const isAuthReq = opts['requestObject'] !== undefined;
     const mergedOpts = JSON.parse(JSON.stringify(opts));
-    const signature = opts['requestObject']?.signature?.signature;
-    if (signature && mergedOpts.requestObject.signature) {
-      mergedOpts.requestObject.signature.signature = signature;
+    const createJwtCallback = opts['requestObject']?.createJwtCallback;
+    if (createJwtCallback) {
+      mergedOpts.requestObject.createJwtCallback = createJwtCallback;
+    }
+    const jwtIssuer = opts['requestObject']?.jwtIssuer;
+    if (createJwtCallback) {
+      mergedOpts.requestObject.jwtIssuer = jwtIssuer;
     }
     delete mergedOpts?.request?.requestObject;
     return isAuthReq ? mergedOpts.requestObject : mergedOpts;

@@ -1,8 +1,5 @@
-import { Resolvable } from 'did-resolver';
-
 import { CreateAuthorizationRequestOpts, PropertyTarget, PropertyTargets, RequestPropertyWithTargets } from '../authorization-request';
 import { VerifyAuthorizationResponseOpts } from '../authorization-response';
-import { getResolverUnion, mergeAllDidMethods } from '../did';
 // import { CreateAuthorizationRequestOptsSchema } from '../schemas';
 import { ClientMetadataOpts, InternalVerification, RequestObjectPayload, SIOPErrors, VerificationMode } from '../types';
 
@@ -34,7 +31,7 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: RPB
             subject_types_supported: opts.builder.clientMetadata?.subjectTypesSupported,
             request_object_signing_alg_values_supported: opts.builder.clientMetadata?.requestObjectSigningAlgValuesSupported,
           },
-          signature: opts.builder.signature,
+          createJwtCallback: opts.builder.createJwtCallback,
         },
         clientMetadata: opts.builder.clientMetadata as ClientMetadataOpts,
       }
@@ -50,28 +47,13 @@ export const createRequestOptsFromBuilderOrExistingOpts = (opts: { builder?: RPB
 };
 
 export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builder?: RPBuilder; verifyOpts?: VerifyAuthorizationResponseOpts }) => {
-  if (opts?.builder?.resolvers.size && opts.builder?.clientMetadata) {
-    opts.builder.clientMetadata.subject_syntax_types_supported = mergeAllDidMethods(
-      opts.builder.clientMetadata.subject_syntax_types_supported,
-      opts.builder.resolvers,
-    );
-  }
-  let resolver: Resolvable;
-  if (opts.builder) {
-    resolver = getResolverUnion(opts.builder.customResolver, opts.builder.clientMetadata.subject_syntax_types_supported, opts.builder.resolvers);
-  }
   return opts.builder
     ? {
         hasher: opts.builder.hasher,
+        verifyJwtCallback: opts.builder.verifyJwtCallback,
         verification: {
           mode: VerificationMode.INTERNAL,
-          checkLinkedDomain: opts.builder.checkLinkedDomain,
-          wellknownDIDVerifyCallback: opts.builder.wellknownDIDVerifyCallback,
           presentationVerificationCallback: opts.builder.presentationVerificationCallback,
-          resolveOpts: {
-            subjectSyntaxTypesSupported: opts.builder.clientMetadata.subject_syntax_types_supported,
-            resolver: resolver,
-          },
           supportedVersions: opts.builder.supportedVersions,
           revocationOpts: {
             revocationVerification: opts.builder.revocationVerification,

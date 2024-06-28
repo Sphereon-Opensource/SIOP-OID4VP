@@ -2,10 +2,9 @@ import crypto from 'crypto';
 
 import { IProofType } from '@sphereon/ssi-types';
 import base58 from 'bs58';
-import { DIDDocument } from 'did-resolver';
 import { ethers } from 'ethers';
-import { exportJWK, importJWK, JWK, JWTPayload, SignJWT } from 'jose';
-import jwt_decode from 'jwt-decode';
+import { exportJWK, importJWK, JWK, SignJWT } from 'jose';
+import { jwtDecode } from 'jwt-decode';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -13,6 +12,7 @@ import {
   assertValidMetadata,
   base64ToHexString,
   DiscoveryMetadataPayload,
+  JwtPayload,
   KeyCurve,
   KeyType,
   ResponseIss,
@@ -25,6 +25,7 @@ import {
 } from '../src';
 import SIOPErrors from '../src/types/Errors';
 
+import { DIDDocument } from './ResolverTestUtils';
 import {
   DID_DOCUMENT_PUBKEY_B58,
   DID_DOCUMENT_PUBKEY_JWK,
@@ -70,7 +71,7 @@ function getEthWallet(key: JWK): ethers.Wallet {
 
 export const prefixWith0x = (key: string): string => (key.startsWith('0x') ? key : `0x${key}`);
 
-export interface IEnterpriseAuthZToken extends JWTPayload {
+export interface IEnterpriseAuthZToken extends JwtPayload {
   sub?: string;
   did: string;
   aud: string;
@@ -133,7 +134,7 @@ const mockedEntityAuthNToken = async (
   };
 
   const privateKey = await importJWK(jwk, SigningAlgo.ES256K);
-  const jwt = await new SignJWT(payload as unknown as JWTPayload)
+  const jwt = await new SignJWT(payload as unknown as JwtPayload)
     .setProtectedHeader({
       alg: 'ES256K',
       typ: 'JWT',
@@ -150,19 +151,19 @@ export async function mockedGetEnterpriseAuthToken(enterpriseName?: string): Pro
   hexPublicKey: string;
 }> {
   const testAuth = await mockedEntityAuthNToken(enterpriseName);
-  const payload = jwt_decode(testAuth.jwt);
+  const payload = jwtDecode<JwtPayload>(testAuth.jwt, { header: false });
 
   const inputPayload: IEnterpriseAuthZToken = {
     did: testAuth.did,
 
-    aud: (payload as JWTPayload)?.iss ? (payload as JWTPayload).iss : 'Test Entity',
+    aud: (payload as JwtPayload)?.iss ? (payload as JwtPayload).iss : 'Test Entity',
     nonce: (payload as IEnterpriseAuthZToken).nonce,
   };
 
   const testApiPayload = {
     ...inputPayload,
     ...{
-      sub: (payload as JWTPayload).iss, // Should be the id of the app that is requesting the token
+      sub: (payload as JwtPayload).iss, // Should be the id of the app that is requesting the token
       iat: moment().unix(),
       exp: moment().add(15, 'minutes').unix(),
       aud: 'test',
@@ -217,14 +218,6 @@ export const getParsedDidDocument = (didKey: DidKey): DIDDocument => {
   didDocJwk.verificationMethod[0].publicKeyJwk = jwk as FixJwk;
   return didDocJwk;
 };
-
-/*
-export const resolveDidKey = async (did: string): Promise<DIDResolutionResult> => {
-  return (await DidKeyDriver.get(did, {
-    accept: 'application/did+ld+json',
-  })) as DIDResolutionResult;
-};
-*/
 
 export const WELL_KNOWN_OPENID_FEDERATION = 'https://www.example.com/.well-known/openid-federation';
 export const metadata: {

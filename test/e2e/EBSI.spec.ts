@@ -7,7 +7,8 @@ import { Resolver } from 'did-resolver';
 import { importJWK, JWK, SignJWT } from 'jose';
 import { v4 as uuidv4 } from 'uuid';
 
-import { CheckLinkedDomain, OP, SigningAlgo } from '../../src';
+import { OP, SigningAlgo } from '../../src';
+import { getCreateJwtCallback, getVerifyJwtCallback } from '../DidJwtTestUtils';
 
 const ID_TOKEN_REQUEST_URL = 'https://api-conformance.ebsi.eu/conformance/v3/auth-mock/id_token_request';
 
@@ -23,7 +24,7 @@ export const jwk: JWK = {
 const hexPrivateKey = '47dc6ae067aa011f8574d2da7cf8c326538af08b85e6779d192a9893291c9a0a';
 
 const nonce = uuidv4();
-export const generateDid = (_opts?: { seed?: Uint8Array }) => {
+export const generateDid = () => {
   const did = EbsiWallet.createDid('NATURAL_PERSON', jwk);
   return did;
 };
@@ -32,7 +33,7 @@ const keyResolver = getKeyResolver();
 
 const didStr = generateDid();
 const kid = `${didStr}#${parseDid(didStr).id}`;
-console.log(kid);
+
 describe('EBSI SIOPv2 should', () => {
   async function testWithOp() {
     const did = await generateDid(/*{ seed: u8a.fromString(hexPrivateKey, 'base16') }*/);
@@ -45,11 +46,11 @@ describe('EBSI SIOPv2 should', () => {
 
     const correlationId = 'test';
 
+    const resolver = new Resolver(keyResolver);
     const op: OP = OP.builder()
-      .addResolver('key', new Resolver(keyResolver))
-      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withPresentationSignCallback(presentationSignCalback)
-      .withSignature({ alg: SigningAlgo.ES256, kid, did: didStr, hexPrivateKey })
+      .withCreateJwtCallback(getCreateJwtCallback({ alg: SigningAlgo.ES256, kid, did: didStr, hexPrivateKey }))
+      .withVerifyJwtCallback(getVerifyJwtCallback(resolver, { checkLinkedDomain: 'never' }))
       .build();
 
     const verifiedAuthRequest = await op.verifyAuthorizationRequest(authRequestURL, { correlationId });
@@ -58,6 +59,11 @@ describe('EBSI SIOPv2 should', () => {
     const authResponse = await op.createAuthorizationResponse(verifiedAuthRequest, {
       issuer: didStr,
       correlationId,
+      jwtIssuer: {
+        method: 'did',
+        didUrl: kid,
+        alg: SigningAlgo.ES256,
+      },
     });
 
     expect(authResponse).toBeDefined();

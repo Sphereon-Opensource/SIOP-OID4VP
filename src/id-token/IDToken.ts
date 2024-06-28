@@ -1,23 +1,23 @@
-import { JWTHeader } from 'did-jwt';
-
 import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { assertValidVerifyOpts } from '../authorization-response/Opts';
-import { getResolver, getSubDidFromPayload, parseJWT, signIDTokenPayload, validateLinkedDomainWithDid, verifyDidJWT } from '../did';
+import { getSubDidFromPayload, parseJWT } from '../helpers/jwtUtils';
 import {
-  CheckLinkedDomain,
+  getJwtVerifierWithContext,
   IDTokenJwt,
   IDTokenPayload,
+  JwtHeader,
   JWTPayload,
   ResponseIss,
   SIOPErrors,
   VerifiedAuthorizationRequest,
   VerifiedIDToken,
 } from '../types';
+import { JwtIssuer, JwtIssuerWithContext } from '../types/JwtIssuer';
 
 import { createIDTokenPayload } from './Payload';
 
 export class IDToken {
-  private _header?: JWTHeader;
+  private _header?: JwtHeader;
   private _payload?: IDTokenPayload;
   private _jwt?: IDTokenJwt;
   private readonly _responseOpts: AuthorizationResponseOpts;
@@ -82,12 +82,49 @@ export class IDToken {
     return this._payload;
   }
 
-  public async jwt(): Promise<IDTokenJwt> {
+  public async jwt(_jwtIssuer: JwtIssuer): Promise<IDTokenJwt> {
     if (!this._jwt) {
       if (!this.responseOpts) {
         throw Error(SIOPErrors.BAD_SIGNATURE_PARAMS);
       }
-      this._jwt = await signIDTokenPayload(this._payload, this.responseOpts);
+
+      const jwtIssuer: JwtIssuerWithContext = _jwtIssuer
+        ? { ..._jwtIssuer, type: 'id-token', authorizationResponseOpts: this.responseOpts }
+        : { method: 'custom', type: 'id-token', authorizationResponseOpts: this.responseOpts };
+
+      if (jwtIssuer.method === 'custom') {
+        this._jwt = await this.responseOpts.createJwtCallback(jwtIssuer, { header: {}, payload: this._payload });
+      } else if (jwtIssuer.method === 'did') {
+        const did = jwtIssuer.didUrl.split('#')[0];
+        if (!this._payload.sub) {
+          this._payload.sub = did;
+        }
+
+        const issuer = this._responseOpts.registration.issuer || this._payload.iss;
+        if (!issuer || !(issuer.includes(ResponseIss.SELF_ISSUED_V2) || issuer === this._payload.sub)) {
+          throw new Error(SIOPErrors.NO_SELFISSUED_ISS);
+        }
+        if (!this._payload.iss) {
+          this._payload.iss = issuer;
+        }
+
+        const header = { kid: jwtIssuer.didUrl, alg: jwtIssuer.alg, typ: 'JWT' };
+        this._jwt = await this.responseOpts.createJwtCallback({ ...jwtIssuer, type: 'id-token' }, { header, payload: this._payload });
+      } else if (jwtIssuer.method === 'x5c') {
+        this._payload.iss = jwtIssuer.issuer;
+
+        const header = { x5c: jwtIssuer.chain, typ: 'JWT' };
+        this._jwt = await this._responseOpts.createJwtCallback(jwtIssuer, { header, payload: this._payload });
+      } else if (jwtIssuer.method === 'jwk') {
+        this._payload.sub = jwtIssuer.jwkThumbprint;
+        this._payload['_sub_jwk'] = jwtIssuer.jwk;
+
+        const header = { jwk: jwtIssuer.jwk, alg: jwtIssuer.jwk.alg, typ: 'JWT' };
+        this._jwt = await this._responseOpts.createJwtCallback(jwtIssuer, { header, payload: this._payload });
+      } else {
+        throw new Error(`JwtIssuer method '${(jwtIssuer as JwtIssuer).method}' not implemented`);
+      }
+
       const { header, payload } = this.parseAndVerifyJwt();
       this._header = header;
       this._payload = payload;
@@ -95,7 +132,7 @@ export class IDToken {
     return this._jwt;
   }
 
-  private parseAndVerifyJwt(): { header: JWTHeader; payload: IDTokenPayload } {
+  private parseAndVerifyJwt(): { header: JwtHeader; payload: IDTokenPayload } {
     const { header, payload } = parseJWT(this._jwt);
     this.assertValidResponseJWT({ header, payload });
     const idTokenPayload = payload as IDTokenPayload;
@@ -111,30 +148,23 @@ export class IDToken {
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedIDToken> {
     assertValidVerifyOpts(verifyOpts);
 
-    const { header, payload } = parseJWT(await this.jwt());
-    this.assertValidResponseJWT({ header, payload });
+    const parsedJwt = parseJWT(this._jwt);
+    this.assertValidResponseJWT(parsedJwt);
 
-    const verifiedJWT = await verifyDidJWT(await this.jwt(), getResolver(verifyOpts.verification.resolveOpts), {
-      ...verifyOpts.verification.resolveOpts?.jwtVerifyOpts,
-      audience: verifyOpts.audience ?? verifyOpts.verification.resolveOpts?.jwtVerifyOpts?.audience,
-    });
+    const jwtVerifier = getJwtVerifierWithContext(parsedJwt, 'request-object');
+    const verificationResult = await verifyOpts.verifyJwtCallback(jwtVerifier, { ...parsedJwt, raw: this._jwt });
+    if (!verificationResult) throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
 
-    const issuerDid = getSubDidFromPayload(payload);
-    if (verifyOpts.verification.checkLinkedDomain && verifyOpts.verification.checkLinkedDomain !== CheckLinkedDomain.NEVER) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification);
-    } else if (!verifyOpts.verification.checkLinkedDomain) {
-      await validateLinkedDomainWithDid(issuerDid, verifyOpts.verification);
-    }
-    const verPayload = verifiedJWT.payload as IDTokenPayload;
-    this.assertValidResponseJWT({ header, verPayload: verPayload, audience: verifyOpts.audience });
+    const issuerDid = getSubDidFromPayload(parsedJwt.payload);
+
+    const verPayload = parsedJwt.payload as IDTokenPayload;
+    this.assertValidResponseJWT({ header: parsedJwt.header, verPayload: verPayload, audience: verifyOpts.audience });
     // Enforces verifyPresentationCallback function on the RP side,
     if (!verifyOpts?.verification.presentationVerificationCallback) {
       throw new Error(SIOPErrors.VERIFIABLE_PRESENTATION_VERIFICATION_FUNCTION_MISSING);
     }
     return {
-      jwt: await this.jwt(),
-      didResolutionResult: verifiedJWT.didResolutionResult,
-      signer: verifiedJWT.signer,
+      jwt: this._jwt,
       issuer: issuerDid,
       payload: { ...verPayload },
       verifyOpts,
@@ -150,7 +180,7 @@ export class IDToken {
     };
   }
 
-  private assertValidResponseJWT(opts: { header: JWTHeader; payload?: JWTPayload; verPayload?: IDTokenPayload; audience?: string; nonce?: string }) {
+  private assertValidResponseJWT(opts: { header: JwtHeader; payload?: JWTPayload; verPayload?: IDTokenPayload; audience?: string; nonce?: string }) {
     if (!opts.header) {
       throw new Error(SIOPErrors.BAD_PARAMS);
     }
@@ -182,7 +212,7 @@ export class IDToken {
     }
   }
 
-  get header(): JWTHeader {
+  get header(): JwtHeader {
     return this._header;
   }
 

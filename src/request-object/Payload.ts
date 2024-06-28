@@ -20,15 +20,8 @@ export const createRequestObjectPayload = async (opts: CreateAuthorizationReques
   const registration = await createRequestRegistration(opts.clientMetadata, opts);
   const claims = createPresentationDefinitionClaimsProperties(payload.claims);
 
-  let clientId = payload.client_id;
-
   const metadataKey = opts.version >= SupportedVersion.SIOPv2_D11.valueOf() ? 'client_metadata' : 'registration';
-  if (!clientId) {
-    clientId = registration.payload[metadataKey]?.client_id;
-  }
-  if (!clientId && !opts.requestObject.signature.did) {
-    throw Error('Please provide a clientId for the RP');
-  }
+  const clientId = payload.client_id ?? registration.payload[metadataKey]?.client_id;
 
   const now = Math.round(new Date().getTime() / 1000);
   const validInSec = 120; // todo config/option
@@ -41,7 +34,7 @@ export const createRequestObjectPayload = async (opts: CreateAuthorizationReques
     response_type: payload.response_type ?? ResponseType.ID_TOKEN,
     scope: payload.scope ?? Scope.OPENID,
     //TODO implement /.well-known/openid-federation support in the OP side to resolve the client_id (URL) and retrieve the metadata
-    client_id: clientId ?? opts.requestObject.signature.did,
+    client_id: clientId,
     ...(payload.redirect_uri && { redirect_uri: payload.redirect_uri }),
     ...(payload.response_uri && { response_uri: payload.response_uri }),
     response_mode: payload.response_mode ?? ResponseMode.DIRECT_POST,

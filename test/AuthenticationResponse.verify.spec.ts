@@ -1,7 +1,8 @@
-import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
-
 import { IDToken, VerificationMode, VerifyAuthorizationResponseOpts } from '../src';
 import SIOPErrors from '../src/types/Errors';
+
+import { getVerifyJwtCallback } from './DidJwtTestUtils';
+import { getResolver } from './ResolverTestUtils';
 
 // const EXAMPLE_REDIRECT_URL = "https://acme.com/hello";
 const DID = 'did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0';
@@ -13,13 +14,11 @@ describe('verify JWT from Request JWT should', () => {
   const verifyOpts: VerifyAuthorizationResponseOpts = {
     correlationId: '1234',
     audience: DID,
+    verifyJwtCallback: getVerifyJwtCallback(getResolver('ethr'), {
+      checkLinkedDomain: 'if_present',
+    }),
     verification: {
-      resolveOpts: {
-        subjectSyntaxTypesSupported: ['did:ethr'],
-      },
       mode: VerificationMode.INTERNAL,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
   };
 

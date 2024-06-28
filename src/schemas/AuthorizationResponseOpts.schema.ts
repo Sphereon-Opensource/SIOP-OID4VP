@@ -15,30 +15,17 @@ export const AuthorizationResponseOptsSchemaObj = {
         "registration": {
           "$ref": "#/definitions/ResponseRegistrationOpts"
         },
-        "checkLinkedDomain": {
-          "$ref": "#/definitions/CheckLinkedDomain"
-        },
         "version": {
           "$ref": "#/definitions/SupportedVersion"
         },
         "audience": {
           "type": "string"
         },
-        "signature": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/InternalSignature"
-            },
-            {
-              "$ref": "#/definitions/ExternalSignature"
-            },
-            {
-              "$ref": "#/definitions/SuppliedSignature"
-            },
-            {
-              "$ref": "#/definitions/NoSignature"
-            }
-          ]
+        "createJwtCallback": {
+          "$ref": "#/definitions/CreateJwtCallback"
+        },
+        "jwtIssuer": {
+          "$ref": "#/definitions/JwtIssuer"
         },
         "responseMode": {
           "$ref": "#/definitions/ResponseMode"
@@ -59,6 +46,9 @@ export const AuthorizationResponseOptsSchemaObj = {
           "$ref": "#/definitions/PresentationExchangeResponseOpts"
         }
       },
+      "required": [
+        "createJwtCallback"
+      ],
       "additionalProperties": false
     },
     "ResponseURIType": {
@@ -1513,14 +1503,6 @@ export const AuthorizationResponseOptsSchemaObj = {
         "attester_signed"
       ]
     },
-    "CheckLinkedDomain": {
-      "type": "string",
-      "enum": [
-        "never",
-        "if_present",
-        "always"
-      ]
-    },
     "SupportedVersion": {
       "type": "number",
       "enum": [
@@ -1530,33 +1512,7 @@ export const AuthorizationResponseOptsSchemaObj = {
         71
       ]
     },
-    "InternalSignature": {
-      "type": "object",
-      "properties": {
-        "hexPrivateKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "alg": {
-          "$ref": "#/definitions/SigningAlgo"
-        },
-        "kid": {
-          "type": "string"
-        },
-        "customJwtSigner": {
-          "$ref": "#/definitions/Signer"
-        }
-      },
-      "required": [
-        "hexPrivateKey",
-        "did",
-        "alg"
-      ],
-      "additionalProperties": false
-    },
-    "Signer": {
+    "CreateJwtCallback": {
       "properties": {
         "isFunction": {
           "type": "boolean",
@@ -1564,82 +1520,180 @@ export const AuthorizationResponseOptsSchemaObj = {
         }
       }
     },
-    "ExternalSignature": {
-      "type": "object",
-      "properties": {
-        "signatureUri": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "authZToken": {
-          "type": "string"
-        },
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "alg": {
-          "$ref": "#/definitions/SigningAlgo"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "signatureUri",
-        "did",
-        "alg"
-      ],
-      "additionalProperties": false
-    },
-    "SuppliedSignature": {
-      "type": "object",
-      "properties": {
-        "signature": {
+    "JwtIssuer": {
+      "anyOf": [
+        {
+          "type": "object",
           "properties": {
-            "isFunction": {
-              "type": "boolean",
-              "const": true
+            "method": {
+              "type": "string",
+              "const": "did"
+            },
+            "didUrl": {
+              "type": "string"
+            },
+            "alg": {
+              "$ref": "#/definitions/SigningAlgo"
             }
-          }
+          },
+          "required": [
+            "method",
+            "didUrl",
+            "alg"
+          ],
+          "additionalProperties": false
         },
-        "alg": {
-          "$ref": "#/definitions/SigningAlgo"
+        {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "x5c"
+            },
+            "chain": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Array of base64-encoded certificate strings in the DER-format.\n\nThe certificate containing the public key corresponding to the key used to digitally sign the JWS MUST be the first certificate."
+            },
+            "issuer": {
+              "type": "string",
+              "description": "The issuer jwt\n\nThis value will be used as the iss value of the issue jwt. It is also used as the client_id. And will also be set as the redirect_uri\n\nIt must match an entry in the x5c certificate leaf entry dnsName / uriName"
+            },
+            "clientIdScheme": {
+              "$ref": "#/definitions/ClientIdScheme"
+            }
+          },
+          "required": [
+            "method",
+            "chain",
+            "issuer",
+            "clientIdScheme"
+          ],
+          "additionalProperties": false
         },
-        "did": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "jwk"
+            },
+            "jwk": {
+              "type": "object",
+              "properties": {
+                "alg": {
+                  "type": "string"
+                },
+                "crv": {
+                  "type": "string"
+                },
+                "d": {
+                  "type": "string"
+                },
+                "dp": {
+                  "type": "string"
+                },
+                "dq": {
+                  "type": "string"
+                },
+                "e": {
+                  "type": "string"
+                },
+                "ext": {
+                  "type": "boolean"
+                },
+                "k": {
+                  "type": "string"
+                },
+                "key_ops": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "kty": {
+                  "type": "string"
+                },
+                "n": {
+                  "type": "string"
+                },
+                "oth": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "d": {
+                        "type": "string"
+                      },
+                      "r": {
+                        "type": "string"
+                      },
+                      "t": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "p": {
+                  "type": "string"
+                },
+                "q": {
+                  "type": "string"
+                },
+                "qi": {
+                  "type": "string"
+                },
+                "use": {
+                  "type": "string"
+                },
+                "x": {
+                  "type": "string"
+                },
+                "y": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "jwkThumbprint": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "method",
+            "jwk",
+            "jwkThumbprint"
+          ],
+          "additionalProperties": false
         },
-        "kid": {
-          "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "custom"
+            }
+          },
+          "required": [
+            "method"
+          ],
+          "additionalProperties": {}
         }
-      },
-      "required": [
-        "signature",
-        "alg",
-        "did",
-        "kid"
-      ],
-      "additionalProperties": false
+      ]
     },
-    "NoSignature": {
-      "type": "object",
-      "properties": {
-        "hexPublicKey": {
-          "type": "string"
-        },
-        "did": {
-          "type": "string"
-        },
-        "kid": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "hexPublicKey",
-        "did"
-      ],
-      "additionalProperties": false
+    "ClientIdScheme": {
+      "type": "string",
+      "enum": [
+        "pre-registered",
+        "redirect_uri",
+        "entity_id",
+        "did",
+        "x509_san_dns",
+        "x509_san_uri"
+      ]
     },
     "PresentationExchangeResponseOpts": {
       "type": "object",

@@ -1,12 +1,10 @@
-import { isExternalSignature, isExternalVerification, isInternalSignature, isInternalVerification, isSuppliedSignature, SIOPErrors } from '../types';
+import { isExternalVerification, isInternalVerification, SIOPErrors } from '../types';
 
 import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from './types';
 
-export const assertValidResponseOpts = async (opts: AuthorizationResponseOpts): Promise<void> => {
-  if (!opts?.signature) {
+export const assertValidResponseOpts = (opts: AuthorizationResponseOpts) => {
+  if (!opts?.createJwtCallback) {
     throw new Error(SIOPErrors.BAD_PARAMS);
-  } else if (!(isInternalSignature(opts.signature) || isExternalSignature(opts.signature) || isSuppliedSignature(opts.signature))) {
-    throw new Error(SIOPErrors.SIGNATURE_OBJECT_TYPE_NOT_SET);
   }
 };
 

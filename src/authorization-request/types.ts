@@ -15,6 +15,7 @@ import {
   SubjectType,
   SupportedVersion,
 } from '../types';
+import { VerifyJwtCallback } from '../types/JwtVerifier';
 
 export interface ClaimPayloadOptsVID1 extends ClaimPayloadCommonOpts {
   id_token?: IdTokenClaimPayload;
@@ -74,6 +75,7 @@ export interface VerifyAuthorizationRequestOpts {
   correlationId: string;
 
   verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
+  verifyJwtCallback: VerifyJwtCallback;
   // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // If provided the nonce in the request needs to match
   state?: string; // If provided the state in the request needs to match

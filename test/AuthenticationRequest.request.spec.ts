@@ -17,6 +17,7 @@ import {
 } from '../src';
 import SIOPErrors from '../src/types/Errors';
 
+import { getCreateJwtCallback } from './DidJwtTestUtils';
 import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   VERIFIER_LOGO_FOR_CLIENT,
@@ -99,14 +100,19 @@ describe('create Request Uri should', () => {
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
       requestObject: {
+        jwtIssuer: {
+          method: 'did',
+          didUrl: KID,
+          alg: SigningAlgo.ES256,
+        },
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: HEX_KEY,
           alg: SigningAlgo.ES256,
           did: DID,
           kid: KID,
-        },
+        }),
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'openid',
@@ -162,15 +168,16 @@ describe('create Request Uri should', () => {
     const opts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
       requestObject: {
+        jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256 },
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey:
             'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
           did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
           kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
           alg: SigningAlgo.EDDSA,
-        },
+        }),
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
@@ -215,16 +222,19 @@ describe('create Request Uri should', () => {
     expect.assertions(3);
     const opts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
-
       requestObject: {
         passBy: PassBy.VALUE,
-
-        signature: {
+        jwtIssuer: {
+          method: 'did',
+          didUrl: KID,
+          alg: SigningAlgo.ES256K,
+        },
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
-        },
+        }),
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
@@ -269,88 +279,44 @@ describe('create Request Uri should', () => {
 describe('create Request JWT should', () => {
   it('throw REQUEST_OBJECT_TYPE_NOT_SET when requestBy type is different from REFERENCE and VALUE', async () => {
     expect.assertions(1);
-    const opts = {
+    const opts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
       payload: {
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
-
       requestObject: {
-        passBy: 'other type',
-
-        signature: {
+        jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256K },
+        passBy: 'other type' as never,
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
-        },
-      },
-      registration: {
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
-        vpFormatsSupported: {
-          ldp_vc: {
-            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
-          },
-        },
-        passBy: PassBy.VALUE,
+          alg: SigningAlgo.ES256K,
+        }),
       },
     };
-    await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
+    await expect(RequestObject.fromOpts(opts)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when no referenceUri is passed with REFERENCE requestBy type is set', async () => {
     expect.assertions(1);
-    const opts = {
+    const opts: CreateAuthorizationRequestOpts = {
+      version: SupportedVersion.SIOPv2_ID1,
       payload: {
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
-
       requestObject: {
         passBy: PassBy.REFERENCE,
-
-        signature: {
+        jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256K },
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
-        },
-      },
-      registration: {
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
-        vpFormatsSupported: {
-          ldp_vc: {
-            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
-          },
-        },
-        passBy: PassBy.VALUE,
+          alg: SigningAlgo.ES256K,
+        }),
       },
     };
-    await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
-  });
-
-  it('throw BAD_SIGNATURE_PARAMS when withSignature Type is neither internal nor external', async () => {
-    expect.assertions(1);
-    const opts = {
-      requestObject: {
-        passBy: PassBy.REFERENCE,
-        reference_uri: EXAMPLE_REFERENCE_URL,
-        payload: {
-          redirect_uri: EXAMPLE_REDIRECT_URL,
-        },
-        signature: { did: 'did:example:123' },
-      },
-      clientMetadata: {
-        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
-        vpFormatsSupported: {
-          ldp_vc: {
-            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
-          },
-        },
-        passBy: PassBy.VALUE,
-      },
-    };
-    await expect((await RequestObject.fromOpts(opts as never)).toJwt()).rejects.toThrow(SIOPErrors.BAD_SIGNATURE_PARAMS);
+    await expect(RequestObject.fromOpts(opts)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('throw REGISTRATION_OBJECT_TYPE_NOT_SET when registrationBy type is neither REFERENCE nor VALUE', async () => {
@@ -427,14 +393,15 @@ describe('create Request JWT should', () => {
       },
 
       requestObject: {
+        jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256K },
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
-        },
+        }),
         payload: {
           client_id: 'test_client_id',
           scope: 'test',
@@ -549,15 +516,16 @@ describe('create Request JWT should', () => {
         },
       },*/
       requestObject: {
+        jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256K },
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
-        },
+        }),
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
@@ -642,15 +610,16 @@ describe('create Request JWT should', () => {
       },
 
       requestObject: {
+        jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256K },
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
-        },
+        }),
         payload: {
           client_id: 'test_client_id',
           scope: 'test',

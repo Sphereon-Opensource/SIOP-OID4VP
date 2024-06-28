@@ -1,7 +1,8 @@
-import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
 import { AuthorizationResponseOpts, OP, SupportedVersion, VerificationMode, VerifyAuthorizationRequestOpts } from '../../../src';
+import { getVerifyJwtCallback } from '../../DidJwtTestUtils';
+import { getResolver } from '../../ResolverTestUtils';
 import { UNIT_TEST_TIMEOUT } from '../../data/mockedData';
 
 const SIOP_URI =
@@ -10,6 +11,9 @@ const JWT =
   'eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IkZMeEkzTE04bUZDRkNEMUg0VmpacVd0MVBmaWQyaThBQ1lpRHZFelo5VU0ifQ.eyJzdGF0ZSI6IjNmM2E2NzNhLTc4MzUtNDJmMS1hMDNlLWIxODZmZDA0MmRjYyIsImNsaWVudF9pZCI6Imh0dHBzOi8vY29uZm9ybWFuY2UtdGVzdC5lYnNpLmV1L2NvbmZvcm1hbmNlL3YzL2F1dGgtbW9jayIsInJlZGlyZWN0X3VyaSI6Imh0dHBzOi8vY29uZm9ybWFuY2UtdGVzdC5lYnNpLmV1L2NvbmZvcm1hbmNlL3YzL2F1dGgtbW9jay9kaXJlY3RfcG9zdCIsInJlc3BvbnNlX3R5cGUiOiJpZF90b2tlbiIsInJlc3BvbnNlX21vZGUiOiJkaXJlY3RfcG9zdCIsInNjb3BlIjoib3BlbmlkIiwibm9uY2UiOiIzYTUwZWZmYS00NTA1LTQyY2UtODcwOC0wYzRhYjMyMzc4ZGQiLCJpc3MiOiJodHRwczovL2NvbmZvcm1hbmNlLXRlc3QuZWJzaS5ldS9jb25mb3JtYW5jZS92My9hdXRoLW1vY2siLCJhdWQiOiJkaWQ6a2V5OnoyZG16RDgxY2dQeDhWa2k3SmJ1dU1tRllyV1BnWW95dHlrVVozZXlxaHQxajlLYnFTWlpGakc0dFZnS2hFd0twcm9qcUxCM0MyWXBqNEg3M1N0Z2pNa1NYZzJtUXh1V0xmenVSMTJRc052Z1FXenJ6S1NmN1lSQk5yUlhLNzF2ZnExMkJieXhUTEZFWkJXZm5IcWV6QlZHUWlOTGZxZXV5d1pIZ3N0TUNjUzQ0VFhmYjIifQ.h0nQfHq2sck4PizIleqlTTPPjYPgEH8OPKK0ug7r_O7N4qEghfILnL07cs5y1gARIH7hJLNNvI7qXEerl-SdDw';
 describe('EBSI', () => {
   const responseOpts: AuthorizationResponseOpts = {
+    createJwtCallback: () => {
+      throw new Error('Not implemented');
+    },
     /*checkLinkedDomain: CheckLinkedDomain.NEVER,
     responseURI: EXAMPLE_REDIRECT_URL,
     responseURIType: 'redirect_uri',
@@ -42,13 +46,9 @@ describe('EBSI', () => {
   };
 
   const verifyOpts: VerifyAuthorizationRequestOpts = {
+    verifyJwtCallback: getVerifyJwtCallback(getResolver('ebsi')),
     verification: {
       mode: VerificationMode.INTERNAL,
-      resolveOpts: {
-        subjectSyntaxTypesSupported: ['did:ebsi'],
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
     },
     correlationId: '1234',
     supportedVersions: [SupportedVersion.SIOPv2_D12_OID4VP_D18],
@@ -60,7 +60,6 @@ describe('EBSI', () => {
 
       const op = OP.fromOpts(responseOpts, verifyOpts);
       const verifiedRequest = await op.verifyAuthorizationRequest(SIOP_URI);
-      console.log(JSON.stringify(verifiedRequest, null, 2));
       expect(verifiedRequest.issuer).toMatch('https://conformance-test.ebsi.eu/conformance/v3/auth-mock');
       expect(verifiedRequest.jwt).toBeDefined();
     },

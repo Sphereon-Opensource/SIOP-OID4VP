@@ -1,13 +1,23 @@
-import type { DIDResolutionResult, VerificationMethod } from 'did-resolver';
-
+import { JwtHeader as jwtDecodeJwtHeader, JwtPayload as jwtDecodePayload } from 'jwt-decode';
 export interface EcdsaSignature {
   r: string;
   s: string;
   recoveryParam?: number | null;
 }
 
-// Signer interface conforming to the DID-JWT module
-export type Signer = (data: string | Uint8Array) => Promise<EcdsaSignature | string>;
+export type JwtHeader = jwtDecodeJwtHeader & {
+  alg?: string;
+  x5c?: string[];
+  kid?: string;
+  jwk?: JsonWebKey;
+} & Record<string, unknown>;
+
+export type JwtPayload = jwtDecodePayload & {
+  client_id?: string;
+  nonce?: string;
+  request_uri?: string;
+  client_id_scheme?: string;
+} & Record<string, unknown>;
 
 export interface JWTPayload {
   iss?: string;
@@ -26,9 +36,7 @@ export interface JWTPayload {
 
 export interface VerifiedJWT {
   payload: Partial<JWTPayload>; // The JWT payload
-  didResolutionResult?: DIDResolutionResult; // DID resolution result including DID document
   issuer: string; //The issuer (did) of the JWT
-  signer?: VerificationMethod; // The matching verification method from the DID that was used to sign
   jwt: string; // The JWT
 }
 

@@ -1062,7 +1062,9 @@ export const AuthorizationRequestPayloadVD12OID4VPD18SchemaObj = {
         "pre-registered",
         "redirect_uri",
         "entity_id",
-        "did"
+        "did",
+        "x509_san_dns",
+        "x509_san_uri"
       ]
     }
   }

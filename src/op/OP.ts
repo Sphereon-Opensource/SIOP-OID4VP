@@ -17,17 +17,15 @@ import {
   AuthorizationEvent,
   AuthorizationEvents,
   ContentType,
-  ExternalSignature,
   ExternalVerification,
-  InternalSignature,
   InternalVerification,
+  JwtIssuer,
   ParsedAuthorizationRequestURI,
   RegisterEventListener,
   ResponseIss,
   ResponseMode,
   SIOPErrors,
   SIOPResonse,
-  SuppliedSignature,
   SupportedVersion,
   UrlEncodingFormat,
   VerifiedAuthorizationRequest,
@@ -96,12 +94,12 @@ export class OP {
 
   public async createAuthorizationResponse(
     verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
-    responseOpts?: {
+    responseOpts: {
+      jwtIssuer?: JwtIssuer;
       version?: SupportedVersion;
       correlationId?: string;
       audience?: string;
       issuer?: ResponseIss | string;
-      signature?: InternalSignature | ExternalSignature | SuppliedSignature;
       verification?: InternalVerification | ExternalVerification;
       presentationExchange?: PresentationExchangeResponseOpts;
     },
@@ -217,7 +215,6 @@ export class OP {
     version?: SupportedVersion;
     issuer?: IIssuerId | ResponseIss;
     audience?: string;
-    signature?: InternalSignature | ExternalSignature | SuppliedSignature;
     presentationExchange?: PresentationExchangeResponseOpts;
   }): AuthorizationResponseOpts {
     const version = opts.version ?? this._createResponseOptions.version;
@@ -237,10 +234,6 @@ export class OP {
     return {
       ...this._createResponseOptions,
       ...opts,
-      signature: {
-        ...this._createResponseOptions?.signature,
-        ...opts.signature,
-      },
       ...(presentationExchange && { presentationExchange }),
       registration: { ...this._createResponseOptions?.registration, issuer },
       responseURI,
@@ -255,6 +248,7 @@ export class OP {
   }): VerifyAuthorizationRequestOpts {
     const verification: VerifyAuthorizationRequestOpts = {
       ...this._verifyRequestOptions,
+      verifyJwtCallback: this._verifyRequestOptions.verifyJwtCallback,
       ...requestOpts,
       verification: mergeVerificationOpts(this._verifyRequestOptions, requestOpts),
       correlationId: requestOpts.correlationId,

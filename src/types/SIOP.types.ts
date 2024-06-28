@@ -11,9 +11,6 @@ import {
   W3CVerifiablePresentation,
   WrappedVerifiablePresentation,
 } from '@sphereon/ssi-types';
-import { VerifyCallback as WellknownDIDVerifyCallback } from '@sphereon/wellknown-dids-client';
-import { Signer } from 'did-jwt';
-import { DIDResolutionResult, VerificationMethod } from 'did-resolver';
 
 import { AuthorizationRequest, CreateAuthorizationRequestOpts, PropertyTargets, VerifyAuthorizationRequestOpts } from '../authorization-request';
 import {
@@ -26,7 +23,7 @@ import {
 import { RequestObject, RequestObjectOpts } from '../request-object';
 import { IRPSessionManager } from '../rp';
 
-import { EcdsaSignature, JWTPayload, ResolveOpts, VerifiedJWT } from './index';
+import { JWTPayload, VerifiedJWT } from './index';
 export const DEFAULT_EXPIRATION_TIME = 10 * 60;
 
 // https://openid.net/specs/openid-connect-core-1_0.html#RequestObject
@@ -88,7 +85,7 @@ export interface AuthorizationRequestPayloadVD12OID4VPD18
   response_uri?: string; // New since OID4VP18 OPTIONAL. The Response URI to which the Wallet MUST send the Authorization Response using an HTTPS POST request as defined by the Response Mode direct_post. The Response URI receives all Authorization Response parameters as defined by the respective Response Type. When the response_uri parameter is present, the redirect_uri Authorization Request parameter MUST NOT be present. If the redirect_uri Authorization Request parameter is present when the Response Mode is direct_post, the Wallet MUST return an invalid_request Authorization Response error.
 }
 
-export type ClientIdScheme = 'pre-registered' | 'redirect_uri' | 'entity_id' | 'did';
+export type ClientIdScheme = 'pre-registered' | 'redirect_uri' | 'entity_id' | 'did' | 'x509_san_dns' | 'x509_san_uri';
 
 // https://openid.bitbucket.io/connect/openid-connect-self-issued-v2-1_0.html#section-10
 export type AuthorizationRequestPayload =
@@ -163,10 +160,6 @@ export interface AuthorizationResponsePayload {
   [x: string]: any;
 }
 
-export interface PresentationDefinitionPayload {
-  presentation_definition: PresentationDefinitionV1 | PresentationDefinitionV2;
-}
-
 export interface IdTokenClaimPayload {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
@@ -178,6 +171,7 @@ export interface VpTokenClaimPayload {
 }
 
 export interface ClaimPayloadCommon {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [x: string]: any;
 }
 
@@ -202,19 +196,6 @@ export interface RequestStateInfo {
   nonce: string;
   state: string;
   iat: number;
-}
-
-/**
- *
- */
-export interface AuthorizationResponseResult {
-  idToken: string;
-  nonce: string;
-  state: string;
-  idTokenPayload: IDTokenPayload;
-  responsePayload: AuthorizationResponsePayload;
-  verifyOpts?: VerifyAuthorizationRequestOpts;
-  responseOpts: AuthorizationResponseOpts;
 }
 
 interface DiscoveryMetadataCommonOpts {
@@ -485,57 +466,14 @@ export enum ResponseContext {
   OP = 'op',
 }
 
-export enum CheckLinkedDomain {
-  NEVER = 'never', // We don't want to verify Linked domains
-  IF_PRESENT = 'if_present', // If present, did-auth-siop will check the linked domain, if exist and not valid, throws an exception
-  ALWAYS = 'always', // We'll always check the linked domains, if not exist or not valid, throws an exception
-}
-
-export interface InternalSignature {
-  hexPrivateKey: string; // hex private key Only secp256k1 format
-  did: string;
-
-  alg: SigningAlgo;
-  kid?: string; // Optional: key identifier
-
-  customJwtSigner?: Signer;
-}
-
-export interface SuppliedSignature {
-  signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>;
-
-  alg: SigningAlgo;
-  did: string;
-  kid: string;
-}
-
-export interface NoSignature {
-  hexPublicKey: string; // hex public key
-  did: string;
-  kid?: string; // Optional: key identifier
-}
-
-export interface ExternalSignature {
-  signatureUri: string; // url to call to generate a withSignature
-  did: string;
-  authZToken?: string; // Optional: bearer token to use to the call
-  hexPublicKey?: string; // Optional: hex encoded public key to compute JWK key, if not possible from DIDres Document
-
-  alg: SigningAlgo;
-  kid?: string; // Optional: key identifier. default did#keys-1
-}
-
 export enum VerificationMode {
   INTERNAL,
   EXTERNAL,
 }
 
 export interface Verification {
-  checkLinkedDomain?: CheckLinkedDomain;
-  wellknownDIDVerifyCallback?: WellknownDIDVerifyCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
   mode: VerificationMode;
-  resolveOpts: ResolveOpts;
   revocationOpts?: RevocationOpts;
   replayRegistry?: IRPSessionManager;
 }
@@ -552,16 +490,8 @@ export interface ResponseClaims {
   encryption_key?: JsonWebKey;
 }
 
-export interface DidAuthValidationResponse {
-  signatureValidation: boolean;
-  signer: VerificationMethod;
-  payload: JWTPayload;
-}
-
 export interface VerifiedIDToken {
   jwt: string;
-  didResolutionResult: DIDResolutionResult;
-  signer: VerificationMethod;
   issuer: string;
   payload: IDTokenPayload;
   verifyOpts: VerifyAuthorizationResponseOpts;
@@ -709,18 +639,6 @@ export enum ResponseIss {
   SELF_ISSUED_V2 = 'https://self-issued.me/v2',
   JWT_VC_PRESENTATION_V1 = 'https://self-issued.me/v2/openid-vc',
 }
-
-export const isInternalSignature = (object: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature): object is InternalSignature =>
-  'hexPrivateKey' in object && 'did' in object;
-
-export const isExternalSignature = (object: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature): object is ExternalSignature =>
-  'signatureUri' in object && 'did' in object;
-
-export const isSuppliedSignature = (object: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature): object is SuppliedSignature =>
-  'signature' in object;
-
-export const isNoSignature = (object: InternalSignature | ExternalSignature | NoSignature): object is NoSignature =>
-  'hexPublicKey' in object && 'did' in object;
 
 export const isRequestOpts = (object: CreateAuthorizationRequestOpts | AuthorizationResponseOpts): object is CreateAuthorizationRequestOpts =>
   'requestBy' in object;

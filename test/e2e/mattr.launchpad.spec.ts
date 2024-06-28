@@ -1,17 +1,14 @@
 import { PresentationSignCallBackParams, PresentationSubmissionLocation } from '@sphereon/pex';
 import { W3CVerifiablePresentation } from '@sphereon/ssi-types';
 import * as ed25519 from '@transmute/did-key-ed25519';
-import { resolve as didKeyResolve } from '@transmute/did-key-ed25519';
 import { fetch } from 'cross-fetch';
 import { DIDResolutionResult } from 'did-resolver';
-import { DIDResolutionOptions } from 'did-resolver/src/resolver';
 import { importJWK, JWK, SignJWT } from 'jose';
 import * as u8a from 'uint8arrays';
 
 import {
   AuthorizationRequest,
   AuthorizationResponse,
-  CheckLinkedDomain,
   OP,
   PresentationDefinitionWithLocation,
   PresentationExchange,
@@ -19,6 +16,7 @@ import {
   SupportedVersion,
   VerificationMode,
 } from '../../src';
+import { getCreateJwtCallback, getVerifyJwtCallback } from '../DidJwtTestUtils';
 
 export interface InitiateOfferRequest {
   types: string[];
@@ -49,7 +47,7 @@ const hexPrivateKey = '913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a8
 
 const didStr = `did:key:z6Mki5ZwZKN1dBQprfJTikUvkDxrHijiiQngkWviMF5gw2Hv`;
 const kid = `${didStr}#z6Mki5ZwZKN1dBQprfJTikUvkDxrHijiiQngkWviMF5gw2Hv`;
-console.log(kid);
+
 export const generateDid = async (opts?: { seed?: Uint8Array }) => {
   const { didDocument, keys } = await ed25519.generate(
     {
@@ -63,10 +61,14 @@ export const generateDid = async (opts?: { seed?: Uint8Array }) => {
   return { keys, didDocument };
 };
 
-const resolve = async (didUrl: string, options?: DIDResolutionOptions): Promise<DIDResolutionResult> => {
+const resolve = async (didUrl: string): Promise<DIDResolutionResult> => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   return await didKeyResolve(didUrl, options);
+};
+
+const getResolver = () => {
+  return { resolve };
 };
 
 describe('OID4VCI-Client using Mattr issuer should', () => {
@@ -84,10 +86,9 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
     const correlationId = 'test';
 
     const op: OP = OP.builder()
-      .addResolver('key', { resolve })
-      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withPresentationSignCallback(presentationSignCalback)
-      .withSignature({ alg: SigningAlgo.EDDSA, kid, did: didStr, hexPrivateKey })
+      .withCreateJwtCallback(getCreateJwtCallback({ alg: SigningAlgo.EDDSA, kid, did: didStr, hexPrivateKey }))
+      .withVerifyJwtCallback(getVerifyJwtCallback(getResolver(), { checkLinkedDomain: 'never' }))
       .build();
 
     const verifiedAuthRequest = await op.verifyAuthorizationRequest(authorizeRequestUri, { correlationId });
@@ -112,13 +113,17 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
         presentationSubmission: verifiablePresentationResult.presentationSubmission,
       },
       correlationId,
+      jwtIssuer: {
+        method: 'did',
+        didUrl: kid,
+        alg: SigningAlgo.EDDSA,
+      },
     });
 
     expect(authResponse).toBeDefined();
     expect(authResponse.response.payload).toBeDefined();
     expect(authResponse.response.payload.presentation_submission).toBeDefined();
     expect(authResponse.response.payload.vp_token).toBeDefined();
-    console.log(JSON.stringify(authResponse));
 
     const result = await op.submitAuthorizationResponse(authResponse);
     expect(result.status).toEqual(200);
@@ -139,9 +144,9 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
 
     const verifiedAuthRequest = await AuthorizationRequest.verify(authorizeRequestUri, {
       correlationId,
+      verifyJwtCallback: getVerifyJwtCallback(getResolver()),
       verification: {
         mode: VerificationMode.INTERNAL,
-        resolveOpts: {},
       },
     });
     expect(verifiedAuthRequest).toBeDefined();
@@ -161,20 +166,35 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
     const authResponse = await AuthorizationResponse.fromVerifiedAuthorizationRequest(
       verifiedAuthRequest,
       {
+        jwtIssuer: {
+          method: 'did',
+          didUrl: kid,
+          alg: SigningAlgo.EDDSA,
+        },
         presentationExchange: {
           verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
           presentationSubmission: verifiablePresentationResult.presentationSubmission,
         },
-        signature: { hexPrivateKey: '913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a88d9d1e5', did: didStr, kid, alg: SigningAlgo.EDDSA },
+        createJwtCallback: getCreateJwtCallback({
+          hexPrivateKey: '913466d1a38d1d8c0d3c0fb0fc3b633075085a31372bbd2a8022215a88d9d1e5',
+          did: didStr,
+          kid,
+          alg: SigningAlgo.EDDSA,
+        }),
       },
-      { correlationId, verification: { mode: VerificationMode.INTERNAL, resolveOpts: {} }, nonce, state },
+      {
+        correlationId,
+        verifyJwtCallback: getVerifyJwtCallback(getResolver()),
+        verification: { mode: VerificationMode.INTERNAL },
+        nonce,
+        state,
+      },
     );
 
     expect(authResponse).toBeDefined();
     expect(authResponse.payload).toBeDefined();
     expect(authResponse.payload.presentation_submission).toBeDefined();
     expect(authResponse.payload.vp_token).toBeDefined();
-    console.log(JSON.stringify(authResponse));
   }
 
   it(
@@ -214,18 +234,13 @@ describe('Mattr OID4VP v18 credential offer', () => {
   test('should verify using request directly', async () => {
     const offer = await getOffer('OpenBadgeCredential');
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(offer.authorizeRequestUri);
-    console.log(JSON.stringify(authorizationRequest.payload, null, 2));
-    console.log(JSON.stringify(await authorizationRequest.getSupportedVersionsFromPayload()));
 
     const verification = await authorizationRequest.verify({
+      verifyJwtCallback: getVerifyJwtCallback(getResolver()),
       correlationId: 'test',
-      verification: {
-        mode: VerificationMode.INTERNAL,
-        resolveOpts: {},
-      },
+      verification: { mode: VerificationMode.INTERNAL },
     });
 
-    console.log(JSON.stringify(verification));
     expect(verification).toBeDefined();
     expect(verification.versions).toEqual([SupportedVersion.SIOPv2_D12_OID4VP_D18]);
 

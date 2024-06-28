@@ -1,5 +1,4 @@
 import { IProofType } from '@sphereon/ssi-types';
-import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 import Ajv from 'ajv';
 import * as dotenv from 'dotenv';
 
@@ -20,6 +19,8 @@ import {
 import { RPRegistrationMetadataPayloadSchemaObj } from '../src/schemas';
 import SIOPErrors from '../src/types/Errors';
 
+import { getCreateJwtCallback, getVerifyJwtCallback } from './DidJwtTestUtils';
+import { getResolver } from './ResolverTestUtils';
 import { metadata, mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
@@ -250,20 +251,25 @@ describe('verifyJWT should', () => {
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
+    const kid = 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc';
     const requestOpts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
-
       requestObject: {
+        jwtIssuer: {
+          method: 'did',
+          didUrl: kid,
+          alg: SigningAlgo.EDDSA,
+        },
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey:
             'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
           did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
-          kid: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
+          kid,
           alg: SigningAlgo.EDDSA,
-        },
+        }),
         payload: {
           state: 'expected state',
           client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -297,40 +303,41 @@ describe('verifyJWT should', () => {
     };
 
     const requestObject = await RequestObject.fromOpts(requestOpts);
+    const jwt = await requestObject.toJwt();
 
+    const resolver = getResolver('key');
     const verifyOpts: VerifyAuthorizationRequestOpts = {
-      verification: {
-        mode: VerificationMode.INTERNAL,
-        resolveOpts: {
-          subjectSyntaxTypesSupported: ['did:key'],
-        },
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
-      },
+      verifyJwtCallback: getVerifyJwtCallback(resolver, { checkLinkedDomain: 'if_present' }),
+      verification: { mode: VerificationMode.INTERNAL },
       correlationId: '1234',
       supportedVersions: [SupportedVersion.SIOPv2_ID1],
       nonce: 'This nonce is different and should throw error',
     };
 
     // expect.assertions(1);
-    await expect(AuthorizationRequest.verify(await requestObject.toJwt(), verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
+    await expect(AuthorizationRequest.verify(jwt, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
   });
+
   it(
     'succeed if a valid JWT is passed',
     async () => {
       const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
       const requestOpts: CreateAuthorizationRequestOpts = {
         version: SupportedVersion.SIOPv2_ID1,
-
         requestObject: {
+          jwtIssuer: {
+            method: 'did',
+            didUrl: `${mockEntity.did}#controller`,
+            alg: SigningAlgo.ES256K,
+          },
           passBy: PassBy.REFERENCE,
           reference_uri: 'https://my-request.com/here',
-          signature: {
+          createJwtCallback: getCreateJwtCallback({
             hexPrivateKey: mockEntity.hexPrivateKey,
             did: mockEntity.did,
             kid: `${mockEntity.did}#controller`,
             alg: SigningAlgo.ES256K,
-          },
+          }),
           payload: {
             client_id: WELL_KNOWN_OPENID_FEDERATION,
             scope: 'test',
@@ -365,15 +372,10 @@ describe('verifyJWT should', () => {
       };
       const requestObject = await RequestObject.fromOpts(requestOpts);
 
+      const resolver = getResolver('ethr');
       const verifyOpts: VerifyAuthorizationRequestOpts = {
-        verification: {
-          mode: VerificationMode.INTERNAL,
-          resolveOpts: {
-            subjectSyntaxTypesSupported: ['did:ethr'],
-          },
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
-        },
+        verifyJwtCallback: getVerifyJwtCallback(resolver, { checkLinkedDomain: 'if_present' }),
+        verification: { mode: VerificationMode.INTERNAL },
         supportedVersions: [SupportedVersion.SIOPv2_ID1],
         correlationId: '1234',
       };
