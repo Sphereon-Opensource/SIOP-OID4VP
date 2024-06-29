@@ -135,7 +135,7 @@ export async function getDigestAlgorithmFromJwkThumbprintUri(uri: string): Promi
   if (!match) {
     throw new Error(`Invalid JWK thumbprint URI structure ${uri}`);
   }
-  const algorithm = match[1] as 'sha256' | 'sha384' | 'sha512';
+  const algorithm = `sha${match[1]}` as 'sha256' | 'sha384' | 'sha512';
   if (algorithm !== 'sha256' && algorithm !== 'sha384' && algorithm !== 'sha512') {
     throw new Error(`Invalid JWK thumbprint URI digest algorithm ${uri}`);
   }

@@ -2,7 +2,7 @@ import { VerifyAuthorizationRequestOpts } from '../authorization-request';
 import { AuthorizationResponseOpts } from '../authorization-response';
 import { LanguageTagUtils } from '../helpers';
 import { AuthorizationResponseOptsSchema } from '../schemas';
-import { InternalVerification, PassBy, ResponseRegistrationOpts, VerificationMode } from '../types';
+import { PassBy, ResponseRegistrationOpts } from '../types';
 
 import { OPBuilder } from './OPBuilder';
 
@@ -64,9 +64,7 @@ export const createVerifyRequestOptsFromBuilderOrExistingOpts = (opts: {
     ? {
         verifyJwtCallback: opts.builder.verifyJwtCallback,
         hasher: opts.builder.hasher,
-        verification: {
-          mode: VerificationMode.INTERNAL,
-        } as InternalVerification,
+        verification: {},
         supportedVersions: opts.builder.supportedVersions,
         correlationId: undefined,
       }

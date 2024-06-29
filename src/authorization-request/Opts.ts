@@ -1,5 +1,5 @@
 import { assertValidRequestObjectOpts } from '../request-object/Opts';
-import { ExternalVerification, InternalVerification, SIOPErrors } from '../types';
+import { SIOPErrors, Verification } from '../types';
 
 import { assertValidRequestRegistrationOpts } from './RequestRegistration';
 import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
@@ -23,11 +23,11 @@ export const assertValidAuthorizationRequestOpts = (opts: CreateAuthorizationReq
 
 export const mergeVerificationOpts = (
   classOpts: {
-    verification?: InternalVerification | ExternalVerification;
+    verification?: Verification;
   },
   requestOpts: {
     correlationId: string;
-    verification?: InternalVerification | ExternalVerification;
+    verification?: Verification;
   },
 ) => {
   const presentationVerificationCallback =

@@ -13,7 +13,6 @@ import {
   SubjectSyntaxTypesSupportedValues,
   SubjectType,
   SupportedVersion,
-  VerificationMode,
   VerifyAuthorizationRequestOpts,
 } from '../src';
 import { RPRegistrationMetadataPayloadSchemaObj } from '../src/schemas';
@@ -308,7 +307,7 @@ describe('verifyJWT should', () => {
     const resolver = getResolver('key');
     const verifyOpts: VerifyAuthorizationRequestOpts = {
       verifyJwtCallback: getVerifyJwtCallback(resolver, { checkLinkedDomain: 'if_present' }),
-      verification: { mode: VerificationMode.INTERNAL },
+      verification: {},
       correlationId: '1234',
       supportedVersions: [SupportedVersion.SIOPv2_ID1],
       nonce: 'This nonce is different and should throw error',
@@ -375,7 +374,7 @@ describe('verifyJWT should', () => {
       const resolver = getResolver('ethr');
       const verifyOpts: VerifyAuthorizationRequestOpts = {
         verifyJwtCallback: getVerifyJwtCallback(resolver, { checkLinkedDomain: 'if_present' }),
-        verification: { mode: VerificationMode.INTERNAL },
+        verification: {},
         supportedVersions: [SupportedVersion.SIOPv2_ID1],
         correlationId: '1234',
       };

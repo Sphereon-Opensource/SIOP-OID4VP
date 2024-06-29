@@ -1,7 +1,7 @@
 import { CreateAuthorizationRequestOpts, PropertyTarget, PropertyTargets, RequestPropertyWithTargets } from '../authorization-request';
 import { VerifyAuthorizationResponseOpts } from '../authorization-response';
 // import { CreateAuthorizationRequestOptsSchema } from '../schemas';
-import { ClientMetadataOpts, InternalVerification, RequestObjectPayload, SIOPErrors, VerificationMode } from '../types';
+import { ClientMetadataOpts, RequestObjectPayload, SIOPErrors, Verification } from '../types';
 
 import { RPBuilder } from './RPBuilder';
 
@@ -52,7 +52,6 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
         hasher: opts.builder.hasher,
         verifyJwtCallback: opts.builder.verifyJwtCallback,
         verification: {
-          mode: VerificationMode.INTERNAL,
           presentationVerificationCallback: opts.builder.presentationVerificationCallback,
           supportedVersions: opts.builder.supportedVersions,
           revocationOpts: {
@@ -60,7 +59,7 @@ export const createVerifyResponseOptsFromBuilderOrExistingOpts = (opts: { builde
             revocationVerificationCallback: opts.builder.revocationVerificationCallback,
           },
           replayRegistry: opts.builder.sessionManager,
-        } as InternalVerification,
+        } as Verification,
         audience: opts.builder.clientId || opts.builder.clientMetadata?.client_id,
       }
     : opts.verifyOpts;

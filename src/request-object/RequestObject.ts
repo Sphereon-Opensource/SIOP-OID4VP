@@ -100,7 +100,7 @@ export class RequestObject {
         this.jwt = await this.opts.createJwtCallback(jwtIssuer, { header, payload: this.payload });
       } else if (jwtIssuer.method === 'jwk') {
         if (!this.payload.client_id) {
-          throw new Error('Plaese provide a client_id for the RP');
+          throw new Error('Please provide a client_id for the RP');
         }
 
         const header = { jwk: jwtIssuer.jwk, typ: 'JWT', alg: jwtIssuer.jwk.alg as string };

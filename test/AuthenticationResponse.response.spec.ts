@@ -17,7 +17,6 @@ import {
   SubjectIdentifierType,
   SubjectType,
   SupportedVersion,
-  VerificationMode,
   VerifyAuthorizationRequestOpts,
   VPTokenLocation,
 } from '../src';
@@ -85,9 +84,7 @@ describe('create JWT from Request JWT should', () => {
   const resolver = getResolver('ethr');
   const verifyOpts: VerifyAuthorizationRequestOpts = {
     verifyJwtCallback: getVerifyJwtCallback(resolver),
-    verification: {
-      mode: VerificationMode.INTERNAL,
-    },
+    verification: {},
     supportedVersions: [SupportedVersion.SIOPv2_ID1],
     correlationId: '1234',
   };

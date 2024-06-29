@@ -17,8 +17,6 @@ import {
   AuthorizationEvent,
   AuthorizationEvents,
   ContentType,
-  ExternalVerification,
-  InternalVerification,
   JwtIssuer,
   ParsedAuthorizationRequestURI,
   RegisterEventListener,
@@ -28,6 +26,7 @@ import {
   SIOPResonse,
   SupportedVersion,
   UrlEncodingFormat,
+  Verification,
   VerifiedAuthorizationRequest,
 } from '../types';
 
@@ -56,7 +55,7 @@ export class OP {
 
   public async verifyAuthorizationRequest(
     requestJwtOrUri: string | URI,
-    requestOpts?: { correlationId?: string; verification?: InternalVerification | ExternalVerification },
+    requestOpts?: { correlationId?: string; verification?: Verification },
   ): Promise<VerifiedAuthorizationRequest> {
     const correlationId = requestOpts?.correlationId || uuidv4();
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri)
@@ -100,7 +99,7 @@ export class OP {
       correlationId?: string;
       audience?: string;
       issuer?: ResponseIss | string;
-      verification?: InternalVerification | ExternalVerification;
+      verification?: Verification;
       presentationExchange?: PresentationExchangeResponseOpts;
     },
   ): Promise<AuthorizationResponseWithCorrelationId> {
@@ -242,10 +241,7 @@ export class OP {
     };
   }
 
-  private newVerifyAuthorizationRequestOpts(requestOpts: {
-    correlationId: string;
-    verification?: InternalVerification | ExternalVerification;
-  }): VerifyAuthorizationRequestOpts {
+  private newVerifyAuthorizationRequestOpts(requestOpts: { correlationId: string; verification?: Verification }): VerifyAuthorizationRequestOpts {
     const verification: VerifyAuthorizationRequestOpts = {
       ...this._verifyRequestOptions,
       verifyJwtCallback: this._verifyRequestOptions.verifyJwtCallback,

@@ -1,4 +1,4 @@
-import { IDToken, VerificationMode, VerifyAuthorizationResponseOpts } from '../src';
+import { IDToken, VerifyAuthorizationResponseOpts } from '../src';
 import SIOPErrors from '../src/types/Errors';
 
 import { getVerifyJwtCallback } from './DidJwtTestUtils';
@@ -17,9 +17,7 @@ describe('verify JWT from Request JWT should', () => {
     verifyJwtCallback: getVerifyJwtCallback(getResolver('ethr'), {
       checkLinkedDomain: 'if_present',
     }),
-    verification: {
-      mode: VerificationMode.INTERNAL,
-    },
+    verification: {},
   };
 
   it('throw NO_JWT when no jwt is passed', async () => {

@@ -15,18 +15,16 @@ import {
 import { mergeVerificationOpts } from '../authorization-request/Opts';
 import { AuthorizationResponse, PresentationDefinitionWithLocation, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { getNonce, getState } from '../helpers';
-import { JwtIssuer } from '../types';
+import { JwtIssuer, PassBy } from '../types';
 import {
   AuthorizationEvent,
   AuthorizationEvents,
   AuthorizationResponsePayload,
-  ExternalVerification,
-  InternalVerification,
-  PassBy,
   RegisterEventListener,
   ResponseURIType,
   SIOPErrors,
   SupportedVersion,
+  Verification,
   VerifiedAuthorizationResponse,
 } from '../types';
 
@@ -143,7 +141,7 @@ export class RP {
       audience?: string;
       state?: string;
       nonce?: string;
-      verification?: InternalVerification | ExternalVerification;
+      verification?: Verification;
       presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
     },
   ): Promise<VerifiedAuthorizationResponse> {
@@ -306,7 +304,7 @@ export class RP {
       hasher?: Hasher;
       state?: string;
       nonce?: string;
-      verification?: InternalVerification | ExternalVerification;
+      verification?: Verification;
       audience?: string;
       presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[];
     },

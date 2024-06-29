@@ -22,7 +22,6 @@ import {
   SigningAlgo,
   SubjectType,
   SupportedVersion,
-  VerificationMode,
   verifyRevocation,
   VPTokenLocation,
 } from '../src';
@@ -663,8 +662,6 @@ describe('RP and OP interaction should', () => {
           // audience: EXAMPLE_REDIRECT_URL,
           presentationDefinitions: [{ definition: pd[0].definition, location: pd[0].location }],
           verification: {
-            mode: VerificationMode.INTERNAL,
-            verifyUri: '',
             revocationOpts: {
               revocationVerification: RevocationVerification.ALWAYS,
               // eslint-disable-next-line @typescript-eslint/no-unused-vars

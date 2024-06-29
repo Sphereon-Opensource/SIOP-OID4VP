@@ -54,7 +54,7 @@ RequestRegistrationOpts --|> RPRegistrationMetadataOpts
 
 class VerifyAuthenticationRequestOpts {
   <<interface>>
-  verification: InternalVerification | ExternalVerification;
+  verification: Verification
   nonce?: string;
 }
 
@@ -110,7 +110,7 @@ AuthenticationResponseWithJWT --> AuthenticationResponseOpts
 
 class VerifyAuthenticationResponseOpts {
   <<interface>>
-  verification: InternalVerification | ExternalVerification;
+  verification: Verification
   nonce?: string;
   state?: string;
   audience: string;

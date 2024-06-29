@@ -4,9 +4,7 @@ import { PresentationDefinitionPayloadOpts } from '../authorization-response';
 import { RequestObjectOpts } from '../request-object';
 import {
   ClientMetadataOpts,
-  ExternalVerification,
   IdTokenClaimPayload,
-  InternalVerification,
   ResponseMode,
   ResponseType,
   Schema,
@@ -14,6 +12,7 @@ import {
   SigningAlgo,
   SubjectType,
   SupportedVersion,
+  Verification,
 } from '../types';
 import { VerifyJwtCallback } from '../types/JwtVerifier';
 
@@ -74,9 +73,8 @@ export type CreateAuthorizationRequestOpts = AuthorizationRequestOptsVID1 | Auth
 export interface VerifyAuthorizationRequestOpts {
   correlationId: string;
 
-  verification: InternalVerification | ExternalVerification; // To use internal verification or external hosted verification
+  verification: Verification;
   verifyJwtCallback: VerifyJwtCallback;
-  // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // If provided the nonce in the request needs to match
   state?: string; // If provided the state in the request needs to match
 

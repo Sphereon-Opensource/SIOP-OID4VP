@@ -87,7 +87,7 @@ export class IDToken {
   public async jwt(_jwtIssuer: JwtIssuer): Promise<IDTokenJwt> {
     if (!this._jwt) {
       if (!this.responseOpts) {
-        throw Error(SIOPErrors.BAD_SIGNATURE_PARAMS);
+        throw Error(SIOPErrors.BAD_IDTOKEN_RESPONSE_OPTS);
       }
 
       const jwtIssuer: JwtIssuerWithContext = _jwtIssuer
@@ -98,9 +98,7 @@ export class IDToken {
         this._jwt = await this.responseOpts.createJwtCallback(jwtIssuer, { header: {}, payload: this._payload });
       } else if (jwtIssuer.method === 'did') {
         const did = jwtIssuer.didUrl.split('#')[0];
-        if (!this._payload.sub) {
-          this._payload.sub = did;
-        }
+        this._payload.sub = did;
 
         const issuer = this._responseOpts.registration.issuer || this._payload.iss;
         if (!issuer || !(issuer.includes(ResponseIss.SELF_ISSUED_V2) || issuer === this._payload.sub)) {

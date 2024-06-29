@@ -2,15 +2,7 @@ import { IPresentationDefinition, PresentationSignCallBackParams } from '@sphere
 import { Format } from '@sphereon/pex-models';
 import { CompactSdJwtVc, Hasher, PresentationSubmission, W3CVerifiablePresentation } from '@sphereon/ssi-types';
 
-import {
-  ExternalVerification,
-  InternalVerification,
-  ResponseMode,
-  ResponseRegistrationOpts,
-  ResponseURIType,
-  SupportedVersion,
-  VerifiablePresentationWithFormat,
-} from '../types';
+import { ResponseMode, ResponseRegistrationOpts, ResponseURIType, SupportedVersion, VerifiablePresentationWithFormat, Verification } from '../types';
 import { CreateJwtCallback, JwtIssuer } from '../types/JwtIssuer';
 import { VerifyJwtCallback } from '../types/JwtVerifier';
 
@@ -93,10 +85,9 @@ export type PresentationSignCallback = (args: PresentationSignCallBackParams) =>
 
 export interface VerifyAuthorizationResponseOpts {
   correlationId: string;
-  verification: InternalVerification | ExternalVerification;
+  verification: Verification;
   verifyJwtCallback: VerifyJwtCallback;
   hasher?: Hasher;
-  // didDocument?: DIDDocument; // If not provided the DID document will be resolved from the request
   nonce?: string; // To verify the response against the supplied nonce
   state?: string; // To verify the response against the supplied state
 

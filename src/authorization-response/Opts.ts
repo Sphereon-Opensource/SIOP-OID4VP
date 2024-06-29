@@ -1,4 +1,4 @@
-import { isExternalVerification, isInternalVerification, SIOPErrors } from '../types';
+import { SIOPErrors } from '../types';
 
 import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from './types';
 
@@ -9,7 +9,7 @@ export const assertValidResponseOpts = (opts: AuthorizationResponseOpts) => {
 };
 
 export const assertValidVerifyOpts = (opts: VerifyAuthorizationResponseOpts) => {
-  if (!opts?.verification || (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))) {
+  if (!opts?.verification || !opts.verifyJwtCallback) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
 };

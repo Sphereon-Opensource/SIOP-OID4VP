@@ -15,7 +15,6 @@ import {
   SubjectIdentifierType,
   SubjectType,
   SupportedVersion,
-  VerificationMode,
   VerifyAuthorizationRequestOpts,
 } from '../src';
 
@@ -104,9 +103,7 @@ describe('OP should', () => {
   const resolver = getResolver('ethr');
   const verifyOpts: VerifyAuthorizationRequestOpts = {
     verifyJwtCallback: getVerifyJwtCallback(resolver),
-    verification: {
-      mode: VerificationMode.INTERNAL,
-    },
+    verification: {},
     correlationId: '1234',
     supportedVersions: [SupportedVersion.SIOPv2_ID1],
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',

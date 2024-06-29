@@ -1657,15 +1657,11 @@ export const AuthorizationResponseOptsSchemaObj = {
                 }
               },
               "additionalProperties": false
-            },
-            "jwkThumbprint": {
-              "type": "string"
             }
           },
           "required": [
             "method",
-            "jwk",
-            "jwkThumbprint"
+            "jwk"
           ],
           "additionalProperties": false
         },

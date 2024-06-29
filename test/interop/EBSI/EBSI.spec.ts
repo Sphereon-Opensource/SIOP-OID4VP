@@ -1,6 +1,6 @@
 import nock from 'nock';
 
-import { AuthorizationResponseOpts, OP, SupportedVersion, VerificationMode, VerifyAuthorizationRequestOpts } from '../../../src';
+import { AuthorizationResponseOpts, OP, SupportedVersion, VerifyAuthorizationRequestOpts } from '../../../src';
 import { getVerifyJwtCallback } from '../../DidJwtTestUtils';
 import { getResolver } from '../../ResolverTestUtils';
 import { UNIT_TEST_TIMEOUT } from '../../data/mockedData';
@@ -47,9 +47,7 @@ describe('EBSI', () => {
 
   const verifyOpts: VerifyAuthorizationRequestOpts = {
     verifyJwtCallback: getVerifyJwtCallback(getResolver('ebsi')),
-    verification: {
-      mode: VerificationMode.INTERNAL,
-    },
+    verification: {},
     correlationId: '1234',
     supportedVersions: [SupportedVersion.SIOPv2_D12_OID4VP_D18],
   };

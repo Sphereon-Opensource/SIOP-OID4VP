@@ -466,23 +466,10 @@ export enum ResponseContext {
   OP = 'op',
 }
 
-export enum VerificationMode {
-  INTERNAL,
-  EXTERNAL,
-}
-
 export interface Verification {
   presentationVerificationCallback?: PresentationVerificationCallback;
-  mode: VerificationMode;
   revocationOpts?: RevocationOpts;
   replayRegistry?: IRPSessionManager;
-}
-
-export type InternalVerification = Verification;
-
-export interface ExternalVerification extends Verification {
-  verifyUri: string; // url to call to verify the id_token withSignature
-  authZToken?: string; // Optional: bearer token to use to the call
 }
 
 export interface ResponseClaims {
@@ -652,11 +639,6 @@ export const isRequestPayload = (
 ): object is AuthorizationRequestPayload => 'response_mode' in object && 'response_type' in object;
 
 export const isResponsePayload = (object: RequestObjectPayload | IDTokenPayload): object is IDTokenPayload => 'iss' in object && 'aud' in object;
-
-export const isInternalVerification = (object: InternalVerification | ExternalVerification): object is InternalVerification =>
-  object.mode === VerificationMode.INTERNAL; /* && !isExternalVerification(object)*/
-export const isExternalVerification = (object: InternalVerification | ExternalVerification): object is ExternalVerification =>
-  object.mode === VerificationMode.EXTERNAL; /*&& 'verifyUri' in object || 'authZToken' in object*/
 
 export const isVP = (object: IVerifiablePresentation | IPresentation): object is IVerifiablePresentation => 'presentation' in object;
 export const isPresentation = (object: IVerifiablePresentation | IPresentation): object is IPresentation => 'presentation_submission' in object;

@@ -290,23 +290,23 @@ function verifyJwtCallback(): VerifyJwtCallback {
     } else if (jwtVerifier.method === 'jwk') {
       // verify jwk certificate protected jwt's
     } else if (jwtVerifier.method === 'custom') {
-      // Only called if based on the jwt the verification method could not been determined 
-      throw new Error(`Could not determine jwt verification method`)
+      // Only called if based on the jwt the verification method could not be determined 
+      throw new Error(`Unsupported JWT verifier method ${jwtIssuer.method}`)
     }
   }
 }
 
 function createJwtCallback(): CreateJwtCallback {
   return async (jwtIssuer, jwt) => {
-    if (jwtVerifier.method === 'did') {
+    if (jwtIssuer.method === 'did') {
       // create didJwt
-    } else if (jwtVerifier.method === 'x5c') {
+    } else if (jwtIssuer.method === 'x5c') {
       // create x5c certificate protected jwt
-    } else if (jwtVerifier.method === 'jwk') {
+    } else if (jwtIssuer.method === 'jwk') {
       // create a jwk certificate protected jwt
-    } else if (jwtVerifier.method === 'custom') {
+    } else if (jwtIssuer.method === 'custom') {
       // Only called if no or a Custom jwtIssuer was passed to the respective methods
-      throw new Error(`Could not determine jwt verification method`)
+      throw new Error(`Unsupported JWT issuer method ${jwtIssuer.method}`)
     }
   }
 }
@@ -786,7 +786,7 @@ export interface VerifiedJWT {
 }
 
 export interface VerifyAuthorizationRequestOpts {
-    verification: InternalVerification | ExternalVerification;  // To use internal verification or external hosted verification
+    verification: Verification
     nonce?: string; // If provided the nonce in the request needs to match
     verifyCallback?: VerifyCallback;
 }
@@ -819,7 +819,6 @@ static async verifyJWT(jwt:string, opts: SIOP.VerifyAuthorizationRequestOpts): P
 ````typescript
 const verifyOpts: VerifyAuthorizationRequestOpts = {
     verification: {
-        mode: VerificationMode.INTERNAL,
         resolveOpts: {
           subjectSyntaxTypesSupported: ['did:ethr'],
         }
@@ -874,7 +873,7 @@ export enum PresentationLocation {
 }
 
 export interface VerifyAuthorizationRequestOpts {
-    verification: InternalVerification | ExternalVerification;   // To use internal verification or external hosted verification
+    verification: Verification
     nonce?: string;                                              // If provided the nonce in the request needs to match
     verifyCallback?: VerifyCallback                              // Callback function to verify the domain linkage credential 
 }
@@ -938,12 +937,7 @@ static async createJWTFromRequestJWT(requestJwt: string, responseOpts: SIOP.Auth
   responseMode: ResponseMode.POST,
 }
 const verifyOpts: VerifyAuthorizationRequestOpts = {
-    verification: {
-        resolveOpts: {
-          subjectSyntaxTypesSupported: ['did:ethr:'],
-        },
-        mode: VerificationMode.INTERNAL,
-    }
+    verification: { }
 }
 createJWTFromRequestJWT('ey....', responseOpts, verifyOpts).then(resp => {
     console.log(resp.payload.sub);
@@ -961,12 +955,7 @@ const NONCE = "5c1d29c1-cf7d-4e14-9305-9db46d8c1916";
 const verifyOpts: VerifyAuthorizationResponseOpts = {
     audience: "https://rp.acme.com/siop/jwts",
     nonce: NONCE,
-    verification: {
-        resolveOpts: {
-          subjectSyntaxTypesSupported: ['did:ethr:'],
-        },
-        mode: VerificationMode.INTERNAL,
-    }
+    verification: { }
 }
 
 verifyJWT('ey......', verifyOpts).then(jwt => {

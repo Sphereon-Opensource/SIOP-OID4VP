@@ -14,7 +14,6 @@ import {
   PresentationExchange,
   SigningAlgo,
   SupportedVersion,
-  VerificationMode,
 } from '../../src';
 import { getCreateJwtCallback, getVerifyJwtCallback } from '../DidJwtTestUtils';
 
@@ -145,9 +144,7 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
     const verifiedAuthRequest = await AuthorizationRequest.verify(authorizeRequestUri, {
       correlationId,
       verifyJwtCallback: getVerifyJwtCallback(getResolver()),
-      verification: {
-        mode: VerificationMode.INTERNAL,
-      },
+      verification: {},
     });
     expect(verifiedAuthRequest).toBeDefined();
     expect(verifiedAuthRequest.presentationDefinitions).toHaveLength(1);
@@ -185,7 +182,7 @@ describe('OID4VCI-Client using Mattr issuer should', () => {
       {
         correlationId,
         verifyJwtCallback: getVerifyJwtCallback(getResolver()),
-        verification: { mode: VerificationMode.INTERNAL },
+        verification: {},
         nonce,
         state,
       },
@@ -238,7 +235,7 @@ describe('Mattr OID4VP v18 credential offer', () => {
     const verification = await authorizationRequest.verify({
       verifyJwtCallback: getVerifyJwtCallback(getResolver()),
       correlationId: 'test',
-      verification: { mode: VerificationMode.INTERNAL },
+      verification: {},
     });
 
     expect(verification).toBeDefined();
