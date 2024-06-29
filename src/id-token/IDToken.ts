@@ -5,6 +5,7 @@ import {
   getJwtVerifierWithContext,
   IDTokenJwt,
   IDTokenPayload,
+  JWK,
   JwtHeader,
   JWTPayload,
   ResponseIss,
@@ -14,6 +15,7 @@ import {
 } from '../types';
 import { JwtIssuer, JwtIssuerWithContext } from '../types/JwtIssuer';
 
+import { calculateJwkThumbprintUri } from './../helpers/Keys';
 import { createIDTokenPayload } from './Payload';
 
 export class IDToken {
@@ -112,12 +114,15 @@ export class IDToken {
         this._jwt = await this.responseOpts.createJwtCallback({ ...jwtIssuer, type: 'id-token' }, { header, payload: this._payload });
       } else if (jwtIssuer.method === 'x5c') {
         this._payload.iss = jwtIssuer.issuer;
+        this._payload.sub = jwtIssuer.issuer;
 
         const header = { x5c: jwtIssuer.chain, typ: 'JWT' };
         this._jwt = await this._responseOpts.createJwtCallback(jwtIssuer, { header, payload: this._payload });
       } else if (jwtIssuer.method === 'jwk') {
-        this._payload.sub = jwtIssuer.jwkThumbprint;
-        this._payload['_sub_jwk'] = jwtIssuer.jwk;
+        const jwkThumbprintUri = await calculateJwkThumbprintUri(jwtIssuer.jwk as JWK);
+        this._payload.sub = jwkThumbprintUri;
+        this._payload.iss = jwkThumbprintUri;
+        this._payload.sub_jwk = jwtIssuer.jwk;
 
         const header = { jwk: jwtIssuer.jwk, alg: jwtIssuer.jwk.alg, typ: 'JWT' };
         this._jwt = await this._responseOpts.createJwtCallback(jwtIssuer, { header, payload: this._payload });
@@ -151,7 +156,7 @@ export class IDToken {
     const parsedJwt = parseJWT(this._jwt);
     this.assertValidResponseJWT(parsedJwt);
 
-    const jwtVerifier = getJwtVerifierWithContext(parsedJwt, 'request-object');
+    const jwtVerifier = await getJwtVerifierWithContext(parsedJwt, 'request-object');
     const verificationResult = await verifyOpts.verifyJwtCallback(jwtVerifier, { ...parsedJwt, raw: this._jwt });
     if (!verificationResult) throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
 

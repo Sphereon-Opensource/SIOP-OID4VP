@@ -122,18 +122,10 @@ export class AuthorizationRequest {
     if (parsedJwt) {
       requestObjectPayload = parsedJwt.payload as RequestObjectPayload;
 
-      if (
-        requestObjectPayload.client_id?.startsWith('http') &&
-        requestObjectPayload.iss.startsWith('http') &&
-        requestObjectPayload.iss === requestObjectPayload.client_id
-      ) {
-        console.error(`FIXME: The client_id and iss are not DIDs. We do not verify the signature in this case yet! ${requestObjectPayload.iss}`);
-      } else {
-        const jwtVerifier = getJwtVerifierWithContext(parsedJwt, 'request-object');
-        const result = await opts.verifyJwtCallback(jwtVerifier, { ...parsedJwt, raw: jwt });
+      const jwtVerifier = await getJwtVerifierWithContext(parsedJwt, 'request-object');
+      const result = await opts.verifyJwtCallback(jwtVerifier, { ...parsedJwt, raw: jwt });
 
-        if (!result) throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
-      }
+      if (!result) throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
 
       if (this.hasRequestObject() && !this.payload.request_uri) {
         // Put back the request object as that won't be present yet

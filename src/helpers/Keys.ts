@@ -88,7 +88,7 @@ const check = (value, description) => {
   }
 };
 
-async function calculateJwkThumbprint(jwk: JWK, digestAlgorithm?: 'sha256' | 'sha384' | 'sha512'): Promise<string> {
+export async function calculateJwkThumbprint(jwk: JWK, digestAlgorithm?: 'sha256' | 'sha384' | 'sha512'): Promise<string> {
   if (!jwk || typeof jwk !== 'object') {
     throw new TypeError('JWK must be an object');
   }
@@ -130,8 +130,19 @@ const digest = async (algorithm: 'sha256' | 'sha384' | 'sha512', data: Uint8Arra
   return new Uint8Array(await crypto.subtle.digest(subtleDigest, data));
 };
 
-export async function calculateJwkThumbprintUri(jwk: JWK, digestAlgorithm?: 'sha256' | 'sha384' | 'sha512'): Promise<string> {
-  digestAlgorithm !== null && digestAlgorithm !== void 0 ? digestAlgorithm : (digestAlgorithm = 'sha256');
+export async function getDigestAlgorithmFromJwkThumbprintUri(uri: string): Promise<'sha256' | 'sha384' | 'sha512'> {
+  const match = uri.match(/^urn:ietf:params:oauth:jwk-thumbprint:sha-(\w+):/);
+  if (!match) {
+    throw new Error(`Invalid JWK thumbprint URI structure ${uri}`);
+  }
+  const algorithm = match[1] as 'sha256' | 'sha384' | 'sha512';
+  if (algorithm !== 'sha256' && algorithm !== 'sha384' && algorithm !== 'sha512') {
+    throw new Error(`Invalid JWK thumbprint URI digest algorithm ${uri}`);
+  }
+  return algorithm;
+}
+
+export async function calculateJwkThumbprintUri(jwk: JWK, digestAlgorithm: 'sha256' | 'sha384' | 'sha512' = 'sha256'): Promise<string> {
   const thumbprint = await calculateJwkThumbprint(jwk, digestAlgorithm);
   return `urn:ietf:params:oauth:jwk-thumbprint:sha-${digestAlgorithm.slice(-3)}:${thumbprint}`;
 }

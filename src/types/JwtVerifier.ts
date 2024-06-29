@@ -1,4 +1,6 @@
-import { JwtHeader, JwtPayload } from './JWT.types';
+import { calculateJwkThumbprintUri, getDigestAlgorithmFromJwkThumbprintUri } from '../helpers';
+
+import { JWK, JwtHeader, JwtPayload } from './JWT.types';
 
 export type JwtVerificationContext = { type: 'id-token' } | { type: 'request-object' };
 
@@ -29,7 +31,6 @@ interface JwkJwtVerifier {
   method: 'jwk';
 
   jwk: JsonWebKey;
-  //TODO: calculate
   jwkThumbprint: string;
 }
 
@@ -41,10 +42,10 @@ export type JwtVerifier = DidJwtVerifier | X5cJwtVerifier | CustomJwtVerifier | 
 
 export type JwtVerifierWithContext = JwtVerifier & JwtVerificationContext;
 
-export const getJwtVerifierWithContext = (
+export const getJwtVerifierWithContext = async (
   jwt: { header: JwtHeader; payload: JwtPayload },
   type: JwtVerifierWithContext['type'],
-): JwtVerifierWithContext => {
+): Promise<JwtVerifierWithContext> => {
   if (jwt.header.kid?.startsWith('did:')) {
     if (!jwt.header.kid.includes('#')) throw new Error('TODO');
     return { method: 'did', didUrl: jwt.header.kid, type };
@@ -53,8 +54,14 @@ export const getJwtVerifierWithContext = (
     return { method: 'x5c', chain: jwt.header.x5c, issuer: jwt.payload.iss, type };
   } else if (jwt.header.jwk) {
     if (typeof jwt.header.jwk !== 'object') throw new Error('TODO');
-    // todo: !!
-    return { method: 'jwk', type, jwk: jwt.header.jwk, jwkThumbprint: '' };
+    if (typeof jwt.payload.sub_jwk !== 'string') throw new Error('Invalid JWT. Missing sub_jwk claim.');
+
+    const jwkThumbPrintUri = jwt.payload.sub_jwk;
+    const digestAlgorithm = await getDigestAlgorithmFromJwkThumbprintUri(jwkThumbPrintUri);
+    const selfComputedJwkThumbPrintUri = await calculateJwkThumbprintUri(jwt.header.jwk as JWK, digestAlgorithm);
+
+    if (selfComputedJwkThumbPrintUri !== jwkThumbPrintUri) throw new Error('Invalid JWT. Thumbprint mismatch.');
+    return { method: 'jwk', type, jwk: jwt.header.jwk, jwkThumbprint: jwt.payload.sub_jwk };
   } else {
     return { method: 'custom', type };
   }

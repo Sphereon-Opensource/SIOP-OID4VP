@@ -41,8 +41,6 @@ interface JwtIssuerJwk {
   method: 'jwk';
 
   jwk: JsonWebKey;
-  //TODO: calculate
-  jwkThumbprint: string;
 }
 
 interface JwtIssuerCustom extends Record<string, unknown> {

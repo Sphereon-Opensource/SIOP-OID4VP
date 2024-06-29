@@ -29,22 +29,6 @@ export const createIDTokenPayload = async (
   }
   const opVersion = responseOpts.version ?? maxRPVersion;
 
-  const jwtIssuer = responseOpts.jwtIssuer;
-  let sub: string | undefined;
-
-  if (!jwtIssuer) {
-    sub = undefined;
-  } else if (jwtIssuer.method === 'did') {
-    const did = jwtIssuer.didUrl.split('#')[0];
-    sub = did;
-  } else if (jwtIssuer.method === 'x5c') {
-    sub = jwtIssuer.issuer;
-  } else if (jwtIssuer.method === 'jwk') {
-    sub = jwtIssuer.jwkThumbprint;
-  } else {
-    throw new Error(`JwtIssuer method '${jwtIssuer.method}' not implemented`);
-  }
-
   const idToken: IDTokenPayload = {
     // fixme: ID11 does not use this static value anymore
     iss:
@@ -53,7 +37,7 @@ export const createIDTokenPayload = async (
     aud: responseOpts.audience || payload.client_id,
     iat: Math.round(Date.now() / SEC_IN_MS - 60 * SEC_IN_MS),
     exp: Math.round(Date.now() / SEC_IN_MS + (responseOpts.expiresIn || 600)),
-    sub,
+    sub: undefined,
     ...(payload.auth_time && { auth_time: payload.auth_time }),
     nonce,
     state,
