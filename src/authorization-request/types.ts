@@ -3,6 +3,7 @@ import { Hasher } from '@sphereon/ssi-types';
 import { PresentationDefinitionPayloadOpts } from '../authorization-response';
 import { RequestObjectOpts } from '../request-object';
 import {
+  ClientIdScheme,
   ClientMetadataOpts,
   IdTokenClaimPayload,
   ResponseMode,
@@ -34,6 +35,7 @@ export interface RequestObjectPayloadOpts<CT extends ClaimPayloadCommonOpts> {
   scope: string; // from openid-connect-self-issued-v2-1_0-ID1
   response_type: string; // from openid-connect-self-issued-v2-1_0-ID1
   client_id: string; // from openid-connect-self-issued-v2-1_0-ID1
+  client_id_scheme: ClientIdScheme;
   redirect_uri?: string; // from openid-connect-self-issued-v2-1_0-ID1
   response_uri?: string; // from openid-connect-self-issued-v2-1_0-D18 // either response uri or redirect uri
   id_token_hint?: string; // from openid-connect-self-issued-v2-1_0-ID1
@@ -58,7 +60,6 @@ interface AuthorizationRequestCommonOpts<CT extends ClaimPayloadCommonOpts> {
   clientMetadata?: ClientMetadataOpts; // this maps to 'registration' for older SIOPv2 specs! OPTIONAL. This parameter is used by the RP to provide information about itself to a Self-Issued OP that would normally be provided to an OP during Dynamic RP Registration, as specified in {#rp-registration-parameter}.
   payload?: AuthorizationRequestPayloadOpts<CT>;
   requestObject: RequestObjectOpts<CT>;
-
   uriScheme?: Schema | string; // Use a custom scheme for the URI. By default openid:// will be used
 }
 
@@ -72,14 +73,11 @@ export type CreateAuthorizationRequestOpts = AuthorizationRequestOptsVID1 | Auth
 
 export interface VerifyAuthorizationRequestOpts {
   correlationId: string;
-
   verification: Verification;
   verifyJwtCallback: VerifyJwtCallback;
   nonce?: string; // If provided the nonce in the request needs to match
   state?: string; // If provided the state in the request needs to match
-
   supportedVersions?: SupportedVersion[];
-
   hasher?: Hasher;
 }
 
