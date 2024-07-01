@@ -1,14 +1,8 @@
 import { ServiceTypesEnum } from '@sphereon/wellknown-dids-client';
-import { JWTHeader } from 'did-jwt';
-import { DIDDocument } from 'did-resolver';
+
+import { DIDDocument } from '../ResolverTestUtils';
 
 export const UNIT_TEST_TIMEOUT = 90000;
-
-export const DIDAUTH_HEADER: JWTHeader = {
-  typ: 'JWT',
-  alg: 'ES256K',
-  kid: 'did:ethr:0x416e6e6162656c2e4c65652e452d412d506f652e#key1',
-};
 
 export const VERIFIER_LOGO_FOR_CLIENT = 'https://sphereon.com/content/themes/sphereon/assets/favicons/safari-pinned-tab.svg';
 
@@ -99,7 +93,7 @@ export const DID_KEY_DOCUMENT = {
       serviceEndpoint: DID_KEY_ORIGIN,
     },
   ],
-};
+} as DIDDocument;
 
 export const VC_KEY_PAIR = {
   type: 'Ed25519VerificationKey2020',

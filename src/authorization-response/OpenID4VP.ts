@@ -8,13 +8,14 @@ import {
   W3CVerifiablePresentation,
   WrappedVerifiablePresentation,
 } from '@sphereon/ssi-types';
-import { decodeJWT } from 'did-jwt';
+import { jwtDecode } from 'jwt-decode';
 
 import { AuthorizationRequest } from '../authorization-request';
 import { verifyRevocation } from '../helpers';
 import {
   AuthorizationResponsePayload,
   IDTokenPayload,
+  JwtPayload,
   ResponseType,
   RevocationVerification,
   SIOPErrors,
@@ -39,7 +40,9 @@ function extractNonceFromWrappedVerifiablePresentation(wrappedVp: WrappedVerifia
     // If it doesn't end with ~, it contains a kbJwt
     if (!wrappedVp.presentation.compactSdJwtVc.endsWith('~')) {
       const kbJwt = wrappedVp.presentation.compactSdJwtVc.split('~').pop();
-      const { payload } = decodeJWT(kbJwt);
+
+      const payload = jwtDecode<JwtPayload>(kbJwt, { header: false });
+
       return payload.nonce;
     }
 

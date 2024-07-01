@@ -1,11 +1,9 @@
 import { IPresentationDefinition } from '@sphereon/pex';
 import { ICredential, IPresentation, IProofType, IVerifiableCredential, IVerifiablePresentation } from '@sphereon/ssi-types';
-import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 
 import {
   AuthorizationResponse,
   AuthorizationResponseOpts,
-  CheckLinkedDomain,
   CreateAuthorizationRequestOpts,
   PassBy,
   PresentationExchange,
@@ -19,13 +17,14 @@ import {
   SubjectIdentifierType,
   SubjectType,
   SupportedVersion,
-  VerificationMode,
   VerifyAuthorizationRequestOpts,
   VPTokenLocation,
 } from '../src';
 import { createPresentationSubmission } from '../src/authorization-response/OpenID4VP';
 import SIOPErrors from '../src/types/Errors';
 
+import { getCreateJwtCallback, getVerifyJwtCallback } from './DidJwtTestUtils';
+import { getResolver } from './ResolverTestUtils';
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
@@ -50,7 +49,6 @@ const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 
 describe('create JWT from Request JWT should', () => {
   const responseOpts: AuthorizationResponseOpts = {
-    checkLinkedDomain: CheckLinkedDomain.NEVER,
     responseURI: EXAMPLE_REDIRECT_URL,
     responseURIType: 'redirect_uri',
     responseMode: ResponseMode.POST,
@@ -74,22 +72,19 @@ describe('create JWT from Request JWT should', () => {
       clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
       'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
     },
-    signature: {
+    createJwtCallback: getCreateJwtCallback({
       did: DID,
       hexPrivateKey: HEX_KEY,
       kid: KID,
       alg: SigningAlgo.ES256K,
-    },
+    }),
+    jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256K },
   };
+
+  const resolver = getResolver('ethr');
   const verifyOpts: VerifyAuthorizationRequestOpts = {
-    verification: {
-      resolveOpts: {
-        subjectSyntaxTypesSupported: ['did:ethr'],
-      },
-      mode: VerificationMode.INTERNAL,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
-    },
+    verifyJwtCallback: getVerifyJwtCallback(resolver),
+    verification: {},
     supportedVersions: [SupportedVersion.SIOPv2_ID1],
     correlationId: '1234',
   };
@@ -125,13 +120,14 @@ describe('create JWT from Request JWT should', () => {
       },*/
       requestObject: {
         passBy: PassBy.REFERENCE,
+        jwtIssuer: { method: 'did', didUrl: `${mockReqEntity.did}#controller`, alg: SigningAlgo.ES256K },
         reference_uri: 'https://my-request.com/here',
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
           alg: SigningAlgo.ES256K,
-        },
+        }),
         payload: {
           nonce: '12345',
           state: '12345',
@@ -163,7 +159,6 @@ describe('create JWT from Request JWT should', () => {
       },
     };
     const responseOpts: AuthorizationResponseOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       responseURI: EXAMPLE_REDIRECT_URL,
       responseURIType: 'redirect_uri',
       registration: {
@@ -187,12 +182,13 @@ describe('create JWT from Request JWT should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
-      signature: {
+      createJwtCallback: getCreateJwtCallback({
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
         alg: SigningAlgo.ES256K,
-      },
+      }),
+      jwtIssuer: { method: 'did', didUrl: `${mockResEntity.did}#controller`, alg: SigningAlgo.ES256K },
       responseMode: ResponseMode.POST,
     };
 
@@ -218,12 +214,13 @@ describe('create JWT from Request JWT should', () => {
         requestObject: {
           passBy: PassBy.REFERENCE,
           reference_uri: 'https://my-request.com/here',
-          signature: {
+          jwtIssuer: { method: 'did', didUrl: `${mockReqEntity.did}#controller`, alg: SigningAlgo.ES256K },
+          createJwtCallback: getCreateJwtCallback({
             hexPrivateKey: mockReqEntity.hexPrivateKey,
             did: mockReqEntity.did,
             kid: `${mockReqEntity.did}#controller`,
             alg: SigningAlgo.ES256K,
-          },
+          }),
           payload: {
             client_id: WELL_KNOWN_OPENID_FEDERATION,
             scope: 'test',
@@ -253,7 +250,6 @@ describe('create JWT from Request JWT should', () => {
         },
       };
       const responseOpts: AuthorizationResponseOpts = {
-        checkLinkedDomain: CheckLinkedDomain.NEVER,
         responseURI: EXAMPLE_REDIRECT_URL,
         responseURIType: 'redirect_uri',
         registration: {
@@ -277,18 +273,21 @@ describe('create JWT from Request JWT should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         },
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           did: mockResEntity.did,
           hexPrivateKey: mockResEntity.hexPrivateKey,
           kid: `${mockResEntity.did}#controller`,
           alg: SigningAlgo.ES256K,
-        },
+        }),
+        jwtIssuer: { method: 'did', didUrl: `${mockResEntity.did}#controller`, alg: SigningAlgo.ES256K },
         responseMode: ResponseMode.POST,
       };
 
       const requestObject = await RequestObject.fromOpts(requestOpts);
       // console.log(JSON.stringify(await AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)));
-      await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
+      const jwt = await requestObject.toJwt();
+      const response = await AuthorizationResponse.fromRequestObject(jwt, responseOpts, verifyOpts);
+      await expect(response).toBeDefined();
     },
     UNIT_TEST_TIMEOUT,
   );
@@ -341,12 +340,13 @@ describe('create JWT from Request JWT should', () => {
       requestObject: {
         passBy: PassBy.REFERENCE,
         reference_uri: 'https://my-request.com/here',
-        signature: {
+        jwtIssuer: { method: 'did', didUrl: mockReqEntity.did, alg: SigningAlgo.ES256K },
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
           alg: SigningAlgo.ES256K,
-        },
+        }),
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
@@ -415,7 +415,6 @@ describe('create JWT from Request JWT should', () => {
       {},
     );
     const responseOpts: AuthorizationResponseOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       responseURI: EXAMPLE_REDIRECT_URL,
       responseURIType: 'redirect_uri',
       registration: {
@@ -437,12 +436,13 @@ describe('create JWT from Request JWT should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
-      signature: {
+      createJwtCallback: getCreateJwtCallback({
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
         alg: SigningAlgo.ES256K,
-      },
+      }),
+      jwtIssuer: { method: 'did', didUrl: `${mockResEntity.did}#controller`, alg: SigningAlgo.ES256K },
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         vpTokenLocation: VPTokenLocation.ID_TOKEN,
@@ -457,7 +457,9 @@ describe('create JWT from Request JWT should', () => {
     /* console.log(
       JSON.stringify(await AuthenticationResponse.createJWTFromRequestJWT(requestWithJWT.jwt, responseOpts, verifyOpts))
     );*/
-    await expect(await AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).toBeDefined();
+    const jwt = await requestObject.toJwt();
+    const authorizationRequest = await AuthorizationResponse.fromRequestObject(jwt, responseOpts, verifyOpts);
+    await expect(authorizationRequest).toBeDefined();
   });
 
   it('succeed when valid JWT with PD is passed in for id_token', async () => {
@@ -503,14 +505,15 @@ describe('create JWT from Request JWT should', () => {
         },*/
       },
       requestObject: {
+        jwtIssuer: { method: 'did', didUrl: `${mockReqEntity.did}#controller`, alg: SigningAlgo.ES256K },
         passBy: PassBy.REFERENCE,
         reference_uri: 'https://my-request.com/here',
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: mockReqEntity.hexPrivateKey,
           did: mockReqEntity.did,
           kid: `${mockReqEntity.did}#controller`,
           alg: SigningAlgo.ES256K,
-        },
+        }),
         payload: {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
@@ -591,7 +594,6 @@ describe('create JWT from Request JWT should', () => {
       {},
     );
     const responseOpts: AuthorizationResponseOpts = {
-      checkLinkedDomain: CheckLinkedDomain.NEVER,
       responseURI: EXAMPLE_REDIRECT_URL,
       responseURIType: 'redirect_uri',
       registration: {
@@ -614,12 +616,13 @@ describe('create JWT from Request JWT should', () => {
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
-      signature: {
+      createJwtCallback: getCreateJwtCallback({
         did: mockResEntity.did,
         hexPrivateKey: mockResEntity.hexPrivateKey,
         kid: `${mockResEntity.did}#controller`,
         alg: SigningAlgo.ES256K,
-      },
+      }),
+      jwtIssuer: { method: 'did', didUrl: `${mockResEntity.did}#controller`, alg: SigningAlgo.ES256K },
       presentationExchange: {
         verifiablePresentations: [verifiablePresentationResult.verifiablePresentation],
         presentationSubmission: await createPresentationSubmission([verifiablePresentationResult.verifiablePresentation], {
@@ -632,6 +635,8 @@ describe('create JWT from Request JWT should', () => {
     };
 
     const requestObject = await RequestObject.fromOpts(requestOpts);
-    await expect(AuthorizationResponse.fromRequestObject(await requestObject.toJwt(), responseOpts, verifyOpts)).resolves.toBeDefined();
+    const jwt = await requestObject.toJwt();
+    const authResponse = AuthorizationResponse.fromRequestObject(jwt, responseOpts, verifyOpts);
+    await expect(authResponse).toBeDefined();
   });
 });

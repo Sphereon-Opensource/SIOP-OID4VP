@@ -1,9 +1,6 @@
-import { getUniResolver } from '@sphereon/did-uni-client';
 import { IProofType } from '@sphereon/ssi-types';
-import { Resolver } from 'did-resolver';
 
 import {
-  CheckLinkedDomain,
   CreateAuthorizationRequestOpts,
   PassBy,
   PropertyTarget,
@@ -17,6 +14,8 @@ import {
   SupportedVersion,
 } from '../src';
 
+import { getCreateJwtCallback, getVerifyJwtCallback, internalSignature } from './DidJwtTestUtils';
+import { getResolver } from './ResolverTestUtils';
 import { WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   VERIFIER_LOGO_FOR_CLIENT,
@@ -43,14 +42,13 @@ describe('RP OPBuilder should', () => {
   it('build an RP when all arguments are set', async () => {
     expect.assertions(1);
 
+    const resolver = getResolver('ethr');
     expect(
       RP.builder({ requestVersion: SupportedVersion.SIOPv2_ID1 })
         .withClientId('test_client_id')
         .withScope('test')
         .withResponseType(ResponseType.ID_TOKEN)
-        .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-        .addDidMethod('factom')
-        .addResolver('ethr', new Resolver(getUniResolver('ethr')))
+        .withVerifyJwtCallback(getVerifyJwtCallback(resolver))
         .withRedirectUri('https://redirect.me')
         .withRequestBy(PassBy.VALUE)
         .withResponseMode(ResponseMode.POST)
@@ -64,7 +62,7 @@ describe('RP OPBuilder should', () => {
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
 
-        .withInternalSignature('myprivatekye', 'did:example:123', 'did:example:123#key', SigningAlgo.ES256K)
+        .withCreateJwtCallback(internalSignature('myprivatekye', 'did:example:123', 'did:example:123#key', SigningAlgo.ES256K))
         .withSupportedVersions(SupportedVersion.SIOPv2_ID1)
         .build(),
     ).toBeInstanceOf(RP);
@@ -88,15 +86,19 @@ describe('RP should', () => {
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
       requestObject: {
+        jwtIssuer: {
+          method: 'did',
+          didUrl: KID,
+          alg: SigningAlgo.ES256K,
+        },
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
-
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
-        },
+        }),
       },
       clientMetadata: {
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -135,15 +137,20 @@ describe('RP should', () => {
         redirect_uri: EXAMPLE_REDIRECT_URL,
       },
       requestObject: {
+        jwtIssuer: {
+          method: 'did',
+          didUrl: KID,
+          alg: SigningAlgo.ES256K,
+        },
         passBy: PassBy.REFERENCE,
         reference_uri: EXAMPLE_REFERENCE_URL,
 
-        signature: {
+        createJwtCallback: getCreateJwtCallback({
           hexPrivateKey: HEX_KEY,
           did: DID,
           kid: KID,
           alg: SigningAlgo.ES256K,
-        },
+        }),
       },
       clientMetadata: {
         client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -206,6 +213,7 @@ describe('RP should', () => {
       correlationId: '1234',
       state: 'b32f0087fc9816eb813fd11f',
       nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+      jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256K },
     });
     expect(request.authorizationRequestPayload).toMatchObject(expectedPayloadWithoutRequest);
     expect(request.encodedUri).toMatch(expectedUri);
@@ -253,10 +261,10 @@ describe('RP should', () => {
       .withClientId(WELL_KNOWN_OPENID_FEDERATION, alltargets)
       .withScope('test', alltargets)
       .withResponseType(ResponseType.ID_TOKEN, alltargets)
-      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
+      .withVerifyJwtCallback(getVerifyJwtCallback(getResolver('ethr')))
       .withRedirectUri(EXAMPLE_REDIRECT_URL, alltargets)
       .withRequestBy(PassBy.REFERENCE, EXAMPLE_REFERENCE_URL)
-      .withInternalSignature(HEX_KEY, DID, KID, SigningAlgo.ES256K)
+      .withCreateJwtCallback(internalSignature(HEX_KEY, DID, KID, SigningAlgo.ES256K))
       .withClientMetadata(
         {
           client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -276,7 +284,7 @@ describe('RP should', () => {
           },
           scopesSupported: [Scope.OPENID_DIDAUTHN, Scope.OPENID],
           subjectTypesSupported: [SubjectType.PAIRWISE],
-          subject_syntax_types_supported: [],
+          subject_syntax_types_supported: ['did:ethr'],
           passBy: PassBy.VALUE,
           logo_uri: VERIFIER_LOGO_FOR_CLIENT + ' 2022-09-29 01',
           clientName: VERIFIER_NAME_FOR_CLIENT + ' 2022-09-29 01',
@@ -286,7 +294,6 @@ describe('RP should', () => {
         },
         alltargets,
       )
-      .addDidMethod('did:ethr')
       .withSupportedVersions([SupportedVersion.SIOPv2_D11])
       .build()
 
@@ -294,6 +301,7 @@ describe('RP should', () => {
         correlationId: '1234',
         state: 'b32f0087fc9816eb813fd11f',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
+        jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256K },
       });
     expect(request.authorizationRequestPayload).toMatchObject(expectedPayloadWithoutRequest);
     expect(request.encodedUri).toMatch(expectedUri);

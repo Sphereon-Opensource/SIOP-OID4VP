@@ -1,4 +1,7 @@
-import { PassBy, ResponseType, RevocationVerification, RP, Scope, SigningAlgo, SubjectType, SupportedVersion } from '../../src';
+import { jwtDecode } from 'jwt-decode';
+
+import { JwtPayload, PassBy, ResponseType, RevocationVerification, RP, Scope, SigningAlgo, SubjectType, SupportedVersion } from '../../src';
+import { internalSignature } from '../DidJwtTestUtils';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
 // const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
@@ -11,9 +14,7 @@ const rp = RP.builder()
   .withRedirectUri(EXAMPLE_REDIRECT_URL)
   .withRequestByValue()
   .withRevocationVerification(RevocationVerification.NEVER)
-  .withInternalSignature(HEX_KEY, DID, KID, SigningAlgo.ES256K)
-  .addDidMethod('ethr')
-  .addDidMethod('key')
+  .withCreateJwtCallback(internalSignature(HEX_KEY, DID, KID, SigningAlgo.ES256K))
   .withSupportedVersions([SupportedVersion.JWT_VC_PRESENTATION_PROFILE_v1])
   .withClientMetadata({
     idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -52,7 +53,8 @@ describe('Creating an AuthRequest with an RP from builder', () => {
       state: 'b32f0087fc9816eb813fd11f',
     });
 
-    const requestObjectPayload = await authRequest.requestObject.getPayload();
-    await expect(requestObjectPayload.client_id).toEqual(DID);
+    const requestObjectJwt = await authRequest.requestObject.toJwt();
+    const payload: JwtPayload & { client_id?: string } = jwtDecode(requestObjectJwt, { header: false });
+    await expect(payload.client_id).toEqual(DID);
   });
 });

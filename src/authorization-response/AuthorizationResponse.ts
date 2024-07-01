@@ -48,7 +48,7 @@ export class AuthorizationResponse {
     verifyOpts: VerifyAuthorizationRequestOpts,
   ): Promise<AuthorizationResponse> {
     assertValidVerifyAuthorizationRequestOpts(verifyOpts);
-    await assertValidResponseOpts(responseOpts);
+    assertValidResponseOpts(responseOpts);
     if (!requestObject || !requestObject.startsWith('ey')) {
       throw new Error(SIOPErrors.NO_JWT);
     }
@@ -63,8 +63,9 @@ export class AuthorizationResponse {
     if (!authorizationResponsePayload) {
       throw new Error(SIOPErrors.NO_RESPONSE);
     }
+
     if (responseOpts) {
-      await assertValidResponseOpts(responseOpts);
+      assertValidResponseOpts(responseOpts);
     }
     const idToken = authorizationResponsePayload.id_token ? await IDToken.fromIDToken(authorizationResponsePayload.id_token) : undefined;
     return new AuthorizationResponse({
@@ -79,7 +80,7 @@ export class AuthorizationResponse {
     responseOpts: AuthorizationResponseOpts,
     verifyOpts: VerifyAuthorizationRequestOpts,
   ): Promise<AuthorizationResponse> {
-    await assertValidResponseOpts(responseOpts);
+    assertValidResponseOpts(responseOpts);
     if (!authorizationRequest) {
       throw new Error(SIOPErrors.NO_REQUEST);
     }
@@ -92,7 +93,7 @@ export class AuthorizationResponse {
     responseOpts: AuthorizationResponseOpts,
     verifyOpts: VerifyAuthorizationRequestOpts,
   ): Promise<AuthorizationResponse> {
-    await assertValidResponseOpts(responseOpts);
+    assertValidResponseOpts(responseOpts);
     if (!verifiedAuthorizationRequest) {
       throw new Error(SIOPErrors.NO_REQUEST);
     }

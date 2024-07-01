@@ -1,10 +1,8 @@
 import { IProofType } from '@sphereon/ssi-types';
-import { IVerifyCallbackArgs, IVerifyCredentialResult } from '@sphereon/wellknown-dids-client';
 import nock from 'nock';
 
 import {
   AuthorizationResponseOpts,
-  CheckLinkedDomain,
   CreateAuthorizationRequestOpts,
   OP,
   PassBy,
@@ -17,10 +15,11 @@ import {
   SubjectIdentifierType,
   SubjectType,
   SupportedVersion,
-  VerificationMode,
   VerifyAuthorizationRequestOpts,
 } from '../src';
 
+import { getCreateJwtCallback, getVerifyJwtCallback, internalSignature } from './DidJwtTestUtils';
+import { getResolver } from './ResolverTestUtils';
 import { mockedGetEnterpriseAuthToken, WELL_KNOWN_OPENID_FEDERATION } from './TestUtils';
 import {
   UNIT_TEST_TIMEOUT,
@@ -48,8 +47,6 @@ describe('OP OPBuilder should', () => {
 
     expect(
       OP.builder()
-        .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
-        .addDidMethod('ethr')
         .withIssuer(ResponseIss.SELF_ISSUED_V2)
         .withResponseMode(ResponseMode.POST)
         .withRegistration({
@@ -61,7 +58,8 @@ describe('OP OPBuilder should', () => {
           clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
           'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
         })
-        .withInternalSignature('myprivatekey', 'did:example:123', 'did:example:123#key', SigningAlgo.ES256K)
+        .withCreateJwtCallback(internalSignature('myprivatekey', 'did:example:123', 'did:example:123#key', SigningAlgo.ES256K))
+        .withVerifyJwtCallback(getVerifyJwtCallback(getResolver('ethr'), { checkLinkedDomain: 'never' }))
         .withExpiresIn(1000)
         .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
         .build(),
@@ -71,15 +69,15 @@ describe('OP OPBuilder should', () => {
 
 describe('OP should', () => {
   const responseOpts: AuthorizationResponseOpts = {
-    checkLinkedDomain: CheckLinkedDomain.NEVER,
     responseURI: EXAMPLE_REDIRECT_URL,
     responseURIType: 'redirect_uri',
-    signature: {
+    createJwtCallback: getCreateJwtCallback({
       hexPrivateKey: HEX_KEY,
       did: DID,
       kid: KID,
       alg: SigningAlgo.ES256K,
-    },
+    }),
+    jwtIssuer: { method: 'did', didUrl: KID, alg: SigningAlgo.ES256K },
     registration: {
       authorizationEndpoint: 'www.myauthorizationendpoint.com',
       responseTypesSupported: [ResponseType.ID_TOKEN],
@@ -102,15 +100,10 @@ describe('OP should', () => {
     expiresIn: 2000,
   };
 
+  const resolver = getResolver('ethr');
   const verifyOpts: VerifyAuthorizationRequestOpts = {
-    verification: {
-      mode: VerificationMode.INTERNAL,
-      resolveOpts: {
-        subjectSyntaxTypesSupported: ['did:ethr'],
-      },
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      wellknownDIDVerifyCallback: async (_args: IVerifyCallbackArgs): Promise<IVerifyCredentialResult> => ({ verified: true }),
-    },
+    verifyJwtCallback: getVerifyJwtCallback(resolver),
+    verification: {},
     correlationId: '1234',
     supportedVersions: [SupportedVersion.SIOPv2_ID1],
     nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
@@ -135,15 +128,16 @@ describe('OP should', () => {
         version: SupportedVersion.SIOPv2_ID1,
 
         requestObject: {
+          jwtIssuer: { method: 'did', didUrl: `${mockEntity.did}#controller`, alg: SigningAlgo.ES256K },
           passBy: PassBy.REFERENCE,
           reference_uri: EXAMPLE_REFERENCE_URL,
 
-          signature: {
+          createJwtCallback: getCreateJwtCallback({
             hexPrivateKey: mockEntity.hexPrivateKey,
             did: mockEntity.did,
             kid: `${mockEntity.did}#controller`,
             alg: SigningAlgo.ES256K,
-          },
+          }),
           payload: {
             redirect_uri: EXAMPLE_REDIRECT_URL,
             client_id: WELL_KNOWN_OPENID_FEDERATION,
@@ -177,6 +171,7 @@ describe('OP should', () => {
         correlationId: '1234',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
+        jwtIssuer: { method: 'did', didUrl: `${mockEntity.did}#controller`, alg: SigningAlgo.ES256K },
       });
 
       nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObjectJwt);
@@ -184,11 +179,6 @@ describe('OP should', () => {
       const verifiedRequest = await OP.fromOpts(responseOpts, verifyOpts).verifyAuthorizationRequest(requestURI.encodedUri);
       // console.log(JSON.stringify(verifiedRequest));
       expect(verifiedRequest.issuer).toMatch(mockEntity.did);
-      expect(verifiedRequest.signer).toMatchObject({
-        id: `${mockEntity.did}#controller`,
-        type: 'EcdsaSecp256k1RecoveryMethod2020',
-        controller: `${mockEntity.did}`,
-      });
       expect(verifiedRequest.jwt).toBeDefined();
     },
     UNIT_TEST_TIMEOUT,
@@ -202,12 +192,18 @@ describe('OP should', () => {
       .withClientId(WELL_KNOWN_OPENID_FEDERATION)
       .withScope('test')
       .withResponseType(ResponseType.ID_TOKEN)
-      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withAuthorizationEndpoint('www.myauthorizationendpoint.com')
       .withRedirectUri(EXAMPLE_REFERENCE_URL)
+      .withVerifyJwtCallback(getVerifyJwtCallback(resolver))
       .withRequestBy(PassBy.VALUE)
-      .withInternalSignature(rpMockEntity.hexPrivateKey, rpMockEntity.did, `${rpMockEntity.did}#controller`, SigningAlgo.ES256K)
-      .addDidMethod('ethr')
+      .withCreateJwtCallback(
+        getCreateJwtCallback({
+          hexPrivateKey: rpMockEntity.hexPrivateKey,
+          did: rpMockEntity.did,
+          kid: `${rpMockEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
+        }),
+      )
       .withClientMetadata({
         client_id: WELL_KNOWN_OPENID_FEDERATION,
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
@@ -230,15 +226,22 @@ describe('OP should', () => {
         correlationId: '1234',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
+        jwtIssuer: { method: 'did', didUrl: `${rpMockEntity.did}#controller`, alg: SigningAlgo.ES256K },
       });
 
     const verifiedRequest = await OP.builder()
-      .withCheckLinkedDomain(CheckLinkedDomain.NEVER)
       .withSupportedVersions([SupportedVersion.SIOPv2_ID1])
       .withExpiresIn(1000)
       .withIssuer(ResponseIss.SELF_ISSUED_V2)
-      .addDidMethod('ethr')
-      .withInternalSignature(opMockEntity.hexPrivateKey, opMockEntity.did, `${opMockEntity.did}#controller`, SigningAlgo.ES256K)
+      .withVerifyJwtCallback(getVerifyJwtCallback(resolver, { checkLinkedDomain: 'never' }))
+      .withCreateJwtCallback(
+        getCreateJwtCallback({
+          hexPrivateKey: opMockEntity.hexPrivateKey,
+          did: opMockEntity.did,
+          kid: `${opMockEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
+        }),
+      )
       .withRegistration({
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
@@ -259,11 +262,6 @@ describe('OP should', () => {
       .verifyAuthorizationRequest(requestURI.encodedUri);
     // console.log(JSON.stringify(verifiedRequest));
     expect(verifiedRequest.issuer).toMatch(rpMockEntity.did);
-    expect(verifiedRequest.signer).toMatchObject({
-      id: `${rpMockEntity.did}#controller`,
-      type: 'EcdsaSecp256k1RecoveryMethod2020',
-      controller: `${rpMockEntity.did}`,
-    });
     expect(verifiedRequest.jwt).toBeDefined();
   });
 });

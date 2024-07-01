@@ -1,4 +1,4 @@
-import { decodeJWT } from 'did-jwt';
+import { jwtDecode } from 'jwt-decode';
 
 import { PresentationExchange } from '../authorization-response/PresentationExchange';
 import { decodeUriAsJson, encodeJsonAsURI, fetchByReferenceOrUseByValue } from '../helpers';
@@ -6,6 +6,7 @@ import { assertValidRequestObjectPayload, RequestObject } from '../request-objec
 import {
   AuthorizationRequestPayload,
   AuthorizationRequestURI,
+  JwtPayload,
   ObjectBy,
   PassBy,
   RequestObjectJwt,
@@ -43,7 +44,7 @@ export class URI implements AuthorizationRequestURI {
       throw Error(SIOPErrors.BAD_PARAMS);
     }
     const { scheme, requestObjectJwt, authorizationRequestPayload, registrationMetadata } = await URI.parseAndResolve(uri);
-    const requestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt).payload as RequestObjectPayload) : undefined;
+    const requestObjectPayload = requestObjectJwt ? (jwtDecode(requestObjectJwt, { header: false }) as RequestObjectPayload) : undefined;
     if (requestObjectPayload) {
       assertValidRequestObjectPayload(requestObjectPayload);
     }
@@ -151,15 +152,13 @@ export class URI implements AuthorizationRequestURI {
     }
 
     const isJwt = typeof authorizationRequestPayload === 'string';
-    const requestObjectJwt = requestObject
-      ? await requestObject.toJwt()
-      : typeof authorizationRequestPayload === 'string'
-        ? authorizationRequestPayload
-        : authorizationRequestPayload.request;
+    const requestObjectJwt = requestObject ? await requestObject.toJwt() : authorizationRequestPayload.request;
     if (isJwt && (!requestObjectJwt || !requestObjectJwt.startsWith('ey'))) {
       throw Error(SIOPErrors.NO_JWT);
     }
-    const requestObjectPayload: RequestObjectPayload = requestObjectJwt ? (decodeJWT(requestObjectJwt).payload as RequestObjectPayload) : undefined;
+    const requestObjectPayload: RequestObjectPayload = requestObjectJwt
+      ? (jwtDecode<JwtPayload>(requestObjectJwt, { header: false }) as RequestObjectPayload)
+      : undefined;
 
     if (requestObjectPayload) {
       // Only used to validate if the request object contains presentation definition(s)

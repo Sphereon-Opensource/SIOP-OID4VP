@@ -17,19 +17,16 @@ import {
   AuthorizationEvent,
   AuthorizationEvents,
   ContentType,
-  ExternalSignature,
-  ExternalVerification,
-  InternalSignature,
-  InternalVerification,
+  JwtIssuer,
   ParsedAuthorizationRequestURI,
   RegisterEventListener,
   ResponseIss,
   ResponseMode,
   SIOPErrors,
   SIOPResonse,
-  SuppliedSignature,
   SupportedVersion,
   UrlEncodingFormat,
+  Verification,
   VerifiedAuthorizationRequest,
 } from '../types';
 
@@ -58,7 +55,7 @@ export class OP {
 
   public async verifyAuthorizationRequest(
     requestJwtOrUri: string | URI,
-    requestOpts?: { correlationId?: string; verification?: InternalVerification | ExternalVerification },
+    requestOpts?: { correlationId?: string; verification?: Verification },
   ): Promise<VerifiedAuthorizationRequest> {
     const correlationId = requestOpts?.correlationId || uuidv4();
     const authorizationRequest = await AuthorizationRequest.fromUriOrJwt(requestJwtOrUri)
@@ -96,13 +93,13 @@ export class OP {
 
   public async createAuthorizationResponse(
     verifiedAuthorizationRequest: VerifiedAuthorizationRequest,
-    responseOpts?: {
+    responseOpts: {
+      jwtIssuer?: JwtIssuer;
       version?: SupportedVersion;
       correlationId?: string;
       audience?: string;
       issuer?: ResponseIss | string;
-      signature?: InternalSignature | ExternalSignature | SuppliedSignature;
-      verification?: InternalVerification | ExternalVerification;
+      verification?: Verification;
       presentationExchange?: PresentationExchangeResponseOpts;
     },
   ): Promise<AuthorizationResponseWithCorrelationId> {
@@ -217,7 +214,6 @@ export class OP {
     version?: SupportedVersion;
     issuer?: IIssuerId | ResponseIss;
     audience?: string;
-    signature?: InternalSignature | ExternalSignature | SuppliedSignature;
     presentationExchange?: PresentationExchangeResponseOpts;
   }): AuthorizationResponseOpts {
     const version = opts.version ?? this._createResponseOptions.version;
@@ -237,10 +233,6 @@ export class OP {
     return {
       ...this._createResponseOptions,
       ...opts,
-      signature: {
-        ...this._createResponseOptions?.signature,
-        ...opts.signature,
-      },
       ...(presentationExchange && { presentationExchange }),
       registration: { ...this._createResponseOptions?.registration, issuer },
       responseURI,
@@ -249,12 +241,10 @@ export class OP {
     };
   }
 
-  private newVerifyAuthorizationRequestOpts(requestOpts: {
-    correlationId: string;
-    verification?: InternalVerification | ExternalVerification;
-  }): VerifyAuthorizationRequestOpts {
+  private newVerifyAuthorizationRequestOpts(requestOpts: { correlationId: string; verification?: Verification }): VerifyAuthorizationRequestOpts {
     const verification: VerifyAuthorizationRequestOpts = {
       ...this._verifyRequestOptions,
+      verifyJwtCallback: this._verifyRequestOptions.verifyJwtCallback,
       ...requestOpts,
       verification: mergeVerificationOpts(this._verifyRequestOptions, requestOpts),
       correlationId: requestOpts.correlationId,

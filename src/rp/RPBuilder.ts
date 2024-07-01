@@ -1,23 +1,14 @@
 import { EventEmitter } from 'events';
 
-import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { IPresentationDefinition } from '@sphereon/pex';
 import { Hasher } from '@sphereon/ssi-types';
-import { VerifyCallback } from '@sphereon/wellknown-dids-client';
-import { Signer } from 'did-jwt';
-import { Resolvable, Resolver } from 'did-resolver';
 
 import { PropertyTarget, PropertyTargets } from '../authorization-request';
 import { PresentationVerificationCallback } from '../authorization-response';
-import { getMethodFromDid } from '../did';
+import { CreateJwtCallback, VerifyJwtCallback } from '../types';
 import {
   AuthorizationRequestPayload,
-  CheckLinkedDomain,
   ClientMetadataOpts,
-  EcdsaSignature,
-  ExternalSignature,
-  InternalSignature,
-  NoSignature,
   ObjectBy,
   PassBy,
   RequestObjectPayload,
@@ -26,9 +17,6 @@ import {
   ResponseType,
   RevocationVerification,
   RevocationVerificationCallback,
-  SigningAlgo,
-  SubjectSyntaxTypesSupportedValues,
-  SuppliedSignature,
   SupportedVersion,
 } from '../types';
 
@@ -37,12 +25,9 @@ import { RP } from './RP';
 import { IRPSessionManager } from './types';
 
 export class RPBuilder {
-  resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
-  customResolver?: Resolvable;
   requestObjectBy: ObjectBy;
-  signature: InternalSignature | ExternalSignature | SuppliedSignature | NoSignature;
-  checkLinkedDomain?: CheckLinkedDomain;
-  wellknownDIDVerifyCallback?: VerifyCallback;
+  createJwtCallback?: CreateJwtCallback;
+  verifyJwtCallback?: VerifyJwtCallback;
   revocationVerification?: RevocationVerification;
   revocationVerificationCallback?: RevocationVerificationCallback;
   presentationVerificationCallback?: PresentationVerificationCallback;
@@ -110,17 +95,6 @@ export class RPBuilder {
     return this;
   }
 
-  withCustomResolver(resolver: Resolvable): RPBuilder {
-    this.customResolver = resolver;
-    return this;
-  }
-
-  addResolver(didMethod: string, resolver: Resolvable): RPBuilder {
-    const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
-    this.resolvers.set(qualifiedDidMethod, resolver);
-    return this;
-  }
-
   withAuthorizationEndpoint(authorizationEndpoint: string, targets?: PropertyTargets): RPBuilder {
     this._authorizationRequestPayload.authorization_endpoint = assignIfAuth(
       {
@@ -136,20 +110,6 @@ export class RPBuilder {
       },
       true,
     );
-    return this;
-  }
-
-  withCheckLinkedDomain(mode: CheckLinkedDomain): RPBuilder {
-    this.checkLinkedDomain = mode;
-    return this;
-  }
-
-  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): RPBuilder {
-    const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
-    if (method === SubjectSyntaxTypesSupportedValues.DID.valueOf()) {
-      opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
-    }
-    opts ? this.addResolver(method, new Resolver(getUniResolver(method, { ...opts }))) : this.addResolver(method, null);
     return this;
   }
 
@@ -222,24 +182,13 @@ export class RPBuilder {
     return this;
   }
 
-  // Only internal and supplied signatures supported for now
-  withSignature(signature: InternalSignature | SuppliedSignature): RPBuilder {
-    this.signature = signature;
+  withCreateJwtCallback(createJwtCallback: CreateJwtCallback): RPBuilder {
+    this.createJwtCallback = createJwtCallback;
     return this;
   }
 
-  withInternalSignature(hexPrivateKey: string, did: string, kid: string, alg: SigningAlgo, customJwtSigner?: Signer): RPBuilder {
-    this.withSignature({ hexPrivateKey, did, kid, alg, customJwtSigner });
-    return this;
-  }
-
-  withSuppliedSignature(
-    signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
-    did: string,
-    kid: string,
-    alg: SigningAlgo,
-  ): RPBuilder {
-    this.withSignature({ signature, did, kid, alg });
+  withVerifyJwtCallback(verifyJwtCallback: VerifyJwtCallback): RPBuilder {
+    this.verifyJwtCallback = verifyJwtCallback;
     return this;
   }
 
@@ -294,11 +243,6 @@ export class RPBuilder {
         true,
       );
     }
-    return this;
-  }
-
-  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback): RPBuilder {
-    this.wellknownDIDVerifyCallback = wellknownDIDVerifyCallback;
     return this;
   }
 

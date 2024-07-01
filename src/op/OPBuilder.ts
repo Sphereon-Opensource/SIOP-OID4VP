@@ -1,54 +1,26 @@
 import { EventEmitter } from 'events';
 
-import { Config, getUniResolver, UniResolver } from '@sphereon/did-uni-client';
 import { Hasher, IIssuerId } from '@sphereon/ssi-types';
-import { VerifyCallback } from '@sphereon/wellknown-dids-client';
-import { Signer } from 'did-jwt';
-import { Resolvable, Resolver } from 'did-resolver';
 
 import { PropertyTargets } from '../authorization-request';
 import { PresentationSignCallback } from '../authorization-response';
-import { getMethodFromDid } from '../did';
-import {
-  CheckLinkedDomain,
-  EcdsaSignature,
-  ExternalSignature,
-  InternalSignature,
-  ResponseIss,
-  ResponseMode,
-  ResponseRegistrationOpts,
-  SigningAlgo,
-  SubjectSyntaxTypesSupportedValues,
-  SuppliedSignature,
-  SupportedVersion,
-} from '../types';
+import { ResponseIss, ResponseMode, ResponseRegistrationOpts, SupportedVersion, VerifyJwtCallback } from '../types';
+import { CreateJwtCallback } from '../types/JwtIssuer';
 
 import { OP } from './OP';
 
 export class OPBuilder {
   expiresIn?: number;
   issuer?: IIssuerId | ResponseIss;
-  resolvers: Map<string, Resolvable> = new Map<string, Resolvable>();
   responseMode?: ResponseMode = ResponseMode.DIRECT_POST;
   responseRegistration?: Partial<ResponseRegistrationOpts> = {};
-  customResolver?: Resolvable;
-  signature?: InternalSignature | ExternalSignature | SuppliedSignature;
-  checkLinkedDomain?: CheckLinkedDomain;
-  wellknownDIDVerifyCallback?: VerifyCallback;
+  createJwtCallback?: CreateJwtCallback;
+  verifyJwtCallback?: VerifyJwtCallback;
   presentationSignCallback?: PresentationSignCallback;
   supportedVersions?: SupportedVersion[];
   eventEmitter?: EventEmitter;
 
   hasher?: Hasher;
-
-  addDidMethod(didMethod: string, opts?: { resolveUrl?: string; baseUrl?: string }): OPBuilder {
-    const method = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
-    if (method === SubjectSyntaxTypesSupportedValues.DID.valueOf()) {
-      opts ? this.addResolver('', new UniResolver({ ...opts } as Config)) : this.addResolver('', null);
-    }
-    opts ? this.addResolver(method, new Resolver(getUniResolver(method, { ...opts }))) : this.addResolver(method, null);
-    return this;
-  }
 
   withHasher(hasher: Hasher): OPBuilder {
     this.hasher = hasher;
@@ -61,29 +33,8 @@ export class OPBuilder {
     return this;
   }
 
-  withCustomResolver(resolver: Resolvable): OPBuilder {
-    this.customResolver = resolver;
-    return this;
-  }
-
-  addResolver(didMethod: string, resolver: Resolvable): OPBuilder {
-    const qualifiedDidMethod = didMethod.startsWith('did:') ? getMethodFromDid(didMethod) : didMethod;
-    this.resolvers.set(qualifiedDidMethod, resolver);
-    return this;
-  }
-
-  /*withDid(did: string): OPBuilder {
-    this.did = did;
-    return this;
-  }
-*/
   withExpiresIn(expiresIn: number): OPBuilder {
     this.expiresIn = expiresIn;
-    return this;
-  }
-
-  withCheckLinkedDomain(mode: CheckLinkedDomain): OPBuilder {
-    this.checkLinkedDomain = mode;
     return this;
   }
 
@@ -108,29 +59,13 @@ export class OPBuilder {
   requestObjectSigningAlgValuesSupported?: SigningAlgo[] | SigningAlgo;
 */
 
-  // Only internal and supplied signatures supported for now
-  withSignature(signature: InternalSignature | SuppliedSignature): OPBuilder {
-    this.signature = signature;
+  withCreateJwtCallback(createJwtCallback: CreateJwtCallback): OPBuilder {
+    this.createJwtCallback = createJwtCallback;
     return this;
   }
 
-  withInternalSignature(hexPrivateKey: string, did: string, kid: string, alg: SigningAlgo, customJwtSigner?: Signer): OPBuilder {
-    this.withSignature({ hexPrivateKey, did, kid, alg, customJwtSigner });
-    return this;
-  }
-
-  withSuppliedSignature(
-    signature: (data: string | Uint8Array) => Promise<EcdsaSignature | string>,
-    did: string,
-    kid: string,
-    alg: SigningAlgo,
-  ): OPBuilder {
-    this.withSignature({ signature, did, kid, alg });
-    return this;
-  }
-
-  withWellknownDIDVerifyCallback(wellknownDIDVerifyCallback: VerifyCallback): OPBuilder {
-    this.wellknownDIDVerifyCallback = wellknownDIDVerifyCallback;
+  withVerifyJwtCallback(verifyJwtCallback: VerifyJwtCallback): OPBuilder {
+    this.verifyJwtCallback = verifyJwtCallback;
     return this;
   }
 

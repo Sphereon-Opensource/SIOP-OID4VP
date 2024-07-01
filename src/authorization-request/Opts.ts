@@ -1,11 +1,11 @@
 import { assertValidRequestObjectOpts } from '../request-object/Opts';
-import { ExternalVerification, InternalVerification, isExternalVerification, isInternalVerification, SIOPErrors } from '../types';
+import { SIOPErrors, Verification } from '../types';
 
 import { assertValidRequestRegistrationOpts } from './RequestRegistration';
 import { CreateAuthorizationRequestOpts, VerifyAuthorizationRequestOpts } from './types';
 
 export const assertValidVerifyAuthorizationRequestOpts = (opts: VerifyAuthorizationRequestOpts) => {
-  if (!opts || !opts.verification || (!isExternalVerification(opts.verification) && !isInternalVerification(opts.verification))) {
+  if (!opts || !opts.verification || !opts.verifyJwtCallback) {
     throw new Error(SIOPErrors.VERIFY_BAD_PARAMS);
   }
   if (!opts.correlationId) {
@@ -23,39 +23,21 @@ export const assertValidAuthorizationRequestOpts = (opts: CreateAuthorizationReq
 
 export const mergeVerificationOpts = (
   classOpts: {
-    verification?: InternalVerification | ExternalVerification;
+    verification?: Verification;
   },
   requestOpts: {
     correlationId: string;
-    verification?: InternalVerification | ExternalVerification;
+    verification?: Verification;
   },
 ) => {
-  const resolver = requestOpts.verification?.resolveOpts?.resolver ?? classOpts.verification?.resolveOpts?.resolver;
-  const wellknownDIDVerifyCallback = requestOpts.verification?.wellknownDIDVerifyCallback ?? classOpts.verification?.wellknownDIDVerifyCallback;
   const presentationVerificationCallback =
     requestOpts.verification?.presentationVerificationCallback ?? classOpts.verification?.presentationVerificationCallback;
   const replayRegistry = requestOpts.verification?.replayRegistry ?? classOpts.verification?.replayRegistry;
   return {
     ...classOpts.verification,
     ...requestOpts.verification,
-    ...(wellknownDIDVerifyCallback && { wellknownDIDVerifyCallback }),
     ...(presentationVerificationCallback && { presentationVerificationCallback }),
     ...(replayRegistry && { replayRegistry }),
-    resolveOpts: {
-      ...classOpts.verification?.resolveOpts,
-      ...requestOpts.verification?.resolveOpts,
-      ...(resolver && { resolver }),
-      jwtVerifyOpts: {
-        ...classOpts.verification?.resolveOpts?.jwtVerifyOpts,
-        ...requestOpts.verification?.resolveOpts?.jwtVerifyOpts,
-        ...(resolver && { resolver }),
-        policies: {
-          ...classOpts.verification?.resolveOpts?.jwtVerifyOpts?.policies,
-          ...requestOpts.verification?.resolveOpts?.jwtVerifyOpts?.policies,
-          aud: false, // todo: check why we are setting this. Probably needs a PR upstream in DID-JWT
-        },
-      },
-    },
     revocationOpts: {
       ...classOpts.verification?.revocationOpts,
       ...requestOpts.verification?.revocationOpts,
