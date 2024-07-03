@@ -1,6 +1,6 @@
 import { AuthorizationResponseOpts, VerifyAuthorizationResponseOpts } from '../authorization-response';
 import { assertValidVerifyOpts } from '../authorization-response/Opts';
-import { getSubDidFromPayload, parseJWT } from '../helpers/jwtUtils';
+import { parseJWT } from '../helpers/jwtUtils';
 import {
   getJwtVerifierWithContext,
   IDTokenJwt,
@@ -102,7 +102,7 @@ export class IDToken {
 
         const issuer = this._responseOpts.registration.issuer || this._payload.iss;
         if (!issuer || !(issuer.includes(ResponseIss.SELF_ISSUED_V2) || issuer === this._payload.sub)) {
-          throw new Error(SIOPErrors.NO_SELFISSUED_ISS);
+          throw new Error(SIOPErrors.NO_SELF_ISSUED_ISS);
         }
         if (!this._payload.iss) {
           this._payload.iss = issuer;
@@ -158,8 +158,6 @@ export class IDToken {
     const verificationResult = await verifyOpts.verifyJwtCallback(jwtVerifier, { ...parsedJwt, raw: this._jwt });
     if (!verificationResult) throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
 
-    const issuerDid = getSubDidFromPayload(parsedJwt.payload);
-
     const verPayload = parsedJwt.payload as IDTokenPayload;
     this.assertValidResponseJWT({ header: parsedJwt.header, verPayload: verPayload, audience: verifyOpts.audience });
     // Enforces verifyPresentationCallback function on the RP side,
@@ -168,7 +166,6 @@ export class IDToken {
     }
     return {
       jwt: this._jwt,
-      issuer: issuerDid,
       payload: { ...verPayload },
       verifyOpts,
     };
@@ -189,7 +186,7 @@ export class IDToken {
     }
     if (opts.payload) {
       if (!opts.payload.iss || !(opts.payload.iss.includes(ResponseIss.SELF_ISSUED_V2) || opts.payload.iss.startsWith('did:'))) {
-        throw new Error(`${SIOPErrors.NO_SELFISSUED_ISS}, got: ${opts.payload.iss}`);
+        throw new Error(`${SIOPErrors.NO_SELF_ISSUED_ISS}, got: ${opts.payload.iss}`);
       }
     }
 

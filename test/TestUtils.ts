@@ -4,7 +4,6 @@ import { IProofType } from '@sphereon/ssi-types';
 import base58 from 'bs58';
 import { ethers } from 'ethers';
 import { exportJWK, importJWK, JWK, SignJWT } from 'jose';
-import { jwtDecode } from 'jwt-decode';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -23,6 +22,7 @@ import {
   SubjectSyntaxTypesSupportedValues,
   SubjectType,
 } from '../src';
+import { parseJWT } from '../src/helpers/jwtUtils';
 import SIOPErrors from '../src/types/Errors';
 
 import { DIDDocument } from './ResolverTestUtils';
@@ -151,7 +151,7 @@ export async function mockedGetEnterpriseAuthToken(enterpriseName?: string): Pro
   hexPublicKey: string;
 }> {
   const testAuth = await mockedEntityAuthNToken(enterpriseName);
-  const payload = jwtDecode<JwtPayload>(testAuth.jwt, { header: false });
+  const { payload } = parseJWT(testAuth.jwt);
 
   const inputPayload: IEnterpriseAuthZToken = {
     did: testAuth.did,

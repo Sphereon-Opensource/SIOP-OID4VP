@@ -1,8 +1,7 @@
-import { jwtDecode, JwtPayload } from 'jwt-decode';
-
 import { ClaimPayloadCommonOpts, ClaimPayloadOptsVID1, CreateAuthorizationRequestOpts } from '../authorization-request';
 import { assertValidAuthorizationRequestOpts } from '../authorization-request/Opts';
 import { fetchByReferenceOrUseByValue, removeNullUndefined } from '../helpers';
+import { parseJWT } from '../helpers/jwtUtils';
 import { AuthorizationRequestPayload, JwtIssuer, JwtIssuerWithContext, RequestObjectJwt, RequestObjectPayload, SIOPErrors } from '../types';
 
 import { assertValidRequestObjectOpts } from './Opts';
@@ -117,7 +116,7 @@ export class RequestObject {
       if (!this.jwt) {
         return undefined;
       }
-      this.payload = removeNullUndefined(jwtDecode<JwtPayload>(this.jwt, { header: false })) as RequestObjectPayload;
+      this.payload = removeNullUndefined(parseJWT(this.jwt).payload) as RequestObjectPayload;
       this.removeRequestProperties();
       if (this.payload.registration_uri) {
         delete this.payload.registration;

@@ -1,9 +1,23 @@
 import { AuthorizationResponseOpts } from '../authorization-response';
+import { JwtType } from '../helpers/jwtUtils';
 
 import { JwtHeader, JwtPayload } from './JWT.types';
 import { ClientIdScheme, SigningAlgo } from './SIOP.types';
 
-export type JwtIssuanceContext = { type: 'request-object' } | { type: 'id-token'; authorizationResponseOpts: AuthorizationResponseOpts };
+interface IssuanceContextBase {
+  type: JwtType;
+}
+
+interface RequestObjectContext extends IssuanceContextBase {
+  type: 'request-object';
+}
+
+interface IdTokenContext extends IssuanceContextBase {
+  type: 'id-token';
+  authorizationResponseOpts: AuthorizationResponseOpts;
+}
+
+export type JwtIssuanceContext = RequestObjectContext | IdTokenContext;
 
 interface JwtIssuerDid {
   method: 'did';

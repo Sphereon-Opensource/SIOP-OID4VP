@@ -1,8 +1,8 @@
 import { VerifyCallback } from '@sphereon/wellknown-dids-client';
 import { createJWT, EdDSASigner, ES256KSigner, ES256Signer, hexToBytes, JWTOptions, JWTVerifyOptions, Signer, verifyJWT } from 'did-jwt';
 import { Resolvable } from 'did-resolver';
-import { jwtDecode } from 'jwt-decode';
 
+import { parseJWT } from '../src/helpers/jwtUtils';
 import { DEFAULT_EXPIRATION_TIME, JwtPayload, ResponseIss, SigningAlgo, SIOPErrors, VerifiedJWT, VerifyJwtCallback } from '../src/types';
 import { CreateJwtCallback } from '../src/types/JwtIssuer';
 
@@ -47,7 +47,7 @@ export interface InternalSignature {
 }
 
 export function getAudience(jwt: string) {
-  const payload = jwtDecode<JwtPayload>(jwt, { header: false });
+  const { payload } = parseJWT(jwt);
   if (!payload) {
     throw new Error(SIOPErrors.NO_AUDIENCE);
   } else if (!payload.aud) {
@@ -86,7 +86,7 @@ export function getCreateJwtCallback(signature: InternalSignature): CreateJwtCal
 
         const issuer = jwtIssuer.authorizationResponseOpts.registration.issuer || this._payload.iss;
         if (!issuer || !(issuer.includes(ResponseIss.SELF_ISSUED_V2) || issuer === this._payload.sub)) {
-          throw new Error(SIOPErrors.NO_SELFISSUED_ISS);
+          throw new Error(SIOPErrors.NO_SELF_ISSUED_ISS);
         }
         if (!jwt.payload.iss) {
           jwt.payload.iss = issuer;

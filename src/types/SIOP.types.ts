@@ -480,7 +480,6 @@ export interface ResponseClaims {
 
 export interface VerifiedIDToken {
   jwt: string;
-  issuer: string;
   payload: IDTokenPayload;
   verifyOpts: VerifyAuthorizationResponseOpts;
 }

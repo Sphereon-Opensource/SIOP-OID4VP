@@ -1,6 +1,5 @@
-import { jwtDecode } from 'jwt-decode';
-
-import { JwtPayload, PassBy, ResponseType, RevocationVerification, RP, Scope, SigningAlgo, SubjectType, SupportedVersion } from '../../src';
+import { PassBy, ResponseType, RevocationVerification, RP, Scope, SigningAlgo, SubjectType, SupportedVersion } from '../../src';
+import { parseJWT } from '../../src/helpers/jwtUtils';
 import { internalSignature } from '../DidJwtTestUtils';
 
 const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
@@ -54,7 +53,7 @@ describe('Creating an AuthRequest with an RP from builder', () => {
     });
 
     const requestObjectJwt = await authRequest.requestObject.toJwt();
-    const payload: JwtPayload & { client_id?: string } = jwtDecode(requestObjectJwt, { header: false });
+    const { payload } = parseJWT(requestObjectJwt);
     await expect(payload.client_id).toEqual(DID);
   });
 });

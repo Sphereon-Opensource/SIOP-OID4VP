@@ -1,20 +1,21 @@
 import { calculateJwkThumbprintUri, getDigestAlgorithmFromJwkThumbprintUri } from '../helpers';
+import { JwtType } from '../helpers/jwtUtils';
 
 import SIOPErrors from './Errors';
 import { JWK, JwtHeader, JwtPayload } from './JWT.types';
 
-export type JwtVerificationType = 'id-token' | 'request-object';
+interface JwtVerifierBase {
+  method: string;
+  type: JwtType;
+}
 
-interface DidJwtVerifier {
+interface DidJwtVerifier extends JwtVerifierBase {
   method: 'did';
-  type: JwtVerificationType;
-
   didUrl: string;
 }
 
-interface X5cJwtVerifier {
+interface X5cJwtVerifier extends JwtVerifierBase {
   method: 'x5c';
-  type: JwtVerificationType;
 
   /**
    *
@@ -52,12 +53,7 @@ interface CustomJwtVerifier extends Record<string, unknown> {
 
 export type JwtVerifier = DidJwtVerifier | X5cJwtVerifier | CustomJwtVerifier | JwkJwtVerifier;
 
-export type JwtVerifierWithContext = JwtVerifier;
-
-export const getJwtVerifierWithContext = async (
-  jwt: { header: JwtHeader; payload: JwtPayload },
-  type: JwtVerificationType,
-): Promise<JwtVerifierWithContext> => {
+export const getJwtVerifierWithContext = async (jwt: { header: JwtHeader; payload: JwtPayload }, type: JwtType): Promise<JwtVerifier> => {
   if (jwt.header.kid?.startsWith('did:')) {
     if (!jwt.header.kid.includes('#')) throw new Error(`${SIOPErrors.ERROR_INVALID_JWT}. '${type}' contains an invalid kid header.`);
     return { method: 'did', didUrl: jwt.header.kid, type };
