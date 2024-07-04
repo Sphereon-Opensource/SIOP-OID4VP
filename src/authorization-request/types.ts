@@ -35,7 +35,7 @@ export interface RequestObjectPayloadOpts<CT extends ClaimPayloadCommonOpts> {
   scope: string; // from openid-connect-self-issued-v2-1_0-ID1
   response_type: string; // from openid-connect-self-issued-v2-1_0-ID1
   client_id: string; // from openid-connect-self-issued-v2-1_0-ID1
-  client_id_scheme: ClientIdScheme;
+  client_id_scheme?: ClientIdScheme;
   redirect_uri?: string; // from openid-connect-self-issued-v2-1_0-ID1
   response_uri?: string; // from openid-connect-self-issued-v2-1_0-D18 // either response uri or redirect uri
   id_token_hint?: string; // from openid-connect-self-issued-v2-1_0-ID1

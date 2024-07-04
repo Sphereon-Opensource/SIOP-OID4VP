@@ -125,7 +125,9 @@ export class AuthorizationRequest {
       const jwtVerifier = await getJwtVerifierWithContext(parsedJwt, 'request-object');
       const result = await opts.verifyJwtCallback(jwtVerifier, { ...parsedJwt, raw: jwt });
 
-      if (!result) throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
+      if (!result) {
+        throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
+      }
 
       if (this.hasRequestObject() && !this.payload.request_uri) {
         // Put back the request object as that won't be present yet

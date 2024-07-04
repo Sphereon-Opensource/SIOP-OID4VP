@@ -82,13 +82,15 @@ export const getThumbprint = async (hexPrivateKey: string, did: string): Promise
 };
 */
 
+export type DigestAlgorithm = 'sha256' | 'sha384' | 'sha512';
+
 const check = (value, description) => {
   if (typeof value !== 'string' || !value) {
     throw Error(`${description} missing or invalid`);
   }
 };
 
-export async function calculateJwkThumbprint(jwk: JWK, digestAlgorithm?: 'sha256' | 'sha384' | 'sha512'): Promise<string> {
+export async function calculateJwkThumbprint(jwk: JWK, digestAlgorithm?: DigestAlgorithm): Promise<string> {
   if (!jwk || typeof jwk !== 'object') {
     throw new TypeError('JWK must be an object');
   }
@@ -125,24 +127,24 @@ export async function calculateJwkThumbprint(jwk: JWK, digestAlgorithm?: 'sha256
   return u8a.toString(await digest(algorithm, data), 'base64url');
 }
 
-const digest = async (algorithm: 'sha256' | 'sha384' | 'sha512', data: Uint8Array) => {
+const digest = async (algorithm: DigestAlgorithm, data: Uint8Array) => {
   const subtleDigest = `SHA-${algorithm.slice(-3)}`;
   return new Uint8Array(await crypto.subtle.digest(subtleDigest, data));
 };
 
-export async function getDigestAlgorithmFromJwkThumbprintUri(uri: string): Promise<'sha256' | 'sha384' | 'sha512'> {
+export async function getDigestAlgorithmFromJwkThumbprintUri(uri: string): Promise<DigestAlgorithm> {
   const match = uri.match(/^urn:ietf:params:oauth:jwk-thumbprint:sha-(\w+):/);
   if (!match) {
     throw new Error(`Invalid JWK thumbprint URI structure ${uri}`);
   }
-  const algorithm = `sha${match[1]}` as 'sha256' | 'sha384' | 'sha512';
+  const algorithm = `sha${match[1]}` as DigestAlgorithm;
   if (algorithm !== 'sha256' && algorithm !== 'sha384' && algorithm !== 'sha512') {
     throw new Error(`Invalid JWK thumbprint URI digest algorithm ${uri}`);
   }
   return algorithm;
 }
 
-export async function calculateJwkThumbprintUri(jwk: JWK, digestAlgorithm: 'sha256' | 'sha384' | 'sha512' = 'sha256'): Promise<string> {
+export async function calculateJwkThumbprintUri(jwk: JWK, digestAlgorithm: DigestAlgorithm = 'sha256'): Promise<string> {
   const thumbprint = await calculateJwkThumbprint(jwk, digestAlgorithm);
   return `urn:ietf:params:oauth:jwk-thumbprint:sha-${digestAlgorithm.slice(-3)}:${thumbprint}`;
 }

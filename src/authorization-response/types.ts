@@ -90,7 +90,6 @@ export interface VerifyAuthorizationResponseOpts {
   hasher?: Hasher;
   nonce?: string; // To verify the response against the supplied nonce
   state?: string; // To verify the response against the supplied state
-
   presentationDefinitions?: PresentationDefinitionWithLocation | PresentationDefinitionWithLocation[]; // The presentation definitions to match against VPs in the response
   audience?: string; // The audience/redirect_uri
   restrictToFormats?: Format; // Further restrict to certain VC formats, not expressed in the presentation definition

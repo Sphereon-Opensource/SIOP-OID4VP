@@ -279,7 +279,7 @@ describe('create Request Uri should', () => {
 describe('create Request JWT should', () => {
   it('throw REQUEST_OBJECT_TYPE_NOT_SET when requestBy type is different from REFERENCE and VALUE', async () => {
     expect.assertions(1);
-    const opts: CreateAuthorizationRequestOpts = {
+    const opts = {
       version: SupportedVersion.SIOPv2_ID1,
       payload: {
         redirect_uri: EXAMPLE_REDIRECT_URL,
@@ -294,13 +294,23 @@ describe('create Request JWT should', () => {
           alg: SigningAlgo.ES256K,
         }),
       },
+      registration: {
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
+        passBy: PassBy.VALUE,
+      },
     };
-    await expect(RequestObject.fromOpts(opts)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
+    await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.REQUEST_OBJECT_TYPE_NOT_SET);
   });
 
   it('throw NO_REFERENCE_URI when no referenceUri is passed with REFERENCE requestBy type is set', async () => {
     expect.assertions(1);
-    const opts: CreateAuthorizationRequestOpts = {
+    const opts = {
       version: SupportedVersion.SIOPv2_ID1,
       payload: {
         redirect_uri: EXAMPLE_REDIRECT_URL,
@@ -315,8 +325,18 @@ describe('create Request JWT should', () => {
           alg: SigningAlgo.ES256K,
         }),
       },
+      registration: {
+        idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
+        subject_syntax_types_supported: ['did:ethr:', SubjectIdentifierType.DID],
+        vpFormatsSupported: {
+          ldp_vc: {
+            proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
+          },
+        },
+        passBy: PassBy.VALUE,
+      },
     };
-    await expect(RequestObject.fromOpts(opts)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
+    await expect(RequestObject.fromOpts(opts as never)).rejects.toThrow(SIOPErrors.NO_REFERENCE_URI);
   });
 
   it('throw REGISTRATION_OBJECT_TYPE_NOT_SET when registrationBy type is neither REFERENCE nor VALUE', async () => {

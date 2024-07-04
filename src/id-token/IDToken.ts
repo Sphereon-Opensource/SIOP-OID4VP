@@ -114,7 +114,7 @@ export class IDToken {
         this._payload.iss = jwtIssuer.issuer;
         this._payload.sub = jwtIssuer.issuer;
 
-        const header = { x5c: jwtIssuer.chain, typ: 'JWT' };
+        const header = { x5c: jwtIssuer.x5c, typ: 'JWT' };
         this._jwt = await this._responseOpts.createJwtCallback(jwtIssuer, { header, payload: this._payload });
       } else if (jwtIssuer.method === 'jwk') {
         const jwkThumbprintUri = await calculateJwkThumbprintUri(jwtIssuer.jwk as JWK);
@@ -151,12 +151,18 @@ export class IDToken {
   public async verify(verifyOpts: VerifyAuthorizationResponseOpts): Promise<VerifiedIDToken> {
     assertValidVerifyOpts(verifyOpts);
 
+    if (!this._jwt) {
+      throw new Error(SIOPErrors.NO_JWT);
+    }
+
     const parsedJwt = parseJWT(this._jwt);
     this.assertValidResponseJWT(parsedJwt);
 
     const jwtVerifier = await getJwtVerifierWithContext(parsedJwt, 'request-object');
     const verificationResult = await verifyOpts.verifyJwtCallback(jwtVerifier, { ...parsedJwt, raw: this._jwt });
-    if (!verificationResult) throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
+    if (!verificationResult) {
+      throw Error(SIOPErrors.ERROR_VERIFYING_SIGNATURE);
+    }
 
     const verPayload = parsedJwt.payload as IDTokenPayload;
     this.assertValidResponseJWT({ header: parsedJwt.header, verPayload: verPayload, audience: verifyOpts.audience });

@@ -128,7 +128,14 @@ describe('OP should', () => {
         version: SupportedVersion.SIOPv2_ID1,
 
         requestObject: {
-          jwtIssuer: { method: 'did', didUrl: `${mockEntity.did}#controller`, alg: SigningAlgo.ES256K },
+          jwtIssuer: {
+            method: 'did',
+            didUrl: `${mockEntity.did}#controller`,
+            alg: SigningAlgo.ES256K,
+            options: {
+              kid: '1234',
+            },
+          },
           passBy: PassBy.REFERENCE,
           reference_uri: EXAMPLE_REFERENCE_URL,
 
@@ -171,7 +178,7 @@ describe('OP should', () => {
         correlationId: '1234',
         nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
         state: 'b32f0087fc9816eb813fd11f',
-        jwtIssuer: { method: 'did', didUrl: `${mockEntity.did}#controller`, alg: SigningAlgo.ES256K },
+        jwtIssuer: { method: 'did', didUrl: `${mockEntity.did}#controller`, alg: SigningAlgo.ES256K, options: { kid: '1234' } },
       });
 
       nock('https://rp.acme.com').get('/siop/jwts').reply(200, requestURI.requestObjectJwt);

@@ -95,7 +95,7 @@ export class RequestObject {
         this.payload.redirect_uri = jwtIssuer.issuer;
         this.payload.client_id_scheme = jwtIssuer.clientIdScheme;
 
-        const header = { x5c: jwtIssuer.chain, typ: 'JWT' };
+        const header = { x5c: jwtIssuer.x5c, typ: 'JWT' };
         this.jwt = await this.opts.createJwtCallback(jwtIssuer, { header, payload: this.payload });
       } else if (jwtIssuer.method === 'jwk') {
         if (!this.payload.client_id) {

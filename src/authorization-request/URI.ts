@@ -150,7 +150,12 @@ export class URI implements AuthorizationRequestURI {
     }
 
     const isJwt = typeof authorizationRequestPayload === 'string';
-    const requestObjectJwt = requestObject ? await requestObject.toJwt() : authorizationRequestPayload.request;
+    const requestObjectJwt = requestObject
+      ? await requestObject.toJwt()
+      : typeof authorizationRequestPayload === 'string'
+        ? authorizationRequestPayload
+        : authorizationRequestPayload.request;
+
     if (isJwt && (!requestObjectJwt || !requestObjectJwt.startsWith('ey'))) {
       throw Error(SIOPErrors.NO_JWT);
     }

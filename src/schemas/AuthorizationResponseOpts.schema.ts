@@ -1529,6 +1529,11 @@ export const AuthorizationResponseOptsSchemaObj = {
               "type": "string",
               "const": "did"
             },
+            "options": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Additional options for the issuance context"
+            },
             "didUrl": {
               "type": "string"
             },
@@ -1537,9 +1542,9 @@ export const AuthorizationResponseOptsSchemaObj = {
             }
           },
           "required": [
-            "method",
+            "alg",
             "didUrl",
-            "alg"
+            "method"
           ],
           "additionalProperties": false
         },
@@ -1550,7 +1555,12 @@ export const AuthorizationResponseOptsSchemaObj = {
               "type": "string",
               "const": "x5c"
             },
-            "chain": {
+            "options": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Additional options for the issuance context"
+            },
+            "x5c": {
               "type": "array",
               "items": {
                 "type": "string"
@@ -1566,10 +1576,10 @@ export const AuthorizationResponseOptsSchemaObj = {
             }
           },
           "required": [
-            "method",
-            "chain",
+            "clientIdScheme",
             "issuer",
-            "clientIdScheme"
+            "method",
+            "x5c"
           ],
           "additionalProperties": false
         },
@@ -1579,6 +1589,11 @@ export const AuthorizationResponseOptsSchemaObj = {
             "method": {
               "type": "string",
               "const": "jwk"
+            },
+            "options": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Additional options for the issuance context"
             },
             "jwk": {
               "type": "object",
@@ -1660,8 +1675,8 @@ export const AuthorizationResponseOptsSchemaObj = {
             }
           },
           "required": [
-            "method",
-            "jwk"
+            "jwk",
+            "method"
           ],
           "additionalProperties": false
         },
@@ -1671,12 +1686,17 @@ export const AuthorizationResponseOptsSchemaObj = {
             "method": {
               "type": "string",
               "const": "custom"
+            },
+            "options": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Additional options for the issuance context"
             }
           },
           "required": [
             "method"
           ],
-          "additionalProperties": {}
+          "additionalProperties": false
         }
       ]
     },

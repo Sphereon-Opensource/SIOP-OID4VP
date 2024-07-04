@@ -397,7 +397,7 @@ const authRequest = await rp.createAuthorizationRequest({
   correlationId: '1',
   nonce: 'qBrR7mqnY3Qr49dAZycPF8FzgE83m6H0c2l0bzP4xSg',
   state: 'b32f0087fc9816eb813fd11f',
-  jwtIssuer: { method: 'did', didUrl: '...', alg: SigningAlgo.EDDSA }
+  jwtIssuer: { method: 'did', didUrl: 'did:key:v4zagSPkqFJxuNWu#zUC74VEqqhEHQc', alg: SigningAlgo.EDDSA }
 });
 
 console.log(`nonce: ${authRequest.requestOpts.nonce}, state: ${authRequest.requestOpts.state}`);
@@ -936,15 +936,6 @@ static async createJWTFromRequestJWT(requestJwt: string, responseOpts: SIOP.Auth
   did: "did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0",
   responseMode: ResponseMode.POST,
 }
-const verifyOpts: VerifyAuthorizationRequestOpts = {
-    verification: { }
-}
-createJWTFromRequestJWT('ey....', responseOpts, verifyOpts).then(resp => {
-    console.log(resp.payload.sub);
-    // output: did:ethr:0x0106a2e985b1E1De9B5ddb4aF6dC9e928F4e99D0
-    console.log(resp.nonce);
-    // output: 5c1d29c1-cf7d-4e14-9305-9db46d8c1916
-});
 ````
 
 #### Usage
@@ -955,7 +946,6 @@ const NONCE = "5c1d29c1-cf7d-4e14-9305-9db46d8c1916";
 const verifyOpts: VerifyAuthorizationResponseOpts = {
     audience: "https://rp.acme.com/siop/jwts",
     nonce: NONCE,
-    verification: { }
 }
 
 verifyJWT('ey......', verifyOpts).then(jwt => {

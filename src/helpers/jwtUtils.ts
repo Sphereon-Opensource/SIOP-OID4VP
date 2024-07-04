@@ -4,6 +4,8 @@ import { JwtHeader, JwtPayload, SIOPErrors } from '../types';
 
 export type JwtType = 'id-token' | 'request-object';
 
+export type JwtProtectionMethod = 'did' | 'x5c' | 'jwk' | 'custom';
+
 export function parseJWT(jwt: string) {
   const header = jwtDecode<JwtHeader>(jwt, { header: true });
   const payload = jwtDecode<JwtPayload>(jwt, { header: false });
