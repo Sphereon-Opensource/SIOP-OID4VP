@@ -10,7 +10,6 @@ import {
   ResponseType,
   Scope,
   SigningAlgo,
-  SubjectSyntaxTypesSupportedValues,
   SubjectType,
   SupportedVersion,
   VerifyAuthorizationRequestOpts,
@@ -29,9 +28,6 @@ import {
   VERIFIERZ_PURPOSE_TO_VERIFY,
   VERIFIERZ_PURPOSE_TO_VERIFY_NL,
 } from './data/mockedData';
-
-const EXAMPLE_REDIRECT_URL = 'https://acme.com/hello';
-const EXAMPLE_REFERENCE_URL = 'https://rp.acme.com/siop/jwts';
 
 dotenv.config();
 
@@ -250,33 +246,34 @@ describe('verifyJWT should', () => {
 
   it('throw BAD_NONCE when a different nonce is supplied during verification', async () => {
     expect.assertions(1);
-    const kid = 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc#z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc';
+
+    const mockEntity = await mockedGetEnterpriseAuthToken('COMPANY AA INC');
+
     const requestOpts: CreateAuthorizationRequestOpts = {
       version: SupportedVersion.SIOPv2_ID1,
       requestObject: {
         jwtIssuer: {
           method: 'did',
-          didUrl: kid,
-          alg: SigningAlgo.EDDSA,
+          didUrl: `${mockEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
         },
         passBy: PassBy.REFERENCE,
-        reference_uri: EXAMPLE_REFERENCE_URL,
-
+        reference_uri: 'https://my-request.com/here',
         createJwtCallback: getCreateJwtCallback({
-          hexPrivateKey:
-            'd474ffdb3ea75fbb3f07673e67e52002a3b7eb42767f709f4100acf493c7fc8743017577997b72e7a8b4bce8c32c8e78fd75c1441e95d6aaa888056d1200beb3',
-          did: 'did:key:z6MkixpejjET5qJK4ebN5m3UcdUPmYV4DPSCs1ALH8x2UCfc',
-          kid,
-          alg: SigningAlgo.EDDSA,
+          hexPrivateKey: mockEntity.hexPrivateKey,
+          did: mockEntity.did,
+          kid: `${mockEntity.did}#controller`,
+          alg: SigningAlgo.ES256K,
         }),
         payload: {
-          state: 'expected state',
           client_id: WELL_KNOWN_OPENID_FEDERATION,
           scope: 'test',
           response_type: 'id_token',
+          state: '12345',
+          nonce: '12345',
           request_object_signing_alg_values_supported: [SigningAlgo.EDDSA, SigningAlgo.ES256],
-          redirect_uri: EXAMPLE_REDIRECT_URL,
-          nonce: 'expected nonce',
+          authorization_endpoint: '',
+          redirect_uri: 'https://acme.com/hello',
         },
       },
       clientMetadata: {
@@ -286,7 +283,7 @@ describe('verifyJWT should', () => {
         subjectTypesSupported: [SubjectType.PAIRWISE],
         idTokenSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
         requestObjectSigningAlgValuesSupported: [SigningAlgo.EDDSA, SigningAlgo.ES256K],
-        subject_syntax_types_supported: ['did:ethr:', SubjectSyntaxTypesSupportedValues.DID],
+        subject_syntax_types_supported: ['did:ethr:'],
         vpFormatsSupported: {
           ldp_vc: {
             proof_type: [IProofType.EcdsaSecp256k1Signature2019, IProofType.EcdsaSecp256k1Signature2019],
@@ -295,25 +292,23 @@ describe('verifyJWT should', () => {
         passBy: PassBy.VALUE,
         logo_uri: VERIFIER_LOGO_FOR_CLIENT,
         clientName: VERIFIER_NAME_FOR_CLIENT,
-        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100308',
+        'clientName#nl-NL': VERIFIER_NAME_FOR_CLIENT_NL + '2022100309',
         clientPurpose: VERIFIERZ_PURPOSE_TO_VERIFY,
         'clientPurpose#nl-NL': VERIFIERZ_PURPOSE_TO_VERIFY_NL,
       },
     };
-
     const requestObject = await RequestObject.fromOpts(requestOpts);
-    const jwt = await requestObject.toJwt();
 
-    const resolver = getResolver('key');
+    const resolver = getResolver('ethr');
     const verifyOpts: VerifyAuthorizationRequestOpts = {
       verifyJwtCallback: getVerifyJwtCallback(resolver, { checkLinkedDomain: 'if_present' }),
       verification: {},
-      correlationId: '1234',
       supportedVersions: [SupportedVersion.SIOPv2_ID1],
-      nonce: 'This nonce is different and should throw error',
+      correlationId: '1234',
+      nonce: 'invalid_nonce',
     };
 
-    // expect.assertions(1);
+    const jwt = await requestObject.toJwt();
     await expect(AuthorizationRequest.verify(jwt, verifyOpts)).rejects.toThrow(SIOPErrors.BAD_NONCE);
   });
 

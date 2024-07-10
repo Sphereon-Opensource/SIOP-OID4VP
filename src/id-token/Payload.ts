@@ -37,7 +37,6 @@ export const createIDTokenPayload = async (
     aud: responseOpts.audience || payload.client_id,
     iat: Math.round(Date.now() / SEC_IN_MS - 60 * SEC_IN_MS),
     exp: Math.round(Date.now() / SEC_IN_MS + (responseOpts.expiresIn || 600)),
-    sub: undefined,
     ...(payload.auth_time && { auth_time: payload.auth_time }),
     nonce,
     state,
