@@ -1,6 +1,0 @@
-# Ignore artifacts:
-dist
-coverage
-
-# Ignore all schema files:
-src/schemas

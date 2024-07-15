@@ -3,6 +3,9 @@
 The DID Auth SIOP typescript library is still in an beta state at this point. Please note that the interfaces might
 still change a bit as the software still is in active development.
 
+## 0.15.0 - 2024-07-15
+This package has been moved to the monorepo at https://github.com/Sphereon-Opensource/OID4VC
+
 ## 0.6.4 - 2024-04-24
 - Fixed:
   - Success event was emitted even though presentation verification callback failed
